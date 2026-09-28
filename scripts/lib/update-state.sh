@@ -12,8 +12,8 @@
 # is the only writer of the commit and version files. The branch file has
 # exactly two more writers, both user intent: an explicit branch pick in the
 # Nexus updates page, and the timer's self-heal when the tracked branch
-# disappears from the remote. Everything reads the branch and commit through
-# the helpers below so all callers agree on validation and defaults.
+# disappears from the remote. Readers either use the helpers below or repeat
+# their validation inline; both agree on the main/dev clamp and the main default.
 
 record_installed_revision() {
     local bundle="$1" config="$2"
