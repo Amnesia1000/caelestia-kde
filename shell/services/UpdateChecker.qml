@@ -454,8 +454,6 @@ git -C "$REPO" log --format="COMMIT%x1f%H%x1f%h%x1f%s%x1f%an%x1f%cI%x1f%P" --ski
         onExited: _code => { // qmllint disable signal-handler-parameters
             root.checkingUpdates = false;
             root.lastCheckMs = Date.now();
-            if (autoCheckTimer.running)
-                autoCheckTimer.restart();
         }
         stdout: StdioCollector {
             onStreamFinished: {
@@ -768,7 +766,7 @@ echo "$INSTALLED|$LATEST"
         id: autoCheckTimer
 
         interval: root.checkIntervalMs
-        repeat: false
+        repeat: true
         running: GlobalConfig.general.checkUpdates && root.loaded
         onTriggered: {
             if (!root.checkingUpdates && !root.updateRunning)

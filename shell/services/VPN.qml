@@ -448,9 +448,16 @@ Singleton {
         }
     }
 
+    property bool registerSent: false
+    property int statusGen: 0
+
     onStatusChanged: {
-        if (status.state === "needs-auth" && active.registerCmd)
+        if (status.state === "needs-auth" && !registerSent && active.registerCmd) {
+            registerSent = true;
             registerProc.exec(active.registerCmd);
+        } else if (status.state !== "needs-auth") {
+            registerSent = false;
+        }
     }
 
     onProvidersChanged: {
@@ -553,6 +560,11 @@ Singleton {
         id: statusProc
 
         command: root.active.statusCmd
+        property int gen: 0
+        onRunningChanged: {
+            if (running)
+                gen = ++root.statusGen;
+        }
         // qmllint disable incompatible-type
         environment: ({
                 // qmllint enable incompatible-type
@@ -561,6 +573,8 @@ Singleton {
             })
         stdout: StdioCollector {
             onStreamFinished: {
+                if (statusProc.gen !== root.statusGen)
+                    return; // stale output from a provider that is no longer selected
                 const newStatus = root.active.parse(text);
                 root.updateStatus(newStatus);
             }
