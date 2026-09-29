@@ -282,19 +282,71 @@ ColumnLayout {
             font.pointSize: Tokens.font.body.small.pointSize * root.fontScale
         }
 
-        Repeater {
-            model: ScriptModel {
-                values: [...Nmcli.vpnConnections].slice(0, 8)
+        // A ListView rather than a Repeater: the profile list is not capped, so
+        // it scrolls once it outgrows the height cap instead of silently hiding
+        // the tail. The cap keeps a long list from pushing the rest of the
+        // popout off screen.
+        ListView {
+            id: vpnList
+
+            model: Nmcli.vpnConnections
+
+            Layout.fillWidth: true
+            Layout.leftMargin: Tokens.padding.extraSmall * root.scaleOffset
+            Layout.rightMargin: Tokens.padding.extraSmall * root.scaleOffset
+
+            clip: true
+            interactive: Nmcli.vpnConnections.length > 1
+            boundsBehavior: Flickable.StopAtBounds
+            spacing: Tokens.spacing.extraSmall * root.scaleOffset
+            implicitHeight: Math.min(contentHeight, Tokens.sizes.bar.networkVpnListMaxHeight * root.scaleOffset)
+
+            StyledScrollBar.vertical: StyledScrollBar {
+                flickable: vpnList
             }
 
-            StyledRect {
+            add: Transition {
+                NumberAnimation {
+                    properties: "opacity"
+                    from: 0
+                    to: 1
+                    duration: 140
+                }
+                NumberAnimation {
+                    properties: "y"
+                    duration: 180
+                    easing.type: Easing.OutCubic
+                }
+            }
+            remove: Transition {
+                NumberAnimation {
+                    properties: "opacity"
+                    to: 0
+                    duration: 100
+                }
+            }
+            move: Transition {
+                NumberAnimation {
+                    properties: "y"
+                    duration: 180
+                    easing.type: Easing.OutCubic
+                }
+            }
+            displaced: Transition {
+                NumberAnimation {
+                    properties: "y"
+                    duration: 180
+                    easing.type: Easing.OutCubic
+                }
+            }
+
+            delegate: StyledRect {
                 id: vpnItem
 
                 required property var modelData
                 readonly property bool loading: Nmcli.vpnPendingConnection === modelData?.name
 
-                Layout.fillWidth: true
-                Layout.preferredWidth: 0
+                width: ListView.view.width
                 implicitHeight: vpnRow.implicitHeight + Tokens.padding.small * 2 * root.scaleOffset
                 radius: Tokens.rounding.small * root.scaleOffset
                 color: vpnItem.modelData?.connected ? Colours.tPalette.m3surfaceContainerHigh : "transparent"
