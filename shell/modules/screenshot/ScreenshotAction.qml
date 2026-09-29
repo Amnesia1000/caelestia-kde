@@ -96,7 +96,9 @@ Singleton {
                 const tmpFile = Paths.runtimeTemp("snip-search.png")
                 return `set -euo pipefail; ` +
                     `${cropToFile(tmpFile)} && ` +
-                    `xdg-open "${root.imageSearchEngineBaseUrl}$(${uploadAndGetUrl(tmpFile)})"; ` +
+                    `URL="$(${uploadAndGetUrl(tmpFile)})"; ` +
+                    `case "$URL" in https://*|http://*) ;; *) echo "screenshot search: unexpected upload response" >&2; exit 1;; esac; ` +
+                    `xdg-open "${root.imageSearchEngineBaseUrl}$URL"; ` +
                     `rm -f '${tmpFile}'; ${cleanup}`
             }
 

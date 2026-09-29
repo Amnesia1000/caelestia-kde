@@ -150,20 +150,19 @@ Item {
     function readMetadata(pluginInfo) {
         let metaPath = pluginInfo.path + "/metadata.json";
         pendingMeta++;
-        console.log("readMetadata called for", pluginInfo.id, "at", metaPath);
 
         let proc = Qt.createQmlObject(`
             import Quickshell.Io
             Process {
-                command: ["cat", "${metaPath}"]
+                command: ["cat", ${JSON.stringify(metaPath)}]
                 stdout: StdioCollector { id: out }
                 stderr: StdioCollector { id: err }
                 onExited: (code) => {
                     if (code === 0) {
                         try {
                             let meta = JSON.parse(out.text);
-                            meta.path = "${pluginInfo.path}";
-                            meta.source = "${pluginInfo.source}";
+                            meta.path = ${JSON.stringify(pluginInfo.path)};
+                            meta.source = ${JSON.stringify(pluginInfo.source)};
 
                             let disabled = pluginLoader.pluginSettings.disabledPlugins || [];
                             meta.enabled = (disabled.indexOf(meta.id) === -1 && disabled.indexOf(meta.name) === -1);
@@ -201,7 +200,7 @@ Item {
         let proc = Qt.createQmlObject(`
             import Quickshell.Io
             Process {
-                command: ["bash", "${script}", "${bundledPlugins}"]
+                command: ["bash", ${JSON.stringify(script)}, ${JSON.stringify(bundledPlugins)}]
                 stdout: StdioCollector { id: out }
                 stderr: StdioCollector { id: err }
                 onExited: (code) => {
