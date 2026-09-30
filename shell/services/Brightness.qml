@@ -87,10 +87,11 @@ Singleton {
 
         command: ["ddcutil", "detect", "--brief"]
         stdout: StdioCollector {
-            onStreamFinished: root.ddcMonitors = text.trim().split("\n\n").filter(d => d.startsWith("Display ")).map(d => ({
-                        busNum: d.match(/I2C bus:[ ]*\/dev\/i2c-([0-9]+)/)[1],
-                        connector: d.match(/DRM connector:\s+(.*)/)[1].replace(/^card\d+-/, "")
-                    }))
+            onStreamFinished: root.ddcMonitors = text.trim().split("\n\n").filter(d => d.startsWith("Display ")).map(d => {
+                        const busNum = d.match(/I2C bus:[ ]*\/dev\/i2c-([0-9]+)/)?.[1];
+                        const connector = d.match(/DRM connector:\s+(.*)/)?.[1]?.replace(/^card\d+-/, "");
+                        return busNum && connector ? { busNum, connector } : null;
+                    }).filter(m => m)
         }
     }
 

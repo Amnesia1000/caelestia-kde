@@ -27,7 +27,7 @@ Singleton {
     property bool loaded
 
     function getCursorOutputName(): string {
-        const monitor = Kwin.monitors[Kwin.cursorOutputName()] || Kwin.focusedMonitor;
+        const monitor = Kwin.monitors.find(m => m.name === Kwin.cursorOutputName()) || Kwin.focusedMonitor;
         return monitor?.name || Kwin.cursorOutputName() || "";
     }
 
