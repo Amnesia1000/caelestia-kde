@@ -17,6 +17,50 @@ Scope {
     property string lastAction: ""
     readonly property bool hasFullscreen: Kwin.hasFullscreen()
 
+    // One table drives every krohnkite shortcut. `action` ids are the krohnkite
+    // kwinscript's own registrations (verified against its contents/ui/shortcuts.qml):
+    // keep their exact casing (e.g. "KrohnkitegrowWidth") or KWin will invoke actions
+    // it never registered. `key` is the default binding ("" = unbound), overridden by
+    // the user's keybinds.json.
+    readonly property var krohnkiteShortcuts: [
+        { name: "krohnkiteFocusUp", description: qsTr("Focus the window above"), action: "KrohnkiteFocusUp", key: "Meta+Up" },
+        { name: "krohnkiteFocusDown", description: qsTr("Focus the window below"), action: "KrohnkiteFocusDown", key: "Meta+Down" },
+        { name: "krohnkiteFocusLeft", description: qsTr("Focus the window to the left"), action: "KrohnkiteFocusLeft", key: "Meta+Left" },
+        { name: "krohnkiteFocusRight", description: qsTr("Focus the window to the right"), action: "KrohnkiteFocusRight", key: "Meta+Right" },
+        { name: "krohnkiteShiftUp", description: qsTr("Move window up"), action: "KrohnkiteShiftUp", key: "Meta+Shift+Up" },
+        { name: "krohnkiteShiftDown", description: qsTr("Move window down"), action: "KrohnkiteShiftDown", key: "Meta+Shift+Down" },
+        { name: "krohnkiteShiftLeft", description: qsTr("Move window left"), action: "KrohnkiteShiftLeft", key: "Meta+Shift+Left" },
+        { name: "krohnkiteShiftRight", description: qsTr("Move window right"), action: "KrohnkiteShiftRight", key: "Meta+Shift+Right" },
+        { name: "krohnkiteCloseWindow", description: qsTr("Close current window"), action: "Window Close", key: "Meta+Q" },
+        { name: "krohnkiteFocusNext", description: qsTr("Focus next window"), action: "KrohnkiteFocusNext", key: "" },
+        { name: "krohnkiteFocusPrev", description: qsTr("Focus previous window"), action: "KrohnkiteFocusPrev", key: "" },
+        { name: "krohnkiteSetMaster", description: qsTr("Set active window as Master"), action: "KrohnkiteSetMaster", key: "" },
+        { name: "krohnkiteNextLayout", description: qsTr("Switch to next layout"), action: "KrohnkiteNextLayout", key: "" },
+        { name: "krohnkitePreviousLayout", description: qsTr("Switch to previous layout"), action: "KrohnkitePreviousLayout", key: "" },
+        { name: "krohnkiteBTreeLayout", description: qsTr("Switch to BTree layout"), action: "KrohnkiteBTreeLayout", key: "" },
+        { name: "krohnkiteMonocleLayout", description: qsTr("Switch to Monocle layout"), action: "KrohnkiteMonocleLayout", key: "" },
+        { name: "krohnkiteFloatingLayout", description: qsTr("Switch to Floating layout"), action: "KrohnkiteFloatingLayout", key: "" },
+        { name: "krohnkiteQuarterLayout", description: qsTr("Switch to Quarter layout"), action: "KrohnkiteQuarterLayout", key: "" },
+        { name: "krohnkiteSpreadLayout", description: qsTr("Switch to Spread layout"), action: "KrohnkiteSpreadLayout", key: "" },
+        { name: "krohnkiteStackedLayout", description: qsTr("Switch to Stacked layout"), action: "KrohnkiteStackedLayout", key: "" },
+        { name: "krohnkiteStairLayout", description: qsTr("Switch to Stair layout"), action: "KrohnkiteStairLayout", key: "" },
+        { name: "krohnkiteColumnsLayout", description: qsTr("Switch to Columns layout"), action: "KrohnkiteColumnsLayout", key: "" },
+        { name: "krohnkiteTreeColumnLayout", description: qsTr("Switch to Three Column layout"), action: "KrohnkiteThreeColumnLayout", key: "" },
+        { name: "krohnkiteSpiralLayout", description: qsTr("Switch to Spiral layout"), action: "KrohnkiteSpiralLayout", key: "" },
+        { name: "krohnkiteTileLayout", description: qsTr("Switch to Tile layout"), action: "KrohnkiteTileLayout", key: "" },
+        { name: "krohnkiteGrowHeight", description: qsTr("Increase window height"), action: "KrohnkiteGrowHeight", key: "" },
+        { name: "krohnkiteShrinkHeight", description: qsTr("Decrease window height"), action: "KrohnkiteShrinkHeight", key: "" },
+        { name: "krohnkiteGrowWidth", description: qsTr("Increase window width"), action: "KrohnkitegrowWidth", key: "" },
+        { name: "krohnkiteShrinkWidth", description: qsTr("Decrease window width"), action: "KrohnkiteShrinkWidth", key: "" },
+        { name: "krohnkiteIncreaseMaster", description: qsTr("Increase master area size"), action: "KrohnkiteIncrease", key: "" },
+        { name: "krohnkiteDecreaseMaster", description: qsTr("Decrease master area size"), action: "KrohnkiteDecrease", key: "" },
+        { name: "krohnkiteToggleFloat", description: qsTr("Toggle floating state"), action: "KrohnkiteToggleFloat", key: "" },
+        { name: "krohnkiteFloatAll", description: qsTr("Toggle floating state for all"), action: "KrohnkiteFloatAll", key: "" },
+        { name: "krohnkiteRotate", description: qsTr("Rotate the window layout"), action: "KrohnkiteRotate", key: "" },
+        { name: "krohnkiteRotatePart", description: qsTr("Rotate windows within a part"), action: "KrohnkiteRotatePart", key: "" },
+        { name: "krohnkiteToggleDock", description: qsTr("Toggle dock support"), action: "KrohnkitetoggleDock", key: "" },
+    ]
+
     Component.onCompleted: {
         let _ = KeybindsModel;
     }
@@ -474,53 +518,6 @@ Scope {
         }
         target: "launcher"
     }
-    // --- Window Tiling Shortcuts ---
-    // One table drives every krohnkite shortcut. `name`/`description` register the
-    // shell-side shortcut (and feed the keybinds page); `action` is the KWin-side id
-    // the delegate invokes through kglobalaccel; `key` is the default binding
-    // ("" = unbound), overridden by the user's keybinds.json on registration.
-    // Action ids are the krohnkite kwinscript's own registrations (its
-    // contents/ui/shortcuts.qml), including its lowercase oddballs
-    // "KrohnkitegrowWidth" and "KrohnkitetoggleDock": re-casing them to match the
-    // repo's keybinds catalogue would invoke actions the script never registers.
-    readonly property var krohnkiteShortcuts: [
-        { name: "krohnkiteFocusUp", description: qsTr("Focus the window above"), action: "KrohnkiteFocusUp", key: "Meta+Up" },
-        { name: "krohnkiteFocusDown", description: qsTr("Focus the window below"), action: "KrohnkiteFocusDown", key: "Meta+Down" },
-        { name: "krohnkiteFocusLeft", description: qsTr("Focus the window to the left"), action: "KrohnkiteFocusLeft", key: "Meta+Left" },
-        { name: "krohnkiteFocusRight", description: qsTr("Focus the window to the right"), action: "KrohnkiteFocusRight", key: "Meta+Right" },
-        { name: "krohnkiteShiftUp", description: qsTr("Move window up"), action: "KrohnkiteShiftUp", key: "Meta+Shift+Up" },
-        { name: "krohnkiteShiftDown", description: qsTr("Move window down"), action: "KrohnkiteShiftDown", key: "Meta+Shift+Down" },
-        { name: "krohnkiteShiftLeft", description: qsTr("Move window left"), action: "KrohnkiteShiftLeft", key: "Meta+Shift+Left" },
-        { name: "krohnkiteShiftRight", description: qsTr("Move window right"), action: "KrohnkiteShiftRight", key: "Meta+Shift+Right" },
-        { name: "krohnkiteCloseWindow", description: qsTr("Close current window"), action: "Window Close", key: "Meta+Q" },
-        { name: "krohnkiteFocusNext", description: qsTr("Focus next window"), action: "KrohnkiteFocusNext", key: "" },
-        { name: "krohnkiteFocusPrev", description: qsTr("Focus previous window"), action: "KrohnkiteFocusPrev", key: "" },
-        { name: "krohnkiteSetMaster", description: qsTr("Set active window as Master"), action: "KrohnkiteSetMaster", key: "" },
-        { name: "krohnkiteNextLayout", description: qsTr("Switch to next layout"), action: "KrohnkiteNextLayout", key: "" },
-        { name: "krohnkitePreviousLayout", description: qsTr("Switch to previous layout"), action: "KrohnkitePreviousLayout", key: "" },
-        { name: "krohnkiteBTreeLayout", description: qsTr("Switch to BTree layout"), action: "KrohnkiteBTreeLayout", key: "" },
-        { name: "krohnkiteMonocleLayout", description: qsTr("Switch to Monocle layout"), action: "KrohnkiteMonocleLayout", key: "" },
-        { name: "krohnkiteFloatingLayout", description: qsTr("Switch to Floating layout"), action: "KrohnkiteFloatingLayout", key: "" },
-        { name: "krohnkiteQuarterLayout", description: qsTr("Switch to Quarter layout"), action: "KrohnkiteQuarterLayout", key: "" },
-        { name: "krohnkiteSpreadLayout", description: qsTr("Switch to Spread layout"), action: "KrohnkiteSpreadLayout", key: "" },
-        { name: "krohnkiteStackedLayout", description: qsTr("Switch to Stacked layout"), action: "KrohnkiteStackedLayout", key: "" },
-        { name: "krohnkiteStairLayout", description: qsTr("Switch to Stair layout"), action: "KrohnkiteStairLayout", key: "" },
-        { name: "krohnkiteColumnsLayout", description: qsTr("Switch to Columns layout"), action: "KrohnkiteColumnsLayout", key: "" },
-        { name: "krohnkiteTreeColumnLayout", description: qsTr("Switch to Three Column layout"), action: "KrohnkiteThreeColumnLayout", key: "" },
-        { name: "krohnkiteSpiralLayout", description: qsTr("Switch to Spiral layout"), action: "KrohnkiteSpiralLayout", key: "" },
-        { name: "krohnkiteTileLayout", description: qsTr("Switch to Tile layout"), action: "KrohnkiteTileLayout", key: "" },
-        { name: "krohnkiteGrowHeight", description: qsTr("Increase window height"), action: "KrohnkiteGrowHeight", key: "" },
-        { name: "krohnkiteShrinkHeight", description: qsTr("Decrease window height"), action: "KrohnkiteShrinkHeight", key: "" },
-        { name: "krohnkiteGrowWidth", description: qsTr("Increase window width"), action: "KrohnkitegrowWidth", key: "" },
-        { name: "krohnkiteShrinkWidth", description: qsTr("Decrease window width"), action: "KrohnkiteShrinkWidth", key: "" },
-        { name: "krohnkiteIncreaseMaster", description: qsTr("Increase master area size"), action: "KrohnkiteIncrease", key: "" },
-        { name: "krohnkiteDecreaseMaster", description: qsTr("Decrease master area size"), action: "KrohnkiteDecrease", key: "" },
-        { name: "krohnkiteToggleFloat", description: qsTr("Toggle floating state"), action: "KrohnkiteToggleFloat", key: "" },
-        { name: "krohnkiteFloatAll", description: qsTr("Toggle floating state for all"), action: "KrohnkiteFloatAll", key: "" },
-        { name: "krohnkiteRotate", description: qsTr("Rotate the window layout"), action: "KrohnkiteRotate", key: "" },
-        { name: "krohnkiteRotatePart", description: qsTr("Rotate windows within a part"), action: "KrohnkiteRotatePart", key: "" },
-        { name: "krohnkiteToggleDock", description: qsTr("Toggle dock support"), action: "KrohnkitetoggleDock", key: "" },
-    ]
     Instantiator {
         model: root.krohnkiteShortcuts
 
