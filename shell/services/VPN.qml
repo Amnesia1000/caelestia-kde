@@ -38,6 +38,8 @@ Singleton {
     property bool disconnectExited
 
     property bool autoConnectPending
+    property bool registerSent: false
+    property int statusGen: 0
 
     readonly property var selected: root.providers.find(p => p.id === root.selectedProvider) ?? null
 
@@ -448,9 +450,6 @@ Singleton {
         }
     }
 
-    property bool registerSent: false
-    property int statusGen: 0
-
     onStatusChanged: {
         if (status.state === "needs-auth" && !registerSent && active.registerCmd) {
             registerSent = true;
@@ -559,8 +558,9 @@ Singleton {
     Process {
         id: statusProc
 
-        command: root.active.statusCmd
         property int gen: 0
+
+        command: root.active.statusCmd
         onRunningChanged: {
             if (running)
                 gen = ++root.statusGen;
