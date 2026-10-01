@@ -2,7 +2,6 @@
 # caelestia-check-updates - run by a systemd timer: count pending updates and notify.
 export PATH="$HOME/.local/bin:$PATH"
 
-# No git, nothing to check.
 if ! command -v git &> /dev/null; then
     exit 0
 fi
@@ -15,7 +14,6 @@ if command -v jq >/dev/null && [ -f "$HOME/.config/caelestia/shell.json" ]; then
     fi
 fi
 
-# UI updates (GitHub)
 REPO="$HOME/.cache/caelestia-update-repo"
 BRANCH=$(cat "$HOME/.config/quickshell/caelestia/.update_branch" 2>/dev/null || echo "main")
 if [ "$BRANCH" != "main" ] && [ "$BRANCH" != "dev" ]; then
@@ -60,7 +58,6 @@ if [ -n "$_localCommit" ]; then
     fi
 fi
 
-# System updates
 SYSTEM_PENDING=0
 
 if command -v checkupdates >/dev/null; then

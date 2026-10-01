@@ -209,7 +209,6 @@ import urllib.request
 def parse_whats_changed(text: str) -> str:
     txt = (text or "").replace("\\r", "")
 
-    # Keep only the "What's Changed" section when present.
     m = re.search(r"^#{2,3}\\s*What's Changed\\s*$", txt, flags=re.IGNORECASE | re.MULTILINE)
     if m:
         rest = txt[m.end():]
@@ -382,7 +381,6 @@ git -C "$REPO" log --format="COMMIT%x1f%H%x1f%h%x1f%s%x1f%an%x1f%cI%x1f%P" --ski
             return;
         }
 
-        // Fallback: mark deploy stage as finished when deploy script confirms completion.
         if (line.indexOf("Config deployment complete") !== -1 && root.updateProgress < 0.8) {
             root.updateProgress = 0.7;
             root.updateStatus = qsTr("Preparing shell build...");

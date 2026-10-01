@@ -49,9 +49,9 @@ record_installed_revision() {
     return 0
 }
 
-# Persists the tracked update channel. Only main and dev are channels; the
-# callers above and below depend on that, so reject anything else rather
-# than writing a branch no reader will honor.
+# Only main and dev are channels; the callers above and below depend on
+# that, so reject anything else rather than writing a branch no reader
+# will honor.
 update_state_set_branch() {
     local config="$1" branch="$2"
 
@@ -65,8 +65,6 @@ update_state_set_branch() {
     return 0
 }
 
-# Reads the tracked update channel, falling back to main the same way every
-# consumer of .update_branch does.
 update_state_read_branch() {
     local config="$1" branch=""
     branch="$(cat "$config/.update_branch" 2>/dev/null)" || branch=""
@@ -80,7 +78,6 @@ update_state_read_branch() {
     esac
 }
 
-# Reads the installed revision, empty when nothing was recorded yet.
 update_state_read_commit() {
     local config="$1"
     cat "$config/.current_commit" 2>/dev/null || true
