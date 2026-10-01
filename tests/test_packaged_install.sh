@@ -192,6 +192,10 @@ test_the_release_tarball_is_the_thing_the_package_sources() {
     assert_contains "$workflow" "--exclude '/dist'" "the staging directory must stay out of itself"
     assert_contains "$workflow" 'git rev-parse HEAD > "dist/$ROOT/REVISION"' "and write the revision"
 
+    assert_contains "$workflow" 'bash scripts/fetch-dependencies.sh' "the release build should prepare pinned dependencies"
+    assert_contains "$workflow" '-DCAELESTIA_OFFLINE=ON' "the release build should configure without dependency network access"
+    assert_contains "$workflow" 'http_proxy=http://127.0.0.1:9' "the release build should exercise the offline path"
+
     assert_contains "$workflow" 'sha256sum "$ARTIFACT" | tee "$ARTIFACT.sha256"' "the job should publish the hash the PKGBUILD needs"
     assert_contains "$workflow" '>> "$GITHUB_STEP_SUMMARY"' "and put it where the release steps say to read it"
 }

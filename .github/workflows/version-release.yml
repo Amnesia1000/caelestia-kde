@@ -188,6 +188,12 @@ jobs:
           source scripts/lib/toolchain.sh
           install_cava_sdk arch
 
+      - name: Prepare Pinned Build Dependencies
+        run: |
+          set -euo pipefail
+          rm -rf shell/build
+          bash scripts/fetch-dependencies.sh
+
       - name: Load Release Tag
         run: |
           set -euo pipefail
@@ -197,7 +203,12 @@ jobs:
       - name: Configure Shell
         run: |
           set -euo pipefail
+          http_proxy=http://127.0.0.1:9 \
+          https_proxy=http://127.0.0.1:9 \
+          all_proxy=http://127.0.0.1:9 \
           cmake -G Ninja -B shell/build -S shell -DCMAKE_BUILD_TYPE=Release \
+            -DCAELESTIA_CACHE_DEPS=ON \
+            -DCAELESTIA_OFFLINE=ON \
             -DCMAKE_INSTALL_PREFIX=/usr \
             -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
             -DINSTALL_LIBDIR=lib/caelestia \
@@ -206,6 +217,9 @@ jobs:
       - name: Build Shell
         run: |
           set -euo pipefail
+          http_proxy=http://127.0.0.1:9 \
+          https_proxy=http://127.0.0.1:9 \
+          all_proxy=http://127.0.0.1:9 \
           cmake --build shell/build -j"$(nproc)"
 
       - name: Stage Compiled Artifacts
