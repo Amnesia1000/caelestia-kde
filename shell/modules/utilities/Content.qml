@@ -13,7 +13,7 @@ Item {
     required property BarPopouts.Wrapper popouts
     required property matrix4x4 deformMatrix
 
-    readonly property real nonAnimHeight: idleInhibit.nonAnimHeight + record.nonAnimHeight + toggles.implicitHeight + layout.spacing * 2
+    readonly property real nonAnimHeight: idleInhibit.nonAnimHeight + record.nonAnimHeight + screenshot.nonAnimHeight + toggles.implicitHeight + layout.spacing * 3
 
     implicitWidth: layout.implicitWidth
     implicitHeight: layout.implicitHeight
@@ -34,6 +34,16 @@ Item {
             id: record
 
             visible: Config.utilities.showScreenRecorder
+
+            props: root.props
+            visibilities: root.visibilities
+            z: 1
+        }
+
+        ScreenshotCard {
+            id: screenshot
+
+            visible: Config.utilities.showScreenshot
 
             props: root.props
             visibilities: root.visibilities

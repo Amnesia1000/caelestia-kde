@@ -36,6 +36,13 @@ PageBase {
         }
 
         ToggleRow {
+            text: qsTr("Screenshot")
+            subtext: qsTr("Show the Screenshot card")
+            checked: Config.utilities.showScreenshot
+            onToggled: GlobalConfig.utilities.showScreenshot = checked
+        }
+
+        ToggleRow {
             text: qsTr("GIF Recorder")
             subtext: qsTr("Show the Record GIF option in the recorder menu")
             checked: Config.utilities.showGifRecorder
