@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import Qt.labs.synchronizer
 import Quickshell
+import Caelestia.Config
 import qs.services
 import qs.utils
 
@@ -48,7 +49,7 @@ Singleton {
 
         switch (action) {
             case ScreenshotAction.SnipAction.Copy: {
-                let saveDir = rawSaveDir === "" ? "~/Pictures/Screenshots" : rawSaveDir;
+                let saveDir = rawSaveDir === "" ? GlobalConfig.paths.screenshotsDir : rawSaveDir;
                 return `set -euo pipefail; ` +
                     `SAVE_DIR='${escapeShellStr(saveDir)}'; ` +
                     `SAVE_DIR="\${SAVE_DIR/#\\~/$HOME}"; ` +
@@ -62,7 +63,7 @@ Singleton {
             }
 
             case ScreenshotAction.SnipAction.Edit: {
-                let saveDir = rawSaveDir === "" ? "~/Pictures/Screenshots" : rawSaveDir;
+                let saveDir = rawSaveDir === "" ? GlobalConfig.paths.screenshotsDir : rawSaveDir;
                 return `set -euo pipefail; ` +
                     `SAVE_DIR='${escapeShellStr(saveDir)}'; ` +
                     `SAVE_DIR="\${SAVE_DIR/#\\~/$HOME}"; ` +

@@ -21,7 +21,7 @@ ColumnLayout {
     required property DrawerVisibilities visibilities
 
     property string confirmDelete: ""
-    readonly property string shotsdir: Paths.absolutePath("~/Pictures/Screenshots")
+    readonly property string shotsdir: GlobalConfig.paths.screenshotsDir
 
     spacing: 0
 
