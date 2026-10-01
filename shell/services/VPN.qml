@@ -73,7 +73,6 @@ Singleton {
 
     readonly property list<string> optionalKeys: ["displayName", "interface", "connectCmd", "disconnectCmd"]
 
-    // Generate a stable, opaque internal id for a provider entry.
     function generateId(): string {
         return `vpn-${Date.now().toString(36)}-${Math.floor(Math.random() * 0x1000000).toString(36)}`;
     }
@@ -196,12 +195,14 @@ Singleton {
             return;
         const iface = active.interface;
         if (iface.length > 0) {
-            statsProc.command = ["sh", "-c", `cat /sys/class/net/${iface}/statistics/rx_bytes /sys/class/net/${iface}/statistics/tx_bytes 2>/dev/null`];
+            // The interface name is user config, so it travels as a positional
+            // argument instead of being interpolated into the shell string.
+            statsProc.command = ["sh", "-c", 'cat "/sys/class/net/$1/statistics/rx_bytes" "/sys/class/net/$1/statistics/tx_bytes" 2>/dev/null', "--", iface];
             statsProc.running = true;
             // Measure latency over the tunnel by binding the ping to the VPN
             // interface (-I), so the result reflects the VPN path, not the LAN.
             if (!pingProc.running) {
-                pingProc.command = ["sh", "-c", `ping -c1 -W2 -I ${iface} 1.1.1.1 2>/dev/null || ping -c1 -W2 1.1.1.1 2>/dev/null`];
+                pingProc.command = ["sh", "-c", 'ping -c1 -W2 -I "$1" 1.1.1.1 2>/dev/null || ping -c1 -W2 1.1.1.1 2>/dev/null', "--", iface];
                 pingProc.running = true;
             }
         }
