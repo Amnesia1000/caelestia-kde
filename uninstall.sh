@@ -7,13 +7,9 @@ BUNDLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LIB_DIR="$BUNDLE_DIR/scripts/lib"
 
 source "$LIB_DIR/log.sh"
-# shellcheck source=scripts/lib/packages.sh
 source "$LIB_DIR/packages.sh"
-# shellcheck source=scripts/lib/panels.sh
 source "$LIB_DIR/panels.sh"
-# shellcheck source=scripts/lib/privileges.sh
 source "$LIB_DIR/privileges.sh"
-# shellcheck source=scripts/lib/selection.sh
 source "$LIB_DIR/selection.sh"
 
 section() {
@@ -258,8 +254,6 @@ if [[ -d "$HOME/.local/lib/caelestia" ]]; then
     ok "Removed ~/.local/lib/caelestia"
 fi
 
-# Only the generated entries carry the Wayland interface declaration; a
-# user's own quickshell.desktop without it stays untouched.
 for desktop_file in quickshell.desktop org.quickshell.desktop; do
     _df="$HOME/.local/share/applications/$desktop_file"
     if [[ -f "$_df" ]] && grep -qE '^[[:space:]]*X-KDE-Wayland-Interfaces=' "$_df"; then
@@ -280,11 +274,30 @@ if [[ -d "$HOME/.local/share/caelestia-shell" ]]; then
     ok "Removed legacy ~/.local/share/caelestia-shell"
 fi
 
-# Caelestia's data dir: desktop icon layout, startup task list and the
-# legacy asset drops older installers left behind.
 if [[ -d "$HOME/.local/share/caelestia" ]]; then
     rm -rf "$HOME/.local/share/caelestia"
     ok "Removed ~/.local/share/caelestia"
+fi
+
+for stolen_file in stolen-shortcuts.json stolen-screen-edges.json; do
+    if [[ -f "$HOME/.config/caelestia/$stolen_file" ]]; then
+        rm -f "$HOME/.config/caelestia/$stolen_file"
+        ok "Removed stranded recovery file: ~/.config/caelestia/$stolen_file"
+    fi
+done
+
+rm -f "$HOME/.config/caelestia/status_icons_order.txt"
+
+for shell_cache in "$HOME/.cache/Caelestia" "$HOME/.cache/caelestia-shell"; do
+    if [[ -d "$shell_cache" ]]; then
+        rm -rf "$shell_cache"
+        ok "Removed $shell_cache"
+    fi
+done
+
+if [[ -d "$HOME/.config/Caelestia" ]]; then
+    rm -rf "$HOME/.config/Caelestia"
+    ok "Removed legacy ~/.config/Caelestia"
 fi
 
 if [[ -d "$HOME/.local/share/plasma/shells/caelestia.desktop" ]]; then
@@ -303,8 +316,6 @@ rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde/wallpaper-plugin-installed"
 
 section "Step 4 - Remove Bridge Scripts"
 
-# Derived from src/bin, which is what 03-deploy-configs.sh and 08-build-shell.sh copy into
-# ~/.local/bin: a hand-written list here has already drifted from theirs twice.
 for source_file in "$BUNDLE_DIR"/src/bin/*; do
     [[ -f "$source_file" ]] || continue
     bin_target="$HOME/.local/bin/$(basename -- "$source_file")"
@@ -314,7 +325,6 @@ for source_file in "$BUNDLE_DIR"/src/bin/*; do
     fi
 done
 
-# Names no version installs any more.
 for name in kcolorpicker qs-kwin-bridge.py caelestia-shortcuts caelestia-keyd-run ydotoold-wrapper caelestia-autostart.sh; do
     bin_target="$HOME/.local/bin/$name"
     if [[ -f "$bin_target" ]]; then
@@ -328,12 +338,8 @@ if [[ -d "$HOME/.local/share/kwin/scripts/quickshell-kde-bridge" ]]; then
     ok "Removed KWin script: quickshell-kde-bridge"
 fi
 
-
 section "Step 5 - Restore or Remove Config Directories"
 
-# hypr is deliberately absent: nothing here deploys ~/.config/hypr any more (compare the
-# deploy and backup lists in 03-deploy-configs.sh), so removing it deleted a Hyprland
-# user's own configuration with no backup to restore it from.
 for cfg in btop fastfetch fish foot kitty micro thunar; do
     if [[ -e "$HOME/.config/$cfg" ]]; then
         restore_or_remove "$cfg" "$HOME/.config/$cfg" ".config"
@@ -376,8 +382,6 @@ if [[ -z "$SELECTED_KNSV" ]]; then
     MANUAL_KDE_RESTORE_COUNT=0
     if [[ -n "$SELECTED_BACKUP" ]]; then
         info "Restoring core KDE configuration files from backup..."
-        # kwinrulesrc belongs in this list because 00-backup-themes.sh saves it with
-        # the other KDE configuration files, so the fallback has to put it back.
         for kde_cfg in \
             kdeglobals ksplashrc plasmarc kwinrc kwinrulesrc kcminputrc \
             plasma-org.kde.plasma.desktop-appletsrc; do
@@ -407,9 +411,6 @@ if [[ -z "$SELECTED_KNSV" ]]; then
     fi
 fi
 
-# The installer wipes the panels from the running plasmashell, so without a
-# backup there is nothing to restore and the user ends up on a blank desktop.
-# Hand back a plain stock panel instead (issue #854).
 if [[ "$THEME_RESTORED_FROM_BACKUP" != "true" ]] && pgrep -x plasmashell >/dev/null 2>&1; then
     _qdbus="$(command -v qdbus6 || command -v qdbus || true)"
     if [[ -n "$_qdbus" ]]; then
@@ -426,11 +427,6 @@ kwriteconfig6 --file kwinrc --group "Plugins" --key "krohnkiteEnabled"          
 kwriteconfig6 --file kwinrc --group "Plugins" --key "kwin_workspace_trackerEnabled" "false" 2>/dev/null || true
 ok "Disabled KWin plugins: quickshell-kde-bridge, krohnkite, kwin_workspace_tracker"
 
-# The three rule groups the installer writes are removed one key at a time. The
-# list is explicit rather than a file-wide reset because kwinrulesrc also holds the
-# user's own rules, and kwriteconfig6 can only delete a key, never a whole group.
-# A group leaves the file once no keys are left in it. scripts/04a-window-rules.sh
-# owns this key list: changing one means changing the other.
 kwriteconfig6 --file kwinrulesrc --group "caelestia-opacity" --key "Description"         --delete 2>/dev/null || true
 kwriteconfig6 --file kwinrulesrc --group "caelestia-opacity" --key "types"               --delete 2>/dev/null || true
 kwriteconfig6 --file kwinrulesrc --group "caelestia-opacity" --key "opacityinactive"     --delete 2>/dev/null || true
@@ -445,13 +441,6 @@ kwriteconfig6 --file kwinrulesrc --group "caelestia-pip"     --key "titlematch" 
 kwriteconfig6 --file kwinrulesrc --group "caelestia-pip"     --key "above"               --delete 2>/dev/null || true
 kwriteconfig6 --file kwinrulesrc --group "caelestia-pip"     --key "aboverule"           --delete 2>/dev/null || true
 
-# [General] rules= is the index of the rule groups: KWin loads the groups that list
-# names and nothing else, so our names have to leave it as well, or the file keeps
-# an index entry for three groups that are no longer there. The user's own names are
-# kept, in their order, and count= is rewritten to the number that is left. Both
-# keys go only once no name is left, which is the shape the file had before the
-# install. scripts/04a-window-rules.sh owns this index: changing one means changing
-# the other.
 KEPT_RULE_NAMES=()
 KEPT_RULE_COUNT=0
 while IFS= read -r rule_name; do
@@ -484,8 +473,6 @@ kwriteconfig6 --file kscreenlockerrc --group Greeter --group LnF --group General
 kwriteconfig6 --file kscreenlockerrc --group Greeter --group LnF --group General --key showMediaControls --delete 2>/dev/null || true
 ok "Restored stock KDE lock screen configuration."
 
-# Leave the restored desktop layout alone; forcing it back to one desktop
-# would clobber what the backup just put back.
 if [[ "$THEME_RESTORED_FROM_BACKUP" != "true" ]]; then
     kwriteconfig6 --file kwinrc --group "Desktops" --key "Number" "1" 2>/dev/null || true
     kwriteconfig6 --file kwinrc --group "Desktops" --key "Rows"   "1" 2>/dev/null || true
@@ -519,9 +506,6 @@ ok "Removed Konsole profiles generated by Caelestia"
 _DARKLY_GTK_THEME="${XDG_DATA_HOME:-$HOME/.local/share}/themes/Darkly"
 _GTK4_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/gtk-4.0"
 if [[ -d "$_DARKLY_GTK_THEME" ]]; then
-    # The installer skips Darkly when the theme already existed, so a local
-    # copy here may be the user's own build. Leave it; the distro darkly
-    # package is handled through the package removal step instead.
     info "Leaving $_DARKLY_GTK_THEME in place (delete manually if you want)."
 fi
 rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/plasma/desktoptheme/Darkly" 2>/dev/null || true
@@ -602,7 +586,12 @@ if [[ -n "$SELECTED_BACKUP" ]] && [[ -f "$SELECTED_BACKUP/previous_shell.txt" ]]
     fi
 fi
 
-if [[ -z "$_RESTORE_SHELL" ]]; then
+if [[ -z "$SELECTED_BACKUP" ]] || [[ ! -f "$SELECTED_BACKUP/previous_shell.txt" ]]; then
+    current_shell="$(getent passwd "$(id -un)" | cut -d: -f7)"
+    if [[ -n "$current_shell" && "$current_shell" != "$(command -v bash 2>/dev/null || echo /bin/bash)" ]]; then
+        info "No shell backup was recorded, so the login shell ($current_shell) is left as it is."
+    fi
+elif [[ -z "$_RESTORE_SHELL" ]]; then
     if command -v bash >/dev/null 2>&1; then
         _RESTORE_SHELL="$(command -v bash)"
     else
@@ -635,8 +624,6 @@ else
     fi
 fi
 
-# These two are written unconditionally by 08-build-shell.sh, independently of any
-# rc file, so an exact rc restore must not keep them either.
 if [[ -f "$HOME/.config/environment.d/caelestia.conf" ]]; then
     rm -f "$HOME/.config/environment.d/caelestia.conf"
     ok "Removed the Caelestia environment file"
@@ -745,8 +732,6 @@ if not os.path.exists(cli_path):
 with open(cli_path) as f:
     config = json.load(f)
 changed = False
-# Both helpers are ours, and an install that moved between display managers could have
-# left either behind, so both spellings are recognised.
 ours = re.compile(
     r'\s*&&\s*sudo\s+\S*(?:sync\.sh|caelestia-greeter-sync)\s+--posthook'
     r'|sudo\s+\S*(?:sync\.sh|caelestia-greeter-sync)\s+--posthook\s*&&\s*'
@@ -773,8 +758,6 @@ fi
 rm -f "$HOME/.config/caelestia/templates/sddm-theme.conf"
 
 for link in /usr/local/bin/sass /usr/local/bin/qdbus6 /usr/local/bin/caelestia /usr/local/bin/wl-clip-persist /usr/local/bin/gpu-screen-recorder; do
-    # The installer only ever creates symlinks here; a regular file at one of
-    # these names belongs to the user and stays.
     if [[ -L "$link" ]]; then
         caelestia_sudo rm -f "$link"
         ok "Removed: $link"
@@ -797,12 +780,6 @@ fi
 if [[ "$REMOVE_PACKAGES" == "true" ]]; then
     section "Step 9 - Remove Packages (Optional)"
 
-    # Only user-level utilities, standalone apps, custom fonts, and shell tools.
-    # NEVER include core libraries, development headers, compiler toolchains,
-    # desktop environment services, or base system components (e.g. pipewire,
-    # networkmanager, qt6-*, kf6-*, cmake, python, bash).
-    # fish is absent on purpose even though the installer offers it: it may be the
-    # user's login shell, and removing it locks them out of the machine.
     ARCH_PACKAGES=(
         quickshell matugen
         foot eza fastfetch starship btop
@@ -839,9 +816,6 @@ if [[ "$REMOVE_PACKAGES" == "true" ]]; then
         adw-gtk3 adw-gtk3-theme papirus-icon-theme darkly
     )
 
-    # One flow for all three: the distro only decides which list to walk and which
-    # remover to call. What is not installed is filtered out first, because a single
-    # unknown name makes dnf and apt refuse the whole batch.
     case "$BASE_DISTRO" in
         arch)
             _pkg_list=("${ARCH_PACKAGES[@]}")
@@ -904,8 +878,6 @@ if [[ "$REMOVE_PACKAGES" == "true" ]]; then
     fi
 
     if command -v uv >/dev/null 2>&1; then
-        # konsave is deliberately absent: the installer runs it from its own
-        # venv, so a uv-installed konsave belongs to the user.
         uv tool uninstall kde-material-you-colors 2>/dev/null || true
         ok "Removed uv tools: kde-material-you-colors"
     fi
@@ -940,8 +912,6 @@ if [[ -d "$CACHE_DIR" ]]; then
     fi
 fi
 
-# Runtime state the color pipeline, recorder and installer stages regenerate on
-# demand: scheme.json, wallpaper state, rendered theme, recorder pid/lock files.
 STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/caelestia"
 if [[ -d "$STATE_DIR" ]]; then
     rm -rf "$STATE_DIR"
@@ -950,8 +920,6 @@ fi
 
 section "Step 11 - Reload KDE"
 
-# KWin does not watch kwinrulesrc, so this reload is what applies the rule deletions
-# made in Step 6. The call needs the exact bus name KWin owns, org.kde.KWin.
 qdbus6 org.kde.KWin /KWin reconfigure                    2>/dev/null || true
 systemctl --user restart plasma-kglobalaccel.service      2>/dev/null || true
 kbuildsycoca6 --noincremental                             2>/dev/null || true
