@@ -95,25 +95,6 @@ For detailed logs, enable Debug Mode in Nexus -> About -> Advanced, then run
 `caelestia shell -l`. Bug reports and questions go to
 [GitHub Issues](https://github.com/ladybug-me/caelestia-kde/issues).
 
-## Developer builds
-
-The shell build expects Linux with the Qt, KDE, Quickshell, and native library
-dependencies installed. Fetch the pinned M3Shapes source once while online:
-
-```bash
-make fetch-dependencies
-```
-
-The source is stored under `${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde`.
-After that, a build can be configured without dependency network access:
-
-```bash
-CAELESTIA_OFFLINE=ON make build-shell
-```
-
-`make fetch-dependencies` is safe to repeat. It refuses to reuse a cache whose
-M3Shapes revision does not match the revision required by the build.
-
 ## Repository layout
 
 ```
