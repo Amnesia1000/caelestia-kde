@@ -104,6 +104,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 set(DISTRIBUTOR "Unset" CACHE STRING "Distributor")
 set(ENABLE_MODULES "extras;plugin;shell;m3shapes" CACHE STRING "Modules to build/install")
 set(INSTALL_LIBDIR "usr/lib/caelestia" CACHE STRING "Library install dir")
+set(INSTALL_DATADIR "usr/share/caelestia" CACHE STRING "Shared Caelestia data install dir")
 set(INSTALL_QMLDIR "usr/lib/qt6/qml" CACHE STRING "QML install dir")
 set(INSTALL_QSCONFDIR "etc/xdg/quickshell/caelestia" CACHE STRING "Quickshell config install dir")
 
@@ -188,6 +189,15 @@ if("plugin" IN_LIST ENABLE_MODULES)
 endif()
 
 if("shell" IN_LIST ENABLE_MODULES)
+    set(CAELESTIA_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
+    file(GLOB CAELESTIA_BIN_FILES CONFIGURE_DEPENDS "${CAELESTIA_ROOT_DIR}/src/bin/*")
+    install(PROGRAMS ${CAELESTIA_BIN_FILES} DESTINATION bin)
+    install(DIRECTORY
+        "${CAELESTIA_ROOT_DIR}/src/matugen"
+        "${CAELESTIA_ROOT_DIR}/src/schemes"
+        DESTINATION "${INSTALL_DATADIR}")
+
     foreach(dir assets components modules services utils)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
                 DESTINATION ${INSTALL_QSCONFDIR})

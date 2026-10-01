@@ -95,6 +95,7 @@ build() {
         -DCMAKE_BUILD_TYPE=RelWithDebInfo \
         -DCMAKE_INSTALL_PREFIX=/ \
         -DVERSION="$pkgver" \
+        -DINSTALL_DATADIR=usr/share/caelestia \
         -DREQUIRE_CAVA=ON \
         -DDISTRIBUTOR="AUR (package: $pkgname)"
     cmake --build build || exit 1
@@ -139,12 +140,6 @@ DROPIN
     install -d "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons"
     cp -r src/yet-another-monochrome-icon-set \
         "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons/"
-
-    install -d "$pkgdir/usr/bin"
-    install -m755 src/bin/* "$pkgdir/usr/bin/"
-
-    install -d "$pkgdir/usr/share/caelestia"
-    cp -r src/matugen src/schemes "$pkgdir/usr/share/caelestia/"
 
     install -d "$pkgdir/usr/share/plasma/shells"
     cp -r src/kde/shells/caelestia.desktop "$pkgdir/usr/share/plasma/shells/"

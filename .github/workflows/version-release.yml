@@ -211,6 +211,7 @@ jobs:
             -DCAELESTIA_CACHE_DEPS=ON \
             -DCAELESTIA_OFFLINE=ON \
             -DCMAKE_INSTALL_PREFIX=/usr \
+            -DINSTALL_DATADIR=usr/share/caelestia \
             -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
             -DINSTALL_LIBDIR=lib/caelestia \
             -DINSTALL_QMLDIR=lib/qt6/qml
@@ -228,12 +229,14 @@ jobs:
           set -euo pipefail
           QT_ABI="$(pkg-config --modversion Qt6Core | grep -oE '^[0-9]+\.[0-9]+')"
           DESTDIR="$PWD/stage" cmake --install shell/build
-          mkdir -p dist/root/lib/qt6/qml dist/root/lib/caelestia dist/root/quickshell
+          mkdir -p dist/root/bin dist/root/lib/qt6/qml dist/root/lib/caelestia dist/root/quickshell dist/root/share
+          cp -a stage/usr/bin/. dist/root/bin/
+          cp -a stage/usr/share/caelestia dist/root/share/
           cp -a stage/usr/lib/qt6/qml/Caelestia stage/usr/lib/qt6/qml/M3Shapes dist/root/lib/qt6/qml/
           cp -a stage/usr/lib/caelestia/version dist/root/lib/caelestia/
           cp -a stage/usr/etc/xdg/quickshell/caelestia dist/root/quickshell/
           ARTIFACT="dist/caelestia-kde-x86_64-qt${QT_ABI}.tar.gz"
-          tar -C dist/root -czf "$ARTIFACT" lib quickshell
+          tar -C dist/root -czf "$ARTIFACT" bin lib quickshell share
           echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_ENV"
           CHECKSUM="${ARTIFACT}.sha256"
           sha256sum "$ARTIFACT" | sed "s|$(dirname "$ARTIFACT")/||" > "$CHECKSUM"
