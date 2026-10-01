@@ -114,7 +114,9 @@ test_shared_runtime_files_have_one_cmake_owner() {
     build_script="$(cat "$REPO_ROOT/scripts/08-build-shell.sh")"
     workflow="$(cat "$REPO_ROOT/.github/workflows/version-release.yml")"
 
-    assert_contains "$cmake" 'install(PROGRAMS ${CAELESTIA_BIN_FILES} DESTINATION bin)' \
+    assert_contains "$cmake" 'set(INSTALL_BINDIR "usr/bin"' \
+        "CMake should define the executable install root"
+    assert_contains "$cmake" 'install(PROGRAMS ${CAELESTIA_BIN_FILES} DESTINATION "${INSTALL_BINDIR}")' \
         "CMake should own the CLI wrappers"
     assert_contains "$cmake" '"${CAELESTIA_ROOT_DIR}/src/matugen"' \
         "CMake should own the matugen data"
@@ -146,8 +148,12 @@ test_shared_runtime_files_have_one_cmake_owner() {
         "the source installer must not copy color data outside CMake"
     assert_contains "$build_script" 'tar -tzf "$tmp_archive" bin/' \
         "prebuilt installs should require the CMake-owned CLI tree"
-    assert_contains "$build_script" 'tar -C "$HOME/.local" -xzf "$tmp_archive" bin share' \
-        "prebuilt installs should extract the CMake-owned CLI/data tree"
+    assert_contains "$build_script" 'tar -tzf "$tmp_archive" lib/caelestia/' \
+        "prebuilt installs should require the source data tree"
+    assert_contains "$build_script" 'tar -C "$HOME/.local" -xzf "$tmp_archive" bin' \
+        "prebuilt installs should extract the CMake-owned CLI tree"
+    assert_not_contains "$build_script" 'bin share' \
+        "prebuilt installs should not introduce a second data layout"
     assert_contains "$build_script" 'falling back to a local build' \
         "legacy prebuilt artifacts should not claim a complete install"
     assert_contains "$workflow" 'cp -a stage/usr/bin/. dist/root/bin/' \
@@ -242,9 +248,10 @@ test_the_release_tarball_is_the_thing_the_package_sources() {
     assert_contains "$workflow" 'bash scripts/fetch-dependencies.sh' "the release build should prepare pinned dependencies"
     assert_contains "$workflow" 'rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde"' "the release build should start with a clean dependency cache"
     assert_contains "$workflow" '-DCAELESTIA_OFFLINE=ON' "the release build should configure without dependency network access"
-    assert_contains "$workflow" '-DINSTALL_DATADIR=usr/share/caelestia' "the release build should stage CMake-owned shared data"
-    assert_contains "$workflow" 'tar -C dist/root -czf "$ARTIFACT" bin lib quickshell share' "the prebuilt artifact should carry all CMake-owned runtime files"
-    assert_contains "$workflow" 'http_proxy=http://127.0.0.1:9' "the release build should exercise the offline path"
+    assert_contains "$workflow" '-DINSTALL_DATADIR=usr/lib/caelestia' "the release build should share the source data layout"
+    assert_contains "$workflow" '-DINSTALL_LIBDIR=usr/lib/caelestia' "the release build should stage the library tree under usr"
+    assert_contains "$workflow" 'tar -C dist/root -czf "$ARTIFACT" bin lib quickshell' "the prebuilt artifact should carry all CMake-owned runtime files"
+    assert_contains "$workflow" 'http_proxy: http://127.0.0.1:9' "the release build should exercise the offline path"
 
     assert_contains "$workflow" 'sha256sum "$ARTIFACT" | tee "$ARTIFACT.sha256"' "the job should publish the hash the PKGBUILD needs"
     assert_contains "$workflow" '>> "$GITHUB_STEP_SUMMARY"' "and put it where the release steps say to read it"

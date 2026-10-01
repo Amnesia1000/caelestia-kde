@@ -405,13 +405,13 @@ try_download_prebuilt_shell() {
         return 1
     fi
     if ! tar -tzf "$tmp_archive" bin/ >/dev/null 2>&1 \
-        || ! tar -tzf "$tmp_archive" share/caelestia/ >/dev/null 2>&1; then
+        || ! tar -tzf "$tmp_archive" lib/caelestia/ >/dev/null 2>&1; then
         warn "Prebuilt shell artifact has no CMake-owned CLI/data tree - falling back to a local build."
         rm -f "$tmp_archive"
         return 1
     fi
-    if ! tar -C "$HOME/.local" -xzf "$tmp_archive" bin share; then
-        warn "Failed to extract CMake-owned CLI/data files"
+    if ! tar -C "$HOME/.local" -xzf "$tmp_archive" bin; then
+        warn "Failed to extract CMake-owned CLI files"
         rm -f "$tmp_archive"
         return 1
     fi
@@ -460,7 +460,7 @@ else
 
     info "Configuring CMake..."
     prepare_build_dir build
-    cmake -G "$CMAKE_GENERATOR" -B build -DCMAKE_BUILD_TYPE=Release -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE="${CAELESTIA_OFFLINE:-OFF}" -DCMAKE_INSTALL_PREFIX="$HOME/.local" -DINSTALL_DATADIR="lib/caelestia" -DINSTALL_QSCONFDIR="$HOME/.config/quickshell/caelestia" -DINSTALL_LIBDIR="lib/caelestia" -DINSTALL_QMLDIR="lib/qt6/qml" || {
+    cmake -G "$CMAKE_GENERATOR" -B build -DCMAKE_BUILD_TYPE=Release -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE="${CAELESTIA_OFFLINE:-OFF}" -DCMAKE_INSTALL_PREFIX="$HOME/.local" -DINSTALL_BINDIR="bin" -DINSTALL_DATADIR="lib/caelestia" -DINSTALL_QSCONFDIR="$HOME/.config/quickshell/caelestia" -DINSTALL_LIBDIR="lib/caelestia" -DINSTALL_QMLDIR="lib/qt6/qml" || {
         err "CMake configuration failed."
         exit 1
     }

@@ -2,7 +2,12 @@
 
 set -euo pipefail
 
-M3SHAPES_REV="bdc327b29f95394a732baf3c9b19658ba23755b6"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+M3SHAPES_REV="$(<"$SCRIPT_DIR/m3shapes-revision")"
+[[ "$M3SHAPES_REV" =~ ^[0-9a-f]{40}$ ]] || {
+    echo "Invalid M3Shapes revision" >&2
+    exit 1
+}
 M3SHAPES_URL="https://github.com/soramanew/m3shapes.git"
 DEPS_DIR="${CAELESTIA_DEPS_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde}"
 DEST="${DEPS_DIR}/m3shapes-${M3SHAPES_REV}"
