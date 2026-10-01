@@ -14,9 +14,25 @@ if command -v jq >/dev/null && [ -f "$HOME/.config/caelestia/shell.json" ]; then
     fi
 fi
 
-REPO="$HOME/.cache/caelestia-update-repo"
-BRANCH=$(cat "$HOME/.config/quickshell/caelestia/.update_branch" 2>/dev/null || echo "main")
-if [ "$BRANCH" != "main" ] && [ "$BRANCH" != "dev" ]; then
+STATE_CONFIG="$HOME/.config/quickshell/caelestia"
+STATE_HELPER=""
+for candidate in \
+    "${CAELESTIA_LIB_DIR:-}/update-state.sh" \
+    "$HOME/.local/lib/caelestia/update-state.sh" \
+    "/usr/share/caelestia/scripts/lib/update-state.sh"; do
+    if [ -r "$candidate" ]; then
+        STATE_HELPER="$candidate"
+        break
+    fi
+done
+if [ -n "$STATE_HELPER" ]; then
+    # shellcheck disable=SC1090
+    . "$STATE_HELPER"
+fi
+
+if command -v update_state_read_branch >/dev/null 2>&1; then
+    BRANCH="$(update_state_read_branch "$STATE_CONFIG")"
+else
     BRANCH="main"
 fi
 
@@ -32,11 +48,16 @@ timeout ${GIT_TIMEOUT} git ls-remote --exit-code --heads https://github.com/lady
 if [ "$ls_status" -eq 2 ]; then
     echo "[WARN] Branch '$BRANCH' does not exist on the remote; falling back to main." >&2
     BRANCH="main"
-    mkdir -p "$HOME/.config/quickshell/caelestia"
-    echo "$BRANCH" > "$HOME/.config/quickshell/caelestia/.update_branch"
+    if command -v update_state_set_branch >/dev/null 2>&1; then
+        update_state_set_branch "$STATE_CONFIG" "$BRANCH" || true
+    fi
 fi
 
-_localCommit="$(cat "$HOME/.config/quickshell/caelestia/.current_commit" 2>/dev/null)"
+if command -v update_state_read_commit >/dev/null 2>&1; then
+    _localCommit="$(update_state_read_commit "$STATE_CONFIG")"
+else
+    _localCommit="$(cat "$STATE_CONFIG/.current_commit" 2>/dev/null)"
+fi
 CAELESTIA_PENDING=0
 
 if [ -n "$_localCommit" ]; then

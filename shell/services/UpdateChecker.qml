@@ -91,9 +91,21 @@ if ! echo ",main,dev," | grep -q ",$CURRENT_BRANCH,"; then
     CURRENT_BRANCH="main"
 fi
 
-if [ "$2" = "1" ]; then
-    mkdir -p "$HOME/.config/quickshell/caelestia"
-    printf '%s\n' "$CURRENT_BRANCH" > "$HOME/.config/quickshell/caelestia/.update_branch"
+STATE_HELPER=""
+for candidate in \
+    "\${CAELESTIA_LIB_DIR:-}/update-state.sh" \
+    "$HOME/.local/lib/caelestia/update-state.sh" \
+    "/usr/share/caelestia/scripts/lib/update-state.sh"; do
+    if [ -r "$candidate" ]; then
+        STATE_HELPER="$candidate"
+        break
+    fi
+done
+if [ -n "$STATE_HELPER" ]; then
+    . "$STATE_HELPER"
+fi
+if [ "$2" = "1" ] && command -v update_state_set_branch >/dev/null 2>&1; then
+    update_state_set_branch "$HOME/.config/quickshell/caelestia" "$CURRENT_BRANCH" || true
 fi
 REPO="$HOME/.cache/caelestia-update-repo"
 if [ ! -d "$REPO" ]; then
@@ -437,7 +449,27 @@ git -C "$REPO" log --format="COMMIT%x1f%H%x1f%h%x1f%s%x1f%an%x1f%cI%x1f%P" --ski
         id: localCommitProcess
 
         running: GlobalConfig.general.checkUpdates
-        command: ["bash", "-c", "echo \"$(cat ~/.config/quickshell/caelestia/.current_commit 2>/dev/null)|$(cat ~/.config/quickshell/caelestia/.update_branch 2>/dev/null)\""]
+        command: ["bash", "-c", `
+CONFIG="$HOME/.config/quickshell/caelestia"
+STATE_HELPER=""
+for candidate in \
+    "\${CAELESTIA_LIB_DIR:-}/update-state.sh" \
+    "$HOME/.local/lib/caelestia/update-state.sh" \
+    "/usr/share/caelestia/scripts/lib/update-state.sh"; do
+    if [ -r "$candidate" ]; then
+        STATE_HELPER="$candidate"
+        break
+    fi
+done
+if [ -n "$STATE_HELPER" ]; then
+    . "$STATE_HELPER"
+fi
+if command -v update_state_read_commit >/dev/null 2>&1; then
+    printf '%s|%s\\n' "$(update_state_read_commit "$CONFIG")" "$(update_state_read_branch "$CONFIG")"
+else
+    printf '|main\\n'
+fi
+`]
         stdout: StdioCollector {
             onStreamFinished: {
                 const parts = text.trim().split("|");

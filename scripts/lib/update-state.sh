@@ -12,8 +12,8 @@
 # is the only writer of the commit and version files. The branch file has
 # exactly two more writers, both user intent: an explicit branch pick in the
 # Nexus updates page, and the timer's self-heal when the tracked branch
-# disappears from the remote. Readers either use the helpers below or repeat
-# their validation inline; both agree on the main/dev clamp and the main default.
+# disappears from the remote. Readers use the helpers below so the main/dev
+# validation and main default have one implementation.
 
 record_installed_revision() {
     local bundle="$1" config="$2"
@@ -28,17 +28,21 @@ record_installed_revision() {
 
     mkdir -p -- "$config" || return 1
 
-    git -C "$bundle" rev-parse HEAD > "$config/.current_commit" 2>/dev/null || {
-        rm -f -- "$config/.current_commit"
-        return 1
-    }
-
     # A checkout parked on a feature branch must not silently re-point the
     # update channel (issue #565): only a real channel is a fact worth
     # recording, anything else leaves the previously tracked branch alone.
     local branch
     branch="$(git -C "$bundle" rev-parse --abbrev-ref HEAD 2>/dev/null)" || branch=""
-    update_state_set_branch "$config" "$branch" || true
+    case "$branch" in
+        main | dev)
+            update_state_set_branch "$config" "$branch" || return 1
+            ;;
+    esac
+
+    git -C "$bundle" rev-parse HEAD > "$config/.current_commit" 2>/dev/null || {
+        rm -f -- "$config/.current_commit"
+        return 1
+    }
 
     if [[ -f "$bundle/.github/version.env" ]]; then
         cp -- "$bundle/.github/version.env" "$config/.current_version" 2>/dev/null || true

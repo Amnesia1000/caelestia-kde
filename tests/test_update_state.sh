@@ -83,6 +83,22 @@ test_record_installed_revision_falls_back_to_the_commit_for_the_version() {
         ".current_version should fall back to the committed version.env"
 }
 
+test_record_installed_revision_does_not_advance_when_the_channel_cannot_be_written() {
+    require_git || return 0
+    local tmp status
+    tmp="$(new_tmpdir)"
+    make_repo "$tmp/repo" "v9.9.9"
+    mkdir -p "$tmp/config/.update_branch"
+    printf 'previous-revision\n' > "$tmp/config/.current_commit"
+
+    record_installed_revision "$tmp/repo" "$tmp/config"
+    status=$?
+
+    assert_status 1 "$status" "an unwritable channel state must fail recording"
+    assert_eq "previous-revision" "$(cat "$tmp/config/.current_commit")" \
+        "the installed revision must not advance after a partial state write"
+}
+
 test_update_state_set_branch_accepts_only_channels() {
     local tmp status
     tmp="$(new_tmpdir)"
