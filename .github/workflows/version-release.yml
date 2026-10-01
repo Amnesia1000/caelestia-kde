@@ -192,6 +192,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf shell/build
+          rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde"
           bash scripts/fetch-dependencies.sh
 
       - name: Load Release Tag

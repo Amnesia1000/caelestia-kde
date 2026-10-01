@@ -193,6 +193,7 @@ test_the_release_tarball_is_the_thing_the_package_sources() {
     assert_contains "$workflow" 'git rev-parse HEAD > "dist/$ROOT/REVISION"' "and write the revision"
 
     assert_contains "$workflow" 'bash scripts/fetch-dependencies.sh' "the release build should prepare pinned dependencies"
+    assert_contains "$workflow" 'rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde"' "the release build should start with a clean dependency cache"
     assert_contains "$workflow" '-DCAELESTIA_OFFLINE=ON' "the release build should configure without dependency network access"
     assert_contains "$workflow" 'http_proxy=http://127.0.0.1:9' "the release build should exercise the offline path"
 
