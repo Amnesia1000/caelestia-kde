@@ -11,20 +11,22 @@ import "chatsessions.js" as Sessions
 QtObject {
     id: root
 
+    // Most recently active first.
     property var sessions: []
     property string currentChatId: ""
-    // Bumped whenever a chat is added, removed, renamed or its settings change.
+    // The provider a chat was last used with is stored on it.
+    property string provider
+    // Bumped whenever a chat is added, removed, renamed, its settings change or
+    // it gets a message or a finished reply.
     property int revision: 0
 
     readonly property ListModel messages: ListModel {}
-    // { id, title } of every chat with messages, newest first.
-    readonly property ListModel chats: ListModel {}
 
     signal titleNeeded(string chatId, string firstMessage)
 
     function load(): void {
         sessions = Sessions.parseStored(GlobalConfig.ai.ollamaHistoryJson);
-        refreshChats();
+        revision++;
     }
 
     function persist(): void {
@@ -89,14 +91,14 @@ QtObject {
         const s = session(chatId);
         if (!s)
             return "";
-        const wasEmpty = s.messages.length === 0;
         const m = Sessions.newMessage(fields);
         m.isNew = true;
         Sessions.editMessage(s, viewOf(chatId), "append", m.msgId, m);
-        if (wasEmpty)
-            refreshChats();
+        if (m.isUser)
+            s.provider = provider;
+        touch(s);
         // Until a title has been set, each message from the user asks again.
-        if (m.isUser && Sessions.isDefaultTitle(s.title))
+        if (m.isUser && !s.titleLocked && Sessions.isDefaultTitle(s.title))
             titleNeeded(chatId, Sessions.firstUserText(s));
         return m.msgId;
     }
@@ -108,8 +110,10 @@ QtObject {
     // Changes fields of a message, in whichever chat it is.
     function update(chatId: string, msgId: string, patch: var): void {
         const s = session(chatId);
-        if (s)
-            Sessions.editMessage(s, viewOf(chatId), "update", msgId, patch);
+        if (!s || !Sessions.editMessage(s, viewOf(chatId), "update", msgId, patch))
+            return;
+        if (patch.isFinished)
+            touch(s);
     }
 
     function remove(chatId: string, msgId: string): void {
@@ -129,13 +133,25 @@ QtObject {
         revision++;
     }
 
+    // A generated title; it does not replace one the user has given.
     function setTitle(chatId: string, title: string): void {
         const s = session(chatId);
-        if (!s || !title)
+        if (!s || !title || s.titleLocked)
             return;
         s.title = title;
         persist();
-        refreshChats();
+        revision++;
+    }
+
+    function rename(chatId: string, title: string): void {
+        const s = session(chatId);
+        if (!s || !title || title === s.title)
+            return;
+        s.title = title;
+        // Keep a late generated title from replacing the user's.
+        s.titleLocked = true;
+        persist();
+        revision++;
     }
 
     // Removes chats; returns whether the current chat was one of them.
@@ -145,13 +161,27 @@ QtObject {
         sessions = sessions.filter(s => ids.indexOf(s.id) === -1);
         persist();
         forgetStored(ids);
-        refreshChats();
+        revision++;
         return ids.indexOf(currentChatId) !== -1;
     }
 
     function show(id: string): void {
         currentChatId = id;
         Sessions.showMessages(session(id), messages);
+        revision++;
+    }
+
+    // The chat was just active: it moves to the front, so it is the one
+    // restored on startup.
+    function touch(s: var): void {
+        if (!s)
+            return;
+        s.updatedAt = Date.now();
+        const i = sessions.indexOf(s);
+        if (i > 0) {
+            sessions.splice(i, 1);
+            sessions.unshift(s);
+        }
         revision++;
     }
 
@@ -165,16 +195,5 @@ QtObject {
     // Sessions.showMessages(), which keep it in step with the open chat.
     function viewOf(chatId: string): ListModel {
         return chatId === currentChatId ? messages : null;
-    }
-
-    function refreshChats(): void {
-        chats.clear();
-        for (let i = 0; i < sessions.length; i++)
-            if (sessions[i].messages.length > 0)
-                chats.append({
-                    "id": String(sessions[i].id),
-                    "title": sessions[i].title || "New Chat"
-                });
-        revision++;
     }
 }
