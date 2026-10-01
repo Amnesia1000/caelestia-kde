@@ -23,6 +23,8 @@ test_a_corrupt_notification_file_does_not_kill_persistence() {
     assert_contains "$SERVICES/Notifs.qml" 'JSON.parse(text())' "the parse still happens"
     assert_contains "$SERVICES/Notifs.qml" 'saved notifications are corrupt, starting fresh' \
         "but a corrupt store degrades to a fresh list instead of a dead FileView"
+    assert_contains "$SERVICES/Notifs.qml" 'if (!Array.isArray(data))' \
+        "valid but non-array JSON must also degrade to a fresh list"
 }
 
 test_monitor_names_skip_the_injected_values_bucket() {
