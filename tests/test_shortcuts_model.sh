@@ -8,12 +8,9 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 QML="$REPO_ROOT/shell/modules/Shortcuts.qml"
 DEFAULTS="$REPO_ROOT/shell/plugin/src/Caelestia/Config/keybindsdefaults.hpp"
 
-# The 36 krohnkite shortcuts were copy-pasted CustomShortcut blocks; they are now
-# driven by one data table and a single Instantiator delegate. Repeater cannot be
-# used here: Scope is not an Item, so the delegate objects (Loaders registering
-# Caelestia.GlobalShortcut) must be parented by an Instantiator to stay alive.
-# These assertions keep the table honest: ids live exactly once, the qdbus call is
-# built in one place only, and the two ids whose casing looks like a typo stay
+# Repeater cannot be used here: Scope is not an Item, so the delegate objects
+# (Loaders registering Caelestia.GlobalShortcut) must be parented by an
+# Instantiator to stay alive. The two ids whose casing looks like a typo stay
 # exactly as the krohnkite kwinscript registers them — krohnkite 0.9.9.2's
 # contents/ui/shortcuts.qml registers "KrohnkitegrowWidth" and "KrohnkitetoggleDock"
 # verbatim, so re-casing them to the repo catalogue's style would silently no-op.
@@ -66,9 +63,7 @@ test_the_suspicious_ids_are_intentionally_preserved() {
     local qml
     qml="$(cat "$QML")"
 
-    # These two are not typos of ours: they are the ids the krohnkite kwinscript
-    # itself registers (verified against its contents/ui/shortcuts.qml). The
-    # catalogue-cased variants would point at actions that do not exist.
+    # Not our typos: these are the ids the krohnkite kwinscript itself registers.
     assert_eq "1" "$(printf '%s\n' "$qml" | grep -cF 'action: "KrohnkitegrowWidth"')" \
         "the growWidth id must keep the kwinscript's lowercase casing"
     assert_eq "1" "$(printf '%s\n' "$qml" | grep -cF 'action: "KrohnkitetoggleDock"')" \
@@ -79,8 +74,7 @@ test_the_suspicious_ids_are_intentionally_preserved() {
 }
 
 test_the_table_matches_the_plugin_default_keybinds() {
-    # The catalogue (keybindsdefaults.hpp) is the repo's own list of krohnkite
-    # shortcut names and their default keys. One name differs upstream: the shell
+    # One name differs upstream: the shell
     # names the shortcut krohnkiteTreeColumnLayout while the catalogue has
     # krohnkiteThreeColumnLayout (both default to "", and the KWin-side id is
     # KrohnkiteThreeColumnLayout either way) — normalise it so the comparison

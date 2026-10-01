@@ -17,7 +17,7 @@ Scope {
     property string lastAction: ""
     readonly property bool hasFullscreen: Kwin.hasFullscreen()
 
-    // One table drives every krohnkite shortcut. `action` ids are the krohnkite
+    // `action` ids are the krohnkite
     // kwinscript's own registrations (verified against its contents/ui/shortcuts.qml):
     // keep their exact casing (e.g. "KrohnkitegrowWidth") or KWin will invoke actions
     // it never registered. `key` is the default binding ("" = unbound), overridden by
@@ -155,19 +155,6 @@ Scope {
             }
         }
     }
-    // qmllint disable unresolved-type
-    // Using Caelestia lockscreen greeter
-    // CustomShortcut {
-    //     // qmllint enable unresolved-type
-    //     name: "lock"
-    //     key: "Meta+L"
-    //     description: "Lock the current session"
-    //     onPressed: {
-    //         if (root.hasFullscreen)
-    //             return;
-    //         Quickshell.execDetached(["caelestia", "shell", "lock", "lock"]);
-    //     }
-    // }
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
