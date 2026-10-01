@@ -153,4 +153,89 @@ test_the_uninstaller_removes_the_installed_footprint() {
     assert_file_missing "$home/.local/state/caelestia"
 }
 
+test_the_uninstaller_keeps_shared_config_dirs_when_there_is_no_backup() {
+    local tmp status home
+    tmp="$(new_tmpdir)"
+    make_uninstall_sandbox "$tmp" >/dev/null
+    home="$tmp/home"
+
+    # Configs the user keeps editing after install, with no backup to restore them
+    # from: they must survive, or the uninstaller destroys unrelated work.
+    mkdir -p "$home/.config/btop" "$home/.config/fish" "$home/.config/kitty"
+    printf 'user customisation\n' > "$home/.config/btop/btop.conf"
+    printf 'user fish config\n'   > "$home/.config/fish/config.fish"
+    printf 'user kitty config\n'  > "$home/.config/kitty/kitty.conf"
+
+    status="$(run_uninstall_in_sandbox "$tmp")"
+    assert_status 0 "$status" "a plain uninstall should complete"
+
+    assert_file_exists "$home/.config/btop/btop.conf"
+    assert_file_exists "$home/.config/fish/config.fish"
+    assert_file_exists "$home/.config/kitty/kitty.conf"
+    assert_contains "$(cat "$home/.config/btop/btop.conf")" "user customisation" \
+        "a shared config dir with no backup must keep the user's own files"
+}
+
+test_the_uninstaller_leaves_an_unrelated_qml_import_path_alone() {
+    local tmp status home
+    tmp="$(new_tmpdir)"
+    make_uninstall_sandbox "$tmp" >/dev/null
+    home="$tmp/home"
+
+    # The same variable names, but one points somewhere that is not Caelestia and
+    # one is Caelestia's own (the exact value 08-build-shell.sh writes). All three
+    # shells must agree: drop ours, keep theirs.
+    cat > "$home/.bashrc" <<'EOF'
+export PATH="$HOME/.local/bin:$PATH"
+export QML2_IMPORT_PATH=/opt/some-other-app/qml
+export QML2_IMPORT_PATH="$HOME/.local/lib/qt6/qml:$HOME/.config/quickshell/caelestia"
+export CAELESTIA_LIB_DIR="$HOME/.local/lib/caelestia"
+EOF
+    cat > "$home/.zshrc" <<'EOF'
+export QML2_IMPORT_PATH=/opt/some-other-app/qml
+export CAELESTIA_LIB_DIR="$HOME/.local/lib/caelestia"
+EOF
+    mkdir -p "$home/.config/fish"
+    cat > "$home/.config/fish/config.fish" <<'EOF'
+set -gx QML2_IMPORT_PATH /opt/some-other-app/qml
+set -gx QML2_IMPORT_PATH "$HOME/.local/lib/qt6/qml:$HOME/.config/quickshell/caelestia"
+set -gx CAELESTIA_LIB_DIR "$HOME/.local/lib/caelestia"
+set -gx EDITOR vim
+EOF
+
+    status="$(run_uninstall_in_sandbox "$tmp")"
+    assert_status 0 "$status" "a plain uninstall should complete"
+
+    local shell_file
+    for shell_file in "$home/.bashrc" "$home/.zshrc" "$home/.config/fish/config.fish"; do
+        assert_contains "$(cat "$shell_file")" "/opt/some-other-app/qml" \
+            "$shell_file must keep a QML2_IMPORT_PATH that is not Caelestia's"
+        assert_not_contains "$(cat "$shell_file")" "CAELESTIA_LIB_DIR" \
+            "$shell_file must drop Caelestia's own env var"
+        assert_not_contains "$(cat "$shell_file")" "config/quickshell/caelestia" \
+            "$shell_file must drop Caelestia's own QML2_IMPORT_PATH value"
+    done
+
+    assert_contains "$(cat "$home/.bashrc")" "export PATH=" \
+        "unrelated bashrc lines must survive"
+    assert_contains "$(cat "$home/.config/fish/config.fish")" "EDITOR vim" \
+        "unrelated fish lines must survive"
+}
+
+test_the_uninstaller_survives_an_unset_user_variable() {
+    local tmp status home
+    tmp="$(new_tmpdir)"
+    make_uninstall_sandbox "$tmp" >/dev/null
+    home="$tmp/home"
+
+    # `set -u` turns an unset $USER into an abort. The sandbox runs with env -i,
+    # so HOME/PATH are set but USER is not; the uninstaller must still finish.
+    status="$(run_uninstall_in_sandbox "$tmp")"
+    assert_status 0 "$status" "an uninstall without \$USER exported must complete"
+
+    assert_file_missing "$home/.config/systemd/user/caelestia-update-checker.service"
+    assert_not_contains "$(cat "$tmp/uninstall.log")" "unbound variable" \
+        "no unbound-variable abort may appear in the run"
+}
+
 run_tests

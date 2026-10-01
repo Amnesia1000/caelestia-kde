@@ -104,10 +104,11 @@ if [[ -d "$BUNDLE_DIR/backups" ]]; then
             elif [[ "$_bsel" =~ ^[0-9]+$ ]] && [[ "$_bsel" -ge 1 ]] && [[ "$_bsel" -le "${#backups[@]}" ]]; then
                 SELECTED_BACKUP="${backups[$((_bsel-1))]}"
                 SELECTED_KNSV="$(find "$SELECTED_BACKUP" -maxdepth 1 -type f -name '*.knsv' | head -n 1)"
-                if [[ -n "$SELECTED_KNSV" ]]; then
-                    break
-                fi
 
+                # A konsave archive restores the KDE profile but is not a clean
+                # desktop either, so the warning has to run for both kinds of
+                # backup - breaking out early here skipped it whenever a .knsv
+                # happened to be present.
                 if [[ -f "$SELECTED_BACKUP/.config/quickshell/caelestia/shell.qml" ]]; then
                     echo
                     warn "The selected backup contains Caelestia configurations."
@@ -158,16 +159,32 @@ restore_or_remove() {
     local target="$2"
     local backup_subdir="$3"
     local backup_dir="$SELECTED_BACKUP"
+    local backup_path=""
+
+    if [[ -n "$backup_dir" ]] && [[ -e "$backup_dir/$backup_subdir/$name" ]]; then
+        backup_path="$backup_dir/$backup_subdir/$name"
+    fi
+
+    # A single item the installer owned can be dropped; a whole directory cannot,
+    # because these are shared user configs (fish, kitty, thunar) the user keeps
+    # editing after install - deleting one because no backup exists destroys work
+    # that has nothing to do with Caelestia.
+    if [[ -z "$backup_path" && -d "$target" ]]; then
+        skip "No backup for $name - left in place (remove $target manually if you want it gone)"
+        return 0
+    fi
 
     rm -rf "$target"
 
-    if [[ -n "$backup_dir" ]] && [[ -e "$backup_dir/$backup_subdir/$name" ]]; then
-        if cp -r "$backup_dir/$backup_subdir/$name" "$target"; then
+    if [[ -n "$backup_path" ]]; then
+        if cp -r "$backup_path" "$target"; then
             ok "Restored $name from backup"
         else
             warn "Failed to restore $name from backup - $target is now missing"
         fi
     else
+        # No backup and no directory: a file the installer created itself, so
+        # there is nothing of the user's to lose.
         skip "No backup for $name - removed without restore"
     fi
 }
@@ -608,20 +625,26 @@ fi
 if [[ "$SHELL_RC_RESTORED" == "true" ]]; then
     info "Skipped shell rc line cleanup because original rc files were restored exactly from backup."
 else
-    if [[ -f "$HOME/.bashrc" ]]; then
-        sed -i '/export QML2_IMPORT_PATH=.*caelestia\|export CAELESTIA_LIB_DIR=/d' "$HOME/.bashrc" 2>/dev/null || true
-        ok "Removed Caelestia env vars from ~/.bashrc"
-    fi
-
-    if [[ -f "$HOME/.config/fish/config.fish" ]]; then
-        sed -i '/QML2_IMPORT_PATH\|CAELESTIA_LIB_DIR/d' "$HOME/.config/fish/config.fish" 2>/dev/null || true
-        ok "Removed Caelestia env vars from fish config"
-    fi
-
-    if [[ -f "$HOME/.zshrc" ]]; then
-        sed -i '/QML2_IMPORT_PATH\|CAELESTIA_LIB_DIR/d' "$HOME/.zshrc" 2>/dev/null || true
-        ok "Removed Caelestia env vars from ~/.zshrc"
-    fi
+    # One pattern set for every shell: the same two variables, so a line must go
+    # no matter which shell's rc it landed in. Only a line whose value names
+    # Caelestia is dropped - matching the bare variable name deleted a user's
+    # unrelated QML2_IMPORT_PATH in zshrc and fish while sparing it in bashrc.
+    # This is a safety net for an older installer's leftovers; 08-build-shell.sh
+    # already prunes the lines it writes. Listed per shell instead of one
+    # alternation because sed has to spell fish's "set -gx" separately, and -gx
+    # is literal here (-[gx] would match only the "g").
+    for rc in "$HOME/.bashrc" "$HOME/.config/fish/config.fish" "$HOME/.zshrc"; do
+        [[ -f "$rc" ]] || continue
+        sed -i -E \
+            -e '/^[[:space:]]*export[[:space:]]+QML2_IMPORT_PATH.*caelestia/d' \
+            -e '/^[[:space:]]*export[[:space:]]+CAELESTIA_LIB_DIR.*caelestia/d' \
+            -e '/^[[:space:]]*set[[:space:]]+-gx[[:space:]]+QML2_IMPORT_PATH.*caelestia/d' \
+            -e '/^[[:space:]]*set[[:space:]]+-gx[[:space:]]+CAELESTIA_LIB_DIR.*caelestia/d' \
+            -e '/^[[:space:]]*set[[:space:]]+-x[[:space:]]+QML2_IMPORT_PATH.*caelestia/d' \
+            -e '/^[[:space:]]*set[[:space:]]+-x[[:space:]]+CAELESTIA_LIB_DIR.*caelestia/d' \
+            "$rc" 2>/dev/null || true
+        ok "Removed Caelestia env vars from $rc"
+    done
 fi
 
 if [[ -f "$HOME/.config/environment.d/caelestia.conf" ]]; then
@@ -774,7 +797,7 @@ done
 if groups "$(id -un)" | grep -q '\binput\b'; then
     caelestia_sudo gpasswd -d "$(id -un)" input 2>/dev/null || \
         warn "Could not remove the user from input group. Run: sudo gpasswd -d $(id -un) input"
-    ok "Removed $USER from 'input' group (takes effect on next login)"
+    ok "Removed $(id -un) from 'input' group (takes effect on next login)"
 fi
 
 if [[ "$REMOVE_PACKAGES" == "true" ]]; then
