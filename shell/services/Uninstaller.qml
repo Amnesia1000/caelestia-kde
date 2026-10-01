@@ -58,10 +58,17 @@ for candidate in "$@"; do
     candidates=$((candidates - 1))
 done
 for manager in "$@"; do
-    if command -v "$manager" >/dev/null 2>&1; then
-        printf 'PACKAGE %s\n' "$manager"
-        exit 0
-    fi
+    case "$manager" in
+        pacman)
+            pacman -Q caelestia-kde >/dev/null 2>&1 && printf 'PACKAGE pacman\n' && exit 0
+            ;;
+        dnf)
+            dnf list installed caelestia-kde >/dev/null 2>&1 && printf 'PACKAGE dnf\n' && exit 0
+            ;;
+        apt-get)
+            dpkg-query -W -f='\${Status}' caelestia-kde 2>/dev/null | grep -qx 'install ok installed' && printf 'PACKAGE apt-get\n' && exit 0
+            ;;
+    esac
 done
 echo UNKNOWN`, "--", String(root.candidatePaths.length), ...root.candidatePaths, ...root.packageManagers.map(m => m.tool)]
         stdout: StdioCollector {

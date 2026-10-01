@@ -96,15 +96,11 @@ test_the_probe_finds_a_script_and_nothing_else() {
     assert_not_contains "$body" "PACKAGE" "no manager should be reported when a script was found"
 
     mkdir -p "$tmp/bin"
-    printf '#!/bin/sh\n' > "$tmp/bin/pacman"
+    printf '#!/bin/sh\nexit 1\n' > "$tmp/bin/pacman"
     chmod +x "$tmp/bin/pacman"
     body="$(PATH="$tmp/bin:$PATH" sh -c "$command" -- 1 "$tmp/absent/uninstall.sh" pacman dnf apt-get 2>&1)"
-    if printf '%s\n' "$body" | grep -q '^PACKAGE '; then
-        assert_contains "$body" "PACKAGE pacman" "the first manager found should be named"
-    else
-        assert_contains "$body" "UNKNOWN" \
-            "a host with no known manager must say so rather than guess"
-    fi
+    assert_contains "$body" "UNKNOWN" \
+        "a package manager executable alone must not imply that Caelestia is package-installed"
 }
 
 run_tests
