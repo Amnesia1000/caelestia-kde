@@ -383,13 +383,9 @@ If `keyd` is active and manages Meta+1..5, the tweak script skips KWin bindings 
 
 ## 6. Network & Proxy Issues
 
-### 6.1 Pacman Mirror Ranking Fails
+### 6.1 Package Repository Problems
 
-On CachyOS, the installer uses the native `cachyos-rate-mirrors` command, which ranks both Arch and CachyOS repositories. Other Arch-based systems use `reflector` as a fallback. Fedora refreshes its configured DNF metadata and Debian-based systems refresh their configured APT indexes; neither needs mirror-list rewriting during installation. Failure modes:
-- **Offline:** Mirror ranking fails and the existing mirror lists are kept
-- **cachyos-rate-mirrors unavailable:** CachyOS mirror ranking is skipped and the existing mirror lists are kept
-- **reflector not installed:** On non-Cachy Arch systems, it is auto-installed via `pacman -Sy reflector`; if that fails, ranking is skipped
-- **DNF or APT refresh fails:** Fedora/Debian package installation continues and reports the package-manager error later if the configured sources remain unavailable
+The installer does not change mirror lists or refresh package repositories as a separate step. If package installation fails, check that your distribution's configured repositories are reachable and refresh them using the distribution's normal tools before retrying.
 
 ### 6.2 Git / Submodule Failures
 
