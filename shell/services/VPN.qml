@@ -75,7 +75,6 @@ Singleton {
 
     readonly property list<string> optionalKeys: ["displayName", "interface", "connectCmd", "disconnectCmd"]
 
-    // Generate a stable, opaque internal id for a provider entry.
     function generateId(): string {
         return `vpn-${Date.now().toString(36)}-${Math.floor(Math.random() * 0x1000000).toString(36)}`;
     }

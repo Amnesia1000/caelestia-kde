@@ -144,9 +144,7 @@ if [ "$CURRENT_BRANCH" = "main" ]; then
     # Both of its forms are syntax to the QML template literal they live in:
     # dollar-brace interpolation is evaluated as QML before bash is handed the script, and
     # an unescaped backtick ends the literal, which stops the file parsing and takes every
-    # singleton that imports this service down with it. Each has broken this file once,
-    # the backtick in a comment that named a command in backticks, the interpolation in
-    # the comment that replaced it.
+    # singleton that imports this service down with it.
     VER_HELPER_DIR="$CAELESTIA_LIB_DIR"
     if [ -z "$VER_HELPER_DIR" ]; then
         VER_HELPER_DIR=/usr/lib/caelestia
@@ -203,7 +201,6 @@ import urllib.request
 def parse_whats_changed(text: str) -> str:
     txt = (text or "").replace("\\r", "")
 
-    # Keep only the "What's Changed" section when present.
     m = re.search(r"^#{2,3}\\s*What's Changed\\s*$", txt, flags=re.IGNORECASE | re.MULTILINE)
     if m:
         rest = txt[m.end():]
@@ -215,7 +212,6 @@ def parse_whats_changed(text: str) -> str:
     else:
         return ""
 
-    # Normalize spacing and keep it compact for list rows.
     txt = txt.strip()
     txt = re.sub(r"\\n{3,}", "\\n\\n", txt)
     txt = re.sub(r"[ \\t]+\\n", "\\n", txt)
