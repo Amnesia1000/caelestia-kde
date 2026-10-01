@@ -296,6 +296,8 @@ if [[ -d "$HOME/.local/share/caelestia" ]]; then
     ok "Removed ~/.local/share/caelestia"
 fi
 
+section "Step 3b - Remove Shell State"
+
 for stolen_file in stolen-shortcuts.json stolen-screen-edges.json; do
     if [[ -f "$HOME/.config/caelestia/$stolen_file" ]]; then
         rm -f "$HOME/.config/caelestia/$stolen_file"
@@ -625,24 +627,26 @@ fi
 if [[ "$SHELL_RC_RESTORED" == "true" ]]; then
     info "Skipped shell rc line cleanup because original rc files were restored exactly from backup."
 else
-    # One pattern set for every shell: the same two variables, so a line must go
-    # no matter which shell's rc it landed in. Only a line whose value names
-    # Caelestia is dropped - matching the bare variable name deleted a user's
-    # unrelated QML2_IMPORT_PATH in zshrc and fish while sparing it in bashrc.
-    # This is a safety net for an older installer's leftovers; 08-build-shell.sh
-    # already prunes the lines it writes. Listed per shell instead of one
-    # alternation because sed has to spell fish's "set -gx" separately, and -gx
-    # is literal here (-[gx] would match only the "g").
-    for rc in "$HOME/.bashrc" "$HOME/.config/fish/config.fish" "$HOME/.zshrc"; do
+    strip_caelestia_env() {
+        local rc="$1"
+        shift
+        local -a patterns=()
+        local prefix
+        for prefix in "$@"; do
+            patterns+=(-e "/^[[:space:]]*${prefix}[[:space:]]+QML2_IMPORT_PATH.*caelestia/d")
+            patterns+=(-e "/^[[:space:]]*${prefix}[[:space:]]+CAELESTIA_LIB_DIR.*caelestia/d")
+        done
+        sed -i -E "${patterns[@]}" "$rc" 2>/dev/null || true
+    }
+
+    for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.config/fish/config.fish"; do
         [[ -f "$rc" ]] || continue
-        sed -i -E \
-            -e '/^[[:space:]]*export[[:space:]]+QML2_IMPORT_PATH.*caelestia/d' \
-            -e '/^[[:space:]]*export[[:space:]]+CAELESTIA_LIB_DIR.*caelestia/d' \
-            -e '/^[[:space:]]*set[[:space:]]+-gx[[:space:]]+QML2_IMPORT_PATH.*caelestia/d' \
-            -e '/^[[:space:]]*set[[:space:]]+-gx[[:space:]]+CAELESTIA_LIB_DIR.*caelestia/d' \
-            -e '/^[[:space:]]*set[[:space:]]+-x[[:space:]]+QML2_IMPORT_PATH.*caelestia/d' \
-            -e '/^[[:space:]]*set[[:space:]]+-x[[:space:]]+CAELESTIA_LIB_DIR.*caelestia/d' \
-            "$rc" 2>/dev/null || true
+
+        case "$rc" in
+            */config.fish) strip_caelestia_env "$rc" "set -gx" "set -x" ;;
+            *)             strip_caelestia_env "$rc" "export" ;;
+        esac
+
         ok "Removed Caelestia env vars from $rc"
     done
 fi

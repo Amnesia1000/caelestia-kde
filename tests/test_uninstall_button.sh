@@ -38,9 +38,9 @@ test_the_service_offers_a_package_managers_command() {
     local service
     service="$(cat "$SERVICE")"
 
-    assert_contains "$service" 'command -v pacman' "the Arch manager should be asked for"
-    assert_contains "$service" 'command -v dnf' "the Fedora manager should be asked for"
-    assert_contains "$service" 'command -v apt-get' "the Debian manager should be asked for"
+    assert_contains "$service" 'tool: "pacman"' "the Arch manager should be listed"
+    assert_contains "$service" 'tool: "dnf"' "the Fedora manager should be listed"
+    assert_contains "$service" 'tool: "apt-get"' "the Debian manager should be listed"
     assert_contains "$service" 'caelestia-kde' "the package name should be named"
 }
 
@@ -48,20 +48,22 @@ test_the_uninstaller_runs_in_a_terminal() {
     local service
     service="$(cat "$SERVICE")"
 
-    assert_contains "$service" "GlobalConfig.general.apps.terminal" \
-        "the script should run in the configured terminal"
-    assert_contains "$service" "wrap_term_launch.sh" \
-        "and through the same wrapper a terminal launch uses"
+    assert_contains "$service" "Launch.launchInTerminal" \
+        "the script should run through the canonical terminal launch helper"
+    assert_contains "$(cat "$REPO_ROOT/shell/utils/Launch.qml")" "GlobalConfig.general.apps.terminal" \
+        "which is where the configured terminal is picked up"
 }
 
 test_the_dialog_only_offers_to_run_a_script_that_exists() {
     local dialog
     dialog="$(cat "$DIALOG")"
 
-    assert_contains "$dialog" "Uninstaller.scriptFound" \
-        "the dialog should read whether a script was found"
-    assert_contains "$dialog" "Uninstaller.launch()" \
-        "and launch it when it has"
+    assert_not_contains "$dialog" "qs.services" \
+        "the dialog should not reach into services; the page hands the state in"
+    assert_contains "$dialog" "property string state" \
+        "it should take the uninstaller state as a property"
+    assert_contains "$dialog" "signal confirmed" \
+        "and report confirmation rather than launching itself"
     assert_contains "$dialog" "visible: root.canRun" \
         "the run button should follow what was found"
 }
@@ -70,8 +72,11 @@ test_the_page_offers_the_action() {
     local about
     about="$(cat "$ABOUT")"
 
-    assert_contains "$about" "Uninstaller" "the About page should reach the service"
-    assert_contains "$about" "UninstallDialog" "and open the confirmation"
+    assert_contains "$about" "Uninstaller.state" "the About page should read the service state"
+    assert_contains "$about" "onConfirmed: Uninstaller.launch()" \
+        "and launch the script when the dialog confirms"
+    assert_contains "$about" "state: Uninstaller.state" \
+        "and hand that state to the dialog"
 }
 
 test_the_probe_finds_a_script_and_nothing_else() {
@@ -85,15 +90,21 @@ test_the_probe_finds_a_script_and_nothing_else() {
 
     mkdir -p "$tmp/checkout"
     printf '#!/usr/bin/env bash\n' > "$tmp/checkout/uninstall.sh"
-    body="$(sh -c "$command" -- "$tmp/checkout/uninstall.sh" "$tmp/absent/uninstall.sh" 2>&1)"
+    body="$(sh -c "$command" -- 2 "$tmp/checkout/uninstall.sh" "$tmp/absent/uninstall.sh" pacman dnf apt-get 2>&1)"
     assert_contains "$body" "SCRIPT $tmp/checkout/uninstall.sh" \
         "the first existing candidate should be reported"
-    assert_not_contains "$body" "MANUAL" "no fallback should be printed when a script was found"
+    assert_not_contains "$body" "PACKAGE" "no manager should be reported when a script was found"
 
-    body="$(sh -c "$command" -- "$tmp/absent/uninstall.sh" 2>&1)"
-    assert_contains "$body" "MANUAL" "a missing script should report the manual path"
-    assert_eq "1" "$(printf '%s\n' "$body" | grep -c '^MANUAL')" \
-        "exactly one manual line should be printed"
+    mkdir -p "$tmp/bin"
+    printf '#!/bin/sh\n' > "$tmp/bin/pacman"
+    chmod +x "$tmp/bin/pacman"
+    body="$(PATH="$tmp/bin:$PATH" sh -c "$command" -- 1 "$tmp/absent/uninstall.sh" pacman dnf apt-get 2>&1)"
+    if printf '%s\n' "$body" | grep -q '^PACKAGE '; then
+        assert_contains "$body" "PACKAGE pacman" "the first manager found should be named"
+    else
+        assert_contains "$body" "UNKNOWN" \
+            "a host with no known manager must say so rather than guess"
+    fi
 }
 
 run_tests

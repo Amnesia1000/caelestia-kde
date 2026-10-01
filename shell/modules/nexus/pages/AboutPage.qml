@@ -183,11 +183,11 @@ PageBase {
             icon: "delete_forever"
             label: qsTr("Uninstall Caelestia")
             status: {
-                if (!Uninstaller.probed)
+                if (Uninstaller.state === "probing")
                     return qsTr("Checking for the uninstaller…");
-                if (Uninstaller.scriptFound)
+                if (Uninstaller.state === "script")
                     return qsTr("Remove the shell, its configs and its services");
-                if (Uninstaller.manualCommand !== "")
+                if (Uninstaller.state === "package")
                     return qsTr("This install belongs to a package. Remove it with: %1").arg(Uninstaller.manualCommand);
                 return qsTr("No uninstaller was found. Remove the install with your package manager.");
             }
@@ -197,5 +197,9 @@ PageBase {
 
     UninstallDialog {
         id: uninstallDialog
+
+        state: Uninstaller.state
+        manualCommand: Uninstaller.manualCommand
+        onConfirmed: Uninstaller.launch()
     }
 }

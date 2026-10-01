@@ -7,12 +7,16 @@ import Quickshell
 import Caelestia.Config
 import qs.components.controls
 import qs.components.effects
-import qs.services
 
 Popup {
     id: root
 
-    readonly property bool canRun: Uninstaller.scriptFound
+    property string state: "probing"
+    property string manualCommand: ""
+
+    readonly property bool canRun: root.state === "script"
+
+    signal confirmed
 
     width: 340
     padding: Tokens.padding.large
@@ -68,12 +72,12 @@ Popup {
             Layout.fillWidth: true
             Layout.bottomMargin: Tokens.spacing.small
             text: {
-                if (!Uninstaller.probed)
+                if (root.state === "probing")
                     return qsTr("Still looking for the uninstaller. Try again in a moment.");
-                if (root.canRun)
+                if (root.state === "script")
                     return qsTr("This opens the uninstaller in a terminal, where it asks for confirmation of its own. It removes the shell, its config files and its services, and can restore your pre-install configuration from a backup.");
-                if (Uninstaller.manualCommand !== "")
-                    return qsTr("This install belongs to a package, so the package manager owns its files. Remove it with:\n\n%1").arg(Uninstaller.manualCommand);
+                if (root.state === "package")
+                    return qsTr("This install belongs to a package, so the package manager owns its files. Remove it with:\n\n%1").arg(root.manualCommand);
                 return qsTr("No uninstaller script was found and no known package manager owns this install. Remove it the same way you installed it.");
             }
             color: Colours.palette.m3onSurfaceVariant
@@ -101,9 +105,9 @@ Popup {
                 inactiveColour: Colours.palette.m3error
                 activeOnColour: Colours.palette.m3onError
                 inactiveOnColour: Colours.palette.m3onError
-                enabled: Uninstaller.probed
+                enabled: root.state !== "probing"
                 onClicked: {
-                    Uninstaller.launch();
+                    root.confirmed();
                     root.close();
                 }
             }

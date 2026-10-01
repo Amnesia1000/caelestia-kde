@@ -3,64 +3,79 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Caelestia.Config
+import qs.utils
 
 Singleton {
     id: root
 
-    readonly property string home: Quickshell.env("HOME")
-
     readonly property var candidatePaths: [
         Quickshell.env("CAELESTIA_DIR") ? Quickshell.env("CAELESTIA_DIR") + "/uninstall.sh" : "",
-        root.home + "/caelestia-kde/uninstall.sh",
-        root.home + "/.config/caelestia-update/repo/uninstall.sh",
-        root.home + "/.cache/caelestia-update-repo/uninstall.sh"
+        Quickshell.env("HOME") + "/caelestia-kde/uninstall.sh",
+        Quickshell.env("HOME") + "/.config/caelestia-update/repo/uninstall.sh",
+        Quickshell.env("HOME") + "/.cache/caelestia-update-repo/uninstall.sh"
     ].filter(p => p !== "")
+
+    readonly property var packageManagers: [
+        { tool: "pacman", command: "sudo pacman -Rns caelestia-kde" },
+        { tool: "dnf", command: "sudo dnf remove caelestia-kde" },
+        { tool: "apt-get", command: "sudo apt-get remove caelestia-kde" }
+    ]
+
+    readonly property string state: {
+        if (!root.probed)
+            return "probing";
+        if (root.scriptPath !== "")
+            return "script";
+        if (root.manualCommand !== "")
+            return "package";
+        return "unknown";
+    }
+
+    readonly property bool scriptFound: root.state === "script"
 
     property bool probed: false
     property string scriptPath: ""
     property string manualCommand: ""
 
-    readonly property bool scriptFound: scriptPath !== ""
-
     function launch(): void {
-        if (!scriptFound)
+        if (!root.scriptFound)
             return;
 
-        Quickshell.execDetached({
-            command: [...GlobalConfig.general.apps.terminal,
-                Quickshell.shellDir + "/assets/wrap_term_launch.sh",
-                "bash", scriptPath]
-        });
+        Launch.launchInTerminal(["bash", root.scriptPath], "");
     }
 
     Process {
         id: probe
 
         command: ["sh", "-c", `
+candidates="$1"
+shift
 for candidate in "$@"; do
-    if [ -f "$candidate" ]; then
+    if [ "$candidates" -gt 0 ] && [ -f "$candidate" ]; then
         printf 'SCRIPT %s\n' "$candidate"
         exit 0
     fi
+    candidates=$((candidates - 1))
 done
-if command -v pacman >/dev/null 2>&1; then
-    echo "MANUAL sudo pacman -Rns caelestia-kde"
-elif command -v dnf >/dev/null 2>&1; then
-    echo "MANUAL sudo dnf remove caelestia-kde"
-elif command -v apt-get >/dev/null 2>&1; then
-    echo "MANUAL sudo apt-get remove caelestia-kde"
-else
-    echo MANUAL
-fi`, "--", ...root.candidatePaths]
+for manager in "$@"; do
+    if command -v "$manager" >/dev/null 2>&1; then
+        printf 'PACKAGE %s\n' "$manager"
+        exit 0
+    fi
+done
+echo UNKNOWN`, "--", String(root.candidatePaths.length), ...root.candidatePaths, ...root.packageManagers.map(m => m.tool)]
         stdout: StdioCollector {
             onStreamFinished: {
-                const script = text.split("\n").find(l => l.startsWith("SCRIPT "));
-                const manual = text.split("\n").find(l => l.startsWith("MANUAL"));
+                const lines = text.split("\n");
+                const script = lines.find(l => l.startsWith("SCRIPT "));
+                const manager = lines.find(l => l.startsWith("PACKAGE "));
                 if (script)
                     root.scriptPath = script.slice("SCRIPT ".length).trim();
-                if (manual)
-                    root.manualCommand = manual.slice("MANUAL ".length).trim();
+                if (manager) {
+                    const tool = manager.slice("PACKAGE ".length).trim();
+                    const entry = root.packageManagers.find(m => m.tool === tool);
+                    root.manualCommand = entry ? entry.command : "";
+                }
                 root.probed = true;
             }
         }
