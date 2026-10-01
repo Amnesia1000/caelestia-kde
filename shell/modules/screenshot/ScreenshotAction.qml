@@ -11,9 +11,7 @@ import qs.utils
 Singleton {
     id: root
 
-    // The single snip-action enum. Lives next to the command builder so the
-    // switch and its values can't drift apart. UI files reference it via
-    // ScreenshotAction.SnipAction.
+    // Lives next to the command builder so the switch and its values can't drift apart.
     enum SnipAction {
         Copy,
         Edit,

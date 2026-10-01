@@ -42,8 +42,8 @@ Item {
     function loadPlugin(meta) {
         let id = meta.id || meta.name;
         if (pluginInstances[id]) return;
-        // Quickshell plugins load main.qml; other types (a kwineffect that ships
-        // a settings front-end) opt in through the manifest's `ui` field.
+        // Other types (a kwineffect that ships a settings front-end) opt in
+        // through the manifest's `ui` field.
         let ui = meta.ui || (meta.type === "quickshell" ? "main.qml" : "");
         if (!ui) return;
 
