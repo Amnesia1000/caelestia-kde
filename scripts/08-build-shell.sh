@@ -599,6 +599,7 @@ write_shell_environment
 
 mkdir -p ~/.local/bin ~/.config/systemd/user
 
+install -m 644 "$BUNDLE_DIR/scripts/lib/update-state.sh" "$(install_lib_dir)/update-state.sh"
 info "Installing the update-checker units..."
 install -m 644 "$BUNDLE_DIR/src/systemd/caelestia-update-checker.service" ~/.config/systemd/user/caelestia-update-checker.service
 install -m 644 "$BUNDLE_DIR/src/systemd/caelestia-update-checker.timer" ~/.config/systemd/user/caelestia-update-checker.timer
