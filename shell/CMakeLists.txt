@@ -198,6 +198,23 @@ if("shell" IN_LIST ENABLE_MODULES)
         "${CAELESTIA_ROOT_DIR}/src/schemes"
         DESTINATION "${INSTALL_DATADIR}")
 
+    file(GLOB CAELESTIA_STEP_SCRIPTS CONFIGURE_DEPENDS
+        "${CAELESTIA_ROOT_DIR}/scripts/[0-9]*.sh")
+    install(PROGRAMS ${CAELESTIA_STEP_SCRIPTS}
+        DESTINATION "${INSTALL_DATADIR}/scripts")
+    install(DIRECTORY "${CAELESTIA_ROOT_DIR}/scripts/lib"
+        DESTINATION "${INSTALL_DATADIR}/scripts")
+    install(DIRECTORY
+        "${CAELESTIA_ROOT_DIR}/src/dots"
+        "${CAELESTIA_ROOT_DIR}/src/dots-extra"
+        DESTINATION "${INSTALL_DATADIR}/src")
+    install(FILES
+        "${CAELESTIA_ROOT_DIR}/shell/assets/wallpaper.webp"
+        DESTINATION "${INSTALL_DATADIR}/shell/assets")
+    install(FILES
+        "${CAELESTIA_ROOT_DIR}/assets/org.quickshell.desktop"
+        DESTINATION "${INSTALL_DATADIR}/assets")
+
     foreach(dir assets components modules services utils)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
                 DESTINATION ${INSTALL_QSCONFDIR})

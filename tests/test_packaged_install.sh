@@ -120,10 +120,26 @@ test_shared_runtime_files_have_one_cmake_owner() {
         "CMake should own the matugen data"
     assert_contains "$cmake" '"${CAELESTIA_ROOT_DIR}/src/schemes"' \
         "CMake should own the shipped schemes"
+    assert_contains "$cmake" '"${CAELESTIA_ROOT_DIR}/scripts/[0-9]*.sh"' \
+        "CMake should own the installer step scripts"
+    assert_contains "$cmake" '"${CAELESTIA_ROOT_DIR}/src/dots"' \
+        "CMake should own the deployed dotfiles"
+    assert_contains "$cmake" '"${CAELESTIA_ROOT_DIR}/shell/assets/wallpaper.webp"' \
+        "CMake should own the fallback wallpaper"
+    assert_contains "$cmake" '"${CAELESTIA_ROOT_DIR}/assets/org.quickshell.desktop"' \
+        "CMake should own the desktop integration asset"
     assert_not_contains "$pkgbuild" 'install -m755 src/bin/*' \
         "the package must not copy CLI wrappers outside CMake"
     assert_not_contains "$pkgbuild" 'cp -r src/matugen src/schemes' \
         "the package must not copy color data outside CMake"
+    assert_not_contains "$pkgbuild" 'install -m755 scripts/[0-9]*.sh' \
+        "the package must not copy installer scripts outside CMake"
+    assert_not_contains "$pkgbuild" 'cp -r src/dots src/dots-extra' \
+        "the package must not copy deployed dotfiles outside CMake"
+    assert_not_contains "$pkgbuild" 'cp -r shell/assets/wallpaper.webp' \
+        "the package must not copy the wallpaper outside CMake"
+    assert_not_contains "$pkgbuild" 'cp -r assets/org.quickshell.desktop' \
+        "the package must not copy desktop integration outside CMake"
     assert_not_contains "$build_script" 'install -m 755 "$BUNDLE_DIR/src/bin/' \
         "the source installer must not copy CLI wrappers outside CMake"
     assert_not_contains "$build_script" 'cp -r "$BUNDLE_DIR/src/matugen"' \
