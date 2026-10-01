@@ -40,9 +40,13 @@ Singleton {
         return (branch === "dev" || branch === "main") ? branch : "main";
     }
 
-    function checkUpdates(branch) {
+    function checkUpdates(branch, persistBranch) {
         if (branch === undefined) branch = "";
         if (!GlobalConfig.general.checkUpdates) return;
+        // Only an explicit branch pick re-points the tracked update channel;
+        // background checks must not fight the channel the updater recorded
+        // from the tree it actually installed (issue #565).
+        if (persistBranch === undefined) persistBranch = branch !== "";
         if (branch !== "") currentBranch = clampBranch(branch);
         else currentBranch = clampBranch(currentBranch);
         checkingUpdates = true;
@@ -75,8 +79,22 @@ if ! echo ",main,dev," | grep -q ",$CURRENT_BRANCH,"; then
     CURRENT_BRANCH="main"
 fi
 
-mkdir -p "$HOME/.config/quickshell/caelestia"
-echo "$CURRENT_BRANCH" > "$HOME/.config/quickshell/caelestia/.update_branch"
+STATE_HELPER=""
+for candidate in \
+    "\${CAELESTIA_LIB_DIR:-}/update-state.sh" \
+    "$HOME/.local/lib/caelestia/update-state.sh" \
+    "/usr/share/caelestia/scripts/lib/update-state.sh"; do
+    if [ -r "$candidate" ]; then
+        STATE_HELPER="$candidate"
+        break
+    fi
+done
+if [ -n "$STATE_HELPER" ]; then
+    . "$STATE_HELPER"
+fi
+if [ "$2" = "1" ] && command -v update_state_set_branch >/dev/null 2>&1; then
+    update_state_set_branch "$HOME/.config/quickshell/caelestia" "$CURRENT_BRANCH" || true
+fi
 REPO="$HOME/.cache/caelestia-update-repo"
 if [ ! -d "$REPO" ]; then
     git clone --bare --filter=blob:none https://github.com/ladybug-me/caelestia-kde.git "$REPO" >/dev/null 2>&1
@@ -305,8 +323,13 @@ else
     echo "LOCAL|$LOCAL_COMMIT"
 fi
 `
-    gitProcess.command = ["bash", "-c", bashCmd, "update-check", currentBranch];
-    gitProcess.running = true;
+    gitProcess.command = ["bash", "-c", bashCmd, "update-check", currentBranch, persistBranch ? "1" : "0"];
+        gitProcess.running = true;
+    }
+
+    function reload() {
+        loaded = false;
+        localCommitProcess.running = true;
     }
 
     function loadMoreCommits(): void {
@@ -329,11 +352,109 @@ git -C "$REPO" log --format="COMMIT%x1f%H%x1f%h%x1f%s%x1f%an%x1f%cI%x1f%P" --ski
         moreCommitsProcess.running = true;
     }
 
+    function handleProgressLine(rawLine: string): void {
+        const line = rawLine.trim();
+        if (line === "")
+            return;
+
+        const progressMatch = line.match(/PROGRESS:\s*(done.*|\d+\/\d+:\s*.+)$/);
+        if (progressMatch) {
+            const pText = progressMatch[1].trim();
+            if (pText.startsWith("done")) {
+                root.updateProgress = 1.0;
+                root.updateStatus = qsTr("Done!");
+                return;
+            }
+
+            const stageMatch = pText.match(/^(\d+)\/(\d+):\s*(.+)$/);
+            if (stageMatch) {
+                const current = parseInt(stageMatch[1]);
+                const total = parseInt(stageMatch[2]);
+                if (total > 0) {
+                    root.updateProgress = current / total;
+                    root.updateStatus = stageMatch[3];
+                }
+            }
+            return;
+        }
+
+        if (line.indexOf("Config deployment complete") !== -1 && root.updateProgress < 0.8) {
+            root.updateProgress = 0.7;
+            root.updateStatus = qsTr("Preparing shell build...");
+        }
+    }
+
+    function ingestProcessText(rawText: string): void {
+        root.lastUpdateOutputMs = Date.now();
+        root.stallNoticeShown = false;
+
+        const cleaned = rawText
+            .replace(/\u001b\[[0-9;?]*[A-Za-z]/g, "")
+            .replace(/\r/g, "\n");
+
+        const chunk = cleaned.endsWith("\n") ? cleaned : (cleaned + "\n");
+        root.updateLogs += chunk;
+
+        const combined = root.processLineBuffer + chunk;
+        const lines = combined.split("\n");
+        root.processLineBuffer = lines.pop();
+
+        for (let i = 0; i < lines.length; i++) {
+            root.handleProgressLine(lines[i]);
+        }
+    }
+
+    function startUpdate(targetVersion: string): void {
+        if (root.updateRunning)
+            return;
+        root.targetVersion = targetVersion;
+        root.updateCancelled = false;
+        root.updateLogs = "";
+        root.updateProgress = 0.0;
+        root.updateStatus = qsTr("Starting…");
+        root.updateRunning = true;
+        root.lastUpdateOutputMs = Date.now();
+        root.stallNoticeShown = false;
+        root.processLineBuffer = "";
+        root.logsExpanded = true;
+        updateProcess.running = true;
+    }
+
+    function stopUpdate(): void {
+        if (!root.updateRunning)
+            return;
+        root.updateCancelled = true;
+        updateProcess.running = false;
+        root.updateRunning = false;
+        root.updateStatus = qsTr("Canceled");
+        root.updateLogs += "\n[Canceled by user]";
+    }
+
     Process {
         id: localCommitProcess
 
         running: GlobalConfig.general.checkUpdates
-        command: ["bash", "-c", "echo \"$(cat ~/.config/quickshell/caelestia/.current_commit 2>/dev/null)|$(cat ~/.config/quickshell/caelestia/.update_branch 2>/dev/null)\""]
+        command: ["bash", "-c", `
+CONFIG="$HOME/.config/quickshell/caelestia"
+STATE_HELPER=""
+for candidate in \
+    "\${CAELESTIA_LIB_DIR:-}/update-state.sh" \
+    "$HOME/.local/lib/caelestia/update-state.sh" \
+    "/usr/share/caelestia/scripts/lib/update-state.sh"; do
+    if [ -r "$candidate" ]; then
+        STATE_HELPER="$candidate"
+        break
+    fi
+done
+if [ -n "$STATE_HELPER" ]; then
+    . "$STATE_HELPER"
+fi
+if command -v update_state_read_commit >/dev/null 2>&1; then
+    printf '%s|%s\\n' "$(update_state_read_commit "$CONFIG")" "$(update_state_read_branch "$CONFIG")"
+else
+    printf '|main\\n'
+fi
+`]
         stdout: StdioCollector {
             onStreamFinished: {
                 const parts = text.trim().split("|");
