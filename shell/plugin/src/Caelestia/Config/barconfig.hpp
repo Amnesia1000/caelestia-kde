@@ -40,7 +40,7 @@ class BarWorkspaces : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, showWindows, true)
     CONFIG_PROPERTY(bool, showWindowsOnSpecialWorkspaces, true)
     CONFIG_PROPERTY(int, maxWindowIcons, 5)
-    CONFIG_PROPERTY(bool, activeTrail, false)
+    CONFIG_PROPERTY(bool, activeTrail, true)
     CONFIG_PROPERTY(bool, monitorCenter, false)
     CONFIG_PROPERTY(bool, perMonitor, true)
     CONFIG_GLOBAL_PROPERTY(bool, perMonitorWorkspaces, true)
@@ -151,6 +151,7 @@ class BarDock : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, showBadges, true)
     CONFIG_PROPERTY(int, iconSize, 32)
     CONFIG_PROPERTY(bool, currentDesktopOnly, false)
+    CONFIG_ENUM_PROPERTY(DockWindowGrouping, windowGrouping, DockWindowGrouping::Combined)
     CONFIG_PROPERTY(bool, previewOnDesktop, true)
     CONFIG_GLOBAL_PROPERTY(QStringList, pinnedApps, QStringList({ u"firefox"_s, u"org.kde.dolphin"_s }))
 };

@@ -72,7 +72,7 @@ StyledWindow {
         return Math.max(...thresholds);
     }
 
-    readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || panels.popouts.hasCurrent
+    readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || (panels.popouts.hasCurrent && !panels.popouts.isDockPopout)
 
     property string focusReturn: ""
     property int workspaceReturn: -1
@@ -857,7 +857,7 @@ StyledWindow {
         BlurMask {
             target: panels.popoutsWrapper
             contentItem: root.contentItem
-            blurOffsetTop: root.blurOffsetTop
+            blurOffsetTop: root.blurOffsetTop - (popoutBg.connectedToSidebar ? Tokens.spacing.extraLarge + 10 + Tokens.rounding.extraLarge : 0)
             blurOffsetBottom: root.blurOffsetBottom
             blurOffsetLeft: root.blurOffsetLeft
             blurOffsetRight: root.blurOffsetRight
