@@ -263,9 +263,6 @@ ColumnLayout {
         }
     }
 
-    // VPN section. Deliberately not gated on root.view: a saved VPN profile is
-    // reachable whether the machine is on Wi-Fi or docked on Ethernet, and a
-    // wired connection is exactly when the VPN profiles matter.
     PopoutSection {
         Layout.fillWidth: true
         Layout.topMargin: Tokens.padding.small * root.scaleOffset
@@ -282,10 +279,6 @@ ColumnLayout {
             font.pointSize: Tokens.font.body.small.pointSize * root.fontScale
         }
 
-        // A ListView rather than a Repeater: the profile list is not capped, so
-        // it scrolls once it outgrows the height cap instead of silently hiding
-        // the tail. The cap keeps a long list from pushing the rest of the
-        // popout off screen.
         ListView {
             id: vpnList
 
