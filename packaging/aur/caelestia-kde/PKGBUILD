@@ -144,15 +144,10 @@ DROPIN
     find "$pkgdir" \( -name '.git' -o -name '.github' -o -name '.gitignore' \) \
         -prune -exec rm -rf {} + 2>/dev/null || true
 
+    # Only the distro-specific paths this recipe adds by hand. Everything else
+    # the shell ships is owned by CMake, so it is checked against CMake's own
+    # install manifest below instead of a second hand-maintained list.
     local required=(
-        usr/bin/caelestia
-        usr/share/caelestia/scripts/03-deploy-configs.sh
-        usr/share/caelestia/scripts/lib/install-kind.sh
-        usr/share/caelestia/src/dots
-        usr/share/caelestia/src/dots-extra
-        usr/share/caelestia/shell/assets/wallpaper.webp
-        usr/share/caelestia/assets/org.quickshell.desktop
-        usr/share/caelestia/.caelestia-install-manifest
         usr/share/sddm/themes/caelestia/theme.conf
         usr/share/sddm/themes/caelestia/scripts/sync.sh
         etc/sddm.conf.d/zz-caelestia.conf
@@ -167,15 +162,11 @@ DROPIN
         fi
     done
 
-    local manifest_path path
-    manifest_path="$pkgdir/usr/share/caelestia/.caelestia-install-manifest"
-    while IFS= read -r path; do
-        [[ -z "$path" || "$path" == \#* ]] && continue
-        if [[ ! -e "$pkgdir/$path" ]]; then
-            echo "the package manifest references a missing path: $path" >&2
-            exit 1
-        fi
-    done < "$manifest_path"
+    # CMake records every file it installed in build/install_manifest.txt, so
+    # validating that against the staged tree catches a shell file that went
+    # missing after install, without repeating the list here.
+    source "$srcdir/$pkgname-$pkgver/scripts/lib/install-fs.sh"
+    validate_install_manifest "$srcdir/$pkgname-$pkgver/build/install_manifest.txt" "$pkgdir" || exit 1
 
-    echo "package layout checked: ${#required[@]} paths"
+    echo "package layout checked: ${#required[@]} package paths plus CMake's manifest"
 }

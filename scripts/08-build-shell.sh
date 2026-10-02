@@ -60,25 +60,6 @@ EOF
     done
 }
 
-validate_cmake_install_manifest() {
-    local install_root="$1"
-    local manifest="$install_root/lib/caelestia/.caelestia-install-manifest"
-    local path
-
-    [[ -f "$manifest" ]] || {
-        err "CMake did not install its runtime manifest: $manifest"
-        return 1
-    }
-
-    while IFS= read -r path; do
-        [[ -z "$path" || "$path" == \#* ]] && continue
-        [[ -e "$install_root/$path" ]] || {
-            err "CMake install manifest references a missing path: $install_root/$path"
-            return 1
-        }
-    done < "$manifest"
-}
-
 packaged_shell_setup() {
     write_shell_environment
 
@@ -502,7 +483,7 @@ else
         err "Installation failed. Full log: $BUILD_LOG"
         exit 1
     fi
-    validate_cmake_install_manifest "$HOME/.local" || exit 1
+    validate_install_manifest "$SHELL_DIR/build/install_manifest.txt" || exit 1
 fi
 
 WS_STAMP="${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde/workspace-tracker.installed"

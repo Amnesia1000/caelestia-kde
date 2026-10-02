@@ -101,3 +101,25 @@ wait_for_nonempty_file() {
         waited=$((waited + 1))
     done
 }
+
+# Checks that every path CMake recorded in its install manifest still exists.
+# Entries are absolute, written with the configure-time prefix but without
+# DESTDIR, so a staged package passes its staging root as $2; a source install
+# leaves $2 empty and the entries are checked as-is. Blank lines and comments
+# are ignored so the manifest stays human-readable.
+validate_install_manifest() {
+    local manifest="$1" root="${2:-}" path
+
+    if [[ ! -f "$manifest" ]]; then
+        printf 'install manifest not found: %s\n' "$manifest" >&2
+        return 1
+    fi
+
+    while IFS= read -r path; do
+        [[ -z "$path" || "$path" == \#* ]] && continue
+        if [[ ! -e "$root$path" ]]; then
+            printf 'install manifest references a missing path: %s%s\n' "$root" "$path" >&2
+            return 1
+        fi
+    done < "$manifest"
+}

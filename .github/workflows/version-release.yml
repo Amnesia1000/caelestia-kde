@@ -205,47 +205,30 @@ jobs:
           source .github/version.env
           echo "TAG=$VERSION" >> "$GITHUB_ENV"
 
-      - name: Configure Shell
+      - name: Build Shell (twice, for reproducibility)
         run: |
           set -euo pipefail
-          cmake -G Ninja -B shell/build -S shell -DCMAKE_BUILD_TYPE=Release \
-            -DCAELESTIA_CACHE_DEPS=ON \
-            -DCAELESTIA_OFFLINE=ON \
-            -DCMAKE_INSTALL_PREFIX=/ \
-            -DINSTALL_BINDIR=usr/bin \
-            -DINSTALL_DATADIR=usr/lib/caelestia \
-            -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
-            -DINSTALL_LIBDIR=usr/lib/caelestia \
-            -DINSTALL_QMLDIR=usr/lib/qt6/qml
+          for build_dir in shell/build shell/repro-build; do
+            rm -rf "$build_dir"
+            cmake -G Ninja -B "$build_dir" -S shell -DCMAKE_BUILD_TYPE=Release \
+              -DCAELESTIA_CACHE_DEPS=ON \
+              -DCAELESTIA_OFFLINE=ON \
+              -DCMAKE_INSTALL_PREFIX=/ \
+              -DINSTALL_BINDIR=usr/bin \
+              -DINSTALL_DATADIR=usr/lib/caelestia \
+              -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
+              -DINSTALL_LIBDIR=usr/lib/caelestia \
+              -DINSTALL_QMLDIR=usr/lib/qt6/qml
+            cmake --build "$build_dir" -j"$(nproc)"
+          done
 
-      - name: Build Shell
+      - name: Verify Reproducible Install Tree
         run: |
           set -euo pipefail
-          cmake --build shell/build -j"$(nproc)"
-
-      - name: Repeat Clean Offline Build
-        run: |
-          set -euo pipefail
-          rm -rf shell/repro-build repro-a repro-b
-          cmake -G Ninja -B shell/repro-build -S shell -DCMAKE_BUILD_TYPE=Release \
-            -DCAELESTIA_CACHE_DEPS=ON \
-            -DCAELESTIA_OFFLINE=ON \
-            -DCMAKE_INSTALL_PREFIX=/ \
-            -DINSTALL_BINDIR=usr/bin \
-            -DINSTALL_DATADIR=usr/lib/caelestia \
-            -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
-            -DINSTALL_LIBDIR=usr/lib/caelestia \
-            -DINSTALL_QMLDIR=usr/lib/qt6/qml
-          cmake --build shell/repro-build -j"$(nproc)"
+          rm -rf repro-a repro-b
           DESTDIR="$PWD/repro-a" cmake --install shell/build
           DESTDIR="$PWD/repro-b" cmake --install shell/repro-build
           diff -ru --no-dereference repro-a repro-b
-          find repro-a -type f -printf '%P\n' | sort > repro-a.files
-          find repro-b -type f -printf '%P\n' | sort > repro-b.files
-          diff -u repro-a.files repro-b.files
-          (cd repro-a && find . -type f -print0 | sort -z | xargs -0 sha256sum) > repro-a.sha256
-          (cd repro-b && find . -type f -print0 | sort -z | xargs -0 sha256sum) > repro-b.sha256
-          diff -u repro-a.sha256 repro-b.sha256
 
       - name: Stage Compiled Artifacts
         run: |

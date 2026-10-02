@@ -130,12 +130,14 @@ test_shared_runtime_files_have_one_cmake_owner() {
         "CMake should own the fallback wallpaper"
     assert_contains "$cmake" '"${CAELESTIA_ROOT_DIR}/assets/org.quickshell.desktop"' \
         "CMake should own the desktop integration asset"
-    assert_contains "$cmake" 'CAELESTIA_INSTALL_MANIFEST_RELATIVE' \
-        "CMake should publish the install manifest"
-    assert_contains "$pkgbuild" '.caelestia-install-manifest' \
-        "the package should validate the CMake install manifest"
-    assert_contains "$build_script" 'validate_cmake_install_manifest' \
-        "source installs should validate the CMake install manifest"
+    assert_contains "$pkgbuild" 'install_manifest.txt' \
+        "the package should validate CMake's install manifest"
+    assert_contains "$pkgbuild" 'validate_install_manifest' \
+        "the package should reuse the shared manifest validator"
+    assert_contains "$build_script" 'validate_install_manifest' \
+        "source installs should validate CMake's install manifest"
+    assert_not_contains "$pkgbuild" 'caelestia-install-manifest' \
+        "the package must not ship a second, hand-maintained manifest"
     assert_not_contains "$pkgbuild" 'install -m755 src/bin/*' \
         "the package must not copy CLI wrappers outside CMake"
     assert_not_contains "$pkgbuild" 'cp -r src/matugen src/schemes' \
