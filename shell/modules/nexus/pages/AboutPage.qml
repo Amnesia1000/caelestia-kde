@@ -195,11 +195,19 @@ PageBase {
         }
     }
 
-    UninstallDialog {
-        id: uninstallDialog
+    // PageBase's default property is typed Item, and a Popup is not an Item,
+    // so the dialog needs an Item to sit in. PluginsPage does the same for its
+    // popup.
+    Item {
+        Layout.preferredWidth: 0
+        Layout.preferredHeight: 0
 
-        state: Uninstaller.state
-        manualCommand: Uninstaller.manualCommand
-        onConfirmed: Uninstaller.launch()
+        UninstallDialog {
+            id: uninstallDialog
+
+            state: Uninstaller.state
+            manualCommand: Uninstaller.manualCommand
+            onConfirmed: Uninstaller.launch()
+        }
     }
 }

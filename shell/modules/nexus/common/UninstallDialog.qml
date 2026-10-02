@@ -5,6 +5,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Caelestia.Config
+import qs.components
 import qs.components.controls
 import qs.components.effects
 
