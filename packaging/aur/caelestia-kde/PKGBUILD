@@ -141,7 +141,14 @@ DROPIN
 
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
-    find "$pkgdir" \( -name '.git' -o -name '.github' -o -name '.gitignore' \) \
+    # Only the trees this recipe copies by hand can carry VCS metadata: CMake's
+    # own directory installs exclude .git* (shell/CMakeLists.txt). Walking all of
+    # $pkgdir here would delete files CMake installed and recorded in
+    # install_manifest.txt, and the manifest check below would then reject them.
+    find "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons/yet-another-monochrome-icon-set" \
+         "$pkgdir/usr/share/plasma/shells/caelestia.desktop" \
+         "$pkgdir/usr/share/sddm/themes/caelestia" \
+        \( -name '.git' -o -name '.github' -o -name '.gitignore' \) \
         -prune -exec rm -rf {} + 2>/dev/null || true
 
     # Only the distro-specific paths this recipe adds by hand. Everything else

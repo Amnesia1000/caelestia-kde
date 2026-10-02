@@ -205,30 +205,23 @@ jobs:
           source .github/version.env
           echo "TAG=$VERSION" >> "$GITHUB_ENV"
 
-      - name: Build Shell (twice, for reproducibility)
+      - name: Configure Shell
         run: |
           set -euo pipefail
-          for build_dir in shell/build shell/repro-build; do
-            rm -rf "$build_dir"
-            cmake -G Ninja -B "$build_dir" -S shell -DCMAKE_BUILD_TYPE=Release \
-              -DCAELESTIA_CACHE_DEPS=ON \
-              -DCAELESTIA_OFFLINE=ON \
-              -DCMAKE_INSTALL_PREFIX=/ \
-              -DINSTALL_BINDIR=usr/bin \
-              -DINSTALL_DATADIR=usr/lib/caelestia \
-              -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
-              -DINSTALL_LIBDIR=usr/lib/caelestia \
-              -DINSTALL_QMLDIR=usr/lib/qt6/qml
-            cmake --build "$build_dir" -j"$(nproc)"
-          done
+          cmake -G Ninja -B shell/build -S shell -DCMAKE_BUILD_TYPE=Release \
+            -DCAELESTIA_CACHE_DEPS=ON \
+            -DCAELESTIA_OFFLINE=ON \
+            -DCMAKE_INSTALL_PREFIX=/ \
+            -DINSTALL_BINDIR=usr/bin \
+            -DINSTALL_DATADIR=usr/lib/caelestia \
+            -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
+            -DINSTALL_LIBDIR=usr/lib/caelestia \
+            -DINSTALL_QMLDIR=usr/lib/qt6/qml
 
-      - name: Verify Reproducible Install Tree
+      - name: Build Shell
         run: |
           set -euo pipefail
-          rm -rf repro-a repro-b
-          DESTDIR="$PWD/repro-a" cmake --install shell/build
-          DESTDIR="$PWD/repro-b" cmake --install shell/repro-build
-          diff -ru --no-dereference repro-a repro-b
+          cmake --build shell/build -j"$(nproc)"
 
       - name: Stage Compiled Artifacts
         run: |

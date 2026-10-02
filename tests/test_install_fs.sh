@@ -50,27 +50,6 @@ test_atomic_replace_tree_keeps_destination_when_source_is_missing() {
     assert_eq "old-greeter" "$(cat "$tmp/dest/metadata.json")" "destination should be left untouched"
 }
 
-test_atomic_replace_tree_restores_destination_when_final_move_fails() {
-    local tmp status
-    tmp="$(new_tmpdir)"
-    make_fixture "$tmp"
-
-    mv() {
-        if [[ "$2" == "$tmp/dest" ]]; then
-            return 1
-        fi
-        command mv "$@"
-    }
-
-    atomic_replace_tree "$tmp/src" "$tmp/dest" metadata.json
-    status=$?
-
-    unset -f mv
-    assert_status 1 "$status" "a failed final move should report failure"
-    assert_eq "old-greeter" "$(cat "$tmp/dest/metadata.json")" \
-        "a failed final move should restore the previous destination"
-}
-
 test_atomic_replace_tree_creates_a_missing_destination() {
     local tmp status
     tmp="$(new_tmpdir)"

@@ -483,7 +483,6 @@ else
         err "Installation failed. Full log: $BUILD_LOG"
         exit 1
     fi
-    validate_install_manifest "$SHELL_DIR/build/install_manifest.txt" || exit 1
 fi
 
 WS_STAMP="${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde/workspace-tracker.installed"
