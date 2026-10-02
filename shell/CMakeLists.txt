@@ -103,17 +103,26 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 set(DISTRIBUTOR "Unset" CACHE STRING "Distributor")
 set(ENABLE_MODULES "extras;plugin;shell;m3shapes" CACHE STRING "Modules to build/install")
+set(INSTALL_BINDIR "usr/bin" CACHE STRING "Executable install dir")
 set(INSTALL_LIBDIR "usr/lib/caelestia" CACHE STRING "Library install dir")
+set(INSTALL_DATADIR "usr/share/caelestia" CACHE STRING "Shared Caelestia data install dir")
 set(INSTALL_QMLDIR "usr/lib/qt6/qml" CACHE STRING "QML install dir")
 set(INSTALL_QSCONFDIR "etc/xdg/quickshell/caelestia" CACHE STRING "Quickshell config install dir")
+option(CAELESTIA_OFFLINE "Disallow downloading build dependencies" OFF)
+set(CAELESTIA_M3SHAPES_SOURCE_DIR "" CACHE PATH
+    "Pre-fetched M3Shapes source directory")
 
 # The M3Shapes checkout is external and builds its strings from raw literals, so it
 # is configured before the strict casts below apply: directory definitions are
 # inherited when a subdirectory is created, and the fetch creates one.
 if("m3shapes" IN_LIST ENABLE_MODULES)
-    message(STATUS "Fetching M3Shapes module")
     include(FetchContent)
-    set(M3SHAPES_REV bdc327b29f95394a732baf3c9b19658ba23755b6)
+    set(_M3SHAPES_REVISION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/m3shapes-revision")
+    file(STRINGS "${_M3SHAPES_REVISION_FILE}" M3SHAPES_REV LIMIT_COUNT 1)
+    string(LENGTH "${M3SHAPES_REV}" _M3SHAPES_REVISION_LENGTH)
+    if(NOT _M3SHAPES_REVISION_LENGTH EQUAL 40 OR NOT M3SHAPES_REV MATCHES "^[0-9a-f]+$")
+        message(FATAL_ERROR "Invalid M3Shapes revision in ${_M3SHAPES_REVISION_FILE}")
+    endif()
 
     # Opt-in persistent checkout. When enabled, the source is cloned into the
     # user cache so wiping the build dir doesn't force a re-clone (the
@@ -122,8 +131,12 @@ if("m3shapes" IN_LIST ENABLE_MODULES)
     # _deps location.
     option(CAELESTIA_CACHE_DEPS "Keep FetchContent sources outside the build tree" OFF)
 
-    if(CAELESTIA_CACHE_DEPS)
-        if(DEFINED ENV{XDG_CACHE_HOME} AND NOT "$ENV{XDG_CACHE_HOME}" STREQUAL "")
+    if(CAELESTIA_M3SHAPES_SOURCE_DIR)
+        set(_M3SHAPES_SOURCE_DIR "${CAELESTIA_M3SHAPES_SOURCE_DIR}")
+    elseif(CAELESTIA_CACHE_DEPS)
+        if(DEFINED ENV{CAELESTIA_DEPS_DIR} AND NOT "$ENV{CAELESTIA_DEPS_DIR}" STREQUAL "")
+            set(_CAELESTIA_CACHE "$ENV{CAELESTIA_DEPS_DIR}")
+        elseif(DEFINED ENV{XDG_CACHE_HOME} AND NOT "$ENV{XDG_CACHE_HOME}" STREQUAL "")
             set(_CAELESTIA_CACHE "$ENV{XDG_CACHE_HOME}/caelestia-kde")
         else()
             set(_CAELESTIA_CACHE "$ENV{HOME}/.cache/caelestia-kde")
@@ -133,14 +146,20 @@ if("m3shapes" IN_LIST ENABLE_MODULES)
         set(_M3SHAPES_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/m3shapes-${M3SHAPES_REV}")
     endif()
 
+    if(CAELESTIA_OFFLINE AND NOT EXISTS "${_M3SHAPES_SOURCE_DIR}/CMakeLists.txt")
+        message(FATAL_ERROR
+            "Offline build requested, but M3Shapes was not found at ${_M3SHAPES_SOURCE_DIR}. "
+            "Run 'make fetch-dependencies' first or set CAELESTIA_M3SHAPES_SOURCE_DIR.")
+    endif()
+
     FetchContent_Declare(
         m3shapes_external
         GIT_REPOSITORY https://github.com/soramanew/m3shapes.git
         GIT_TAG        ${M3SHAPES_REV}
         SOURCE_DIR     "${_M3SHAPES_SOURCE_DIR}"
     )
+    message(STATUS "Using M3Shapes source: ${_M3SHAPES_SOURCE_DIR}")
     FetchContent_MakeAvailable(m3shapes_external)
-    message(STATUS "Done fetching M3Shapes module")
 
     # Fix m3shapes wrong rpath
     if(TARGET m3shapesplugin)
@@ -177,6 +196,32 @@ if("plugin" IN_LIST ENABLE_MODULES)
 endif()
 
 if("shell" IN_LIST ENABLE_MODULES)
+    set(CAELESTIA_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
+    file(GLOB CAELESTIA_BIN_FILES CONFIGURE_DEPENDS "${CAELESTIA_ROOT_DIR}/src/bin/*")
+    install(PROGRAMS ${CAELESTIA_BIN_FILES} DESTINATION "${INSTALL_BINDIR}")
+    install(DIRECTORY
+        "${CAELESTIA_ROOT_DIR}/src/matugen"
+        "${CAELESTIA_ROOT_DIR}/src/schemes"
+        DESTINATION "${INSTALL_DATADIR}")
+
+    file(GLOB CAELESTIA_STEP_SCRIPTS CONFIGURE_DEPENDS
+        "${CAELESTIA_ROOT_DIR}/scripts/[0-9]*.sh")
+    install(PROGRAMS ${CAELESTIA_STEP_SCRIPTS}
+        DESTINATION "${INSTALL_DATADIR}/scripts")
+    install(DIRECTORY "${CAELESTIA_ROOT_DIR}/scripts/lib"
+        DESTINATION "${INSTALL_DATADIR}/scripts")
+    install(DIRECTORY
+        "${CAELESTIA_ROOT_DIR}/src/dots"
+        "${CAELESTIA_ROOT_DIR}/src/dots-extra"
+        DESTINATION "${INSTALL_DATADIR}/src")
+    install(FILES
+        "${CAELESTIA_ROOT_DIR}/shell/assets/wallpaper.webp"
+        DESTINATION "${INSTALL_DATADIR}/shell/assets")
+    install(FILES
+        "${CAELESTIA_ROOT_DIR}/assets/org.quickshell.desktop"
+        DESTINATION "${INSTALL_DATADIR}/assets")
+
     foreach(dir assets components modules services utils)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
                 DESTINATION ${INSTALL_QSCONFDIR})
