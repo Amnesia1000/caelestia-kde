@@ -4,7 +4,7 @@
   <context>
     <name>AboutPage</name>
     <message>
-      <location filename="../modules/nexus/pages/AboutPage.qml" line="+21"/>
+      <location filename="../modules/nexus/pages/AboutPage.qml" line="+20"/>
       <source>About</source>
       <translation>Om</translation>
     </message>
@@ -69,12 +69,12 @@
       <translation>Utvidelser</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+7"/>
       <source>Enabled plugins</source>
       <translation>Aktiverte programtillegg</translation>
     </message>
     <message>
-      <location line="+12"/>
+      <location line="+10"/>
       <source>Advanced</source>
       <translation>Avansert</translation>
     </message>
@@ -87,6 +87,36 @@
       <location line="+1"/>
       <source>Enable verbose debug logging for troubleshooting. Run &apos;caelestia shell -l&apos; to view.</source>
       <translation>Aktiver feilsøkingslogging for feilsøking. Kjør &apos;caelestia skall -l&apos; for å vise.</translation>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Uninstall</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
+      <source>Uninstall Caelestia</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+3"/>
+      <source>Checking for the uninstaller…</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Remove the shell, its configs and its services</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>This install belongs to a package. Remove it with: %1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>No uninstaller was found. Remove the install with your package manager.</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -791,7 +821,7 @@
   <context>
     <name>AllApps</name>
     <message>
-      <location filename="../modules/nexus/pages/apps/AllApps.qml" line="+16"/>
+      <location filename="../modules/nexus/pages/apps/AllApps.qml" line="+17"/>
       <source>All apps</source>
       <translation>Alle apper</translation>
     </message>
@@ -1877,7 +1907,22 @@
   <context>
     <name>BarDock</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarDock.qml" line="+11"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarDock.qml" line="+16"/>
+      <source>Group all windows</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Pinned icon holds first window</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>No grouping</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
       <source>Dock</source>
       <translation>Dokk</translation>
     </message>
@@ -1887,7 +1932,7 @@
       <translation>Aktiver komponent</translation>
     </message>
     <message>
-      <location line="+33"/>
+      <location line="+31"/>
       <source>Icon size</source>
       <translation>Størrelse på ikon</translation>
     </message>
@@ -1897,7 +1942,7 @@
       <translation>Størrelse på app-ikoner i dock</translation>
     </message>
     <message>
-      <location line="+12"/>
+      <location line="+10"/>
       <source>Recolor icons</source>
       <translation>Gjenoppstarte ikoner</translation>
     </message>
@@ -1927,7 +1972,17 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+7"/>
+      <source>Window grouping</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>How windows of one app share a dock icon: grouped, pinned icon holds the first window only, or every window on its own icon</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
       <source>Preview window on desktop</source>
       <translation>Forhåndsvis vindu på skrivebordet</translation>
     </message>
@@ -2540,7 +2595,7 @@
   <context>
     <name>BarWorkspaces</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarWorkspaces.qml" line="+16"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarWorkspaces.qml" line="+18"/>
       <source>Shape</source>
       <translation>Form</translation>
     </message>
@@ -2555,7 +2610,7 @@
       <translation>Arbeidsområder</translation>
     </message>
     <message>
-      <location line="+30"/>
+      <location line="+29"/>
       <source>Shown</source>
       <translation>Vist</translation>
     </message>
@@ -2565,7 +2620,7 @@
       <translation>Antall arbeidsområder som vises</translation>
     </message>
     <message>
-      <location line="+22"/>
+      <location line="+21"/>
       <source>Active indicator</source>
       <translation>Aktiv indikator</translation>
     </message>
@@ -2620,7 +2675,7 @@
       <translation>Maks. ikoner for vindu</translation>
     </message>
     <message>
-      <location line="+12"/>
+      <location line="+10"/>
       <source>Per monitor</source>
       <translation type="unfinished"/>
     </message>
@@ -3136,14 +3191,6 @@
     </message>
   </context>
   <context>
-    <name>ClockContext</name>
-    <message>
-      <location filename="../modules/bar/popouts/ClockContext.qml" line="+79"/>
-      <source>Clock settings</source>
-      <translation type="unfinished"/>
-    </message>
-  </context>
-  <context>
     <name>ColourSelect</name>
     <message>
       <location filename="../modules/nexus/pages/wallandstyle/ColourSelect.qml" line="+39"/>
@@ -3179,6 +3226,41 @@
   <context>
     <name>Content</name>
     <message>
+      <location filename="../modules/bar/popouts/Content.qml" line="+59"/>
+      <source>Greeter settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+63"/>
+      <source>Clock settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Status icons settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+89"/>
+      <source>Workspaces settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Tray settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>GitHub settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Dock settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
       <location filename="../modules/dashboard/Content.qml" line="+25"/>
       <source>Dashboard</source>
       <translation>Kontrollpanel</translation>
@@ -3197,6 +3279,11 @@
       <location line="+6"/>
       <source>Weather</source>
       <translation>Vær</translation>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Notes</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+6"/>
@@ -3608,6 +3695,11 @@
       <location line="+7"/>
       <source>Weather</source>
       <translation>Vær</translation>
+    </message>
+    <message>
+      <location line="+7"/>
+      <source>Notes</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+7"/>
@@ -4555,14 +4647,6 @@
     </message>
   </context>
   <context>
-    <name>GreeterContext</name>
-    <message>
-      <location filename="../modules/bar/popouts/GreeterContext.qml" line="+79"/>
-      <source>Greeter settings</source>
-      <translation>Innstillinger for gråtoner</translation>
-    </message>
-  </context>
-  <context>
     <name>HeroCard</name>
     <message>
       <location filename="../modules/dashboard/performance/HeroCard.qml" line="+136"/>
@@ -5081,7 +5165,7 @@
   <context>
     <name>Kwin</name>
     <message>
-      <location filename="../services/Kwin.qml" line="+483"/>
+      <location filename="../services/Kwin.qml" line="+484"/>
       <source>Caps lock enabled</source>
       <translation>Caps-lås aktivert</translation>
     </message>
@@ -6427,29 +6511,6 @@
     </message>
   </context>
   <context>
-    <name>Nexus</name>
-    <message>
-      <location filename="../modules/nexus/Nexus.qml" line="+162"/>
-      <source>Update in progress</source>
-      <translation>Oppdatering pågår</translation>
-    </message>
-    <message>
-      <location line="+8"/>
-      <source>Closing now will let the update keep running in the background, or you can cancel it first.</source>
-      <translation>Hvis du lukker nå vil du la oppdateringen fortsette å kjøre i bakgrunnen, eller du kan avbryte den først.</translation>
-    </message>
-    <message>
-      <location line="+14"/>
-      <source>Cancel Update</source>
-      <translation>Avbryt oppdatering</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Keep Running</source>
-      <translation>Fortsett å kjøre</translation>
-    </message>
-  </context>
-  <context>
     <name>NightLight</name>
     <message>
       <location filename="../modules/bar/popouts/NightLight.qml" line="+26"/>
@@ -6498,6 +6559,50 @@
       <location line="+2"/>
       <source>Enhanced Open</source>
       <translation>Forbedret åpen</translation>
+    </message>
+  </context>
+  <context>
+    <name>NotesTab</name>
+    <message>
+      <location filename="../modules/dashboard/NotesTab.qml" line="+22"/>
+      <location line="+204"/>
+      <source>Untitled</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-118"/>
+      <source>Notes</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+164"/>
+      <source>No additional text</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+37"/>
+      <source>No notes yet. Tap + to add one.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+73"/>
+      <source>Title</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+45"/>
+      <source>Start writing...</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+20"/>
+      <source>Edited %1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+42"/>
+      <source>Select a note or create one</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -6864,7 +6969,7 @@
       <translation>Popup varsler er nå aktivert</translation>
     </message>
     <message>
-      <location line="+97"/>
+      <location line="+107"/>
       <source>Clear all notifications</source>
       <translation>Fjern alle varsler</translation>
     </message>
@@ -7867,7 +7972,12 @@
       <translation>OS versjon</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+1"/>
+      <source>Uninstall Caelestia</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
       <source>AI Assistant</source>
       <translation type="unfinished"/>
     </message>
@@ -8781,7 +8891,187 @@
   <context>
     <name>Shortcuts</name>
     <message>
-      <location filename="../modules/Shortcuts.qml" line="+28"/>
+      <location filename="../modules/Shortcuts.qml" line="+26"/>
+      <source>Focus the window above</source>
+      <translation>Fokuser vinduet ovenfor</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Focus the window below</source>
+      <translation>Fokuser vinduet under</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Focus the window to the left</source>
+      <translation>Fokuser vinduet på venstre</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Focus the window to the right</source>
+      <translation>Fokuser vinduet til høyre</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Move window up</source>
+      <translation>Flytt vindu opp</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Move window down</source>
+      <translation>Flytt vindu ned</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Move window left</source>
+      <translation>Flytt vindu til venstre</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Move window right</source>
+      <translation>Flytt vindu til høyre</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Close current window</source>
+      <translation>Lukk aktivt vindu</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Focus next window</source>
+      <translation>Fokus neste vindu</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Focus previous window</source>
+      <translation>Fokus forrige vindu</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Set active window as Master</source>
+      <translation>Sett aktivt vindu som hovedknapp</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to next layout</source>
+      <translation>Bytt til neste oppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to previous layout</source>
+      <translation>Bytt til forrige oppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to BTree layout</source>
+      <translation>Bytt til tre oppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Monocle layout</source>
+      <translation>Bytt til Monocle layout</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Floating layout</source>
+      <translation>Bytt til flytende oppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Quarter layout</source>
+      <translation>Bytt til kvartalsoppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Spread layout</source>
+      <translation>Bytt til spredningsoppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Stacked layout</source>
+      <translation>Bytt til Stablet layout</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Stair layout</source>
+      <translation>Bytt til trappens oppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Columns layout</source>
+      <translation>Bytt til kolonnevisning</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Three Column layout</source>
+      <translation>Bytt til tre kolonneoppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Spiral layout</source>
+      <translation>Bytt til spiraloppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Switch to Tile layout</source>
+      <translation>Bytt til Flisoppsett</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Increase window height</source>
+      <translation>Øk vindushøyden</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Decrease window height</source>
+      <translation>Reduser vindushøyden</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Increase window width</source>
+      <translation>Øk vindusbredden</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Decrease window width</source>
+      <translation>Reduser vindusbredden</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Increase master area size</source>
+      <translation>Øk størrelsen på hovedområdet</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Decrease master area size</source>
+      <translation>Reduser master området størrelse</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Toggle floating state</source>
+      <translation>Veksle flytende tilstand</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Toggle floating state for all</source>
+      <translation>Veksle flytende tilstand for alle</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Rotate the window layout</source>
+      <translation>Roter vindusoppsettet</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Rotate windows within a part</source>
+      <translation>Roter vinduer innenfor en del</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Toggle dock support</source>
+      <translation>Veksle forankringsstøtte</translation>
+    </message>
+    <message>
+      <location line="+11"/>
       <source>Open nexus</source>
       <translation>Åpne nexus</translation>
     </message>
@@ -8821,7 +9111,7 @@
       <translation>Veksle skjermopptak</translation>
     </message>
     <message>
-      <location line="+31"/>
+      <location line="+18"/>
       <source>Toggle session menu</source>
       <translation>Vis/Skjul øktmeny</translation>
     </message>
@@ -8959,186 +9249,6 @@
       <location line="+7"/>
       <source>Switch to workspace 10</source>
       <translation>Bytt til arbeidsområdet 10</translation>
-    </message>
-    <message>
-      <location line="+89"/>
-      <source>Focus the window above</source>
-      <translation>Fokuser vinduet ovenfor</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Focus the window below</source>
-      <translation>Fokuser vinduet under</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Focus the window to the left</source>
-      <translation>Fokuser vinduet på venstre</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Focus the window to the right</source>
-      <translation>Fokuser vinduet til høyre</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Move window up</source>
-      <translation>Flytt vindu opp</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Move window down</source>
-      <translation>Flytt vindu ned</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Move window left</source>
-      <translation>Flytt vindu til venstre</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Move window right</source>
-      <translation>Flytt vindu til høyre</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Close current window</source>
-      <translation>Lukk aktivt vindu</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Focus next window</source>
-      <translation>Fokus neste vindu</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Focus previous window</source>
-      <translation>Fokus forrige vindu</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Set active window as Master</source>
-      <translation>Sett aktivt vindu som hovedknapp</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to next layout</source>
-      <translation>Bytt til neste oppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to previous layout</source>
-      <translation>Bytt til forrige oppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to BTree layout</source>
-      <translation>Bytt til tre oppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Monocle layout</source>
-      <translation>Bytt til Monocle layout</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Floating layout</source>
-      <translation>Bytt til flytende oppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Quarter layout</source>
-      <translation>Bytt til kvartalsoppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Spread layout</source>
-      <translation>Bytt til spredningsoppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Stacked layout</source>
-      <translation>Bytt til Stablet layout</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Stair layout</source>
-      <translation>Bytt til trappens oppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Columns layout</source>
-      <translation>Bytt til kolonnevisning</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Three Column layout</source>
-      <translation>Bytt til tre kolonneoppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Spiral layout</source>
-      <translation>Bytt til spiraloppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Switch to Tile layout</source>
-      <translation>Bytt til Flisoppsett</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Increase window height</source>
-      <translation>Øk vindushøyden</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Decrease window height</source>
-      <translation>Reduser vindushøyden</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Increase window width</source>
-      <translation>Øk vindusbredden</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Decrease window width</source>
-      <translation>Reduser vindusbredden</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Increase master area size</source>
-      <translation>Øk størrelsen på hovedområdet</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Decrease master area size</source>
-      <translation>Reduser master området størrelse</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Toggle floating state</source>
-      <translation>Veksle flytende tilstand</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Toggle floating state for all</source>
-      <translation>Veksle flytende tilstand for alle</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Rotate the window layout</source>
-      <translation>Roter vindusoppsettet</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Rotate windows within a part</source>
-      <translation>Roter vinduer innenfor en del</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Toggle dock support</source>
-      <translation>Veksle forankringsstøtte</translation>
     </message>
   </context>
   <context>
@@ -9354,14 +9464,6 @@
       <location line="+8"/>
       <source>Screen recording</source>
       <translation>Skjerm opptak</translation>
-    </message>
-  </context>
-  <context>
-    <name>StatusIconsContext</name>
-    <message>
-      <location filename="../modules/bar/popouts/StatusIconsContext.qml" line="+83"/>
-      <source>Status icons settings</source>
-      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -10002,6 +10104,46 @@
     </message>
   </context>
   <context>
+    <name>UninstallDialog</name>
+    <message>
+      <location filename="../modules/nexus/common/UninstallDialog.qml" line="+66"/>
+      <source>Uninstall Caelestia?</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Still looking for the uninstaller. Try again in a moment.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>This opens the uninstaller in a terminal, where it asks for confirmation of its own. It removes the shell, its config files and its services, and can restore your pre-install configuration from a backup.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>This install belongs to a package, so the package manager owns its files. Remove it with:
+
+%1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>No uninstaller script was found and no known package manager owns this install. Remove it the same way you installed it.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+15"/>
+      <source>Cancel</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Uninstall</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>Units</name>
     <message>
       <location filename="../services/Units.qml" line="+22"/>
@@ -10151,12 +10293,12 @@
   <context>
     <name>UpdateChecker</name>
     <message>
-      <location filename="../services/UpdateChecker.qml" line="+363"/>
+      <location filename="../services/UpdateChecker.qml" line="+365"/>
       <source>Done!</source>
       <translation>Ferdig!</translation>
     </message>
     <message>
-      <location line="+19"/>
+      <location line="+18"/>
       <source>Preparing shell build...</source>
       <translation>Forbereder skallbygg...</translation>
     </message>
@@ -10167,12 +10309,11 @@
     </message>
     <message>
       <location line="+15"/>
-      <location line="+379"/>
       <source>Canceled</source>
       <translation>Avbrutt</translation>
     </message>
     <message>
-      <location line="-294"/>
+      <location line="+103"/>
       <location line="+21"/>
       <source>Release</source>
       <translation>Utgivelse</translation>
@@ -10187,36 +10328,11 @@
       <source>Tag</source>
       <translation>Tagg</translation>
     </message>
-    <message>
-      <location line="+275"/>
-      <source>Update Successful</source>
-      <translation>Oppdatering vellykket</translation>
-    </message>
-    <message>
-      <location line="+0"/>
-      <source>The update is complete. Please log out to apply changes.</source>
-      <translation>Oppdateringen er fullført. Logg ut for å bruke endringene.</translation>
-    </message>
-    <message>
-      <location line="+3"/>
-      <source>Update failed (exit code %1)</source>
-      <translation>Oppdatering feilet (avslutningskode %1)</translation>
-    </message>
-    <message>
-      <location line="+1"/>
-      <source>Update Failed</source>
-      <translation>Oppdatering feilet</translation>
-    </message>
-    <message>
-      <location line="+0"/>
-      <source>The update script returned error code %1</source>
-      <translation>Oppdateringsskriptet returnerte feilkode %1</translation>
-    </message>
   </context>
   <context>
     <name>UpdateIndicator</name>
     <message>
-      <location filename="../modules/bar/components/UpdateIndicator.qml" line="+49"/>
+      <location filename="../modules/bar/components/UpdateIndicator.qml" line="+47"/>
       <source>Caelestia updates</source>
       <translation type="unfinished"/>
     </message>
@@ -10292,12 +10408,7 @@
   <context>
     <name>Updates</name>
     <message>
-      <location filename="../modules/bar/popouts/Updates.qml" line="+34"/>
-      <source>Updating…</source>
-      <translation>Oppdaterer…</translation>
-    </message>
-    <message>
-      <location line="+2"/>
+      <location filename="../modules/bar/popouts/Updates.qml" line="+32"/>
       <source>Checking for updates…</source>
       <translation>Sjekker etter oppdateringer…</translation>
     </message>
@@ -10366,7 +10477,7 @@
   <context>
     <name>UpdatesPage</name>
     <message>
-      <location filename="../modules/nexus/pages/UpdatesPage.qml" line="+136"/>
+      <location filename="../modules/nexus/pages/UpdatesPage.qml" line="+138"/>
       <source>Updates</source>
       <translation>Oppdateringer</translation>
     </message>
@@ -10376,17 +10487,7 @@
       <translation>Hjelp</translation>
     </message>
     <message>
-      <location line="+97"/>
-      <source>Update complete - log out to apply</source>
-      <translation>Oppdatering fullført - utlogging for å bruke</translation>
-    </message>
-    <message>
-      <location line="+1"/>
-      <source>Updating…</source>
-      <translation>Oppdaterer…</translation>
-    </message>
-    <message>
-      <location line="+1"/>
+      <location line="+95"/>
       <source>Restore to %1?</source>
       <translation>Gjenopprett til %1?</translation>
     </message>
@@ -10431,12 +10532,7 @@
       <translation>Kanal: %1</translation>
     </message>
     <message>
-      <location line="+22"/>
-      <source>Log Out</source>
-      <translation>Logg ut</translation>
-    </message>
-    <message>
-      <location line="+1"/>
+      <location line="+14"/>
       <source>Restore</source>
       <translation>Gjenopprett</translation>
     </message>
@@ -10456,12 +10552,7 @@
       <translation>Installer oppdatering</translation>
     </message>
     <message>
-      <location line="+40"/>
-      <source>Stop</source>
-      <translation>Stopp</translation>
-    </message>
-    <message>
-      <location line="+1"/>
+      <location line="+22"/>
       <source>Cancel</source>
       <translation>Avbryt</translation>
     </message>
@@ -10476,7 +10567,7 @@
       <translation>Sjekk</translation>
     </message>
     <message>
-      <location line="+31"/>
+      <location line="+29"/>
       <source>General</source>
       <translation>Generelt</translation>
     </message>
@@ -10506,12 +10597,7 @@
       <translation>Vis et varselikon i oppgavelinjen når oppdateringer er tilgjengelige</translation>
     </message>
     <message>
-      <location line="+63"/>
-      <source>Customize Installation</source>
-      <translation>Tilpass installasjonsprogrammet</translation>
-    </message>
-    <message>
-      <location line="+15"/>
+      <location line="+39"/>
       <source>Open Backup Folder</source>
       <translation>Åpne sikkerhetskopimappen</translation>
     </message>
@@ -10521,27 +10607,7 @@
       <translation>Vis tidligere konfigurasjonsfiler for sikkerhetskopiering</translation>
     </message>
     <message>
-      <location line="+8"/>
-      <source>Deploy Configurations</source>
-      <translation>Installer konfigurasjoner</translation>
-    </message>
-    <message>
-      <location line="+1"/>
-      <source>Update your custom dotfiles in ~/.config</source>
-      <translation>Oppdater dine egendefinerte prikkfiler i ~/.config</translation>
-    </message>
-    <message>
-      <location line="+8"/>
-      <source>Build Shell UI</source>
-      <translation>Bygg Shell UI</translation>
-    </message>
-    <message>
-      <location line="+1"/>
-      <source>Compile and install Quickshell UI updates</source>
-      <translation>Kompiler og installer oppdateringer for Quickshell UI</translation>
-    </message>
-    <message>
-      <location line="+33"/>
+      <location line="+34"/>
       <source>Switching to %1…</source>
       <translation>Bytter til %1…</translation>
     </message>
@@ -10556,7 +10622,7 @@
       <translation>Gjennomfør historikk</translation>
     </message>
     <message>
-      <location line="+54"/>
+      <location line="+53"/>
       <source>Loading…</source>
       <translation type="unfinished"/>
     </message>
@@ -10564,11 +10630,6 @@
       <location line="+0"/>
       <source>Load 10 More</source>
       <translation>Last inn 10 mer</translation>
-    </message>
-    <message>
-      <location line="+11"/>
-      <source>Update Log</source>
-      <translation>Oppdater loggen</translation>
     </message>
   </context>
   <context>
@@ -10753,7 +10814,7 @@
   <context>
     <name>VPN</name>
     <message>
-      <location filename="../services/VPN.qml" line="+174"/>
+      <location filename="../services/VPN.qml" line="+175"/>
       <source>VPN connection failed</source>
       <translation>VPN-tilkobling mislyktes</translation>
     </message>
@@ -10763,7 +10824,7 @@
       <translation>Frakobling av VPN mislyktes</translation>
     </message>
     <message>
-      <location line="+221"/>
+      <location line="+223"/>
       <source>VPN connected</source>
       <translation>VPN tilkoblet</translation>
     </message>
@@ -10799,7 +10860,7 @@
       <translation>Feil i VPN</translation>
     </message>
     <message>
-      <location line="+184"/>
+      <location line="+196"/>
       <location line="+68"/>
       <source>Could not start %1. Is it installed?</source>
       <translation>Kunne ikke starte %1. Er den installert?</translation>
@@ -11187,7 +11248,7 @@
   <context>
     <name>WeatherTab</name>
     <message>
-      <location filename="../modules/dashboard/WeatherTab.qml" line="+31"/>
+      <location filename="../modules/dashboard/WeatherTab.qml" line="+58"/>
       <source>Loading...</source>
       <translation>Laster...</translation>
     </message>
@@ -11208,8 +11269,9 @@
     </message>
     <message>
       <location line="+6"/>
-      <source>Feels Like</source>
-      <translation>Føles som</translation>
+      <source>Feels like</source>
+      <comment>apparent temperature</comment>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+6"/>
@@ -11217,14 +11279,37 @@
       <translation>Vind</translation>
     </message>
     <message>
-      <location line="+10"/>
-      <source>7-Day Forecast</source>
-      <translation>7-dagers prognose</translation>
+      <location line="+1"/>
+      <source>%1 km/h</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+19"/>
+      <source>Hourly forecast</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+62"/>
+      <source>7-day forecast</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+34"/>
       <source>Today</source>
-      <translation>Idag</translation>
+      <comment>forecast column</comment>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+26"/>
+      <source>%1 / %2</source>
+      <comment>min/max temperature</comment>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+252"/>
+      <source>Now</source>
+      <comment>hourly forecast, current hour</comment>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
