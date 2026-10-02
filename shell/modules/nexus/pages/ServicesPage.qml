@@ -17,7 +17,7 @@ PageBase {
             text: qsTr("Auto")
         },
         MenuItem {
-            text: "Local"
+            text: qsTr("Local")
         },
         MenuItem {
             text: "LRCLIB"
