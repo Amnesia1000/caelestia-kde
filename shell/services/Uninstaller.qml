@@ -47,6 +47,7 @@ Singleton {
     Process {
         id: probe
 
+        running: true
         command: ["sh", "-c", `
 candidates="$1"
 shift
