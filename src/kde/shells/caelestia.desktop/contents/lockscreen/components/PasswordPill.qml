@@ -187,8 +187,8 @@ FocusScope {
                     id: charList
                     anchors.centerIn: parent
                     orientation: Qt.Horizontal
-                    spacing: 6 * root.centerScale
-                    height: 18 * root.centerScale
+                    spacing: 4 * root.centerScale
+                    height: 14 * root.centerScale
                     width: Math.min(parent.width, (count * height) + Math.max(0, count - 1) * spacing)
                     model: charModel
                     interactive: false
