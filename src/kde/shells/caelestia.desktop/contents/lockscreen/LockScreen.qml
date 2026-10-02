@@ -20,6 +20,8 @@ Item {
         }
         if (viewVisible && lockScreenUi && typeof lockScreenUi.ensureAuthenticating === "function") {
             lockScreenUi.ensureAuthenticating();
+            if (lockScreenUi.activePasswordPill)
+                lockScreenUi.activePasswordPill.forceActiveFocus();
         }
     }
 

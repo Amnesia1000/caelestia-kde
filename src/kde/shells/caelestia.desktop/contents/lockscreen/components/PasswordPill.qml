@@ -39,16 +39,26 @@ FocusScope {
 
     signal loginRequested(string password)
 
+    function focusInput() {
+        if (passwordBox.enabled)
+            passwordBox.forceActiveFocus();
+    }
+
     function shake() {
         rejectAnim.restart();
     }
 
     function clearPassword() {
         root.showPassword = false;
-        passwordBox.forceActiveFocus();
+        root.focusInput();
         passwordBox.text = "";
         passwordBox.text = Qt.binding(() => PasswordSync.password);
     }
+
+    onActiveFocusChanged: if (activeFocus) root.focusInput()
+    onVisibleChanged: if (visible) root.focusInput()
+
+    Component.onCompleted: root.focusInput()
 
     readonly property var shapeQueue: {
         var shapes = [
@@ -113,7 +123,7 @@ FocusScope {
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.IBeamCursor
-            onClicked: passwordBox.forceActiveFocus()
+            onClicked: root.focusInput()
         }
 
         RowLayout {
@@ -311,7 +321,11 @@ FocusScope {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: (passwordBox.text.length > 0 && !root.graceLocked && !root.isAuthenticating) ? Qt.PointingHandCursor : Qt.ArrowCursor
-                        onClicked: if (passwordBox.text.length > 0 && !root.isAuthenticating && !root.graceLocked) root.loginRequested(passwordBox.text)
+                        onClicked: {
+                            root.focusInput();
+                            if (passwordBox.text.length > 0 && !root.isAuthenticating && !root.graceLocked)
+                                root.loginRequested(passwordBox.text);
+                        }
                     }
                 }
 
