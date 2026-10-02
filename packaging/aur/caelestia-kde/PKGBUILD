@@ -1,7 +1,7 @@
 # Maintainer: ladybug-me <rajveer2027singh@gmail.com>
 
 pkgname=caelestia-kde
-pkgver=2.4.3
+pkgver=2.5.1
 pkgrel=1
 pkgdesc='The Caelestia desktop shell, ported to KDE Plasma'
 arch=('x86_64' 'aarch64')
