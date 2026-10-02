@@ -29,5 +29,9 @@ grep -Fq 'm3shapes-revision' "$FETCH_SCRIPT" \
     || fail "the fetch command must read the revision manifest"
 grep -Fq 'fetch-dependencies:' "$MAKEFILE" \
     || fail "make must expose the dependency-fetch command"
+grep -Fq 'CAELESTIA_INSTALL_MANIFEST_RELATIVE' "$CMAKE_FILE" \
+    || fail "CMake must publish the normalized install manifest"
+grep -Fq '.caelestia-install-manifest' "$ROOT/packaging/aur/caelestia-kde/PKGBUILD" \
+    || fail "the package must require the CMake install manifest"
 
 echo "PASS: reproducible build inputs are pinned and have an offline path"

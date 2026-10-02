@@ -283,4 +283,17 @@ if("shell" IN_LIST ENABLE_MODULES)
     elseif(TS_FILES)
         message(WARNING "Qt Linguist tools not found and no compiled catalogues - the shell will only be available in English")
     endif()
+
+    # Keep the generated install tree self-describing. CMake also writes its
+    # absolute install_manifest.txt beside the build, but this copy travels
+    # with source and package installs and contains stable paths only.
+    set(CAELESTIA_INSTALL_MANIFEST_RELATIVE
+        "${INSTALL_DATADIR}/.caelestia-install-manifest")
+    install(CODE
+        "set(_caelestia_manifest \"\\$ENV{DESTDIR}\\${CMAKE_INSTALL_PREFIX}/${CAELESTIA_INSTALL_MANIFEST_RELATIVE}\")
+         file(WRITE \"\\${_caelestia_manifest}\" \"# Caelestia CMake install manifest\\n\")
+         foreach(_caelestia_installed IN LISTS CMAKE_INSTALL_MANIFEST_FILES)
+             file(RELATIVE_PATH _caelestia_relative \"\\$ENV{DESTDIR}\\${CMAKE_INSTALL_PREFIX}\" \"\\${_caelestia_installed}\")
+             file(APPEND \"\\${_caelestia_manifest}\" \"\\${_caelestia_relative}\\n\")
+         endforeach()")
 endif()

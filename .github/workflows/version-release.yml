@@ -223,6 +223,30 @@ jobs:
           set -euo pipefail
           cmake --build shell/build -j"$(nproc)"
 
+      - name: Repeat Clean Offline Build
+        run: |
+          set -euo pipefail
+          rm -rf shell/repro-build repro-a repro-b
+          cmake -G Ninja -B shell/repro-build -S shell -DCMAKE_BUILD_TYPE=Release \
+            -DCAELESTIA_CACHE_DEPS=ON \
+            -DCAELESTIA_OFFLINE=ON \
+            -DCMAKE_INSTALL_PREFIX=/ \
+            -DINSTALL_BINDIR=usr/bin \
+            -DINSTALL_DATADIR=usr/lib/caelestia \
+            -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
+            -DINSTALL_LIBDIR=usr/lib/caelestia \
+            -DINSTALL_QMLDIR=usr/lib/qt6/qml
+          cmake --build shell/repro-build -j"$(nproc)"
+          DESTDIR="$PWD/repro-a" cmake --install shell/build
+          DESTDIR="$PWD/repro-b" cmake --install shell/repro-build
+          diff -ru --no-dereference repro-a repro-b
+          find repro-a -type f -printf '%P\n' | sort > repro-a.files
+          find repro-b -type f -printf '%P\n' | sort > repro-b.files
+          diff -u repro-a.files repro-b.files
+          (cd repro-a && find . -type f -print0 | sort -z | xargs -0 sha256sum) > repro-a.sha256
+          (cd repro-b && find . -type f -print0 | sort -z | xargs -0 sha256sum) > repro-b.sha256
+          diff -u repro-a.sha256 repro-b.sha256
+
       - name: Stage Compiled Artifacts
         run: |
           set -euo pipefail

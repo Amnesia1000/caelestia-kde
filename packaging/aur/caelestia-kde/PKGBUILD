@@ -152,6 +152,7 @@ DROPIN
         usr/share/caelestia/src/dots-extra
         usr/share/caelestia/shell/assets/wallpaper.webp
         usr/share/caelestia/assets/org.quickshell.desktop
+        usr/share/caelestia/.caelestia-install-manifest
         usr/share/sddm/themes/caelestia/theme.conf
         usr/share/sddm/themes/caelestia/scripts/sync.sh
         etc/sddm.conf.d/zz-caelestia.conf
@@ -165,6 +166,16 @@ DROPIN
             exit 1
         fi
     done
+
+    local manifest_path path
+    manifest_path="$pkgdir/usr/share/caelestia/.caelestia-install-manifest"
+    while IFS= read -r path; do
+        [[ -z "$path" || "$path" == \#* ]] && continue
+        if [[ ! -e "$pkgdir/$path" ]]; then
+            echo "the package manifest references a missing path: $path" >&2
+            exit 1
+        fi
+    done < "$manifest_path"
 
     echo "package layout checked: ${#required[@]} paths"
 }
