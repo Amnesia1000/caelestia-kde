@@ -6,6 +6,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PILL="$REPO_ROOT/src/kde/shells/caelestia.desktop/contents/lockscreen/components/PasswordPill.qml"
+LOCKSCREEN="$REPO_ROOT/src/kde/shells/caelestia.desktop/contents/lockscreen/LockScreen.qml"
 
 # The greeter is a Plasma shell package of our own, not the upstream Quickshell lock
 # module, so nothing upstream can restore this feature for us: the reveal toggle exists
@@ -40,6 +41,14 @@ test_the_reveal_clears_with_the_password() {
 
     assert_eq "1" "$(printf '%s\n' "$qml" | grep -c 'if (text.length === 0) root.showPassword = false;')" "emptying the field should close the reveal"
     assert_eq "1" "$(printf '%s\n' "$qml" | grep -c '^        root.showPassword = false;$')" "clearing the password should close the reveal"
+}
+
+test_hiding_the_lockscreen_clears_the_password() {
+    local qml
+    qml="$(cat "$LOCKSCREEN")"
+
+    assert_contains "$qml" 'if (!viewVisible) {' "hiding the lockscreen should clear the password"
+    assert_contains "$qml" 'root.clearPassword();' "hiding the lockscreen should clear the password state"
 }
 
 run_tests
