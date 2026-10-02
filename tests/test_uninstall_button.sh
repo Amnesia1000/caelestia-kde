@@ -60,6 +60,8 @@ test_the_dialog_only_offers_to_run_a_script_that_exists() {
 
     assert_not_contains "$dialog" "qs.services" \
         "the dialog should not reach into services; the page hands the state in"
+    assert_contains "$dialog" "import qs.components" \
+        "StyledText must be imported from the parent components module"
     assert_contains "$dialog" "property string state" \
         "it should take the uninstaller state as a property"
     assert_contains "$dialog" "signal confirmed" \

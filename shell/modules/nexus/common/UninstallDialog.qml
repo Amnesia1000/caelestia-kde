@@ -5,10 +5,11 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Caelestia.Config
+import qs.components
 import qs.components.controls
 import qs.components.effects
 
-Popup {
+Item {
     id: root
 
     property string state: "probing"
@@ -17,6 +18,13 @@ Popup {
     readonly property bool canRun: root.state === "script"
 
     signal confirmed
+
+    function open(): void {
+        dialog.open();
+    }
+
+    Popup {
+        id: dialog
 
     width: 340
     padding: Tokens.padding.large
@@ -94,7 +102,7 @@ Popup {
 
             TextButton {
                 text: qsTr("Cancel")
-                onClicked: root.close()
+                onClicked: dialog.close()
             }
 
             TextButton {
@@ -108,9 +116,10 @@ Popup {
                 enabled: root.state !== "probing"
                 onClicked: {
                     root.confirmed();
-                    root.close();
+                    dialog.close();
                 }
             }
         }
+    }
     }
 }
