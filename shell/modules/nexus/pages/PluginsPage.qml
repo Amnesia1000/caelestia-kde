@@ -334,6 +334,51 @@ PageBase {
                     }
                 }
             }
+
+            SectionHeader {
+                text: qsTr("Install from source")
+            }
+
+            TextFieldRow {
+                id: sourceUrlField
+
+                first: true
+                last: true
+                label: qsTr("Git URL")
+                placeholderText: "https://…"
+            }
+
+            ConnectedRect {
+                Layout.fillWidth: true
+                first: true
+                last: true
+                implicitHeight: sourceStatus.implicitHeight + Tokens.padding.medium * 2
+
+                RowLayout {
+                    id: sourceStatus
+
+                    anchors.fill: parent
+                    anchors.margins: Tokens.padding.medium
+                    anchors.leftMargin: Tokens.padding.largeIncreased
+                    anchors.rightMargin: Tokens.padding.largeIncreased
+                    spacing: Tokens.spacing.medium
+
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: PluginStore.installError !== "" ? PluginStore.installError : PluginStore.installing ? PluginStore.installProgress : qsTr("The repository root must contain metadata.json")
+                        color: PluginStore.installError !== "" ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
+                        font: Tokens.font.label.small
+                        elide: Text.ElideRight
+                    }
+
+                    TextButton {
+                        text: qsTr("Install")
+                        type: sourceUrlField.field.text !== "" ? TextButton.Filled : TextButton.Tonal
+                        enabled: !PluginStore.installing && sourceUrlField.field.text !== ""
+                        onClicked: PluginStore.installFromUrl(sourceUrlField.field.text)
+                    }
+                }
+            }
         }
 
         ColumnLayout {

@@ -15,6 +15,7 @@ Item {
 
     property bool installing: false
     property string installProgress: ""
+    property string installError: ""
 
     property bool restartRequired: false
 
@@ -165,6 +166,60 @@ echo "DONE"`;
         }
     }
 
+
+    function installFromUrl(url) {
+        if (typeof url !== "string" || (url.indexOf("https://") !== 0 && url.indexOf("git@") !== 0)) {
+            installError = qsTr("Enter a valid git URL");
+            return;
+        }
+
+        installing = true;
+        installError = "";
+        installProgress = qsTr("Cloning plugin...");
+
+        const targetBase = (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/caelestia/plugins";
+        const script = `set -e
+TMP_DIR=$(mktemp -d)
+git clone -q --depth 1 "$1" "$TMP_DIR"
+ID=$(jq -r .id "$TMP_DIR/metadata.json")
+if ! [[ "$ID" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || [[ "$ID" == *..* ]]; then echo "invalid plugin id: $ID" >&2; rm -rf "$TMP_DIR"; exit 1; fi
+mkdir -p "$2"
+rm -rf "$2/$ID"
+mv "$TMP_DIR" "$2/$ID"
+echo "INSTALLED:$ID:$2/$ID"`;
+
+        sourceProc.command = ["bash", "-c", script, "--", url, targetBase];
+        sourceProc.running = true;
+    }
+
+    Process {
+        id: sourceProc
+
+        stdout: StdioCollector { id: sourceOut }
+        stderr: StdioCollector { id: sourceErr }
+
+        onExited: (code) => {
+            storeRoot.installing = false;
+            if (code !== 0) {
+                const err = (sourceErr.text || sourceOut.text || "").trim().split("\n");
+                storeRoot.installError = err[err.length - 1] || qsTr("Install failed");
+                console.log("PluginStore: source install error:", sourceErr.text, sourceOut.text);
+            } else {
+                const match = /INSTALLED:([^:]+):(.+)/.exec(sourceOut.text || "");
+                if (!match) {
+                    storeRoot.installError = qsTr("Install failed");
+                    return;
+                }
+                console.log("PluginStore: source install success for", match[1]);
+                storeRoot.restartRequired = true;
+                let ids = storeRoot.installedPluginIds.slice();
+                if (ids.indexOf(match[1]) === -1)
+                    ids.push(match[1]);
+                storeRoot.installedPluginIds = ids;
+                PluginLoader.addPluginToAvailable(match[1], match[2], "user");
+            }
+        }
+    }
 
     Process {
         id: installProc
