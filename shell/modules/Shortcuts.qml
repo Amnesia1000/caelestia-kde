@@ -61,9 +61,29 @@ Scope {
         { name: "krohnkiteToggleDock", description: qsTr("Toggle dock support"), action: "KrohnkitetoggleDock", key: "" },
     ]
 
+    function activateDockEntry(idx: int): void {
+        let output = "";
+        if (Kwin.cursorOutputName)
+            output = Kwin.cursorOutputName();
+        let screenName = "";
+        const screens = [...Quickshell.screens];
+        for (const s of screens) {
+            if (s.name === output) {
+                screenName = s.name;
+                break;
+            }
+        }
+        if (!screenName && screens.length > 0)
+            screenName = screens[0].name;
+        const dock = Visibilities.docks.get(screenName);
+        if (dock)
+            dock.activateIndex(idx);
+    }
+
     Component.onCompleted: {
         let _ = KeybindsModel;
     }
+
     // qmllint disable unresolved-type
 
     CustomShortcut {
@@ -72,6 +92,7 @@ Scope {
         description: qsTr("Open nexus")
         onPressed: WindowFactory.create()
     }
+
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
@@ -120,6 +141,7 @@ Scope {
             regionSelector.screenshot();
         }
     }
+
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
@@ -527,5 +549,78 @@ Scope {
 
         name: "caelestia.qml.shortcuts"
         defaultLogLevel: LoggingCategory.Info
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate1"
+        description: qsTr("Open dock entry 1")
+        key: ""
+        onPressed: root.activateDockEntry(0)
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate2"
+        description: qsTr("Open dock entry 2")
+        key: ""
+        onPressed: root.activateDockEntry(1)
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate3"
+        description: qsTr("Open dock entry 3")
+        key: ""
+        onPressed: root.activateDockEntry(2)
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate4"
+        description: qsTr("Open dock entry 4")
+        key: ""
+        onPressed: root.activateDockEntry(3)
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate5"
+        description: qsTr("Open dock entry 5")
+        key: ""
+        onPressed: root.activateDockEntry(4)
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate6"
+        description: qsTr("Open dock entry 6")
+        key: ""
+        onPressed: root.activateDockEntry(5)
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate7"
+        description: qsTr("Open dock entry 7")
+        key: ""
+        onPressed: root.activateDockEntry(6)
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate8"
+        description: qsTr("Open dock entry 8")
+        key: ""
+        onPressed: root.activateDockEntry(7)
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "dockActivate9"
+        description: qsTr("Open dock entry 9")
+        key: ""
+        onPressed: root.activateDockEntry(8)
     }
 }
