@@ -185,6 +185,9 @@ QtObject {
     }
 
     function maybeTriggerDummyImageLoader(): void {
+        // Absolute image-path hints (e.g. Chromium) arrive as image://icon//abs/path, which renders as a missing icon
+        if (image.startsWith("image://icon//"))
+            image = "file://" + image.slice("image://icon/".length);
         if (image && !image.startsWith("image://icon/") && !image.startsWith(Paths.notifimagecache))
             dummyImageLoader.active = true;
     }
