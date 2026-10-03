@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Widgets
+import Caelestia
 import Caelestia.Config
 import Caelestia.Models
 import qs.components
@@ -19,13 +20,16 @@ ColumnLayout {
     required property var props
     required property DrawerVisibilities visibilities
 
+    property string confirmDelete: ""
+    readonly property string shotsdir: GlobalConfig.paths.screenshotsDir
+
     spacing: 0
 
     WrapperMouseArea {
         Layout.fillWidth: true
 
         cursorShape: Qt.PointingHandCursor
-        onClicked: root.props.recordingListExpanded = !root.props.recordingListExpanded
+        onClicked: root.props.screenshotListExpanded = !root.props.screenshotListExpanded
 
         RowLayout {
             spacing: Tokens.spacing.medium
@@ -39,15 +43,15 @@ ColumnLayout {
             StyledText {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.fillWidth: true
-                text: qsTr("Recordings")
+                text: qsTr("Screenshots")
                 font: Tokens.font.body.medium
             }
 
             IconButton {
-                icon: root.props.recordingListExpanded ? "unfold_less" : "unfold_more"
+                icon: root.props.screenshotListExpanded ? "unfold_less" : "unfold_more"
                 type: IconButton.Text
                 label.animate: true
-                onClicked: root.props.recordingListExpanded = !root.props.recordingListExpanded
+                onClicked: root.props.screenshotListExpanded = !root.props.screenshotListExpanded
             }
         }
     }
@@ -56,15 +60,15 @@ ColumnLayout {
         id: list
 
         model: FolderListModel {
-            folder: "file://" + GlobalConfig.paths.recordingsDir
-            nameFilters: ["recording_*.mp4", "recording_*.gif"]
+            folder: "file://" + root.shotsdir
+            nameFilters: ["screenshot-*.png"]
             sortField: FolderListModel.Time
             sortReversed: false
         }
 
         Layout.fillWidth: true
         Layout.rightMargin: -Tokens.spacing.small
-        implicitHeight: (Tokens.font.body.large.pointSize + Tokens.padding.small) * (root.props.recordingListExpanded ? 10 : 3)
+        implicitHeight: (Tokens.font.body.large.pointSize + Tokens.padding.small) * (root.props.screenshotListExpanded ? 10 : 3)
         clip: true
 
         StyledScrollBar.vertical: StyledScrollBar {
@@ -72,13 +76,14 @@ ColumnLayout {
         }
 
         delegate: RowLayout {
-            id: recording
+            id: shot
 
             required property string fileBaseName
             required property string filePath
 
             property string baseName: fileBaseName
             property string path: filePath
+            property bool confirming: root.confirmDelete === path
 
             anchors.left: list.contentItem.left
             anchors.right: list.contentItem.right
@@ -88,47 +93,75 @@ ColumnLayout {
             StyledText {
                 Layout.fillWidth: true
                 Layout.rightMargin: Tokens.spacing.extraSmall
+                visible: !shot.confirming
                 text: {
-                    const time = recording.baseName;
-                    const matches = time.match(/^recording_(\d{4})(\d{2})(\d{2})_(\d{2})-(\d{2})-(\d{2})/);
+                    const time = shot.baseName;
+                    const matches = time.match(/^screenshot-(\d{4})-(\d{2})-(\d{2})_(\d{2})\.(\d{2})\.(\d{2})/);
                     if (!matches)
                         return time;
-                    const date = new Date(...matches.slice(1));
-                    date.setMonth(date.getMonth() - 1);
-                    return qsTr("Recording at %1").arg(Qt.formatDateTime(date, Qt.locale()));
+                    const date = new Date(matches[1], matches[2] - 1, matches[3], matches[4], matches[5], matches[6]);
+                    return qsTr("Screenshot at %1").arg(Qt.formatDateTime(date, Qt.locale()));
                 }
                 color: Colours.palette.m3onSurfaceVariant
                 elide: Text.ElideRight
             }
 
             IconButton {
+                visible: !shot.confirming
                 icon: "play_arrow"
                 type: IconButton.Text
                 onClicked: {
                     root.visibilities.utilities = false;
                     if (!Visibilities.sidebarPinned)
                         root.visibilities.sidebar = false;
-                    Quickshell.execDetached([...GlobalConfig.general.apps.playback, recording.path]);
+                    Quickshell.execDetached(["xdg-open", shot.path]);
                 }
             }
 
             IconButton {
+                visible: !shot.confirming
                 icon: "folder"
                 type: IconButton.Text
                 onClicked: {
                     root.visibilities.utilities = false;
                     if (!Visibilities.sidebarPinned)
                         root.visibilities.sidebar = false;
-                    Quickshell.execDetached([...GlobalConfig.general.apps.explorer, GlobalConfig.paths.recordingsDir]);
+                    Quickshell.execDetached(["xdg-open", root.shotsdir]);
                 }
             }
 
             IconButton {
+                visible: !shot.confirming
                 icon: "delete_forever"
                 type: IconButton.Text
                 label.color: Colours.palette.m3error
                 stateLayer.color: Colours.palette.m3error
-                onClicked: root.props.recordingConfirmDelete = recording.path
+                onClicked: root.confirmDelete = shot.path
+            }
+
+            StyledText {
+                Layout.fillWidth: true
+                visible: shot.confirming
+                text: qsTr("Delete this screenshot?")
+                color: Colours.palette.m3onSurfaceVariant
+                elide: Text.ElideRight
+            }
+
+            TextButton {
+                visible: shot.confirming
+                text: qsTr("Cancel")
+                type: TextButton.Text
+                onClicked: root.confirmDelete = ""
+            }
+
+            TextButton {
+                visible: shot.confirming
+                text: qsTr("Delete")
+                type: TextButton.Text
+                onClicked: {
+                    CUtils.deleteFile(Qt.resolvedUrl(shot.path));
+                    root.confirmDelete = "";
+                }
             }
         }
 
@@ -176,9 +209,9 @@ ColumnLayout {
                     color: Colours.palette.m3outline
                     fontStyle: Tokens.font.icon.extraLarge
 
-                    opacity: root.props.recordingListExpanded ? 1 : 0
-                    scale: root.props.recordingListExpanded ? 1 : 0
-                    Layout.preferredHeight: root.props.recordingListExpanded ? implicitHeight : 0
+                    opacity: root.props.screenshotListExpanded ? 1 : 0
+                    scale: root.props.screenshotListExpanded ? 1 : 0
+                    Layout.preferredHeight: root.props.screenshotListExpanded ? implicitHeight : 0
 
                     Behavior on opacity {
                         Anim {
@@ -203,9 +236,9 @@ ColumnLayout {
                         text: "scan_delete"
                         color: Colours.palette.m3outline
 
-                        opacity: !root.props.recordingListExpanded ? 1 : 0
-                        scale: !root.props.recordingListExpanded ? 1 : 0
-                        Layout.preferredWidth: !root.props.recordingListExpanded ? implicitWidth : 0
+                        opacity: !root.props.screenshotListExpanded ? 1 : 0
+                        scale: !root.props.screenshotListExpanded ? 1 : 0
+                        Layout.preferredWidth: !root.props.screenshotListExpanded ? implicitWidth : 0
 
                         Behavior on opacity {
                             Anim {
@@ -223,7 +256,7 @@ ColumnLayout {
                     }
 
                     StyledText {
-                        text: qsTr("No recordings found")
+                        text: qsTr("No screenshots found")
                         color: Colours.palette.m3outline
                     }
                 }
