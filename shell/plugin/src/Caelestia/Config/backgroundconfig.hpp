@@ -68,6 +68,8 @@ class DesktopLyrics : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, autoHide, true)
     CONFIG_PROPERTY(qreal, scale, 1.0)
     CONFIG_PROPERTY(QString, position, QStringLiteral("bottom-center"))
+    CONFIG_PROPERTY(qreal, offsetX, 0.0)
+    CONFIG_PROPERTY(qreal, offsetY, 0.0)
     CONFIG_PROPERTY(int, alignment, 1)
     CONFIG_PROPERTY(bool, invertColors, false)
     CONFIG_SUBOBJECT(DesktopLyricsBackground, background)
