@@ -95,16 +95,6 @@ PageBase {
         }
 
         ToggleRow {
-            Layout.fillWidth: true
-            text: qsTr("Compact")
-            checked: Config.bar.greeter?.compact ?? false
-            onToggled: {
-                GlobalConfig.bar.greeter.compact = checked;
-                GlobalConfig.save();
-            }
-        }
-
-        ToggleRow {
             text: qsTr("Inverted")
             checked: Config.bar.greeter?.inverted ?? false
             onToggled: {
