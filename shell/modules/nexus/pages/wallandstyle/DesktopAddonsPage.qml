@@ -353,13 +353,13 @@ PageBase {
             StepperRow {
                 last: true
                 Layout.fillWidth: true
-                label: qsTr("Size")
-                subtext: qsTr("Margin multiplier, larger values leave more room in the middle")
-                value: Config.background.visualiser.size
-                from: 0.5
-                to: 3
-                stepSize: 0.1
-                onMoved: v => GlobalConfig.background.visualiser.size = v
+                label: qsTr("Side width")
+                subtext: qsTr("How much of each side the bars take up")
+                value: Config.background.visualiser.sideWidth
+                from: 0.1
+                to: 0.45
+                stepSize: 0.05
+                onMoved: v => GlobalConfig.background.visualiser.sideWidth = v
             }
         }
     }

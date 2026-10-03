@@ -24,8 +24,7 @@ Item {
     }
     readonly property int barExclusiveZone: barWrapper ? barWrapper.visualThickness : 0
     readonly property real visualiserSpacing: Tokens.spacing.small * Config.background.visualiser.spacing
-    readonly property real fallbackMargin: (Tokens.padding.large + Tokens.spacing.small) / Config.background.visualiser.size
-    readonly property real edgeMargin: Config.border.thickness / Config.background.visualiser.size
+    readonly property real fallbackMargin: Tokens.padding.large + Tokens.spacing.small
 
     opacity: shouldBeActive ? 1 : 0
 
@@ -65,12 +64,13 @@ Item {
                     readonly property real baseMargin: root.barExclusiveZone + root.visualiserSpacing
 
                     anchors.fill: parent
-                    anchors.margins: root.edgeMargin
+                    anchors.margins: Config.border.thickness
                     anchors.leftMargin: Config.bar.position === "left" ? (root.barExclusiveZone + root.fallbackMargin) : root.fallbackMargin
                     anchors.rightMargin: Config.bar.position === "right" ? (root.barExclusiveZone + root.fallbackMargin) : root.fallbackMargin
-                    anchors.topMargin: Config.bar.position === "top" ? root.barExclusiveZone : root.edgeMargin
-                    anchors.bottomMargin: Config.bar.position === "bottom" ? root.barExclusiveZone : root.edgeMargin
+                    anchors.topMargin: Config.bar.position === "top" ? root.barExclusiveZone : Config.border.thickness
+                    anchors.bottomMargin: Config.bar.position === "bottom" ? root.barExclusiveZone : Config.border.thickness
                     values: Audio.cava?.values ?? []
+                    sideWidth: Config.background.visualiser.sideWidth
                     primaryColor: Qt.alpha(Colours.palette.m3primary, 0.7)
                     secondaryColor: Qt.alpha(Colours.palette.m3inversePrimary, 0.7)
                     rounding: Tokens.rounding.medium * Config.background.visualiser.rounding
