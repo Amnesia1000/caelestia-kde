@@ -43,7 +43,7 @@ class BackgroundVisualiser : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, blur, false)
     CONFIG_PROPERTY(qreal, rounding, 1)
     CONFIG_PROPERTY(qreal, spacing, 1)
-    CONFIG_PROPERTY(qreal, sideWidth, 0.4)
+    CONFIG_PROPERTY(qreal, size, 1)
 };
 
 class DesktopLyricsBackground : public settings::ObjectNode {
