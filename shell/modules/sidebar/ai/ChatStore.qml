@@ -92,9 +92,7 @@ QtObject {
         const wasEmpty = s.messages.length === 0;
         const m = Sessions.newMessage(fields);
         m.isNew = true;
-        s.messages.push(m);
-        if (chatId === currentChatId)
-            messages.append(m);
+        Sessions.editMessage(s, viewOf(chatId), "append", m.msgId, m);
         if (wasEmpty)
             refreshChats();
         // Until a title has been set, each message from the user asks again.
@@ -109,29 +107,15 @@ QtObject {
 
     // Changes fields of a message, in whichever chat it is.
     function update(chatId: string, msgId: string, patch: var): void {
-        const m = message(chatId, msgId);
-        if (!m)
-            return;
-        for (const k in patch)
-            m[k] = patch[k];
-        if (chatId !== currentChatId)
-            return;
-        const row = rowOf(msgId);
-        if (row !== -1)
-            for (const k in patch)
-                messages.setProperty(row, k, patch[k]);
+        const s = session(chatId);
+        if (s)
+            Sessions.editMessage(s, viewOf(chatId), "update", msgId, patch);
     }
 
     function remove(chatId: string, msgId: string): void {
         const s = session(chatId);
-        if (!s)
-            return;
-        s.messages = s.messages.filter(m => m.msgId !== msgId);
-        if (chatId === currentChatId) {
-            const row = rowOf(msgId);
-            if (row !== -1)
-                messages.remove(row);
-        }
+        if (s)
+            Sessions.editMessage(s, viewOf(chatId), "remove", msgId, null);
     }
 
     // Changes settings of a chat and stores them.
@@ -167,12 +151,7 @@ QtObject {
 
     function show(id: string): void {
         currentChatId = id;
-        messages.clear();
-        const s = session(id);
-        for (let i = 0; s && i < s.messages.length; i++) {
-            s.messages[i].isNew = false;
-            messages.append(s.messages[i]);
-        }
+        Sessions.showMessages(session(id), messages);
         revision++;
     }
 
@@ -182,11 +161,10 @@ QtObject {
             sessions = sessions.filter(x => x !== s);
     }
 
-    function rowOf(msgId: string): int {
-        for (let i = messages.count - 1; i >= 0; i--)
-            if (messages.get(i).msgId === msgId)
-                return i;
-        return -1;
+    // `messages` is only written through Sessions.editMessage() and
+    // Sessions.showMessages(), which keep it in step with the open chat.
+    function viewOf(chatId: string): ListModel {
+        return chatId === currentChatId ? messages : null;
     }
 
     function refreshChats(): void {
