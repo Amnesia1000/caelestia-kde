@@ -390,6 +390,7 @@ Item {
     Loader {
         id: windowSwitcherList
 
+        asynchronous: true
         active: root.state === "windowSwitcher"
 
         anchors.top: parent.top
@@ -407,6 +408,7 @@ Item {
     Loader {
         id: keybindsList
 
+        asynchronous: true
         active: root.state === "keybinds"
 
         anchors.fill: parent
@@ -420,6 +422,7 @@ Item {
     Loader {
         id: animationsList
 
+        asynchronous: true
         active: root.state === "animations"
 
         anchors.fill: parent

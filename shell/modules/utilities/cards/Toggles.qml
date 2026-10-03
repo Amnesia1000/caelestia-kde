@@ -98,9 +98,26 @@ StyledRect {
         anchors.margins: Tokens.padding.large
         spacing: Tokens.spacing.medium
 
-        StyledText {
-            text: qsTr("Quick Toggles")
-            font: Tokens.font.body.medium
+        RowLayout {
+            StyledText {
+                Layout.fillWidth: true
+                text: qsTr("Quick Toggles")
+                font: Tokens.font.body.medium
+            }
+
+            IconButton {
+                icon: "tune"
+                type: IconButton.Text
+                onClicked: {
+                    const pageIdx = PageDictionary.pages.findIndex(p => p.key === "utilities");
+                    root.visibilities.utilities = false;
+                    execTimer.pendingAction = () => WindowFactory.create(null, {
+                        initialPageIdx: pageIdx,
+                        initialSubPageIdx: 6
+                    });
+                    execTimer.restart();
+                }
+            }
         }
 
         QuickToggleRow {

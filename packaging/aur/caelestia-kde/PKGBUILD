@@ -95,6 +95,7 @@ build() {
         -DCMAKE_BUILD_TYPE=RelWithDebInfo \
         -DCMAKE_INSTALL_PREFIX=/ \
         -DVERSION="$pkgver" \
+        -DINSTALL_DATADIR=usr/share/caelestia \
         -DREQUIRE_CAVA=ON \
         -DDISTRIBUTOR="AUR (package: $pkgname)"
     cmake --build build || exit 1
@@ -110,15 +111,6 @@ package() {
     DESTDIR="$pkgdir" cmake --install build
     DESTDIR="$pkgdir" cmake --install effect-build
 
-    install -d "$pkgdir/usr/share/caelestia"
-    install -d "$pkgdir/usr/share/caelestia/scripts"
-    install -m755 scripts/[0-9]*.sh "$pkgdir/usr/share/caelestia/scripts/"
-    cp -r scripts/lib "$pkgdir/usr/share/caelestia/scripts/"
-    install -d "$pkgdir/usr/share/caelestia/src" "$pkgdir/usr/share/caelestia/assets" \
-        "$pkgdir/usr/share/caelestia/shell/assets"
-    cp -r src/dots src/dots-extra "$pkgdir/usr/share/caelestia/src/"
-    cp -r shell/assets/wallpaper.webp "$pkgdir/usr/share/caelestia/shell/assets/"
-    cp -r assets/org.quickshell.desktop "$pkgdir/usr/share/caelestia/assets/"
     install -d "$pkgdir/usr/share/sddm/themes/caelestia/scripts"
     cp -r src/sddm/themes/full/* "$pkgdir/usr/share/sddm/themes/caelestia/"
     install -m755 src/sddm/sync.sh "$pkgdir/usr/share/sddm/themes/caelestia/scripts/sync.sh"
@@ -139,12 +131,6 @@ DROPIN
     install -d "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons"
     cp -r src/yet-another-monochrome-icon-set \
         "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons/"
-
-    install -d "$pkgdir/usr/bin"
-    install -m755 src/bin/* "$pkgdir/usr/bin/"
-
-    install -d "$pkgdir/usr/share/caelestia"
-    cp -r src/matugen src/schemes "$pkgdir/usr/share/caelestia/"
 
     install -d "$pkgdir/usr/share/plasma/shells"
     cp -r src/kde/shells/caelestia.desktop "$pkgdir/usr/share/plasma/shells/"

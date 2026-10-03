@@ -1971,7 +1971,7 @@ Item {
                              }
                              Text {
                                  anchors.verticalCenter: parent.verticalCenter
-                                 text: "Chat"
+                                 text: qsTr("Chat")
                                  color: !isHistoryTab ? Colours.palette.m3onPrimary : Colours.palette.m3onSurfaceVariant
                                  font: Tokens.font.body.small
                                  visible: isHistoryTab
@@ -2007,7 +2007,7 @@ Item {
                              }
                              Text {
                                  anchors.verticalCenter: parent.verticalCenter
-                                 text: "History"
+                                 text: qsTr("History")
                                  color: isHistoryTab ? Colours.palette.m3onPrimary : Colours.palette.m3onSurfaceVariant
                                  font: Tokens.font.body.small
                                  visible: !isHistoryTab
