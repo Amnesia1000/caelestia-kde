@@ -32,6 +32,8 @@ QtObject {
     property string appIcon
     property string appName
     property string image
+    // Body with markup stripped, for single-line previews (eliding raw markup cuts tags in half)
+    readonly property string bodyPlain: body.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").trim()
     property var hints
     property real expireTimeout: GlobalConfig.notifs.defaultExpireTimeout
     property int urgency: NotificationUrgency.Normal
