@@ -92,6 +92,7 @@ build() {
         -DCMAKE_INSTALL_PREFIX=/ \
         -DVERSION="$pkgver" \
         -DINSTALL_DATADIR=usr/share/caelestia \
+        -DCAELESTIA_PACKAGE=ON \
         -DREQUIRE_CAVA=ON \
         -DDISTRIBUTOR="AUR (package: $pkgname)"
     cmake --build build || exit 1
@@ -107,11 +108,6 @@ package() {
     DESTDIR="$pkgdir" cmake --install build
     DESTDIR="$pkgdir" cmake --install effect-build
 
-    install -d "$pkgdir/usr/share/sddm/themes/caelestia/scripts"
-    cp -r src/sddm/themes/full/* "$pkgdir/usr/share/sddm/themes/caelestia/"
-    install -m755 src/sddm/sync.sh "$pkgdir/usr/share/sddm/themes/caelestia/scripts/sync.sh"
-    install -Dm644 src/kde/shells/caelestia.desktop/contents/fonts/GoogleSansFlex.ttf \
-        "$pkgdir/usr/share/sddm/themes/caelestia/assets/google-sans-flex/GoogleSansFlex.ttf"
     install -d "$pkgdir/etc/sddm.conf.d"
     cat > "$pkgdir/etc/sddm.conf.d/zz-caelestia.conf" <<'DROPIN'
 [General]
@@ -124,26 +120,20 @@ DROPIN
     install -d "$pkgdir/usr/lib/udev/rules.d"
     echo 'KERNEL=="uinput", MODE="0600", OPTIONS+="static_node=uinput", TAG+="uaccess"' > "$pkgdir/usr/lib/udev/rules.d/70-uinput.rules"
 
-    install -d "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons"
-    cp -r src/yet-another-monochrome-icon-set \
-        "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons/"
-
-    install -d "$pkgdir/usr/share/plasma/shells"
-    cp -r src/kde/shells/caelestia.desktop "$pkgdir/usr/share/plasma/shells/"
-
     install -Dm755 "$srcdir/caelestia-autostart" "$pkgdir/usr/bin/caelestia-autostart"
     install -Dm644 "$srcdir/caelestia-shell.service" \
         "$pkgdir/usr/lib/systemd/user/caelestia-shell.service"
 
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
-    find "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons/yet-another-monochrome-icon-set" \
-         "$pkgdir/usr/share/plasma/shells/caelestia.desktop" \
-         "$pkgdir/usr/share/sddm/themes/caelestia" \
-        \( -name '.git' -o -name '.github' -o -name '.gitignore' \) \
-        -prune -exec rm -rf {} + 2>/dev/null || true
-
     local required=(
+        usr/bin/caelestia
+        usr/share/caelestia/scripts/03-deploy-configs.sh
+        usr/share/caelestia/scripts/lib/install-kind.sh
+        usr/share/caelestia/src/dots
+        usr/share/caelestia/src/dots-extra
+        usr/share/caelestia/shell/assets/wallpaper.webp
+        usr/share/caelestia/assets/org.quickshell.desktop
         usr/share/sddm/themes/caelestia/theme.conf
         usr/share/sddm/themes/caelestia/scripts/sync.sh
         etc/sddm.conf.d/zz-caelestia.conf
@@ -160,6 +150,7 @@ DROPIN
 
     source "$srcdir/$pkgname-$pkgver/scripts/lib/install-fs.sh"
     validate_install_manifest "$srcdir/$pkgname-$pkgver/build/install_manifest.txt" "$pkgdir" || exit 1
+    validate_install_manifest "$srcdir/$pkgname-$pkgver/effect-build/install_manifest.txt" "$pkgdir" || exit 1
 
     echo "package layout checked: ${#required[@]} package paths plus CMake's manifest"
 }

@@ -112,6 +112,10 @@ validate_install_manifest() {
 
     while IFS= read -r path || [[ -n "$path" ]]; do
         [[ -z "$path" || "$path" == \#* ]] && continue
+        if [[ "$path" != /* ]]; then
+            printf 'install manifest contains a non-absolute path: %s\n' "$path" >&2
+            return 1
+        fi
         if [[ ! -e "$root$path" ]]; then
             printf 'install manifest references a missing path: %s%s\n' "$root" "$path" >&2
             return 1

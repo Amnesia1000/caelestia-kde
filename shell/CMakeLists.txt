@@ -90,6 +90,7 @@ set(INSTALL_DATADIR "usr/share/caelestia" CACHE STRING "Shared Caelestia data in
 set(INSTALL_QMLDIR "usr/lib/qt6/qml" CACHE STRING "QML install dir")
 set(INSTALL_QSCONFDIR "etc/xdg/quickshell/caelestia" CACHE STRING "Quickshell config install dir")
 option(CAELESTIA_OFFLINE "Disallow downloading build dependencies" OFF)
+option(CAELESTIA_PACKAGE "Install package-owned repository assets" OFF)
 set(CAELESTIA_M3SHAPES_SOURCE_DIR "" CACHE PATH
     "Pre-fetched M3Shapes source directory")
 
@@ -216,6 +217,27 @@ if("shell" IN_LIST ENABLE_MODULES)
     install(FILES "${CMAKE_BINARY_DIR}/qml/shell.qml" DESTINATION "${INSTALL_QSCONFDIR}")
 
     install(FILES LICENSE DESTINATION "${INSTALL_QSCONFDIR}")
+
+    if(CAELESTIA_PACKAGE)
+        install(DIRECTORY
+            "${CAELESTIA_ROOT_DIR}/src/sddm/themes/full/"
+            DESTINATION "usr/share/sddm/themes/caelestia"
+            PATTERN ".git*" EXCLUDE)
+        install(PROGRAMS
+            "${CAELESTIA_ROOT_DIR}/src/sddm/sync.sh"
+            DESTINATION "usr/share/sddm/themes/caelestia/scripts")
+        install(FILES
+            "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop/contents/fonts/GoogleSansFlex.ttf"
+            DESTINATION "usr/share/sddm/themes/caelestia/assets/google-sans-flex")
+        install(DIRECTORY
+            "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop"
+            DESTINATION "usr/share/plasma/shells"
+            PATTERN ".git*" EXCLUDE)
+        install(DIRECTORY
+            "${CAELESTIA_ROOT_DIR}/src/yet-another-monochrome-icon-set"
+            DESTINATION "etc/xdg/quickshell/caelestia/assets/icons"
+            PATTERN ".git*" EXCLUDE)
+    endif()
 
     find_package(Qt6 QUIET COMPONENTS LinguistTools)
     file(GLOB TS_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/*.ts")

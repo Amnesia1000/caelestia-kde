@@ -81,4 +81,15 @@ test_validate_install_manifest_accepts_a_cmake_shaped_manifest() {
     assert_status 0 "$status" "a CMake-shaped manifest of existing files should pass"
 }
 
+test_validate_install_manifest_rejects_a_relative_entry() {
+    local tmp status
+    tmp="$(new_tmpdir)"
+    printf 'usr/bin/app\n' > "$tmp/manifest.txt"
+
+    validate_install_manifest "$tmp/manifest.txt" "$tmp/root" 2>/dev/null
+    status=$?
+
+    assert_status 1 "$status" "manifest entries must be absolute"
+}
+
 run_tests

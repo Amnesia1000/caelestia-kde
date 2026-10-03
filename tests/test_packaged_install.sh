@@ -132,6 +132,10 @@ test_shared_runtime_files_have_one_cmake_owner() {
         "CMake should own the desktop integration asset"
     assert_contains "$cmake" 'PATTERN ".git*" EXCLUDE' \
         "CMake must not install the checkout's VCS metadata"
+    assert_contains "$cmake" 'option(CAELESTIA_PACKAGE' \
+        "CMake should own package-only repository assets"
+    assert_contains "$pkgbuild" '-DCAELESTIA_PACKAGE=ON' \
+        "the package should enable package-only CMake assets"
     assert_contains "$pkgbuild" 'install_manifest.txt' \
         "the package should validate CMake's install manifest"
     assert_contains "$pkgbuild" 'validate_install_manifest' \
@@ -287,20 +291,22 @@ test_the_checkout_build_script_builds_the_same_tarball() {
 }
 
 test_the_payload_carries_no_version_control_metadata() {
-    local pkgbuild
-    pkgbuild="$(cat "$REPO_ROOT/packaging/aur/caelestia-kde/PKGBUILD")"
+    local cmake
+    cmake="$(cat "$REPO_ROOT/shell/CMakeLists.txt")"
 
-    assert_contains "$pkgbuild" "-name '.git' -o -name '.github' -o -name '.gitignore'" "the package should strip version control metadata"
+    assert_contains "$cmake" 'PATTERN ".git*" EXCLUDE' "CMake should strip version control metadata"
 }
 
 test_the_package_prune_leaves_cmake_owned_paths_alone() {
     local pkgbuild
     pkgbuild="$(cat "$REPO_ROOT/packaging/aur/caelestia-kde/PKGBUILD")"
 
-    assert_not_contains "$pkgbuild" 'find "$pkgdir" \(' \
-        "the package prune must not walk the whole staging root"
-    assert_contains "$pkgbuild" 'find "$pkgdir/etc/xdg/quickshell/caelestia/assets/icons/yet-another-monochrome-icon-set"' \
-        "the package prune should be scoped to the trees it copies by hand"
+    assert_not_contains "$pkgbuild" 'cp -r src/sddm/themes/full' \
+        "CMake should own the SDDM theme tree"
+    assert_not_contains "$pkgbuild" 'cp -r src/yet-another-monochrome-icon-set' \
+        "CMake should own the icon tree"
+    assert_not_contains "$pkgbuild" 'cp -r src/kde/shells/caelestia.desktop' \
+        "CMake should own the Plasma shell tree"
 }
 
 test_the_install_says_how_to_start_the_shell_now() {
