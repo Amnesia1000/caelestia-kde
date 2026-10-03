@@ -103,7 +103,7 @@ wait_for_nonempty_file() {
 }
 
 validate_install_manifest() {
-    local manifest="$1" root="${2:-}" path
+    local manifest="$1" root="$2" path
 
     if [[ ! -f "$manifest" ]]; then
         printf 'install manifest not found: %s\n' "$manifest" >&2
@@ -111,11 +111,6 @@ validate_install_manifest() {
     fi
 
     while IFS= read -r path || [[ -n "$path" ]]; do
-        [[ -z "$path" || "$path" == \#* ]] && continue
-        if [[ "$path" != /* ]]; then
-            printf 'install manifest contains a non-absolute path: %s\n' "$path" >&2
-            return 1
-        fi
         if [[ ! -e "$root$path" ]]; then
             printf 'install manifest references a missing path: %s%s\n' "$root" "$path" >&2
             return 1

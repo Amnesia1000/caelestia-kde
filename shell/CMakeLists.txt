@@ -170,6 +170,9 @@ if("shell" IN_LIST ENABLE_MODULES)
     set(CAELESTIA_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
     file(GLOB CAELESTIA_BIN_FILES CONFIGURE_DEPENDS "${CAELESTIA_ROOT_DIR}/src/bin/*")
+    if(NOT CAELESTIA_BIN_FILES)
+        message(FATAL_ERROR "No CLI wrappers found in ${CAELESTIA_ROOT_DIR}/src/bin")
+    endif()
     install(PROGRAMS ${CAELESTIA_BIN_FILES} DESTINATION "${INSTALL_BINDIR}")
 
     install(DIRECTORY
@@ -180,6 +183,9 @@ if("shell" IN_LIST ENABLE_MODULES)
 
     file(GLOB CAELESTIA_STEP_SCRIPTS CONFIGURE_DEPENDS
         "${CAELESTIA_ROOT_DIR}/scripts/[0-9]*.sh")
+    if(NOT CAELESTIA_STEP_SCRIPTS)
+        message(FATAL_ERROR "No installer step scripts found in ${CAELESTIA_ROOT_DIR}/scripts")
+    endif()
     install(PROGRAMS ${CAELESTIA_STEP_SCRIPTS}
         DESTINATION "${INSTALL_DATADIR}/scripts")
     install(DIRECTORY "${CAELESTIA_ROOT_DIR}/scripts/lib"
@@ -219,23 +225,24 @@ if("shell" IN_LIST ENABLE_MODULES)
     install(FILES LICENSE DESTINATION "${INSTALL_QSCONFDIR}")
 
     if(CAELESTIA_PACKAGE)
+        set(_SDDM_THEME_DIR "usr/share/sddm/themes/caelestia")
         install(DIRECTORY
             "${CAELESTIA_ROOT_DIR}/src/sddm/themes/full/"
-            DESTINATION "usr/share/sddm/themes/caelestia"
+            DESTINATION "${_SDDM_THEME_DIR}"
             PATTERN ".git*" EXCLUDE)
         install(PROGRAMS
             "${CAELESTIA_ROOT_DIR}/src/sddm/sync.sh"
-            DESTINATION "usr/share/sddm/themes/caelestia/scripts")
+            DESTINATION "${_SDDM_THEME_DIR}/scripts")
         install(FILES
             "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop/contents/fonts/GoogleSansFlex.ttf"
-            DESTINATION "usr/share/sddm/themes/caelestia/assets/google-sans-flex")
+            DESTINATION "${_SDDM_THEME_DIR}/assets/google-sans-flex")
         install(DIRECTORY
             "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop"
             DESTINATION "usr/share/plasma/shells"
             PATTERN ".git*" EXCLUDE)
         install(DIRECTORY
             "${CAELESTIA_ROOT_DIR}/src/yet-another-monochrome-icon-set"
-            DESTINATION "etc/xdg/quickshell/caelestia/assets/icons"
+            DESTINATION "${INSTALL_QSCONFDIR}/assets/icons"
             PATTERN ".git*" EXCLUDE)
     endif()
 

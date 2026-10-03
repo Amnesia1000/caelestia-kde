@@ -58,6 +58,8 @@ conflicts=('caelestia-shell' 'caelestia-shell-git')
 
 _source_url="${_source_url:-$url/releases/download/v$pkgver/$pkgname-v$pkgver.tar.gz}"
 _source_sum="${_source_sum:-SKIP}"
+_build_dir="build"
+_effect_build_dir="effect-build"
 
 source=("$_source_url"
         'caelestia-autostart'
@@ -87,7 +89,7 @@ prepare() {
 
 build() {
     cd "$srcdir/$pkgname-$pkgver"
-    cmake -B build -S shell -G Ninja \
+    cmake -B "$_build_dir" -S shell -G Ninja \
         -DCMAKE_BUILD_TYPE=RelWithDebInfo \
         -DCMAKE_INSTALL_PREFIX=/ \
         -DVERSION="$pkgver" \
@@ -95,18 +97,18 @@ build() {
         -DCAELESTIA_PACKAGE=ON \
         -DREQUIRE_CAVA=ON \
         -DDISTRIBUTOR="AUR (package: $pkgname)"
-    cmake --build build || exit 1
+    cmake --build "$_build_dir" || exit 1
 
-    cmake -B effect-build -S shell/kwin-effects/workspace-tracker -G Ninja \
+    cmake -B "$_effect_build_dir" -S shell/kwin-effects/workspace-tracker -G Ninja \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_INSTALL_PREFIX=/usr
-    cmake --build effect-build || exit 1
+    cmake --build "$_effect_build_dir" || exit 1
 }
 
 package() {
     cd "$srcdir/$pkgname-$pkgver"
-    DESTDIR="$pkgdir" cmake --install build
-    DESTDIR="$pkgdir" cmake --install effect-build
+    DESTDIR="$pkgdir" cmake --install "$_build_dir"
+    DESTDIR="$pkgdir" cmake --install "$_effect_build_dir"
 
     install -d "$pkgdir/etc/sddm.conf.d"
     cat > "$pkgdir/etc/sddm.conf.d/zz-caelestia.conf" <<'DROPIN'
@@ -127,18 +129,9 @@ DROPIN
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 
     local required=(
-        usr/bin/caelestia
-        usr/share/caelestia/scripts/03-deploy-configs.sh
-        usr/share/caelestia/scripts/lib/install-kind.sh
-        usr/share/caelestia/src/dots
-        usr/share/caelestia/src/dots-extra
-        usr/share/caelestia/shell/assets/wallpaper.webp
-        usr/share/caelestia/assets/org.quickshell.desktop
-        usr/share/sddm/themes/caelestia/theme.conf
-        usr/share/sddm/themes/caelestia/scripts/sync.sh
         etc/sddm.conf.d/zz-caelestia.conf
         usr/lib/systemd/user/caelestia-shell.service
-        etc/xdg/quickshell/caelestia/assets/icons/yet-another-monochrome-icon-set
+        usr/share/licenses/$pkgname/LICENSE
     )
     local path
     for path in "${required[@]}"; do
@@ -149,8 +142,8 @@ DROPIN
     done
 
     source "$srcdir/$pkgname-$pkgver/scripts/lib/install-fs.sh"
-    validate_install_manifest "$srcdir/$pkgname-$pkgver/build/install_manifest.txt" "$pkgdir" || exit 1
-    validate_install_manifest "$srcdir/$pkgname-$pkgver/effect-build/install_manifest.txt" "$pkgdir" || exit 1
+    validate_install_manifest "$srcdir/$pkgname-$pkgver/$_build_dir/install_manifest.txt" "$pkgdir" || exit 1
+    validate_install_manifest "$srcdir/$pkgname-$pkgver/$_effect_build_dir/install_manifest.txt" "$pkgdir" || exit 1
 
     echo "package layout checked: ${#required[@]} package paths plus CMake's manifest"
 }
