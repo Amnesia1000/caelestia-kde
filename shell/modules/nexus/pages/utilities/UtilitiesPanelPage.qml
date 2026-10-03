@@ -29,17 +29,10 @@ PageBase {
         }
 
         ToggleRow {
-            text: qsTr("Screen Recorder")
-            subtext: qsTr("Show the Screen Recorder card")
+            text: qsTr("Screen Capture")
+            subtext: qsTr("Show the screen capture card")
             checked: Config.utilities.showScreenRecorder
             onToggled: GlobalConfig.utilities.showScreenRecorder = checked
-        }
-
-        ToggleRow {
-            text: qsTr("Screenshot")
-            subtext: qsTr("Show the Screenshot card")
-            checked: Config.utilities.showScreenshot
-            onToggled: GlobalConfig.utilities.showScreenshot = checked
         }
 
         ToggleRow {
