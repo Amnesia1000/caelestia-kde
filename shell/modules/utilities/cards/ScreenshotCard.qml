@@ -92,6 +92,34 @@ StyledRect {
                         }
                     },
                     MenuItem {
+                        icon: "fullscreen"
+                        text: qsTr("Capture fullscreen")
+                        activeText: qsTr("Fullscreen")
+                        onClicked: {
+                            root.visibilities.utilities = false;
+                            if (!Visibilities.sidebarPinned)
+                                root.visibilities.sidebar = false;
+                            const pad = n => String(n).padStart(2, "0");
+                            const now = new Date();
+                            const file = `${GlobalConfig.paths.screenshotsDir}/screenshot-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}.${pad(now.getMinutes())}.${pad(now.getSeconds())}.png`;
+                            Quickshell.execDetached(["spectacle", "-b", "-f", "-o", file]);
+                        }
+                    },
+                    MenuItem {
+                        icon: "select_window"
+                        text: qsTr("Capture active window")
+                        activeText: qsTr("Window")
+                        onClicked: {
+                            root.visibilities.utilities = false;
+                            if (!Visibilities.sidebarPinned)
+                                root.visibilities.sidebar = false;
+                            const pad2 = n => String(n).padStart(2, "0");
+                            const now2 = new Date();
+                            const file2 = `${GlobalConfig.paths.screenshotsDir}/screenshot-${now2.getFullYear()}-${pad2(now2.getMonth() + 1)}-${pad2(now2.getDate())}_${pad2(now2.getHours())}.${pad2(now2.getMinutes())}.${pad2(now2.getSeconds())}.png`;
+                            Quickshell.execDetached(["spectacle", "-b", "-a", "-o", file2]);
+                        }
+                    },
+                    MenuItem {
                         icon: "text_fields"
                         text: qsTr("Recognize text")
                         activeText: qsTr("Recognize")
