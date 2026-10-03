@@ -240,10 +240,6 @@ test_the_release_tarball_is_the_thing_the_package_sources() {
 
     assert_contains "$workflow" 'tar -C dist -czf "$ARTIFACT" "caelestia-kde-$PKGVER"' "the archive should carry the directory makepkg extracts to"
 
-    # The checkout must not fan out over every gitlink: one that has no .gitmodules
-    # entry stopped the whole job at v2.4.3 and the release went out without its
-    # source, so the job takes the submodule paths from .gitmodules itself and
-    # refuses to tar a tree whose submodules did not land.
     assert_not_contains "$workflow" 'submodules: recursive' "the checkout must not recurse over every gitlink"
     assert_contains "$workflow" 'git config -f .gitmodules --get-regexp' "the job should read the submodule paths from .gitmodules"
     assert_contains "$workflow" 'git submodule update --init --recursive --depth 1 --force "$path"' "and inline each declared submodule"
@@ -297,10 +293,6 @@ test_the_payload_carries_no_version_control_metadata() {
     assert_contains "$pkgbuild" "-name '.git' -o -name '.github' -o -name '.gitignore'" "the package should strip version control metadata"
 }
 
-# CMake records every file it installs in install_manifest.txt, so a prune that
-# walks the whole staging root would delete files CMake owns and recorded there.
-# validate_install_manifest would then fail the build on a missing path, so the
-# prune has to stay scoped to the trees the recipe copies by hand.
 test_the_package_prune_leaves_cmake_owned_paths_alone() {
     local pkgbuild
     pkgbuild="$(cat "$REPO_ROOT/packaging/aur/caelestia-kde/PKGBUILD")"

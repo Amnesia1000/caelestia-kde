@@ -102,16 +102,6 @@ wait_for_nonempty_file() {
     done
 }
 
-# Checks that every path CMake recorded in its install manifest still exists.
-# Entries are absolute, written with the configure-time prefix but without
-# DESTDIR, so a staged package passes its staging root as $2; a source install
-# leaves $2 empty and the entries are checked as-is. Blank lines and comments
-# are ignored so the manifest stays human-readable.
-#
-# CMake writes the manifest with string(REPLACE ";" "\n" ...) + file(WRITE ...),
-# so it never ends in a newline. `read` reports failure on that unterminated last
-# line, hence the `|| [[ -n "$path" ]]`: without it the final installed path is
-# silently never checked.
 validate_install_manifest() {
     local manifest="$1" root="${2:-}" path
 

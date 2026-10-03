@@ -53,11 +53,6 @@ test_validate_install_manifest_checks_absolute_entries_without_a_root() {
     assert_status 0 "$status" "with no root the absolute entries should be checked as-is"
 }
 
-# CMake writes the manifest as a ';'-joined list with every ';' replaced by a
-# newline (string(REPLACE ";" "\n" ...) + file(WRITE ...)), so a real manifest
-# never ends in a newline. `read` reports failure on that unterminated last line,
-# so a validator without the `|| [[ -n "$path" ]]` guard silently skips the final
-# installed path. This is the shape every call site actually feeds in.
 test_validate_install_manifest_checks_the_unterminated_last_entry() {
     local tmp status
     tmp="$(new_tmpdir)"
