@@ -78,6 +78,132 @@ StyledRect {
 
     readonly property int splitIndex: Math.ceil(quickToggles.length / 2)
     readonly property bool needExtraRow: quickToggles.length > 6
+    property bool dragging: false
+    property var dragOrder: []
+    property string dragId: ""
+    property real ghostX: 0
+    property real ghostY: 0
+
+    function iconFor(id: string): string {
+        switch (id) {
+        case "wifi": return "wifi";
+        case "bluetooth": return "bluetooth";
+        case "mic": return "mic";
+        case "settings": return "settings";
+        case "gameMode": return "gamepad";
+        case "colorpicker": return "colorize";
+        case "wallpaper": return "wallpaper";
+        case "restartShell": return "restart_alt";
+        case "pauseWallpaper": return "pause";
+        case "easyeffects": return "graphic_eq";
+        case "nightlight": return "bedtime";
+        case "hotspot": return "wifi_tethering";
+        case "dnd": return "notifications_off";
+        case "vpn": return "vpn_key";
+        case "badapple": return "nutrition";
+        default: return "toggle_on";
+        }
+    }
+
+    function toggleAt(row, px: real, py: real): var {
+        const kids = row.children;
+        for (let i = 0; i < kids.length; i++) {
+            const c = kids[i];
+            if (!c.visible || c.width <= 0 || c.modelData === undefined)
+                continue;
+            const lp = c.mapFromItem(root, px, py);
+            if (lp.x >= 0 && lp.y >= 0 && lp.x <= c.width && lp.y <= c.height)
+                return c;
+        }
+        return null;
+    }
+
+    function rowModels(top: bool): var {
+        const src = root.dragging && root.dragOrder.length > 0 ? root.dragOrder : root.quickToggles;
+        if (root.needExtraRow)
+            return top ? src.slice(0, root.splitIndex) : src.slice(root.splitIndex);
+        return top ? src : [];
+    }
+
+    function startDrag(item, px: real, py: real): void {
+        root.dragOrder = root.quickToggles.map(t => ({
+                    id: t.id
+                }));
+        root.dragId = item.modelData.id;
+        root.dragging = true;
+        root.ghostX = px;
+        root.ghostY = py;
+        const hit = root.toggleAt(rowTop, px, py) || root.toggleAt(rowBottom, px, py);
+        if (hit)
+            hit.opacity = 0.35;
+    }
+
+    function moveDrag(px: real, py: real): void {
+        root.ghostX = px;
+        root.ghostY = py;
+        const rows = [rowTop, rowBottom];
+        for (let r = 0; r < rows.length; r++) {
+            const row = rows[r];
+            if (!row.visible || row.model.length <= 0)
+                continue;
+            if (px >= row.x - 20 && px <= row.x + row.width + 20 && py >= row.y - row.height / 2 && py <= row.y + row.height * 1.5) {
+                const base = (row === rowBottom && root.needExtraRow) ? root.splitIndex : 0;
+                let slot = Math.floor((px - row.x) / (row.width / row.model.length));
+                if (slot < 0)
+                    slot = 0;
+                if (slot > row.model.length - 1)
+                    slot = row.model.length - 1;
+                const ids = root.dragOrder.slice();
+                let from = -1;
+                for (let i = 0; i < ids.length; i++)
+                    if (ids[i].id === root.dragId)
+                        from = i;
+                const to = base + slot;
+                if (from >= 0 && to >= 0 && from !== to) {
+                    const moved = ids.splice(from, 1)[0];
+                    ids.splice(to > ids.length ? ids.length : to, 0, moved);
+                    root.dragOrder = ids;
+                }
+                return;
+            }
+        }
+    }
+
+    function finishDrag(save: bool): void {
+        if (save && root.dragId) {
+            const stored = Config.utilities.quickToggles || [];
+            const flags = {};
+            stored.forEach(t => {
+                flags[t.id] = t.enabled !== false;
+            });
+            const ids = root.dragOrder.slice();
+            Object.keys(flags).forEach(id => {
+                let found = false;
+                for (let i = 0; i < ids.length; i++)
+                    if (ids[i].id === id)
+                        found = true;
+                if (!found)
+                    ids.push({
+                        id: id
+                    });
+            });
+            GlobalConfig.utilities.quickToggles = ids.map(item => ({
+                        id: item.id,
+                        enabled: flags[item.id] !== false
+                    }));
+            GlobalConfig.utilities.quickTogglesCustomOrder = true;
+        }
+        const rows = [rowTop, rowBottom];
+        for (let r = 0; r < rows.length; r++) {
+            const kids = rows[r].children;
+            for (let i = 0; i < kids.length; i++)
+                if (kids[i].modelData !== undefined)
+                    kids[i].opacity = 1;
+        }
+        root.dragging = false;
+        root.dragId = "";
+        root.dragOrder = [];
+    }
 
     Layout.fillWidth: true
     implicitHeight: layout.implicitHeight + Tokens.padding.extraLargeIncreased
@@ -128,12 +254,82 @@ StyledRect {
         }
 
         QuickToggleRow {
-            model: root.needExtraRow ? root.quickToggles.slice(0, root.splitIndex) : root.quickToggles
+            id: rowTop
+
+            model: root.rowModels(true)
         }
 
         QuickToggleRow {
+            id: rowBottom
+
             visible: root.needExtraRow
-            model: root.needExtraRow ? root.quickToggles.slice(root.splitIndex) : []
+            model: root.rowModels(false)
+        }
+    }
+
+
+    MouseArea {
+        id: rowOverlay
+
+        property bool pressed: false
+        property real pressX: 0
+        property real pressY: 0
+        property var pressHit: null
+
+        x: layout.x
+        y: layout.y + rowTop.y
+        width: layout.width
+        height: (rowBottom.visible ? rowBottom.y + rowBottom.height : rowTop.y + rowTop.height) - rowTop.y
+        onPressed: mouse => {
+            const p = rowOverlay.mapToItem(root, mouse.x, mouse.y);
+            pressX = p.x;
+            pressY = p.y;
+            pressed = true;
+            pressHit = root.toggleAt(rowTop, p.x, p.y) || root.toggleAt(rowBottom, p.x, p.y);
+        }
+        onPositionChanged: mouse => {
+            if (!pressed)
+                return;
+            const p = rowOverlay.mapToItem(root, mouse.x, mouse.y);
+            if (!root.dragging) {
+                if (Math.hypot(p.x - pressX, p.y - pressY) > 10 && pressHit)
+                    root.startDrag(pressHit, p.x, p.y);
+            } else {
+                root.moveDrag(p.x, p.y);
+            }
+        }
+        onReleased: {
+            if (root.dragging) {
+                root.finishDrag(true);
+            } else if (pressHit) {
+                pressHit.clicked();
+            }
+            pressed = false;
+            pressHit = null;
+        }
+        onCanceled: {
+            if (root.dragging)
+                root.finishDrag(false);
+            pressed = false;
+            pressHit = null;
+        }
+    }
+
+    StyledRect {
+        visible: root.dragging
+        x: root.ghostX - 26
+        y: root.ghostY - 26
+        implicitWidth: 52
+        implicitHeight: 52
+        radius: Tokens.rounding.large
+        color: Colours.palette.m3secondaryContainer
+        opacity: 0.9
+
+        MaterialIcon {
+            anchors.centerIn: parent
+            text: root.iconFor(root.dragId)
+            color: Colours.palette.m3onSecondaryContainer
+            fontStyle: Tokens.font.icon.large
         }
     }
 
@@ -337,6 +533,8 @@ StyledRect {
     }
 
     component Toggle: IconButton {
+        required property var modelData
+
         inactiveColour: Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
         fillWidth: true
         isToggle: true
