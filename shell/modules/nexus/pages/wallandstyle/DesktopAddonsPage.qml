@@ -357,7 +357,6 @@ PageBase {
             }
 
             StepperRow {
-                last: true
                 Layout.fillWidth: true
                 label: qsTr("Spacing")
                 value: Config.background.visualiser.spacing
@@ -365,6 +364,18 @@ PageBase {
                 to: 3
                 stepSize: 0.1
                 onMoved: v => GlobalConfig.background.visualiser.spacing = v
+            }
+
+            StepperRow {
+                last: true
+                Layout.fillWidth: true
+                label: qsTr("Size")
+                subtext: qsTr("Column width multiplier, lower values leave more room in the middle")
+                value: Config.background.visualiser.size
+                from: 0.25
+                to: 1.25
+                stepSize: 0.05
+                onMoved: v => GlobalConfig.background.visualiser.size = v
             }
         }
     }
