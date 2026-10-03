@@ -21,9 +21,6 @@ Item {
     property bool skipTransition: false
     property var screen: null
 
-    // True once this wallpaper has something to show, or has nothing to load at
-    // all. Background.qml keeps its fallback black until then, so a shell that is
-    // still starting does not paint the desktop black while the image decodes.
     readonly property bool shown: root.current ? (root.current.shown || root.source === "") : false
 
     function isVideo(path: string): bool {
@@ -33,9 +30,6 @@ Item {
         return ["mp4", "webm", "mkv", "avi", "mov", "wmv", "flv"].includes(ext);
     }
 
-    // Stops the video in the layer that is no longer shown, once the transition
-    // to the current one has finished. If the source changed again mid-transition
-    // the hidden layer is loading it, so it is left alone.
     function releaseHidden(): void {
         if (!current || (current.videoPath !== source && current.imagePath !== source))
             return;
