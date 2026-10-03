@@ -170,10 +170,6 @@ QVariantList KeybindsModel::query(const QString& searchText) const {
     const auto lower = searchText.toLower();
 
     for (GlobalShortcut* sc : m_rows) {
-        if (sc->key().isEmpty()) {
-            continue;
-        }
-
         if (searchText.isEmpty()) {
             matches.append(sc);
         } else {
