@@ -118,11 +118,11 @@ QtObject {
 
         let comps = [];
         if (day > 0)
-            comps.push(qsTr("%1d"));
+            comps.push(qsTr("%1d").arg(day));
         if (hr > 0)
-            comps.push(qsTr("%1h"));
+            comps.push(qsTr("%1h").arg(hr));
         if (min > 0)
-            comps.push(qsTr("%1m"));
+            comps.push(qsTr("%1m").arg(min));
 
         return comps.join(" ") || fallback;
     }
@@ -134,11 +134,11 @@ QtObject {
 
         const parts = [];
         if (days > 0)
-            parts.push(days === 1 ? qsTr("%1 day") : qsTr("%1 days"));
+            parts.push(days === 1 ? qsTr("%1 day").arg(days) : qsTr("%1 days").arg(days));
         if (hours > 0)
-            parts.push(hours === 1 ? qsTr("%1 hour") : qsTr("%1 hours"));
+            parts.push(hours === 1 ? qsTr("%1 hour").arg(hours) : qsTr("%1 hours").arg(hours));
         if (minutes > 0 || parts.length === 0)
-            parts.push(minutes === 1 ? qsTr("%1 minute") : qsTr("%1 minutes"));
+            parts.push(minutes === 1 ? qsTr("%1 minute").arg(minutes) : qsTr("%1 minutes").arg(minutes));
         return parts.join(", ");
     }
 }
