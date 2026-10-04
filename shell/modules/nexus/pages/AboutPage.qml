@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Io
 import Caelestia
 import Caelestia.Config
@@ -16,6 +17,66 @@ PageBase {
 
     property string quickshellVersion
     property string cliVersion
+    property string exportStatus: qsTr("Save shell.json as YAML")
+
+    function configDir(): string {
+        return Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config");
+    }
+
+    function toYamlScalar(value: var): string {
+        if (value === null || value === undefined)
+            return "null";
+        if (typeof value === "boolean" || typeof value === "number")
+            return String(value);
+        const text = String(value);
+        if (/^[A-Za-z0-9_.-]+$/.test(text) && text !== "" && text !== "null" && text !== "true" && text !== "false")
+            return text;
+        return "\"" + text.replace(/\\/g, "\\\\").replace(/"/g, "\\\"").replace(/\n/g, "\\n") + "\"";
+    }
+
+    function toYamlNode(value: var, indent: int): string {
+        const pad = "  ".repeat(indent);
+        if (Array.isArray(value)) {
+            if (value.length === 0)
+                return "[]";
+            let out = "";
+            for (let i = 0; i < value.length; i++) {
+                const item = value[i];
+                if (item !== null && typeof item === "object") {
+                    out += pad + "-\n" + root.toYamlNode(item, indent + 1);
+                } else {
+                    out += pad + "- " + root.toYamlScalar(item) + "\n";
+                }
+            }
+            return out;
+        }
+        if (value !== null && typeof value === "object") {
+            const keys = Object.keys(value);
+            if (keys.length === 0)
+                return "{}";
+            let out = "";
+            for (let i = 0; i < keys.length; i++) {
+                const item = value[keys[i]];
+                if (item !== null && typeof item === "object") {
+                    const nested = root.toYamlNode(item, indent + 1);
+                    if (nested === "[]" || nested === "{}") {
+                        out += pad + keys[i] + ": " + nested + "\n";
+                    } else {
+                        out += pad + keys[i] + ":\n" + nested;
+                    }
+                } else {
+                    out += pad + keys[i] + ": " + root.toYamlScalar(item) + "\n";
+                }
+            }
+            return out;
+        }
+        return root.toYamlScalar(value);
+    }
+
+    function exportYaml(): void {
+        root.exportStatus = qsTr("Exporting...");
+        exportReadProc.running = true;
+    }
 
     title: qsTr("About")
 
@@ -30,6 +91,41 @@ PageBase {
             command: ["quickshell", "--version"]
             stdout: StdioCollector {
                 onStreamFinished: root.quickshellVersion = text.trim().split(" ")[1] ?? ""
+            }
+        }
+
+        Process {
+            id: exportReadProc
+
+            command: ["cat", root.configDir() + "/caelestia/shell.json"]
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    try {
+                        const data = JSON.parse(text);
+                        exportWriteProc.yamlText = root.toYamlNode(data, 0);
+                        exportWriteProc.yamlPath = root.configDir() + "/caelestia/shell.yaml";
+                        exportWriteProc.running = true;
+                    } catch (e) {
+                        root.exportStatus = qsTr("Export failed");
+                    }
+                }
+            }
+            stderr: StdioCollector {
+                onStreamFinished: {
+                    root.exportStatus = qsTr("Export failed");
+                }
+            }
+        }
+
+        Process {
+            id: exportWriteProc
+
+            property string yamlText: ""
+            property string yamlPath: ""
+
+            command: ["python3", "-c", "import sys; open(sys.argv[1], 'w').write(sys.argv[2])", yamlPath, yamlText]
+            onExited: code => {
+                root.exportStatus = code === 0 ? qsTr("Saved to shell.yaml") : qsTr("Export failed");
             }
         }
 
@@ -166,11 +262,18 @@ PageBase {
 
         ToggleRow {
             first: true
-            last: true
             text: qsTr("Debug Mode")
             subtext: qsTr("Enable verbose debug logging for troubleshooting. Run 'caelestia shell -l' to view.")
             checked: GlobalConfig.general.debugLogs
             onClicked: GlobalConfig.general.debugLogs = !GlobalConfig.general.debugLogs
+        }
+
+        NavRow {
+            last: true
+            icon: "file_download"
+            label: qsTr("Export configuration")
+            status: root.exportStatus
+            onClicked: root.exportYaml()
         }
 
         SectionHeader {
