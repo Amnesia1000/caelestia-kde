@@ -769,26 +769,26 @@ StyledWindow {
         Region { x: -10; y: -10; width: 1; height: 1 }
         Region {
             x: 0; y: 0
-            width: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? Math.max(bar.position === "left" ? bar.implicitWidth : 0, root.borderThickness) : 0
+            width: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? Math.max((bar.position === "left" ? bar.implicitWidth : 0) + overlayLeftExtent, root.borderThickness) : 0
             height: root.height
             intersection: Intersection.Combine
         }
         Region {
             x: root.width - Math.max(bar.position === "right" ? bar.implicitWidth : 0, root.borderThickness); y: 0
-            width: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? Math.max(bar.position === "right" ? bar.implicitWidth : 0, root.borderThickness) : 0
+            width: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? Math.max((bar.position === "right" ? bar.implicitWidth : 0) + overlayRightExtent, root.borderThickness) : 0
             height: root.height
             intersection: Intersection.Combine
         }
         Region {
             x: 0; y: 0
             width: root.width
-            height: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? Math.max(bar.position === "top" ? bar.implicitHeight : 0, root.borderThickness) : 0
+            height: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? Math.max((bar.position === "top" ? bar.implicitHeight : 0) + overlayTopExtent, root.borderThickness) : 0
             intersection: Intersection.Combine
         }
         Region {
             x: 0; y: root.height - Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness)
             width: root.width
-            height: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness) : 0
+            height: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? Math.max((bar.position === "bottom" ? bar.implicitHeight : 0) + overlayBottomExtent, root.borderThickness) : 0
             intersection: Intersection.Combine
         }
         Region {
