@@ -152,9 +152,50 @@ Popup {
 
                 StyledText {
                     anchors.centerIn: parent
-                    text: root.capturedKey === "" ? qsTr("Press keys now...") : root.capturedKey
+                    visible: root.capturedKey === ""
+                    text: qsTr("Press keys now...")
                     font: Tokens.font.body.large
                     color: focusScope.activeFocus ? Colours.palette.m3onPrimaryContainer : Colours.palette.m3onSurfaceVariant
+                }
+
+                RowLayout {
+                    anchors.centerIn: parent
+                    visible: root.capturedKey !== ""
+                    spacing: Tokens.spacing.extraSmall
+
+                    Repeater {
+                        model: root.capturedKey === "" ? [] : root.capturedKey.split("+")
+
+                        RowLayout {
+                            required property string modelData
+                            required property int index
+
+                            spacing: Tokens.spacing.extraSmall
+
+                            StyledText {
+                                visible: index > 0
+                                text: "+"
+                                font: Tokens.font.body.large
+                                color: focusScope.activeFocus ? Colours.palette.m3onPrimaryContainer : Colours.palette.m3onSurfaceVariant
+                            }
+
+                            StyledRect {
+                                radius: Tokens.rounding.small
+                                color: focusScope.activeFocus ? Colours.palette.m3primary : Colours.palette.m3surfaceContainerHigh
+                                implicitWidth: capLabel.implicitWidth + Tokens.padding.medium * 2
+                                implicitHeight: capLabel.implicitHeight + Tokens.padding.small * 2
+
+                                StyledText {
+                                    id: capLabel
+
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    font: Tokens.font.body.medium
+                                    color: focusScope.activeFocus ? Colours.palette.m3onPrimary : Colours.palette.m3onSurface
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
