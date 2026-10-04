@@ -42,6 +42,12 @@ StyledWindow {
     // are overlay bars with their own position/widgets/visibility that
     // dock to the edges without taking an exclusive zone.
     readonly property var overlayBarDefs: ((Config.bar.bars ? Config.bar.bars.values : null) ?? []).filter(b => b && b.enabled !== false && (!b.screens || b.screens.length === 0 || b.screens.includes(root.screen.name)))
+    // Frame cutout widening where overlay bars sit, so the frame surface
+    // itself becomes their background. Gated like overlay visibility.
+    readonly property int overlayLeftExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "left") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int overlayRightExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "right") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int overlayTopExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "top") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int overlayBottomExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "bottom") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
     readonly property bool hasOpenOverlay: focusGrabState.active || panels.popouts.isDetached || desktopContextMenu.expanded || visibilities.overview || visibilities.launcher || visibilities.dashboard || visibilities.sidebar || visibilities.session || visibilities.utilities
     readonly property bool hasFullscreen: actualFullscreen && !hasOpenOverlay
 
@@ -323,10 +329,10 @@ StyledWindow {
                 anchors.margins: -50
                 group: overviewBlurMask
                 radius: root.borderRounding
-                borderLeft: Math.max(bar.position === "left" ? bar.implicitWidth : 0, root.borderThickness) - anchors.margins - root.sdfBorderOffset
-                borderRight: Math.max(bar.position === "right" ? bar.implicitWidth : 0, root.borderThickness) - anchors.margins - root.sdfBorderOffset
-                borderTop: Math.max(bar.position === "top" ? bar.implicitHeight : 0, root.borderThickness) - root.overviewVerticalOffset - anchors.margins - root.sdfBorderOffset
-                borderBottom: Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness) + root.overviewVerticalOffset - anchors.margins - root.sdfBorderOffset
+                borderLeft: Math.max((bar.position === "left" ? bar.implicitWidth : 0) + overlayLeftExtent, root.borderThickness) - anchors.margins - root.sdfBorderOffset
+                borderRight: Math.max((bar.position === "right" ? bar.implicitWidth : 0) + overlayRightExtent, root.borderThickness) - anchors.margins - root.sdfBorderOffset
+                borderTop: Math.max((bar.position === "top" ? bar.implicitHeight : 0) + overlayTopExtent, root.borderThickness) - root.overviewVerticalOffset - anchors.margins - root.sdfBorderOffset
+                borderBottom: Math.max((bar.position === "bottom" ? bar.implicitHeight : 0) + overlayBottomExtent, root.borderThickness) + root.overviewVerticalOffset - anchors.margins - root.sdfBorderOffset
                 Config.screen: root.screen.name
             }
         }
@@ -376,10 +382,10 @@ StyledWindow {
             group: GlobalConfig.appearance.islands ? null : blobGroup
             visible: !GlobalConfig.appearance.islands
             radius: root.borderRounding
-            borderLeft: Math.max(bar.position === "left" ? bar.implicitWidth : 0, root.borderThickness) - anchors.margins - root.sdfBorderOffset
-            borderRight: Math.max(bar.position === "right" ? bar.implicitWidth : 0, root.borderThickness) - anchors.margins - root.sdfBorderOffset
-            borderTop: Math.max(bar.position === "top" ? bar.implicitHeight : 0, root.borderThickness) - root.overviewVerticalOffset - anchors.margins - root.sdfBorderOffset
-            borderBottom: Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness) + root.overviewVerticalOffset - anchors.margins - root.sdfBorderOffset
+            borderLeft: Math.max((bar.position === "left" ? bar.implicitWidth : 0) + overlayLeftExtent, root.borderThickness) - anchors.margins - root.sdfBorderOffset
+            borderRight: Math.max((bar.position === "right" ? bar.implicitWidth : 0) + overlayRightExtent, root.borderThickness) - anchors.margins - root.sdfBorderOffset
+            borderTop: Math.max((bar.position === "top" ? bar.implicitHeight : 0) + overlayTopExtent, root.borderThickness) - root.overviewVerticalOffset - anchors.margins - root.sdfBorderOffset
+            borderBottom: Math.max((bar.position === "bottom" ? bar.implicitHeight : 0) + overlayBottomExtent, root.borderThickness) + root.overviewVerticalOffset - anchors.margins - root.sdfBorderOffset
             Config.screen: root.screen.name
         }
         BlobRect {
