@@ -11,20 +11,63 @@ import qs.utils
 Singleton {
     id: root
 
+    property bool sharing: false
     property bool prevDnd: false
     property bool autoDnd: false
+    property bool videoFound: false
+    property bool obsFound: false
+    property int seedHits: 0
+    property int seedMisses: 0
 
-    readonly property bool sharing: {
+    function evaluate() {
+        const positive = root.videoFound || root.obsFound;
+        if (positive) {
+            root.seedMisses = 0;
+            if (++root.seedHits >= 2 && !root.sharing)
+                root.sharing = true;
+        } else {
+            root.seedHits = 0;
+            if (++root.seedMisses >= 3 && root.sharing)
+                root.sharing = false;
+        }
+    }
+
+    function parseDump(text: string): void {
+        let found = false;
         try {
-            const nodes = JSON.parse(collector.text || "[]");
+            const nodes = JSON.parse(text || "[]");
             for (let i = 0; i < nodes.length; i++) {
                 const props = ((nodes[i] || {}).info || {}).props || {};
-                if (nodes[i].type === "PipeWire:Interface:Node" && props["media.class"] === "Video/Source")
-                    return true;
+                if (nodes[i].type === "PipeWire:Interface:Node" && props["media.class"] === "Video/Source") {
+                    found = true;
+                    break;
+                }
             }
         } catch (e) {
         }
-        return false;
+        root.videoFound = found;
+        root.evaluate();
+    }
+
+    function parseSs(text: string): void {
+        let found = false;
+        const lines = String(text || "").split("\n");
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (line.indexOf("\"obs\"") < 0)
+                continue;
+            const fields = line.trim().split(/\s+/);
+            if (fields.length < 5)
+                continue;
+            const peer = fields[4];
+            const port = peer.slice(peer.lastIndexOf(":") + 1);
+            if (port === "1935" || port === "80" || port === "443") {
+                found = true;
+                break;
+            }
+        }
+        root.obsFound = found;
+        root.evaluate();
     }
 
     onSharingChanged: {
@@ -47,6 +90,8 @@ Singleton {
         onTriggered: {
             if (!dumpProc.running)
                 dumpProc.running = true;
+            if (!ssProc.running)
+                ssProc.running = true;
         }
     }
 
@@ -55,7 +100,16 @@ Singleton {
 
         command: ["pw-dump"]
         stdout: StdioCollector {
-            id: collector
+            onStreamFinished: root.parseDump(text)
+        }
+    }
+
+    Process {
+        id: ssProc
+
+        command: ["ss", "-tnp", "state", "established"]
+        stdout: StdioCollector {
+            onStreamFinished: root.parseSs(text)
         }
     }
 }
