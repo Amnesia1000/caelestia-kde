@@ -95,7 +95,8 @@ The required `installer-build` job now compiles the POSIX TUI with `-Wall -Wextr
 The required `installer-sanitizers` job configures a Debug installer build with AddressSanitizer
 and UndefinedBehaviorSanitizer enabled.
 The repository still has no separable pure-C++ CTest target. The sanitizer job currently provides
-native build coverage; executable sanitizer tests require a non-interactive native test target.
+native build coverage and runs the standalone installer step-policy CTest. Broader executable
+sanitizer tests still require additional non-interactive native logic targets.
 
 Acceptance: every native change runs a compile job; native logic has executable tests; sanitizer failures are required for the affected PR path.
 

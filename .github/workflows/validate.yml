@@ -367,6 +367,11 @@ jobs:
       - name: Build installer
         run: cmake --build installer/build --parallel
 
+      - name: Run installer unit tests
+        run: |
+          cmake --build installer/build --target step-policy-tests --parallel
+          ctest --test-dir installer/build --output-on-failure -R step-policy-tests
+
   installer-sanitizers:
     name: Build installer with sanitizers
     runs-on: ubuntu-latest
@@ -382,6 +387,11 @@ jobs:
 
       - name: Build sanitizer target
         run: cmake --build installer/build-sanitizers --parallel
+
+      - name: Run sanitizer unit tests
+        run: |
+          cmake --build installer/build-sanitizers --target step-policy-tests --parallel
+          ctest --test-dir installer/build-sanitizers --output-on-failure -R step-policy-tests
 
   validate-gate:
     needs:
