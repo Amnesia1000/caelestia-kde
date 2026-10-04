@@ -208,14 +208,14 @@ Item {
         ]
     }
 
-    // Overlay background: opaque so the panel reads as a single piece
-    // with the frame (whose translucency would otherwise leave a seam).
+    // Overlay background: the widened frame surface shows through, so this
+    // stays fully transparent except in islands mode (no frame there).
     // Last child for section order, z -1 so bar content paints above it.
     Rectangle {
         anchors.fill: parent
-        visible: root.isOverlay
-        color: Colours.palette.m3surface
-        radius: GlobalConfig.appearance.islands ? Config.border.rounding : 0
+        visible: root.isOverlay && GlobalConfig.appearance.islands
+        color: Colours.tPalette.m3surface
+        radius: Config.border.rounding
         z: -1
     }
 }

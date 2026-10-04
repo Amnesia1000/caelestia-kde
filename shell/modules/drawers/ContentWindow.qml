@@ -48,6 +48,12 @@ StyledWindow {
     readonly property int overlayRightExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "right") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
     readonly property int overlayTopExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "top") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
     readonly property int overlayBottomExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "bottom") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property var overlayExtents: ({
+        left: overlayLeftExtent,
+        right: overlayRightExtent,
+        top: overlayTopExtent,
+        bottom: overlayBottomExtent
+    })
     readonly property bool hasOpenOverlay: focusGrabState.active || panels.popouts.isDetached || desktopContextMenu.expanded || visibilities.overview || visibilities.launcher || visibilities.dashboard || visibilities.sidebar || visibilities.session || visibilities.utilities
     readonly property bool hasFullscreen: actualFullscreen && !hasOpenOverlay
 
