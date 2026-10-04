@@ -6,6 +6,7 @@ import Caelestia
 import Caelestia.Config
 import qs.components
 import qs.services
+import qs.services.api
 import qs.utils
 import qs.modules.nexus
 import qs.modules.nexus.common
@@ -23,59 +24,24 @@ PageBase {
         return Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config");
     }
 
-    function toYamlScalar(value: var): string {
-        if (value === null || value === undefined)
-            return "null";
-        if (typeof value === "boolean" || typeof value === "number")
-            return String(value);
-        const text = String(value);
-        if (/^[A-Za-z0-9_.-]+$/.test(text) && text !== "" && text !== "null" && text !== "true" && text !== "false")
-            return text;
-        return "\"" + text.replace(/\\/g, "\\\\").replace(/"/g, "\\\"").replace(/\n/g, "\\n") + "\"";
-    }
-
-    function toYamlNode(value: var, indent: int): string {
-        const pad = "  ".repeat(indent);
-        if (Array.isArray(value)) {
-            if (value.length === 0)
-                return "[]";
-            let out = "";
-            for (let i = 0; i < value.length; i++) {
-                const item = value[i];
-                if (item !== null && typeof item === "object") {
-                    out += pad + "-\n" + root.toYamlNode(item, indent + 1);
-                } else {
-                    out += pad + "- " + root.toYamlScalar(item) + "\n";
-                }
-            }
-            return out;
-        }
-        if (value !== null && typeof value === "object") {
-            const keys = Object.keys(value);
-            if (keys.length === 0)
-                return "{}";
-            let out = "";
-            for (let i = 0; i < keys.length; i++) {
-                const item = value[keys[i]];
-                if (item !== null && typeof item === "object") {
-                    const nested = root.toYamlNode(item, indent + 1);
-                    if (nested === "[]" || nested === "{}") {
-                        out += pad + keys[i] + ": " + nested + "\n";
-                    } else {
-                        out += pad + keys[i] + ":\n" + nested;
-                    }
-                } else {
-                    out += pad + keys[i] + ": " + root.toYamlScalar(item) + "\n";
-                }
-            }
-            return out;
-        }
-        return root.toYamlScalar(value);
+    function stateDir(): string {
+        return Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state");
     }
 
     function exportYaml(): void {
+        const plugins = [];
+        for (let i = 0; i < CaelestiaApi.plugins.available.count; i++) {
+            const p = CaelestiaApi.plugins.available.get(i);
+            plugins.push({
+                id: p.id || p.name,
+                version: p.version || "",
+                enabled: p.enabled !== false,
+                source: p.source || ""
+            });
+        }
+        exportProc.pluginsJson = JSON.stringify(plugins);
         root.exportStatus = qsTr("Exporting...");
-        exportReadProc.running = true;
+        exportProc.running = true;
     }
 
     title: qsTr("About")
@@ -95,19 +61,14 @@ PageBase {
         }
 
         Process {
-            id: exportReadProc
+            id: exportProc
 
-            command: ["cat", root.configDir() + "/caelestia/shell.json"]
+            property string pluginsJson: "[]"
+
+            command: ["python3", "-c", "import json, os, sys\nconfig_dir, state_dir, plugins_json = sys.argv[1:4]\ndef load_json(path, default):\n    try:\n        with open(path) as f:\n            return json.load(f)\n    except Exception:\n        return default\ndef load_text(path):\n    try:\n        with open(path) as f:\n            content = f.read()\n        try:\n            return json.loads(content)\n        except Exception:\n            return content\n    except Exception:\n        return None\ndef scalar(v):\n    import re\n    if v is None:\n        return "null"\n    if isinstance(v, bool):\n        return "true" if v else "false"\n    if isinstance(v, (int, float)):\n        return str(v)\n    t = str(v)\n    if t != "" and re.match(r"^[A-Za-z0-9_.\\-]+$", t) and t not in ("null", "true", "false"):\n        return t\n    return "\\"" + t.replace("\\\\", "\\\\\\\\").replace("\\"", "\\\\\\"").replace("\\n", "\\\\n") + "\\""\ndef dump(v, ind):\n    pad = "  " * ind\n    if isinstance(v, dict):\n        if not v:\n            return "{}\\n"\n        out = ""\n        for k, item in v.items():\n            if isinstance(item, (dict, list)):\n                nested = dump(item, ind + 1)\n                if nested in ("[]\\n", "{}\\n"):\n                    out += pad + str(k) + ": " + nested\n                else:\n                    out += pad + str(k) + ":\\n" + nested\n            else:\n                out += pad + str(k) + ": " + scalar(item) + "\\n"\n        return out\n    if isinstance(v, list):\n        if not v:\n            return "[]\\n"\n        out = ""\n        for item in v:\n            if isinstance(item, (dict, list)):\n                out += pad + "-\\n" + dump(item, ind + 1)\n            else:\n                out += pad + "- " + scalar(item) + "\\n"\n        return out\n    return scalar(v)\nout = {}\nout["shell"] = load_json(os.path.join(config_dir, "caelestia", "shell.json"), {})\nout["keybinds"] = load_json(os.path.join(config_dir, "caelestia", "keybinds.json"), {})\nout["cli"] = load_json(os.path.join(config_dir, "caelestia", "cli.json"), {})\nout["notes"] = load_json(os.path.join(state_dir, "caelestia", "notes_tab.json"), [])\nmonitors = {}\nmon_dir = os.path.join(config_dir, "caelestia", "monitors")\ntry:\n    for name in sorted(os.listdir(mon_dir)):\n        v = load_text(os.path.join(mon_dir, name))\n        if v is not None:\n            monitors[name] = v\nexcept Exception:\n    pass\nout["monitors"] = monitors\ntry:\n    out["plugins"] = json.loads(plugins_json)\nexcept Exception:\n    out["plugins"] = []\nwith open(os.path.join(config_dir, "caelestia", "shell.yaml"), "w") as f:\n    f.write(dump(out, 0))\nprint("DONE")", root.configDir(), root.stateDir(), pluginsJson]
             stdout: StdioCollector {
                 onStreamFinished: {
-                    try {
-                        const data = JSON.parse(text);
-                        exportWriteProc.yamlText = root.toYamlNode(data, 0);
-                        exportWriteProc.yamlPath = root.configDir() + "/caelestia/shell.yaml";
-                        exportWriteProc.running = true;
-                    } catch (e) {
-                        root.exportStatus = qsTr("Export failed");
-                    }
+                    root.exportStatus = qsTr("Saved to shell.yaml");
                 }
             }
             stderr: StdioCollector {
@@ -115,17 +76,9 @@ PageBase {
                     root.exportStatus = qsTr("Export failed");
                 }
             }
-        }
-
-        Process {
-            id: exportWriteProc
-
-            property string yamlText: ""
-            property string yamlPath: ""
-
-            command: ["python3", "-c", "import sys; open(sys.argv[1], 'w').write(sys.argv[2])", yamlPath, yamlText]
             onExited: code => {
-                root.exportStatus = code === 0 ? qsTr("Saved to shell.yaml") : qsTr("Export failed");
+                if (code !== 0)
+                    root.exportStatus = qsTr("Export failed");
             }
         }
 
