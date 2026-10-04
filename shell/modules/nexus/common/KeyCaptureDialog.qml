@@ -265,12 +265,19 @@ Popup {
             Item { Layout.fillWidth: true }
 
             Controls.TextButton {
-                text: qsTr("Confirm")
+                text: root.conflict !== "" ? qsTr("Replace") : qsTr("Confirm")
                 enabled: root.capturedKey !== ""
                 onClicked: {
                     let finalKey = root.capturedKey
                     if (root.targetItem && root.currentKey !== "") {
                         finalKey = root.currentKey + "; " + root.capturedKey
+                    }
+                    if (root.conflict !== "") {
+                        const otherKey = KeybindsModel.getKey(root.conflict)
+                        if (otherKey !== "") {
+                            const parts = otherKey.split(";").map(s => s.trim()).filter(s => s.length > 0 && s !== root.capturedKey)
+                            KeybindsModel.setKey(root.conflict, parts.join("; "))
+                        }
                     }
                     root.confirm(root.shortcutName, finalKey)
                     root.close()
