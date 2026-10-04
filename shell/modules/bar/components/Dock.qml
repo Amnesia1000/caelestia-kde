@@ -160,6 +160,23 @@ Item {
         root.activateEntry(root.modelDataArray[idx]);
     }
 
+    function activateNewIndex(idx: int): void {
+        if (idx < 0 || idx >= root.modelDataArray.length)
+            return;
+        const entry = root.modelDataArray[idx];
+        if (!entry)
+            return;
+        if (entry.entry) {
+            let newLaunching = Object.assign({}, root.launchingApps);
+            newLaunching[entry.appClass || entry.id] = true;
+            root.launchingApps = newLaunching;
+
+            Launch.launchEntry(entry.entry);
+        } else if (entry.toplevels.length > 0) {
+            root.activateEntry(entry);
+        }
+    }
+
     function saveNewOrder(): void {
         const newArr = [];
         const newFavs = [];
