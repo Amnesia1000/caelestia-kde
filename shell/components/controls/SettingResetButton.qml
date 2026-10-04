@@ -9,9 +9,41 @@ IconButton {
     property var options
 
     readonly property bool active: root.options !== null && root.options !== undefined
+    readonly property bool isCustom: root.active && root.options.customGet !== undefined
+    readonly property var current: {
+        if (!root.active)
+            return null;
+        if (root.isCustom)
+            return root.options.customGet();
+        return root.options.node[root.options.setting];
+    }
+    readonly property var fallback: {
+        if (!root.active)
+            return null;
+        if (root.isCustom)
+            return root.options.customDef;
+        return root.options.node.descriptorFor(root.options.setting).defaultValue;
+    }
+    readonly property bool dirty: {
+        if (!root.active)
+            return false;
+        if (typeof root.current === "number" && typeof root.fallback === "number")
+            return Math.abs(root.current - root.fallback) > 0.005;
+        return root.current !== root.fallback;
+    }
 
-    visible: root.active && root.options.node.overrides.includes(root.options.setting)
+    function reset(): void {
+        if (!root.active)
+            return;
+        if (root.isCustom) {
+            root.options.customSet(root.options.customDef);
+            return;
+        }
+        root.options.node.resetOption(root.options.setting);
+    }
+
+    visible: root.dirty
     icon: "restart_alt"
     type: IconButton.Text
-    onClicked: root.options.node.resetOption(root.options.setting)
+    onClicked: root.reset()
 }

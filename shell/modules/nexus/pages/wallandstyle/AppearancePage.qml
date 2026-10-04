@@ -272,6 +272,11 @@ PageBase {
             }
             StepperRow {
                 last: true
+                reset: ({
+                    customGet: () => blurSettings.blurQuality,
+                    customSet: v => blurSettings.blurQuality = v,
+                    customDef: 20
+                })
                 label: qsTr("Blur Corner Quality")
                 subtext: qsTr("Increasing this can cause lags! Requires shell restart")
                 value: blurSettings.blurQuality
