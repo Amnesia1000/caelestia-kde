@@ -37,6 +37,11 @@ StyledWindow {
     // active workspace changes — hasFullscreenOn() filters by workspace, but
     // a plain function call only re-runs when its direct property deps change.
     readonly property bool actualFullscreen: (Kwin.activeWsId, Kwin.hasFullscreenOn(screen?.name ?? ""))
+    // Extra bars from Config.bar.bars (enabled + matching this screen). The
+    // legacy primary bar above always renders from the global keys; these
+    // are overlay bars with their own position/widgets/visibility that
+    // dock to the edges without taking an exclusive zone.
+    readonly property var overlayBarDefs: ((Config.bar.bars ? Config.bar.bars.values : null) ?? []).filter(b => b && b.enabled !== false && (!b.screens || b.screens.length === 0 || b.screens.includes(root.screen.name)))
     readonly property bool hasOpenOverlay: focusGrabState.active || panels.popouts.isDetached || desktopContextMenu.expanded || visibilities.overview || visibilities.launcher || visibilities.dashboard || visibilities.sidebar || visibilities.session || visibilities.utilities
     readonly property bool hasFullscreen: actualFullscreen && !hasOpenOverlay
 
@@ -667,7 +672,50 @@ StyledWindow {
             visibilities: visibilities
             popouts: panels.popouts
             fullscreen: root.hasFullscreen
-            Component.onCompleted: Visibilities.registerBar(root.screen, this)
+            Component.onCompleted: Visibilities.registerBar(root.screen, "main", this, true)
+        }
+        Repeater {
+            id: overlayBarRepeater
+
+            model: root.overlayBarDefs
+
+            BarWrapper {
+                required property var modelData
+                required property int index
+
+                readonly property string effPos: modelData.position || "bottom"
+                readonly property int sameEdgeBefore: {
+                    let n = 0;
+                    const arr = overlayBarRepeater.model;
+                    for (let i = 0; i < index; i++)
+                        if (((arr[i] && arr[i].position) || "bottom") === effPos)
+                            n++;
+                    if (bar.position === effPos && !bar.disabled)
+                        n++;
+                    return n;
+                }
+                readonly property int edgeOffset: sameEdgeBefore * bar.contentWidth
+
+                screen: root.screen
+                visibilities: visibilities
+                popouts: panels.popouts
+                fullscreen: root.hasFullscreen
+                barDef: modelData
+
+                anchors.top: effPos === "top" ? parent.top : undefined
+                anchors.bottom: effPos === "bottom" ? parent.bottom : undefined
+                anchors.left: effPos === "left" || effPos === "top" || effPos === "bottom" ? parent.left : undefined
+                anchors.right: effPos === "right" || effPos === "top" || effPos === "bottom" ? parent.right : undefined
+                anchors.topMargin: effPos === "top" ? edgeOffset : 0
+                anchors.bottomMargin: effPos === "bottom" ? edgeOffset : 0
+                anchors.leftMargin: effPos === "left" ? edgeOffset : 0
+                anchors.rightMargin: effPos === "right" ? edgeOffset : 0
+                width: effPos === "left" || effPos === "right" ? implicitWidth : undefined
+                height: effPos === "top" || effPos === "bottom" ? implicitHeight : undefined
+
+                Component.onCompleted: Visibilities.registerBar(root.screen, modelData.name || ("overlay" + index), this, false)
+                Component.onDestruction: Visibilities.unregisterBar(root.screen, modelData.name || ("overlay" + index))
+            }
         }
         Connections {
             function onOpenDesktopContextMenu(x, y, screenName) {

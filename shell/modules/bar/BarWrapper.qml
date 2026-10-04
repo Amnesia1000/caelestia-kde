@@ -19,12 +19,20 @@ Item {
     required property DrawerVisibilities visibilities
     required property BarPopouts.Wrapper popouts
     required property bool fullscreen
-    readonly property bool disabled: Strings.testRegexList(Config.bar.excludedScreens, screen.name)
-    readonly property string position: Config.bar.position
+    // Null means the legacy primary bar (global Config.bar keys). A barDef
+    // object makes this an overlay bar: own position/widgets/visibility,
+    // floating without an exclusive zone so the primary bar keeps owning
+    // the screen edges and all the border geometry built around it.
+    property var barDef: null
+    readonly property bool isOverlay: root.barDef !== null && root.barDef !== undefined
+    readonly property string effectivePosition: root.isOverlay && root.barDef.position ? root.barDef.position : Config.bar.position
+    readonly property bool effectivePersistent: root.isOverlay && root.barDef.persistent !== undefined ? root.barDef.persistent : Config.bar.persistent
+    readonly property bool disabled: root.isOverlay ? false : Strings.testRegexList(Config.bar.excludedScreens, screen.name)
+    readonly property string position: root.effectivePosition
     readonly property real barScale: Math.max(0.6, !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0)
     readonly property int padding: Math.max(Tokens.padding.small, Config.border.thickness)
     readonly property int contentWidth: Math.round(Tokens.sizes.bar.innerWidth * barScale) + padding * 2
-    readonly property bool dodgeEnabled: Config.bar.dodgeWindows && Config.bar.persistent && !disabled
+    readonly property bool dodgeEnabled: Config.bar.dodgeWindows && Config.bar.persistent && !disabled && !root.isOverlay
     // The strip the bar occupies, in the absolute multi-monitor coordinates
     // KWin reports window geometry in — hence the screen origin offset.
     readonly property rect dodgeRect: {
@@ -52,9 +60,9 @@ Item {
         return dodgeEnabled && Kwin.hasWindowOverlapping(screen.name, dodgeRect.x, dodgeRect.y, dodgeRect.width, dodgeRect.height, Config.bar.dodgeFocusedOnly);
     }
 
-    readonly property bool keptOpen: Config.bar.persistent && !dodging
-    readonly property int exclusiveZone: !disabled && !dodgeEnabled && (Config.bar.persistent || visibilities.bar) ? contentWidth : Config.border.thickness
-    readonly property int visualThickness: !disabled && (Config.bar.persistent || visibilities.bar) ? contentWidth : Config.border.thickness
+    readonly property bool keptOpen: root.effectivePersistent && !dodging
+    readonly property int exclusiveZone: root.isOverlay ? Config.border.thickness : (!disabled && !dodgeEnabled && (Config.bar.persistent || visibilities.bar) ? contentWidth : Config.border.thickness)
+    readonly property int visualThickness: root.isOverlay ? Config.border.thickness : (!disabled && (Config.bar.persistent || visibilities.bar) ? contentWidth : Config.border.thickness)
     readonly property bool shouldBeVisible: !fullscreen && !disabled && !visibilities.overview && (keptOpen || visibilities.bar || isHovered)
     property bool isHovered
     readonly property bool isHorizontal: root.position === "top" || root.position === "bottom"
@@ -124,6 +132,7 @@ Item {
             visibilities: root.visibilities
             popouts: root.popouts // qmllint disable incompatible-type
             fullscreen: root.fullscreen
+            barDef: root.barDef
         }
     }
     Component {
@@ -137,6 +146,7 @@ Item {
             visibilities: root.visibilities
             popouts: root.popouts // qmllint disable incompatible-type
             fullscreen: root.fullscreen
+            barDef: root.barDef
         }
     }
     Loader {
