@@ -57,14 +57,17 @@ Singleton {
             if (line.indexOf("\"obs\"") < 0)
                 continue;
             const fields = line.trim().split(/\s+/);
-            if (fields.length < 5)
-                continue;
-            const peer = fields[4];
-            const port = peer.slice(peer.lastIndexOf(":") + 1);
-            if (port === "1935" || port === "80" || port === "443") {
-                found = true;
-                break;
+            for (let f = 0; f < fields.length; f++) {
+                if (fields[f].indexOf("users:") === 0)
+                    continue;
+                const port = fields[f].slice(fields[f].lastIndexOf(":") + 1);
+                if (port === "1935" || port === "80" || port === "443") {
+                    found = true;
+                    break;
+                }
             }
+            if (found)
+                break;
         }
         root.obsFound = found;
         root.evaluate();
@@ -77,9 +80,11 @@ Singleton {
             root.prevDnd = Notifs.dnd;
             root.autoDnd = true;
             Notifs.dnd = true;
+            Toaster.toast(qsTr("Do not disturb enabled"), qsTr("Streaming detected"), "videocam");
         } else if (!root.sharing && root.autoDnd) {
             root.autoDnd = false;
             Notifs.dnd = root.prevDnd;
+            Toaster.toast(qsTr("Do not disturb disabled"), qsTr("Streaming ended"), "videocam_off");
         }
     }
 
