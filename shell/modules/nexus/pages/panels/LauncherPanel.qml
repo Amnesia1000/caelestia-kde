@@ -193,7 +193,7 @@ PageBase {
             subtext: qsTr("Number of copied items kept in history")
             value: Config.launcher.clipboardMaxEntries
             from: 1
-            to: 100
+            to: 2048
             stepSize: 1
             onMoved: v => GlobalConfig.launcher.clipboardMaxEntries = v
         }
