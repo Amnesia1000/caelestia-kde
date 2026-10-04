@@ -80,11 +80,9 @@ Singleton {
             root.prevDnd = Notifs.dnd;
             root.autoDnd = true;
             Notifs.dnd = true;
-            Toaster.toast(qsTr("Do not disturb enabled"), qsTr("Streaming detected"), "videocam");
         } else if (!root.sharing && root.autoDnd) {
             root.autoDnd = false;
             Notifs.dnd = root.prevDnd;
-            Toaster.toast(qsTr("Do not disturb disabled"), qsTr("Streaming ended"), "videocam_off");
         }
     }
 
