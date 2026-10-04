@@ -87,6 +87,12 @@ Item {
     visible: isHorizontal ? height > Config.border.thickness : width > Config.border.thickness
     implicitWidth: isHorizontal ? 0 : (fullscreen ? 0 : Config.border.thickness)
     implicitHeight: isHorizontal ? (fullscreen ? 0 : Config.border.thickness) : 0
+
+    Rectangle {
+        anchors.fill: parent
+        visible: root.isOverlay
+        color: Colours.palette.m3surfaceContainer
+    }
     states: State {
         name: "visible"
         when: root.shouldBeVisible
