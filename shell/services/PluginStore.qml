@@ -5,6 +5,7 @@ import QtQuick
 import QtCore
 import Quickshell
 import Quickshell.Io
+import Caelestia
 import Caelestia.Services
 
 Item {
@@ -17,6 +18,18 @@ Item {
     property bool installing: false
     property string installProgress: ""
     property var updatesAvailable: []
+
+
+    property bool restartRequired: false
+
+    property var installedPluginIds: []
+    property bool baselineLoaded: false
+
+    property var indexData: null
+    property ListModel storePlugins: ListModel {}
+
+    signal indexFetched()
+    signal installedStateChanged()
 
     function compareVersions(a, b) {
         const pa = String(a || "").split(".");
@@ -53,17 +66,6 @@ Item {
             Toaster.toast(qsTr("Plugin updates available"), qsTr("%1 plugins can be updated").arg(updates.length), "update");
         }
     }
-
-    property bool restartRequired: false
-
-    property var installedPluginIds: []
-    property bool baselineLoaded: false
-
-    property var indexData: null
-    property ListModel storePlugins: ListModel {}
-
-    signal indexFetched()
-    signal installedStateChanged()
 
     function fetchIndex(branch) {
         let fetchBranch = branch || "main";
@@ -169,7 +171,6 @@ echo "DONE"`;
         }
     }
 
-
     Process {
         id: fetchProc
 
@@ -207,7 +208,6 @@ echo "DONE"`;
         }
     }
 
-
     Process {
         id: installProc
 
@@ -235,7 +235,6 @@ echo "DONE"`;
             }
         }
     }
-
 
     Process {
         id: removeProc
