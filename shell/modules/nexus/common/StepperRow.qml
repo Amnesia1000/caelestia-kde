@@ -56,11 +56,6 @@ ConnectedRect {
             }
         }
 
-        SettingResetButton {
-            Layout.alignment: Qt.AlignVCenter
-            options: root.reset
-        }
-
         CustomMouseArea {
             function onWheel(event: WheelEvent) {
                 const step = root.stepSize;
@@ -93,6 +88,11 @@ ConnectedRect {
                 value: root.value
                 onValueModified: v => root.moved(v)
             }
+        }
+
+        SettingResetButton {
+            Layout.alignment: Qt.AlignVCenter
+            options: root.reset
         }
     }
 }
