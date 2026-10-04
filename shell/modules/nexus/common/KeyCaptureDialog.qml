@@ -207,7 +207,19 @@ Popup {
                         // so we handle common ones. Others might be obscure.
                         keyStr = String.fromCharCode(event.key)
                     }
-                    root.capturedKey = modifiers + keyStr
+                    root.capturedKey = (() => {
+                        if (modifiers.indexOf("Shift") >= 0) {
+                            const code = event.nativeScanCode;
+                            let digit = "";
+                            if (code >= 2 && code <= 11)
+                                digit = String((code - 1) % 10);
+                            else if (code >= 10 && code <= 19)
+                                digit = String((code - 9) % 10);
+                            if (digit !== "")
+                                return modifiers + digit;
+                        }
+                        return modifiers + keyStr;
+                    })()
                 }
                 event.accepted = true
             }
