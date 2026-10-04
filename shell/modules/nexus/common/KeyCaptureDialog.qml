@@ -202,17 +202,8 @@ Popup {
                     } else if (event.key >= Qt.Key_F1 && event.key <= Qt.Key_F35) {
                         keyStr = "F" + (event.key - Qt.Key_F1 + 1)
                     } else {
-                        // Fallback (e.g. F-keys)
-                        // Note: QKeySequence string conversion isn't directly exposed to JS, 
-                        // so we handle common ones. Others might be obscure.
                         keyStr = String.fromCharCode(event.key)
                     }
-                    // kglobalaccel matches shifted symbols (pressing Shift+1
-                    // produces "!") with implicit shift: the sequence must be
-                    // "Meta+!", not "Meta+Shift+1" nor "Meta+Shift+!".
-                    // Neither explicit-Shift form ever fires, so drop Shift
-                    // for single symbol chars. Letters, digits, function and
-                    // named keys keep their modifiers.
                     let mods = modifiers
                     if (mods.indexOf("Shift") >= 0 && keyStr.length === 1 && !/[A-Za-z0-9]/.test(keyStr))
                         mods = mods.replace("Shift+", "")
