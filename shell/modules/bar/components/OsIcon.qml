@@ -5,9 +5,12 @@ import qs.components
 import qs.components.effects
 import qs.services
 import qs.utils
+import qs.modules.nexus
 
 Item {
     id: root
+
+    readonly property int launcherPageIdx: PageRegistry.indexForKey("panels")
 
     implicitWidth: Math.round(Tokens.font.body.large.pointSize * 1.2)
     implicitHeight: Math.round(Tokens.font.body.large.pointSize * 1.2)
@@ -18,7 +21,15 @@ Item {
         implicitWidth: root.implicitWidth + Tokens.padding.medium
         implicitHeight: root.implicitHeight + Tokens.padding.medium
         radius: Tokens.rounding.full
-        onClicked: {
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: mouse => {
+            if (mouse.button === Qt.RightButton) {
+                WindowFactory.create(null, {
+                    initialPageIdx: root.launcherPageIdx,
+                    initialSubPageIdx: 3
+                });
+                return;
+            }
             const visibilities = Visibilities.getForActive();
             visibilities.launcher = !visibilities.launcher;
         }
