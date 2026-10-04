@@ -55,6 +55,8 @@ Item {
                 one.screen = screen;
                 Qt.callLater(() => one.update());
                 completed = true;
+                if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
+                    console.info("[perf] wallpaper-ready");
             });
     }
 

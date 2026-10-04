@@ -63,6 +63,8 @@ Scope {
 
     Component.onCompleted: {
         let _ = KeybindsModel;
+        if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
+            console.info("[perf] shortcuts-ready");
     }
     // qmllint disable unresolved-type
 
@@ -434,6 +436,8 @@ Scope {
                     Visibilities.setOverview(!visibilities.overview);
                 else
                     visibilities[drawer] = !visibilities[drawer];
+                if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
+                    console.info(`[lifecycle] drawer=${drawer} toggled`);
             } else {
                 console.warn(lc, `Drawer "${drawer}" does not exist`);
             }
@@ -474,6 +478,10 @@ Scope {
                 initialPageIdx: parseInt(pageIdx),
                 initialSubPageIdx: hasSubPage ? parseInt(subPageIdx) : -1
             });
+        }
+        function close(): void {
+            if (WindowFactory.openWindow)
+                WindowFactory.openWindow.destroy();
         }
 
         target: "nexus"

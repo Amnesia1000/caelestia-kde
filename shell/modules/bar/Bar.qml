@@ -287,6 +287,11 @@ Item {
         }
     }
 
+    onScreenChanged: {
+        if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
+            console.info("[perf] bar-ready");
+    }
+
     clip: true
 
     GridLayout {

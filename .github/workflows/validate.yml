@@ -447,7 +447,7 @@ jobs:
             --install-root "$PWD/runtime-install" \
             --runs 3 \
             --timeout 60 \
-            --max-startup-ms 30000 \
+            --baseline .github/ci-baselines/runtime-smoke.json \
             --log-dir "$PWD/runtime-smoke"
 
       - name: Upload runtime diagnostics

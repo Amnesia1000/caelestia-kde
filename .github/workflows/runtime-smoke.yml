@@ -59,7 +59,7 @@ jobs:
             --install-root "$RUNNER_TEMP/caelestia-install" \
             --runs 3 \
             --timeout 60 \
-            --max-startup-ms 30000 \
+            --baseline .github/ci-baselines/runtime-smoke.json \
             --log-dir "$RUNNER_TEMP/runtime-smoke" \
             | tee "$RUNNER_TEMP/runtime-smoke/results.json"
 

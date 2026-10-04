@@ -21,10 +21,14 @@ Singleton {
                 win.nexus.nState.goToSubPage(props.initialPageIdx, props.initialSubPageIdx ?? -1);
             win.visible = true;
             win.raise();
+            if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
+                console.info("[lifecycle] nexus=reused");
             return win;
         }
         const win = nexusComp.createObject(parent ?? dummy, props);
         root.openWindow = win;
+        if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
+            console.info("[lifecycle] nexus=created");
         return win;
     }
 
@@ -51,6 +55,8 @@ Singleton {
             }
 
             Component.onDestruction: {
+                if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
+                    console.info("[lifecycle] nexus=destroyed");
                 if (root.openWindow === win)
                     root.openWindow = null;
             }

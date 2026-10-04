@@ -1,6 +1,6 @@
 # Pre-merge testing strategy
 
-Status: in progress
+Status: complete
 
 This plan turns the architecture review into a test strategy aimed at catching the highest-impact bugs before merge. It is based on the current repository, its CI workflows, and the acceptance checks in [architecture-review.md](architecture-review.md).
 
@@ -12,7 +12,7 @@ The repository has strong static and shell-contract coverage, but the highest-ri
 - Repository integrity tests compile Python and parse shell, validate workflow/config invariants, and assert selected QML contracts. They do not execute QML, Quickshell, KDE services, or the native Qt plugins. Evidence: [test_repo_integrity.py](../../.github/scripts/test_repo_integrity.py).
 - The PR workflow gates PR metadata and QML import/deployment checks. The separate validation workflow also runs on every PR and builds the shell, installer, and an installed runtime smoke environment; its standalone QML syntax/import checks remain structural substitutes, while runtime loading is covered by the `runtime-smoke` job. Evidence: [pr-checks.yml](../../.github/workflows/pr-checks.yml) and [validate.yml](../../.github/workflows/validate.yml).
 - The scheduled distro workflow compiles the TUI and runs installer steps in Arch, Fedora, and Ubuntu containers, but it is not a required pull-request gate and does not validate a real KDE/Wayland session. Evidence: [test-dependencies.yml](../../.github/workflows/test-dependencies.yml).
-- The architecture review requires startup/idle budgets, lazy-component lifecycle tests, source/package parity, offline reproducibility, and failure-injection coverage. Contract, isolated-script, artifact, provenance, native sanitizer compilation, and an installed-tree runtime smoke check are represented. Full graphical lifecycle assertions and stable performance baselines remain incomplete. Evidence: [architecture-review.md](architecture-review.md) and [runtime-smoke.yml](../../.github/workflows/runtime-smoke.yml).
+- The architecture review requires startup/idle budgets, lazy-component lifecycle tests, source/package parity, offline reproducibility, and failure-injection coverage. Contract, isolated-script, artifact, provenance, native sanitizer compilation, installed-tree runtime smoke, lifecycle markers, service probes, and reviewed performance thresholds are represented. Evidence: [architecture-review.md](architecture-review.md), [runtime-smoke.sh](../../tests/runtime-smoke.sh), and [runtime-smoke.yml](../../.github/workflows/runtime-smoke.yml).
 
 ## Testing model
 
@@ -109,7 +109,7 @@ Acceptance: every native change runs a compile job; native logic has executable 
 
 Current Python checks in [check_qml_syntax.py](../../.github/scripts/check_qml_syntax.py), [check_qml_imports.py](../../.github/scripts/check_qml_imports.py), and [check_qml_deployment.py](../../.github/scripts/check_qml_deployment.py) are valuable structural checks, but they cannot catch binding loops, signal lifetime bugs, incorrect model updates, or plugin ABI/runtime failures.
 
-Add a container or VM image with the supported Qt, Quickshell, KDE, and plugin dependencies. The reusable [runtime smoke harness](../../tests/runtime-smoke.sh) now provides the first controlled check: it launches the installed tree under headless Weston, loads the native QML plugins, requires the `Configuration Loaded` readiness marker, exercises launcher/sidebar toggles and repeated Nexus opens through IPC, and repeats the launch/shutdown cycle three times while recording startup, RSS, and CPU metrics. The workflow runs it on shell-changing pull requests and weekly on the provisioned runtime runner. Remaining smoke coverage should:
+Add a container or VM image with the supported Qt, Quickshell, KDE, and plugin dependencies. The reusable [runtime smoke harness](../../tests/runtime-smoke.sh) now provides the controlled check: it launches the installed tree under headless Weston, loads the native QML plugins, requires root/bar/wallpaper/shortcut/preload/model readiness markers, exercises all drawer surfaces and repeated Nexus create/reuse/destroy cycles through IPC, probes notification/wallpaper/plugin services, recovers from malformed scheme state, and repeats the launch/shutdown cycle three times while recording startup, RSS, idle CPU, and IPC latency metrics. The workflow runs it on pull requests and weekly on the provisioned runtime runner. The reviewed baseline enforces startup, memory, and interaction limits.
 
 - Launch the shell in a headless virtual display/session where supported.
 - Load the root QML and assert shell-ready, bar, wallpaper, workspace, notification, and shortcut initialization.
@@ -118,15 +118,15 @@ Add a container or VM image with the supported Qt, Quickshell, KDE, and plugin d
 - Exercise configuration load/save and malformed or partial configuration recovery.
 - Load the installed QML import path and native plugin, not only the source tree.
 
-Use screenshots or structured event logs only as supplementary evidence; the primary assertions should be machine-readable state and exit status. Run the harness with `--log-dir` so compositor and Quickshell diagnostics are retained as artifacts. The current harness does not yet assert bar, wallpaper, workspace, notification, shortcut, model-update, or malformed-configuration state.
+Use screenshots or structured event logs only as supplementary evidence; the primary assertions are machine-readable state, lifecycle marker counts, service probes, and exit status. Run the harness with `--log-dir` so compositor and Quickshell diagnostics are retained as artifacts.
 
 Acceptance: runtime smoke tests run for shell changes; repeated lifecycle tests detect leaked objects, duplicate handlers, and stale model state.
 
 ### P1: Establish performance regression checks
 
-The architecture review identifies startup as the principal performance risk. The runtime harness now records process startup, cold versus warm runs, resident memory, and instantaneous CPU usage, and supports explicit startup and RSS thresholds. Add diagnostic events for first bar frame, wallpaper loaded, and shell-ready, then establish a stable baseline before making more metrics required.
+The architecture review identifies startup as the principal performance risk. The runtime harness now records process startup, cold versus warm runs, resident memory, idle CPU, IPC interaction latency, first bar readiness, wallpaper readiness, shortcut readiness, shell readiness, and model-load markers. The versioned baseline applies startup, memory, and interaction thresholds.
 
-Begin with three runs per scenario and store benchmark artifacts outside the normal source tree through the runtime workflow artifact. Use warning thresholds first; make thresholds required only after variance is understood. Run these checks on the stable KDE/Wayland runner, not on every developer machine.
+Three runs per scenario are stored outside the normal source tree through the runtime workflow artifact. Thresholds are versioned in `.github/ci-baselines/runtime-smoke.json` and run on the stable KDE/Wayland runner, not on every developer machine.
 
 Required scenarios:
 
@@ -140,7 +140,7 @@ Acceptance: performance-sensitive PRs include before/after structured results; r
 
 ### P1: Test lazy-loading and ownership explicitly
 
-When nonessential features move behind loaders, extend the runtime IPC harness with lifecycle tests for every deferred component. Launcher/sidebar toggles and repeated Nexus opens are covered now; construction/destruction counters, duplicate-connection checks, and service updates while a view is closed still require component-specific instrumentation.
+When nonessential features move behind loaders, the runtime IPC harness verifies repeated construction/reuse/destruction evidence for Nexus and repeated open/close transitions for every drawer surface. Marker counts catch missing teardown or duplicate lifecycle events, while service probes run while the views are closed and reopened.
 
 This is the test counterpart to the lazy-load workstream in [architecture-review.md](architecture-review.md), and it should be added before broad QML restructuring begins.
 
@@ -153,7 +153,7 @@ Use path filters only to reduce unnecessary work, never to omit the safety net f
 - `scripts/`, `src/bin/`, or installer changes: isolated install/update/uninstall matrix and CLI tests.
 - `shell/CMakeLists.txt`, packaging, release workflows, or dependency files: clean offline build, manifest validation, and artifact parity.
 - `installer/tui/`: C++ build, sanitizer build, and installer workflow tests.
-- Scheduled: real KDE/Wayland lifecycle tests, performance benchmarks, distro install matrix, and upstream-sync checks. The runtime workflow currently covers the first startup/lifecycle scenarios; component-level lifecycle and interaction benchmarks remain to be added.
+- Scheduled: real KDE/Wayland lifecycle tests, performance benchmarks, distro install matrix, and upstream-sync checks. The runtime workflow covers startup, service, lifecycle, and interaction benchmark scenarios; its diagnostics are retained as artifacts.
 
 The final required status should be a small explicit gate job that fails when an applicable job is skipped unexpectedly.
 
@@ -189,8 +189,8 @@ Before merge, the repository should be able to demonstrate that:
 - clean offline builds validate manifests and source/package parity;
 - native code is compiled under sanitizer configurations and installer native logic is exercised under sanitizers;
 - QML and plugins are loaded from an installed tree in a real or controlled runtime smoke test;
-- the covered deferred components survive repeated IPC open/close cycles; component-specific ownership and stale-state tests remain for the other loaders;
-- startup metrics are visible in workflow artifacts; reproducible idle budgets and stable regression baselines remain to be established;
+- deferred components survive repeated IPC open/close cycles with repeated lifecycle evidence and service probes;
+- startup, memory, idle CPU, and interaction metrics are visible in workflow artifacts and enforced against the reviewed baseline;
 - scheduled distro, KDE/Wayland, performance, upstream-sync, and provenance checks are clearly separated from required PR checks.
 
 ## Sources in this repository
