@@ -27,7 +27,7 @@ PageBase {
             subtext: qsTr("Number of entries available in the launcher")
             value: GlobalConfig.launcher.clipboardMaxEntries
             from: 1
-            to: 100
+            to: 2048
             stepSize: 1
             onMoved: value => GlobalConfig.launcher.clipboardMaxEntries = value
         }
