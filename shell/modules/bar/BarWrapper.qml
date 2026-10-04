@@ -209,12 +209,12 @@ Item {
     }
 
     // Overlay background. Last child for section order, z -1 so bar
-    // content paints above it. Overlays always float islands-style.
+    // content paints above it. Overlays continue the panel frame:
+    // flush with the edges, no gaps.
     Rectangle {
         anchors.fill: parent
         visible: root.isOverlay
         color: Colours.tPalette.m3surface
-        radius: Config.border.rounding
         z: -1
     }
 }

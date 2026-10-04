@@ -695,7 +695,6 @@ StyledWindow {
                     return n;
                 }
                 readonly property int edgeOffset: sameEdgeBefore * bar.contentWidth
-                readonly property int islandsMargin: Tokens.spacing.extraLarge
 
                 screen: root.screen
                 visibilities: visibilities
@@ -707,10 +706,10 @@ StyledWindow {
                 anchors.bottom: effPos === "bottom" ? parent.bottom : undefined
                 anchors.left: effPos === "left" || effPos === "top" || effPos === "bottom" ? parent.left : undefined
                 anchors.right: effPos === "right" || effPos === "top" || effPos === "bottom" ? parent.right : undefined
-                anchors.topMargin: (effPos === "top" ? edgeOffset : 0) + (effPos === "top" || effPos === "left" || effPos === "right" ? islandsMargin : 0)
-                anchors.bottomMargin: (effPos === "bottom" ? edgeOffset : 0) + (effPos === "bottom" || effPos === "left" || effPos === "right" ? islandsMargin : 0)
-                anchors.leftMargin: (effPos === "left" ? edgeOffset : 0) + (effPos === "left" || effPos === "top" || effPos === "bottom" ? islandsMargin : 0)
-                anchors.rightMargin: (effPos === "right" ? edgeOffset : 0) + (effPos === "right" || effPos === "top" || effPos === "bottom" ? islandsMargin : 0)
+                anchors.topMargin: effPos === "top" ? edgeOffset : 0
+                anchors.bottomMargin: effPos === "bottom" ? edgeOffset : 0
+                anchors.leftMargin: effPos === "left" ? edgeOffset : 0
+                anchors.rightMargin: effPos === "right" ? edgeOffset : 0
                 width: effPos === "left" || effPos === "right" ? implicitWidth : undefined
                 height: effPos === "top" || effPos === "bottom" ? implicitHeight : undefined
 
