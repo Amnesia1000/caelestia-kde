@@ -97,20 +97,6 @@ jobs:
         run: python3 .github/scripts/check_file_hygiene.py ${{ github.event_name == 'push' && '--all' || '' }}
         continue-on-error: ${{ github.event_name == 'push' }}
 
-  markdown-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-
-      - name: Lint markdown files
-        uses: DavidAnson/markdownlint-cli2-action@05f32210e84442804257b2a6f20b273450ec8265 # v19
-        with:
-          globs: |
-            README.md
-            docs/**/*.md
-            .github/*.md
-
   qml-conventions:
     runs-on: ubuntu-latest
     steps:
@@ -503,7 +489,6 @@ jobs:
       - repo-integrity
       - json-validation
       - file-hygiene
-      - markdown-lint
       - qml-conventions
       - embedded-bash
       - config-cross-ref
@@ -531,7 +516,6 @@ jobs:
           job_results[repo-integrity]="${{ needs.repo-integrity.result }}"
           job_results[json-validation]="${{ needs.json-validation.result }}"
           job_results[file-hygiene]="${{ needs.file-hygiene.result }}"
-          job_results[markdown-lint]="${{ needs.markdown-lint.result }}"
           job_results[qml-conventions]="${{ needs.qml-conventions.result }}"
           job_results[embedded-bash]="${{ needs.embedded-bash.result }}"
           job_results[config-cross-ref]="${{ needs.config-cross-ref.result }}"

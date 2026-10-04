@@ -139,6 +139,9 @@ if("m3shapes" IN_LIST ENABLE_MODULES)
         GIT_TAG        ${M3SHAPES_REV}
         SOURCE_DIR     "${_M3SHAPES_SOURCE_DIR}"
     )
+    if(EXISTS "${_M3SHAPES_SOURCE_DIR}/CMakeLists.txt")
+        set(FETCHCONTENT_SOURCE_DIR_M3SHAPES_EXTERNAL "${_M3SHAPES_SOURCE_DIR}")
+    endif()
     message(STATUS "Using M3Shapes source: ${_M3SHAPES_SOURCE_DIR}")
     FetchContent_MakeAvailable(m3shapes_external)
 

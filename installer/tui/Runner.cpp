@@ -31,13 +31,6 @@ extern volatile sig_atomic_t g_sigterm_received;
 namespace {
 static size_t g_spin_frame = 0;
 
-std::string env_val(const char *name) {
-  const char *v = getenv(name);
-  return v ? std::string(v) : std::string();
-}
-
-bool env_is_true(const char *name) { return env_val(name) == "true"; }
-
 bool log_tail_since(const std::string &log_path, long start_offset,
                     std::string &out) {
   FILE *f = fopen(log_path.c_str(), "rb");

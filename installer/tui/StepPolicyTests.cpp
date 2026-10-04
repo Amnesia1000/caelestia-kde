@@ -1,11 +1,11 @@
 #include "StepPolicy.hpp"
 
 #include <cassert>
+#include <map>
 #include <string>
-#include <unordered_map>
 
 int main() {
-    using Answers = std::unordered_map<std::string, std::string>;
+    using Answers = std::map<std::string, std::string>;
 
     assert(StepPolicy::is_skipped("Update system", {{"SKIP_SYSTEM_UPDATE", "true"}}));
     assert(!StepPolicy::is_skipped("Update system", {{"SKIP_SYSTEM_UPDATE", "false"}}));
