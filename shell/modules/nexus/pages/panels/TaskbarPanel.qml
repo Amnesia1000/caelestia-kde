@@ -61,6 +61,17 @@ PageBase {
             GlobalConfig.forScreen(Quickshell.screens[i].name).bar.resetOption("position");
     }
 
+    function freePanelName(base: string): string {
+        const taken = Config.bar.bars.values.map(b => b.name);
+        let name = base;
+        let n = 1;
+        while (taken.includes(name)) {
+            n++;
+            name = base + " " + n;
+        }
+        return name;
+    }
+
     title: qsTr("Taskbar")
     isSubPage: true
 
@@ -158,6 +169,48 @@ PageBase {
                         screenConfig.bar.resetOption("position");
                     else
                         screenConfig.bar.position = item.value;
+                }
+            }
+        }
+
+        SectionHeader {
+            text: qsTr("Extra panels")
+        }
+
+        ListEditor {
+            function labelFor(item: var): string {
+                return item.name || qsTr("Panel");
+            }
+
+            function toggledFor(item: var): bool {
+                return item.enabled;
+            }
+
+            first: true
+            values: Config.bar.bars.values
+            onItemMoved: (from, to) => GlobalConfig.bar.bars.move(from, to)
+            onItemRemoved: index => GlobalConfig.bar.bars.remove(index)
+            onItemToggled: (index, checked) => GlobalConfig.bar.bars.at(index).enabled = checked
+        }
+
+        DialogSelectButton {
+            rootParent: root.flickable
+            icon: "add"
+            label: qsTr("Add panel")
+            header: qsTr("Add new panel")
+            acceptLabel: qsTr("Add")
+            model: root.positionItems.map(item => ({
+                        id: item.value,
+                        label: item.text
+                    }))
+            onAccepted: {
+                if (selectedItem) {
+                    const label = (root.positionItems.find(item => item.value === selectedItem) ?? root.positionItems[0]).text;
+                    GlobalConfig.bar.bars.insert({
+                        name: root.freePanelName(label + " " + qsTr("panel")),
+                        position: selectedItem,
+                        enabled: true
+                    });
                 }
             }
         }
