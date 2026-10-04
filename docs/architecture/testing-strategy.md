@@ -13,7 +13,7 @@ The repository has strong static and shell-contract coverage, but the highest-ri
 - The PR workflow gates PR metadata and QML import/deployment checks, but does not build the shell or installer. Evidence: [pr-checks.yml](../../.github/workflows/pr-checks.yml).
 - The validation workflow runs many useful static checks, but its QML syntax/import checks are explicitly structural substitutes because the Qt/Quickshell toolchain is absent. Markdown linting is also non-blocking. Evidence: [validate.yml](../../.github/workflows/validate.yml).
 - The scheduled distro workflow compiles the TUI and runs installer steps in Arch, Fedora, and Ubuntu containers, but it is not a required pull-request gate and does not validate a real KDE/Wayland session. Evidence: [test-dependencies.yml](../../.github/workflows/test-dependencies.yml).
-- The architecture review requires startup/idle budgets, lazy-component lifecycle tests, source/package parity, offline reproducibility, and failure-injection coverage. Only the P0 contract and isolated-script portions are represented clearly today; runtime performance and graphical lifecycle checks are not yet represented as merge checks. Evidence: [architecture-review.md](architecture-review.md).
+- The architecture review requires startup/idle budgets, lazy-component lifecycle tests, source/package parity, offline reproducibility, and failure-injection coverage. Contract, isolated-script, artifact, provenance, and focused native policy checks are now represented; runtime performance and graphical lifecycle checks are not yet represented as merge checks. Evidence: [architecture-review.md](architecture-review.md).
 
 ## Testing model
 
@@ -95,9 +95,9 @@ Keep Qt/KDE process tests separate from pure C++ tests so sanitizer failures ide
 The required `installer-build` job now compiles the POSIX TUI with `-Wall -Wextra -Werror`.
 The required `installer-sanitizers` job configures a Debug installer build with AddressSanitizer
 and UndefinedBehaviorSanitizer enabled.
-The repository still has no separable pure-C++ CTest target. The sanitizer job currently provides
-native build coverage and runs the standalone installer step-policy CTest. Broader executable
-sanitizer tests still require additional non-interactive native logic targets.
+The repository now has a standalone installer step-policy CTest target. The sanitizer job provides
+native build coverage and runs that test. Broader executable sanitizer tests still require
+additional non-interactive native logic targets.
 
 Acceptance: every native change runs a compile job; native logic has executable tests; sanitizer failures are required for the affected PR path.
 
