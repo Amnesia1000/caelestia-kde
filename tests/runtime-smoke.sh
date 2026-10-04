@@ -140,6 +140,7 @@ export XDG_STATE_HOME="$runtime_dir/state"
 export QML2_IMPORT_PATH="$qml_import_path"
 export QT_QPA_PLATFORM=wayland
 export CAELESTIA_RUNTIME_TEST=1
+export LD_LIBRARY_PATH="$install_root/usr/lib/caelestia${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 mkdir -p "$XDG_STATE_HOME/caelestia"
 printf '{invalid scheme state' >"$XDG_STATE_HOME/caelestia/scheme.json"
 
