@@ -80,7 +80,11 @@ def main():
     mon_dir = os.path.join(config_dir, "caelestia", "monitors")
     try:
         for name in sorted(os.listdir(mon_dir)):
-            v = load_text(os.path.join(mon_dir, name))
+            entry = os.path.join(mon_dir, name)
+            if os.path.isdir(entry):
+                v = load_text(os.path.join(entry, "shell.json"))
+            else:
+                v = load_text(entry)
             if v is not None:
                 monitors[name] = v
     except Exception:
