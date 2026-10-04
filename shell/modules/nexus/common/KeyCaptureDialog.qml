@@ -207,19 +207,16 @@ Popup {
                         // so we handle common ones. Others might be obscure.
                         keyStr = String.fromCharCode(event.key)
                     }
-                    root.capturedKey = (() => {
-                        if (modifiers.indexOf("Shift") >= 0) {
-                            const code = event.nativeScanCode;
-                            let digit = "";
-                            if (code >= 10 && code <= 19)
-                                digit = String((code - 9) % 10);
-                            else if (code >= 2 && code <= 11)
-                                digit = String((code - 1) % 10);
-                            if (digit !== "")
-                                return modifiers + digit;
-                        }
-                        return modifiers + keyStr;
-                    })()
+                    // kglobalaccel matches shifted symbols (pressing Shift+1
+                    // produces "!") with implicit shift: the sequence must be
+                    // "Meta+!", not "Meta+Shift+1" nor "Meta+Shift+!".
+                    // Neither explicit-Shift form ever fires, so drop Shift
+                    // for single symbol chars. Letters, digits, function and
+                    // named keys keep their modifiers.
+                    let mods = modifiers
+                    if (mods.indexOf("Shift") >= 0 && keyStr.length === 1 && !/[A-Za-z0-9]/.test(keyStr))
+                        mods = mods.replace("Shift+", "")
+                    root.capturedKey = mods + keyStr
                 }
                 event.accepted = true
             }
