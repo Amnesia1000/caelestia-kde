@@ -86,15 +86,6 @@ StyledRect {
     property real ghostY: 0
     property double lastEdgeSwitch: 0
 
-    onPageCountChanged: {
-        if (root.currentPage >= root.pageCount)
-            root.currentPage = root.pageCount - 1;
-    }
-    onPerPageChanged: {
-        if (root.currentPage >= root.pageCount)
-            root.currentPage = root.pageCount - 1;
-    }
-
     function pageSlice(): var {
         const src = root.dragging && root.dragOrder.length > 0 ? root.dragOrder : root.quickToggles;
         return src.slice(root.currentPage * root.perPage, (root.currentPage + 1) * root.perPage);
@@ -241,6 +232,15 @@ StyledRect {
         root.dragging = false;
         root.dragId = "";
         root.dragOrder = [];
+    }
+
+    onPageCountChanged: {
+        if (root.currentPage >= root.pageCount)
+            root.currentPage = root.pageCount - 1;
+    }
+    onPerPageChanged: {
+        if (root.currentPage >= root.pageCount)
+            root.currentPage = root.pageCount - 1;
     }
 
     Layout.fillWidth: true
