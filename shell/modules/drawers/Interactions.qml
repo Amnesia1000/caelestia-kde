@@ -18,6 +18,7 @@ CustomMouseArea {
     required property Bar.BarWrapper bar
     required property real borderThickness
     required property bool fullscreen
+    property bool topPanelActive
     property var focusGrab: null
     property point dragStart
     property bool dashboardShortcutActive
@@ -257,7 +258,7 @@ CustomMouseArea {
                 visibilities.launcher = false;
         }
 
-        const showDashboard = Config.dashboard.showOnHover && inTopPanel(panels.dashboard, x, y, Config.dashboard.hoverThickness, Config.dashboard.hoverWidth);
+        const showDashboard = Config.dashboard.showOnHover && !root.topPanelActive && inTopPanel(panels.dashboard, x, y, Config.dashboard.hoverThickness, Config.dashboard.hoverWidth);
 
         if (Config.dashboard.showOnHover) {
             if (!dashboardShortcutActive) {
@@ -267,7 +268,7 @@ CustomMouseArea {
             }
         }
 
-        if (pressed && inTopPanel(panels.dashboard, dragStart.x, dragStart.y, Config.dashboard.hoverThickness, Config.dashboard.hoverWidth) && withinPanelWidth(panels.dashboard, x, y)) {
+        if (pressed && !root.topPanelActive && inTopPanel(panels.dashboard, dragStart.x, dragStart.y, Config.dashboard.hoverThickness, Config.dashboard.hoverWidth) && withinPanelWidth(panels.dashboard, x, y)) {
             if (dragY > Config.dashboard.dragThreshold)
                 visibilities.dashboard = true;
             else if (dragY < -Config.dashboard.dragThreshold)
@@ -293,7 +294,7 @@ CustomMouseArea {
         const inUtilitiesArea = bar.position === "bottom"
             ? inTopPanel(panels.utilities, x, y, Config.utilities.hoverThickness, Config.utilities.hoverWidth) && (root.visibilities.utilities ? inUtilitiesAreaOpen : inUtilitiesAreaClosed)
             : inBottomPanel(panels.utilities, x, y, true, Config.utilities.hoverThickness, Config.utilities.hoverWidth) && (root.visibilities.utilities ? inUtilitiesAreaOpen : inUtilitiesAreaClosed);
-        const showUtilities = Config.utilities.showOnHover && !popouts.hasCurrent && panels.popoutsWrapper.offsetScale > 0.99 && inUtilitiesArea;
+        const showUtilities = Config.utilities.showOnHover && !root.topPanelActive && !popouts.hasCurrent && panels.popoutsWrapper.offsetScale > 0.99 && inUtilitiesArea;
 
         if (Config.utilities.showOnHover) {
             if (!utilitiesShortcutActive) {
@@ -308,14 +309,14 @@ CustomMouseArea {
                 ? inTopPanel(panels.utilities, dragStart.x, dragStart.y, Config.utilities.hoverThickness, Config.utilities.hoverWidth)
                 : inBottomPanel(panels.utilities, dragStart.x, dragStart.y, true, Config.utilities.hoverThickness, Config.utilities.hoverWidth);
 
-            if (inUtilitiesDragStart && (bar.position === "bottom" ? withinPanelWidth(panels.utilities, x, y) : withinPanelWidth(panels.utilities, x, y))) {
+            if (inUtilitiesDragStart && !root.topPanelActive && (bar.position === "bottom" ? withinPanelWidth(panels.utilities, x, y) : withinPanelWidth(panels.utilities, x, y))) {
                 if (bar.position === "bottom") {
-                    if (dragY > Config.utilities.dragThreshold)
+                    if (dragY > Config.utilities.dragThreshold && !root.topPanelActive)
                         visibilities.utilities = true;
                     else if (dragY < -Config.utilities.dragThreshold)
                         visibilities.utilities = false;
                 } else {
-                    if (dragY < -Config.utilities.dragThreshold)
+                    if (dragY < -Config.utilities.dragThreshold && !root.topPanelActive)
                         visibilities.utilities = true;
                     else if (dragY > Config.utilities.dragThreshold)
                         visibilities.utilities = false;

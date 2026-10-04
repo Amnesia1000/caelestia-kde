@@ -54,6 +54,9 @@ StyledWindow {
         top: overlayTopExtent,
         bottom: overlayBottomExtent
     })
+    // A top overlay panel replaces the dashboard/utilities drawers: while
+    // one is enabled they stay closed and cannot be opened.
+    readonly property bool topPanelActive: overlayBarDefs.some(b => ((b.position || "bottom") === "top"))
     readonly property bool hasOpenOverlay: focusGrabState.active || panels.popouts.isDetached || desktopContextMenu.expanded || visibilities.overview || visibilities.launcher || visibilities.dashboard || visibilities.sidebar || visibilities.session || visibilities.utilities
     readonly property bool hasFullscreen: actualFullscreen && !hasOpenOverlay
 
@@ -101,6 +104,12 @@ StyledWindow {
         visibilities.session = false;
         visibilities.dashboard = false;
         panels.popouts.close();
+    }
+    onTopPanelActiveChanged: {
+        if (topPanelActive) {
+            visibilities.dashboard = false;
+            visibilities.utilities = false;
+        }
     }
 
     name: "drawers"
@@ -527,6 +536,7 @@ StyledWindow {
     DrawerVisibilities {
         id: visibilities
 
+        screenName: root.screen.name
         onOverviewChanged: {
             if (overview && !GlobalConfig.overview.enabled) {
                 overview = false;
@@ -542,6 +552,7 @@ StyledWindow {
         visibilities: visibilities
         panels: panels
         bar: bar
+        topPanelActive: root.topPanelActive
         borderThickness: root.borderLayoutThickness
         fullscreen: root.hasFullscreen
         focusGrab: focusGrabState
