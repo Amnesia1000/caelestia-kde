@@ -646,7 +646,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow1"
         description: qsTr("Open new window of dock entry 1")
-        key: "Meta+Shift+1"
+        key: "Meta+Ctrl+1"
         onPressed: root.activateDockEntryNew(0)
     }
     // qmllint disable unresolved-type
@@ -654,7 +654,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow2"
         description: qsTr("Open new window of dock entry 2")
-        key: "Meta+Shift+2"
+        key: "Meta+Ctrl+2"
         onPressed: root.activateDockEntryNew(1)
     }
     // qmllint disable unresolved-type
@@ -662,7 +662,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow3"
         description: qsTr("Open new window of dock entry 3")
-        key: "Meta+Shift+3"
+        key: "Meta+Ctrl+3"
         onPressed: root.activateDockEntryNew(2)
     }
     // qmllint disable unresolved-type
@@ -670,7 +670,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow4"
         description: qsTr("Open new window of dock entry 4")
-        key: "Meta+Shift+4"
+        key: "Meta+Ctrl+4"
         onPressed: root.activateDockEntryNew(3)
     }
     // qmllint disable unresolved-type
@@ -678,7 +678,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow5"
         description: qsTr("Open new window of dock entry 5")
-        key: "Meta+Shift+5"
+        key: "Meta+Ctrl+5"
         onPressed: root.activateDockEntryNew(4)
     }
     // qmllint disable unresolved-type
@@ -686,7 +686,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow6"
         description: qsTr("Open new window of dock entry 6")
-        key: "Meta+Shift+6"
+        key: "Meta+Ctrl+6"
         onPressed: root.activateDockEntryNew(5)
     }
     // qmllint disable unresolved-type
@@ -694,7 +694,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow7"
         description: qsTr("Open new window of dock entry 7")
-        key: "Meta+Shift+7"
+        key: "Meta+Ctrl+7"
         onPressed: root.activateDockEntryNew(6)
     }
     // qmllint disable unresolved-type
@@ -702,7 +702,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow8"
         description: qsTr("Open new window of dock entry 8")
-        key: "Meta+Shift+8"
+        key: "Meta+Ctrl+8"
         onPressed: root.activateDockEntryNew(7)
     }
     // qmllint disable unresolved-type
@@ -710,7 +710,7 @@ Scope {
         // qmllint enable unresolved-type
         name: "dockNewWindow9"
         description: qsTr("Open new window of dock entry 9")
-        key: "Meta+Shift+9"
+        key: "Meta+Ctrl+9"
         onPressed: root.activateDockEntryNew(8)
     }
     }
