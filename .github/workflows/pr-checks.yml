@@ -154,7 +154,8 @@ jobs:
             if [[ "$result" == "success" ]]; then
               echo "- [PASS] **${job}**" >> $GITHUB_STEP_SUMMARY
             elif [[ "$result" == "skipped" ]]; then
-              echo "- [SKIP] **${job}**" >> $GITHUB_STEP_SUMMARY
+              echo "- [FAIL] **${job}** - required PR job was skipped" >> $GITHUB_STEP_SUMMARY
+              all_passed=false
             else
               echo "- [FAIL] **${job}** - ${result}" >> $GITHUB_STEP_SUMMARY
               all_passed=false

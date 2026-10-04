@@ -28,6 +28,10 @@ Use four layers with different costs and failure signals:
 
 The suite should report test duration and identify the layer that failed. A failure in a fake-command test must not be confused with a failure in a real platform test.
 
+The deterministic layers are executed by `.github/workflows/validate.yml` on every pull request:
+Python and repository checks, the Bash suite, clean offline artifact parity, strict installer build,
+sanitizer build, and native CTest. The PR gates fail closed when a required job fails or is skipped.
+
 ## Highest-value gaps and improvements
 
 ### P0: Make current tests reliable and diagnostic
