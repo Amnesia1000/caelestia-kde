@@ -198,6 +198,7 @@ StyledWindow {
         bar: bar
         panels: panels
         win: root
+        overlayExtents: root.overlayExtents
     }
     Region {
         id: fullRegion

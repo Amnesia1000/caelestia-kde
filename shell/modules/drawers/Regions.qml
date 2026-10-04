@@ -11,6 +11,7 @@ Region {
     required property Bar.BarWrapper bar
     required property Panels panels
     required property var win
+    required property var overlayExtents
     readonly property real borderThickness: Config.border.thickness
     readonly property real clampedThickness: Config.border.clampedThickness
     readonly property real barLeftWidth: bar.position === "left" ? bar.clampedThickness : clampedThickness
@@ -24,10 +25,10 @@ Region {
         return Math.max(borderThickness, hoverThickness);
     }
 
-    x: barLeftWidth + win.dragMaskPadding
-    y: barTopHeight + win.dragMaskPadding
-    width: win.width - barLeftWidth - barRightWidth - win.dragMaskPadding * 2
-    height: win.height - barTopHeight - barBottomHeight - win.dragMaskPadding * 2
+    x: barLeftWidth + win.dragMaskPadding - overlayExtents.left
+    y: barTopHeight + win.dragMaskPadding - overlayExtents.top
+    width: win.width - barLeftWidth - barRightWidth - win.dragMaskPadding * 2 + overlayExtents.left + overlayExtents.right
+    height: win.height - barTopHeight - barBottomHeight - win.dragMaskPadding * 2 + overlayExtents.top + overlayExtents.bottom
     intersection: Intersection.Xor
 
     R {
