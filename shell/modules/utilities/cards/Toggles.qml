@@ -540,5 +540,17 @@ StyledRect {
         isToggle: true
         isRound: true
         shapeMorph: true
+
+        Behavior on x {
+            Anim {
+                type: Anim.SlowSpatial
+            }
+        }
+
+        Behavior on y {
+            Anim {
+                type: Anim.SlowSpatial
+            }
+        }
     }
 }
