@@ -91,6 +91,12 @@ set(INSTALL_QMLDIR "usr/lib/qt6/qml" CACHE STRING "QML install dir")
 set(INSTALL_QSCONFDIR "etc/xdg/quickshell/caelestia" CACHE STRING "Quickshell config install dir")
 option(CAELESTIA_OFFLINE "Disallow downloading build dependencies" OFF)
 option(CAELESTIA_PACKAGE "Install package-owned repository assets" OFF)
+option(CAELESTIA_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if(CAELESTIA_ENABLE_SANITIZERS)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
 set(CAELESTIA_M3SHAPES_SOURCE_DIR "" CACHE PATH
     "Pre-fetched M3Shapes source directory")
 set(M3SHAPES_REV "unknown")

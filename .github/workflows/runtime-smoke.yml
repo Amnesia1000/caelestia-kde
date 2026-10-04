@@ -1,0 +1,72 @@
+name: Runtime Smoke
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: runtime-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runtime-smoke:
+    name: Installed QML runtime smoke
+    runs-on: [self-hosted, linux, kde-wayland]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Verify runtime image
+        run: |
+          set -euo pipefail
+          command -v cmake
+          command -v ninja
+          command -v quickshell
+          command -v weston
+          command -v dbus-run-session
+          test -x /usr/lib/qt6/bin/qmllint
+
+      - name: Fetch pinned build dependency
+        run: |
+          set -euo pipefail
+          export CAELESTIA_DEPS_DIR="$RUNNER_TEMP/caelestia-deps"
+          bash scripts/fetch-dependencies.sh
+
+      - name: Build and install runtime tree
+        env:
+          CAELESTIA_DEPS_DIR: ${{ runner.temp }}/caelestia-deps
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
+        run: |
+          set -euo pipefail
+          cmake -G Ninja -B "$RUNNER_TEMP/caelestia-build" -S shell \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
+            -DCAELESTIA_PACKAGE=OFF \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/caelestia-install"
+          cmake --build "$RUNNER_TEMP/caelestia-build" --parallel
+          cmake --install "$RUNNER_TEMP/caelestia-build"
+
+      - name: Run installed runtime and lifecycle smoke
+        env:
+          LD_LIBRARY_PATH: ${{ runner.temp }}/caelestia-install/usr/lib/caelestia
+        run: |
+          set -euo pipefail
+          bash tests/runtime-smoke.sh \
+            --install-root "$RUNNER_TEMP/caelestia-install" \
+            --runs 3 \
+            --timeout 60 \
+            --max-startup-ms 30000 \
+            --log-dir "$RUNNER_TEMP/runtime-smoke" \
+            | tee "$RUNNER_TEMP/runtime-smoke/results.json"
+
+      - name: Upload runtime diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-smoke-diagnostics
+          path: ${{ runner.temp }}/runtime-smoke/
+          if-no-files-found: ignore

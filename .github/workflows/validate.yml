@@ -404,6 +404,98 @@ jobs:
           cmake --build installer/build-sanitizers --target step-policy-tests --parallel
           ctest --test-dir installer/build-sanitizers --output-on-failure -R step-policy-tests
 
+  runtime-smoke:
+    name: Installed QML runtime smoke
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Install runtime and build dependencies
+        run: |
+          pacman -Syu --noconfirm --needed git cmake ninja python dbus quickshell weston \
+            qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-tools extra-cmake-modules \
+            kwindowsystem kguiaddons kglobalaccel kconfig kcoreaddons networkmanager-qt \
+            pulseaudio-qt libqalculate pipewire libpipewire aubio lm_sensors fftw ncurses \
+            alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse
+
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Fetch pinned build dependency
+        run: |
+          set -euo pipefail
+          export CAELESTIA_DEPS_DIR="$PWD/.ci-deps"
+          bash scripts/fetch-dependencies.sh
+
+      - name: Build and install runtime tree
+        env:
+          CAELESTIA_DEPS_DIR: ${{ github.workspace }}/.ci-deps
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
+        run: |
+          set -euo pipefail
+          cmake -G Ninja -B build-runtime -S shell -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
+            -DCAELESTIA_PACKAGE=OFF -DCMAKE_INSTALL_PREFIX="$PWD/runtime-install"
+          cmake --build build-runtime --parallel
+          cmake --install build-runtime
+
+      - name: Run installed runtime and lifecycle smoke
+        run: |
+          set -euo pipefail
+          bash tests/runtime-smoke.sh \
+            --install-root "$PWD/runtime-install" \
+            --runs 3 \
+            --timeout 60 \
+            --max-startup-ms 30000 \
+            --log-dir "$PWD/runtime-smoke"
+
+      - name: Upload runtime diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runtime-smoke-diagnostics
+          path: runtime-smoke/
+          if-no-files-found: ignore
+
+  shell-sanitizers:
+    name: Build shell plugins with sanitizers
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Install shell build dependencies
+        run: |
+          pacman -Syu --noconfirm --needed git cmake ninja python qt6-base qt6-declarative \
+            qt6-shadertools qt6-wayland qt6-tools extra-cmake-modules kwindowsystem \
+            kguiaddons kglobalaccel kconfig kcoreaddons networkmanager-qt pulseaudio-qt \
+            libqalculate pipewire libpipewire aubio lm_sensors fftw ncurses alsa-lib \
+            iniparser libglvnd sdl2 portaudio sndio libpulse
+
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Fetch pinned build dependency
+        run: |
+          set -euo pipefail
+          export CAELESTIA_DEPS_DIR="$PWD/.ci-deps"
+          bash scripts/fetch-dependencies.sh
+
+      - name: Configure sanitizer build
+        env:
+          CAELESTIA_DEPS_DIR: ${{ github.workspace }}/.ci-deps
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
+        run: |
+          set -euo pipefail
+          cmake -G Ninja -B build-shell-sanitizers -S shell \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
+            -DCAELESTIA_PACKAGE=OFF -DCAELESTIA_ENABLE_SANITIZERS=ON
+
+      - name: Build sanitized shell plugins
+        run: cmake --build build-shell-sanitizers --parallel
+
   validate-gate:
     needs:
       - python-quality
@@ -424,6 +516,8 @@ jobs:
       - build-parity
       - installer-build
       - installer-sanitizers
+      - runtime-smoke
+      - shell-sanitizers
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -451,6 +545,8 @@ jobs:
           job_results[build-parity]="${{ needs.build-parity.result }}"
           job_results[installer-build]="${{ needs.installer-build.result }}"
           job_results[installer-sanitizers]="${{ needs.installer-sanitizers.result }}"
+          job_results[runtime-smoke]="${{ needs.runtime-smoke.result }}"
+          job_results[shell-sanitizers]="${{ needs.shell-sanitizers.result }}"
 
           all_passed=true
           for job in "${!job_results[@]}"; do
