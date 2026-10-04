@@ -76,13 +76,29 @@ StyledRect {
         });
     }
 
-    readonly property int splitIndex: Math.ceil(quickToggles.length / 2)
-    readonly property bool needExtraRow: quickToggles.length > 6
+    readonly property int perPage: Math.max(2, Math.min(12, Config.utilities.quickTogglesPerPage ?? 6))
+    readonly property int pageCount: Math.max(1, Math.ceil(quickToggles.length / perPage))
+    property int currentPage: 0
     property bool dragging: false
     property var dragOrder: []
     property string dragId: ""
     property real ghostX: 0
     property real ghostY: 0
+    property double lastEdgeSwitch: 0
+
+    onPageCountChanged: {
+        if (root.currentPage >= root.pageCount)
+            root.currentPage = root.pageCount - 1;
+    }
+    onPerPageChanged: {
+        if (root.currentPage >= root.pageCount)
+            root.currentPage = root.pageCount - 1;
+    }
+
+    function pageSlice(): var {
+        const src = root.dragging && root.dragOrder.length > 0 ? root.dragOrder : root.quickToggles;
+        return src.slice(root.currentPage * root.perPage, (root.currentPage + 1) * root.perPage);
+    }
 
     function iconFor(id: string): string {
         switch (id) {
@@ -119,10 +135,15 @@ StyledRect {
     }
 
     function rowModels(top: bool): var {
-        const src = root.dragging && root.dragOrder.length > 0 ? root.dragOrder : root.quickToggles;
-        if (root.needExtraRow)
-            return top ? src.slice(0, root.splitIndex) : src.slice(root.splitIndex);
-        return top ? src : [];
+        const slice = root.pageSlice();
+        const split = Math.ceil(slice.length / 2);
+        return top ? slice.slice(0, split) : slice.slice(split);
+    }
+
+    function requestPage(page: int): void {
+        const clamped = Math.max(0, Math.min(root.pageCount - 1, page));
+        if (clamped !== root.currentPage)
+            root.currentPage = clamped;
     }
 
     function startDrag(item, px: real, py: real): void {
@@ -141,13 +162,30 @@ StyledRect {
     function moveDrag(px: real, py: real): void {
         root.ghostX = px;
         root.ghostY = py;
+        // Drag to edge switches page (with cooldown so it doesn't flip rapidly).
+        const now = Date.now();
+        if (now - root.lastEdgeSwitch > 450) {
+            if (px < 24 && root.currentPage > 0) {
+                root.lastEdgeSwitch = now;
+                root.requestPage(root.currentPage - 1);
+                return;
+            }
+            if (px > root.width - 24 && root.currentPage < root.pageCount - 1) {
+                root.lastEdgeSwitch = now;
+                root.requestPage(root.currentPage + 1);
+                return;
+            }
+        }
         const rows = [rowTop, rowBottom];
+        const slice = root.pageSlice();
+        const split = Math.ceil(slice.length / 2);
+        const pageStart = root.currentPage * root.perPage;
         for (let r = 0; r < rows.length; r++) {
             const row = rows[r];
             if (!row.visible || row.model.length <= 0)
                 continue;
             if (px >= row.x - 20 && px <= row.x + row.width + 20 && py >= row.y - row.height / 2 && py <= row.y + row.height * 1.5) {
-                const base = (row === rowBottom && root.needExtraRow) ? root.splitIndex : 0;
+                const base = pageStart + (row === rowBottom ? split : 0);
                 let slot = Math.floor((px - row.x) / (row.width / row.model.length));
                 if (slot < 0)
                     slot = 0;
@@ -262,8 +300,54 @@ StyledRect {
         QuickToggleRow {
             id: rowBottom
 
-            visible: root.needExtraRow
+            visible: model.length > 0
             model: root.rowModels(false)
+        }
+
+        Row {
+            id: pageDots
+
+            visible: root.pageCount > 1
+            Layout.alignment: Qt.AlignHCenter
+            spacing: Tokens.spacing.extraSmall
+
+            Repeater {
+                model: root.pageCount
+
+                delegate: StyledRect {
+                    required property int index
+
+                    implicitWidth: index === root.currentPage ? 16 : 6
+                    implicitHeight: 6
+                    radius: Tokens.rounding.full
+                    color: index === root.currentPage ? Colours.palette.m3primary : Colours.palette.m3outlineVariant
+
+                    Behavior on implicitWidth {
+                        Anim {
+                            type: Anim.Spatial
+                        }
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: root.requestPage(parent.index)
+                    }
+                }
+            }
+        }
+    }
+
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => {
+            if (root.pageCount <= 1 || root.dragging)
+                return;
+            const d = event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x;
+            if (d < 0)
+                root.requestPage(root.currentPage + 1);
+            else if (d > 0)
+                root.requestPage(root.currentPage - 1);
         }
     }
 

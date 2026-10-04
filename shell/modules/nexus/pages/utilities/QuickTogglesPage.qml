@@ -83,6 +83,16 @@ PageBase {
             }
         }
 
+        StepperRow {
+            label: qsTr("Toggles per page")
+            subtext: qsTr("Entries shown on each page of the drawer")
+            value: Config.utilities.quickTogglesPerPage ?? 6
+            from: 2
+            to: 12
+            stepSize: 1
+            onMoved: value => GlobalConfig.utilities.quickTogglesPerPage = Math.round(value)
+        }
+
         ListEditor {
             function labelFor(item: var): string {
                 return root.toggleLabel(item);
