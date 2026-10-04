@@ -6,6 +6,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Caelestia.Config
+import Caelestia.Services
 import qs.components
 import qs.components.controls as Controls
 import qs.components.effects
@@ -18,14 +19,15 @@ Popup {
     property string currentKey: ""
     property string capturedKey: ""
     property var targetItem: null
+    readonly property string conflict: capturedKey === "" ? "" : KeybindsModel.getKeyCollisionForPart(shortcutName, capturedKey)
 
     signal confirm(string name, string newKey)
     signal clear(string name)
     signal unblocked()
 
-    width: 320
-    padding: 24
-    height: contentColumn.implicitHeight + 48
+    width: 300
+    padding: 16
+    height: contentColumn.implicitHeight + 28
 
     modal: true
     focus: true
@@ -79,7 +81,7 @@ Popup {
     contentItem: ColumnLayout {
         id: contentColumn
 
-        spacing: 16
+        spacing: 8
 
         StyledText {
             text: qsTr("Record Keybind")
@@ -92,7 +94,7 @@ Popup {
             id: focusScope
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 64
+            Layout.preferredHeight: 40
 
             Keys.onPressed: (event) => {
                 let modifiers = ""
@@ -155,6 +157,15 @@ Popup {
                     color: focusScope.activeFocus ? Colours.palette.m3onPrimaryContainer : Colours.palette.m3onSurfaceVariant
                 }
             }
+        }
+
+        StyledText {
+            Layout.fillWidth: true
+            visible: root.conflict !== ""
+            text: qsTr("Already used by %1").arg(root.conflict)
+            color: Colours.palette.m3error
+            font: Tokens.font.label.small
+            elide: Text.ElideRight
         }
 
         RowLayout {
