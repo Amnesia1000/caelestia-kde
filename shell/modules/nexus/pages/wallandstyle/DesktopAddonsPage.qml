@@ -194,6 +194,22 @@ PageBase {
                 onMoved: v => GlobalConfig.background.desktopClock.scale = v
             }
 
+            SliderRow {
+                Layout.fillWidth: true
+                label: qsTr("Horizontal offset")
+                valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
+                value: Config.background.desktopClock.offsetX / 0.2 + 0.5
+                onMoved: v => GlobalConfig.background.desktopClock.offsetX = v * 0.2 - 0.1
+            }
+
+            SliderRow {
+                Layout.fillWidth: true
+                label: qsTr("Vertical offset")
+                valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
+                value: Config.background.desktopClock.offsetY / 0.2 + 0.5
+                onMoved: v => GlobalConfig.background.desktopClock.offsetY = v * 0.2 - 0.1
+            }
+
             SelectRow {
                 Layout.fillWidth: true
                 label: qsTr("Position")
