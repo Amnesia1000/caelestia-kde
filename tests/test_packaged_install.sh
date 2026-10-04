@@ -303,17 +303,7 @@ test_the_checkout_build_script_builds_the_same_tarball() {
     assert_contains "$pkgbuild" '_source_sum="${_source_sum:-' "and the sum, so the script can override both"
 }
 
-test_the_payload_carries_no_version_control_metadata() {
-    local cmake directory_installs exclusions
-    cmake="$(cat "$REPO_ROOT/shell/CMakeLists.txt")"
-    directory_installs="$(grep -cF 'install(DIRECTORY' <<<"$cmake")"
-    exclusions="$(grep -cF 'PATTERN ".git*" EXCLUDE' <<<"$cmake")"
-
-    assert_ne "0" "$directory_installs" "the CMake install tree should have directory installs to check"
-    assert_eq "$directory_installs" "$exclusions" "every install(DIRECTORY) should exclude version control metadata"
-}
-
-test_the_package_prune_leaves_cmake_owned_paths_alone() {
+test_the_package_does_not_prune_cmake_owned_paths() {
     local pkgbuild
     pkgbuild="$(cat "$REPO_ROOT/packaging/aur/caelestia-kde/PKGBUILD")"
 

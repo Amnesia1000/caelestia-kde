@@ -201,6 +201,19 @@ test_validate_install_manifest_rejects_a_missing_path() {
     assert_status 1 "$status" "a manifest referencing a missing path should fail"
 }
 
+test_validate_install_manifest_rejects_vcs_metadata() {
+    local tmp status
+    tmp="$(new_tmpdir)"
+    mkdir -p "$tmp/root/usr/share/.git"
+    : > "$tmp/root/usr/share/.git/config"
+    printf '/usr/share/.git/config' > "$tmp/manifest.txt"
+
+    validate_install_manifest "$tmp/manifest.txt" "$tmp/root" 2>/dev/null
+    status=$?
+
+    assert_status 1 "$status" "VCS metadata must not be accepted in the package manifest"
+}
+
 test_validate_install_manifest_rejects_a_missing_manifest() {
     local tmp status
     tmp="$(new_tmpdir)"
