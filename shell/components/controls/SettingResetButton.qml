@@ -32,17 +32,25 @@ IconButton {
         return root.current !== root.fallback;
     }
 
+    property bool latched: false
+
     function reset(): void {
         if (!root.active)
             return;
         if (root.isCustom) {
             root.options.customSet(root.options.customDef);
-            return;
+        } else {
+            root.options.node.resetOption(root.options.setting);
         }
-        root.options.node.resetOption(root.options.setting);
+        root.latched = false;
     }
 
-    visible: root.dirty
+    onDirtyChanged: {
+        if (root.dirty)
+            root.latched = true;
+    }
+
+    visible: root.active && (root.dirty || root.latched)
     icon: "restart_alt"
     type: IconButton.Text
     onClicked: root.reset()
