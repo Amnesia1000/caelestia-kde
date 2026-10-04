@@ -25,6 +25,50 @@ Popup {
     signal clear(string name)
     signal unblocked()
 
+    transform: Translate {
+        id: shakeTr
+    }
+
+    SequentialAnimation {
+        id: shakeAnim
+
+        NumberAnimation {
+            target: shakeTr
+            property: "x"
+            to: -8
+            duration: 50
+        }
+        NumberAnimation {
+            target: shakeTr
+            property: "x"
+            to: 8
+            duration: 50
+        }
+        NumberAnimation {
+            target: shakeTr
+            property: "x"
+            to: -5
+            duration: 50
+        }
+        NumberAnimation {
+            target: shakeTr
+            property: "x"
+            to: 5
+            duration: 50
+        }
+        NumberAnimation {
+            target: shakeTr
+            property: "x"
+            to: 0
+            duration: 50
+        }
+    }
+
+    onConflictChanged: {
+        if (root.conflict !== "")
+            shakeAnim.start();
+    }
+
     width: 300
     padding: 16
     height: contentColumn.implicitHeight + 28
