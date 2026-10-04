@@ -40,11 +40,9 @@ Item {
     readonly property real rightZoneSize: isHorizontal ? rightLayout.implicitWidth : rightLayout.implicitHeight
 
     // Overlay entries: a non-empty custom list wins (entries can be
-    // individually disabled); otherwise the global list is inherited.
-    readonly property var effEntries: {
-        const own = (root.barDef && root.barDef.entries && root.barDef.entries.length > 0) ? root.barDef.entries : null;
-        return own ?? (Config.bar.entries || []);
-    }
+    // Overlay entries: each bar uses its own list (empty means empty).
+    // Only the legacy primary bar (no barDef) uses the global list.
+    readonly property var effEntries: (root.barDef ? root.barDef.entries : null) ?? (Config.bar.entries || [])
 
     property var leftEntries: effEntries.filter(e => e.enabled && (!e.zone || e.zone === "left") && e.id !== "spacer")
 

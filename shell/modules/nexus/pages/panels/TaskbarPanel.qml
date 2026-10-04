@@ -209,7 +209,8 @@ PageBase {
                     GlobalConfig.bar.bars.insert({
                         name: root.freePanelName(label + " " + qsTr("panel")),
                         position: selectedItem,
-                        enabled: true
+                        enabled: true,
+                        entries: []
                     });
                 }
             }
