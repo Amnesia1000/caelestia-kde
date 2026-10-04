@@ -208,13 +208,14 @@ Item {
         ]
     }
 
-    // Overlay background, only needed in islands mode (otherwise the
-    // window frame surface widened below shows through as the panel bg).
+    // Overlay background: opaque so the panel reads as a single piece
+    // with the frame (whose translucency would otherwise leave a seam).
+    // Last child for section order, z -1 so bar content paints above it.
     Rectangle {
         anchors.fill: parent
-        visible: root.isOverlay && GlobalConfig.appearance.islands
-        color: Colours.tPalette.m3surface
-        radius: Config.border.rounding
+        visible: root.isOverlay
+        color: Colours.palette.m3surface
+        radius: GlobalConfig.appearance.islands ? Config.border.rounding : 0
         z: -1
     }
 }
