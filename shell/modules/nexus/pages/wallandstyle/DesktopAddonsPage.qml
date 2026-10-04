@@ -307,6 +307,20 @@ PageBase {
                 onSelected: item => GlobalConfig.background.desktopLyrics.position = item.value
             }
 
+            SelectRow {
+                Layout.fillWidth: true
+                label: qsTr("Alignment")
+                active: {
+                    for (let i = 0; i < root.alignmentItems.length; i++) {
+                        if (root.alignmentItems[i].value === Config.background.desktopLyrics.alignment)
+                            return root.alignmentItems[i];
+                    }
+                    return root.alignmentItems[1];
+                }
+                menuItems: root.alignmentItems
+                onSelected: item => GlobalConfig.background.desktopLyrics.alignment = item.value
+            }
+
             SliderRow {
                 Layout.fillWidth: true
                 label: qsTr("Horizontal offset")
@@ -321,20 +335,6 @@ PageBase {
                 valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
                 value: Config.background.desktopLyrics.offsetY / 0.2 + 0.5
                 onMoved: v => GlobalConfig.background.desktopLyrics.offsetY = v * 0.2 - 0.1
-            }
-
-            SelectRow {
-                Layout.fillWidth: true
-                label: qsTr("Alignment")
-                active: {
-                    for (let i = 0; i < root.alignmentItems.length; i++) {
-                        if (root.alignmentItems[i].value === Config.background.desktopLyrics.alignment)
-                            return root.alignmentItems[i];
-                    }
-                    return root.alignmentItems[1];
-                }
-                menuItems: root.alignmentItems
-                onSelected: item => GlobalConfig.background.desktopLyrics.alignment = item.value
             }
 
             ToggleRow {
