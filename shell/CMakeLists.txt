@@ -256,6 +256,7 @@ if("shell" IN_LIST ENABLE_MODULES)
     else()
         set(CAELESTIA_QT_VERSION "unknown")
     endif()
+    set(CAELESTIA_ARTIFACT_ROOT_HASH "pending-install")
     configure_file(
         "${CMAKE_CURRENT_SOURCE_DIR}/build-provenance.json.in"
         "${CMAKE_BINARY_DIR}/build-provenance.json"

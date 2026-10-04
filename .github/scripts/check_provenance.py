@@ -14,7 +14,8 @@ REQUIRED_FIELDS = {
     "compiler",
     "cmake_version",
     "qt_version",
-    "source_hashes",
+    "hash_algorithm",
+    "artifact_root_hash",
 }
 
 
@@ -29,8 +30,10 @@ def validate(path: Path) -> list[str]:
         value = data.get(field, "")
         if value != "unknown" and not re.fullmatch(r"[0-9a-f]{40}", value):
             failures.append(f"{field} must be a full revision or unknown")
-    if data.get("source_hashes") != "install-manifest":
-        failures.append("source_hashes must identify the install manifest")
+    if data.get("hash_algorithm") != "sha256":
+        failures.append("hash_algorithm must be sha256")
+    if not re.fullmatch(r"[0-9a-f]{64}", data.get("artifact_root_hash", "")):
+        failures.append("artifact_root_hash must be a SHA-256 digest")
     return failures
 
 

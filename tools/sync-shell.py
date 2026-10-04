@@ -43,8 +43,9 @@ SKIP_PREFIXES = (
 )
 
 
-def git(*args: str, cwd: str = ROOT) -> str:
+def git(*args: str, cwd: str | None = None) -> str:
     """Run git and return stdout, raising on failure."""
+    cwd = ROOT if cwd is None else cwd
     proc = subprocess.run(
         ["git", *args], cwd=cwd, capture_output=True, text=True, encoding="utf-8"
     )
@@ -54,7 +55,8 @@ def git(*args: str, cwd: str = ROOT) -> str:
     return proc.stdout
 
 
-def git_bytes(*args: str, cwd: str = ROOT) -> bytes:
+def git_bytes(*args: str, cwd: str | None = None) -> bytes:
+    cwd = ROOT if cwd is None else cwd
     proc = subprocess.run(["git", *args], cwd=cwd, capture_output=True)
     if proc.returncode != 0:
         sys.stderr.write(proc.stderr.decode(errors="replace"))
@@ -93,7 +95,12 @@ def kind(path: str) -> str:
 
 def hypr_paths(tree: str) -> set[str]:
     """Paths under `tree` whose content mentions Hypr (Hyprland coupling)."""
-    out = git("grep", "-l", "-e", "Hypr", tree, "--", "*.qml")
+    try:
+        out = git("grep", "-l", "-e", "Hypr", tree, "--", "*.qml")
+    except SystemExit as error:
+        if error.code != 1:
+            raise
+        return set()
     return {p for p in out.splitlines() if p}
 
 
@@ -202,7 +209,9 @@ def do_bring(paths: list[str], force: bool) -> None:
 
 
 def main() -> None:
+    global ROOT
     parser = argparse.ArgumentParser(description="Caelestia upstream-sync tool")
+    parser.add_argument("--root", default=ROOT, help="repository root (for tests and mirrors)")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("fetch", help="fetch upstream and refresh the mirror branch")
@@ -216,6 +225,7 @@ def main() -> None:
                    "modules/nexus/pages/network/AddNetworkPage.qml")
 
     args = parser.parse_args()
+    ROOT = os.path.abspath(args.root)
     if args.cmd == "fetch":
         do_fetch()
     elif args.cmd == "report":

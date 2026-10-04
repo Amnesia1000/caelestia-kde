@@ -322,6 +322,10 @@ jobs:
             -DINSTALL_DATADIR=usr/share/caelestia
           cmake --build build-source --parallel
           DESTDIR="$PWD/stage-source" cmake --install build-source
+          python3 .github/scripts/write_provenance_hash.py \
+            stage-source/usr/share/caelestia/build-provenance.json stage-source/usr \
+            share/sddm/themes/caelestia share/plasma/shells/caelestia.desktop \
+            share/caelestia/assets/icons
 
       - name: Build and stage package layout offline
         env:
@@ -337,6 +341,10 @@ jobs:
             -DINSTALL_DATADIR=usr/share/caelestia
           cmake --build build-package --parallel
           DESTDIR="$PWD/stage-package" cmake --install build-package
+          python3 .github/scripts/write_provenance_hash.py \
+            stage-package/usr/share/caelestia/build-provenance.json stage-package/usr \
+            share/sddm/themes/caelestia share/plasma/shells/caelestia.desktop \
+            share/caelestia/assets/icons
           python3 .github/scripts/check_artifact_parity.py \
             stage-source/usr stage-package/usr \
             --allow-right-only-prefix usr/share/sddm/themes/caelestia \

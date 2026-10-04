@@ -1,5 +1,7 @@
 import importlib.util
 import pathlib
+import subprocess
+import tempfile
 import unittest
 
 
@@ -14,6 +16,41 @@ spec.loader.exec_module(sync_shell)
 
 
 class UpstreamBoundaryTests(unittest.TestCase):
+    def make_fixture_repo(self, directory: pathlib.Path) -> None:
+        def git(*args: str) -> None:
+            subprocess.run(["git", *args], cwd=directory, check=True, capture_output=True)
+
+        git("init", "-q")
+        git("config", "user.email", "test@example.com")
+        git("config", "user.name", "Test")
+        (directory / "shell").mkdir()
+        (directory / "shell" / "shared.qml").write_text("same", encoding="utf-8")
+        (directory / "shell" / "adapted.qml").write_text("kde-adaptation", encoding="utf-8")
+        (directory / "shell" / "kde-only.qml").write_text("port-only", encoding="utf-8")
+        git("add", ".")
+        git("commit", "-qm", "shell baseline")
+        git("branch", "upstream/main")
+        git("checkout", "-q", "upstream/main")
+        (directory / "shell" / "adapted.qml").unlink()
+        (directory / "shell" / "kde-only.qml").unlink()
+        (directory / "adapted.qml").write_text("upstream-version", encoding="utf-8")
+        (directory / "upstream-only.qml").write_text("upstream-only", encoding="utf-8")
+        git("add", ".")
+        git("commit", "-qm", "upstream snapshot")
+        git("checkout", "-q", "-B", "main", "HEAD~1")
+
+    def test_report_classifies_real_fixture_repository(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            self.make_fixture_repo(root)
+            result = subprocess.run(
+                ["python3", str(TOOL_PATH), "--root", str(root), "report", "--full"],
+                capture_output=True, text=True, check=True,
+            )
+            self.assertIn("adapted.qml", result.stdout)
+            self.assertIn("upstream-only.qml", result.stdout)
+            self.assertIn("kde-only: 2", result.stdout)
+
     def test_fixture_paths_are_classified_by_ownership_and_content(self) -> None:
         shell = {
             "shared.qml": "same",

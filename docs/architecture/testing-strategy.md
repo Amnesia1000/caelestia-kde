@@ -10,8 +10,7 @@ The repository has strong static and shell-contract coverage, but the highest-ri
 
 - The 35 Bash tests cover helper functions, script decisions, install layout, rollback guards, and selected CLI behavior. Most tests use stubs or inspect source text rather than executing a complete installed workflow. Evidence: [tests/](../../tests/) and [run-tests.sh](../../tests/run-tests.sh).
 - Repository integrity tests compile Python and parse shell, validate workflow/config invariants, and assert selected QML contracts. They do not execute QML, Quickshell, KDE services, or the native Qt plugins. Evidence: [test_repo_integrity.py](../../.github/scripts/test_repo_integrity.py).
-- The PR workflow gates PR metadata and QML import/deployment checks, but does not build the shell or installer. Evidence: [pr-checks.yml](../../.github/workflows/pr-checks.yml).
-- The validation workflow runs many useful static checks, but its QML syntax/import checks are explicitly structural substitutes because the Qt/Quickshell toolchain is absent. Markdown linting is also non-blocking. Evidence: [validate.yml](../../.github/workflows/validate.yml).
+- The PR workflow gates PR metadata and QML import/deployment checks. The separate validation workflow also runs on every PR and builds the shell and installer, while its QML syntax/import checks remain structural substitutes because the Qt/Quickshell runtime is absent. Evidence: [pr-checks.yml](../../.github/workflows/pr-checks.yml) and [validate.yml](../../.github/workflows/validate.yml).
 - The scheduled distro workflow compiles the TUI and runs installer steps in Arch, Fedora, and Ubuntu containers, but it is not a required pull-request gate and does not validate a real KDE/Wayland session. Evidence: [test-dependencies.yml](../../.github/workflows/test-dependencies.yml).
 - The architecture review requires startup/idle budgets, lazy-component lifecycle tests, source/package parity, offline reproducibility, and failure-injection coverage. Contract, isolated-script, artifact, provenance, and focused native policy checks are now represented; runtime performance and graphical lifecycle checks are not yet represented as merge checks. Evidence: [architecture-review.md](architecture-review.md).
 
@@ -164,9 +163,9 @@ upstream-only, KDE-adapted, and port-only files, and assert that existing files 
 force decision.
 
 For release artifacts, the installed provenance manifest identifies project revision, dependency
-revision, build type, compiler, Qt version, and install-manifest hashes without leaking user paths.
-The parity job validates it in both source and package layouts. Prebuilt archive comparison remains
-dependent on the release runner.
+revision, build type, compiler, Qt version, and a deterministic SHA-256 artifact-root hash without
+leaking user paths. The parity job validates it in both source and package layouts. Prebuilt archive
+comparison remains dependent on the release runner.
 
 ## Proposed implementation order
 
