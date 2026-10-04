@@ -277,7 +277,15 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Run the shell test suite
-        run: bash tests/run-tests.sh
+        run: bash tests/run-tests.sh --artifacts test-artifacts
+
+      - name: Upload Bash test diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bash-test-diagnostics
+          path: test-artifacts/
+          if-no-files-found: ignore
 
   validate-gate:
     needs:
