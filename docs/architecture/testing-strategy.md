@@ -92,8 +92,10 @@ The repository enables strict compiler warnings in [shell/CMakeLists.txt](../../
 Keep Qt/KDE process tests separate from pure C++ tests so sanitizer failures identify the responsible layer.
 
 The required `installer-build` job now compiles the POSIX TUI with `-Wall -Wextra -Werror`.
-The repository still has no separable pure-C++ CTest target or sanitizer configuration; those remain
-follow-up work rather than being represented by a nominal test.
+The required `installer-sanitizers` job configures a Debug installer build with AddressSanitizer
+and UndefinedBehaviorSanitizer enabled.
+The repository still has no separable pure-C++ CTest target. The sanitizer job currently provides
+native build coverage; executable sanitizer tests require a non-interactive native test target.
 
 Acceptance: every native change runs a compile job; native logic has executable tests; sanitizer failures are required for the affected PR path.
 

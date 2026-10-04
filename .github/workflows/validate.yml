@@ -367,6 +367,22 @@ jobs:
       - name: Build installer
         run: cmake --build installer/build --parallel
 
+  installer-sanitizers:
+    name: Build installer with sanitizers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Set up CMake and compiler
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq cmake g++
+
+      - name: Configure sanitizer build
+        run: cmake -S installer/tui -B installer/build-sanitizers -DCMAKE_BUILD_TYPE=Debug -DCAELESTIA_ENABLE_SANITIZERS=ON
+
+      - name: Build sanitizer target
+        run: cmake --build installer/build-sanitizers --parallel
+
   validate-gate:
     needs:
       - python-quality
@@ -386,6 +402,7 @@ jobs:
       - cpp-format
       - build-parity
       - installer-build
+      - installer-sanitizers
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -412,6 +429,7 @@ jobs:
           job_results[cpp-format]="${{ needs.cpp-format.result }}"
           job_results[build-parity]="${{ needs.build-parity.result }}"
           job_results[installer-build]="${{ needs.installer-build.result }}"
+          job_results[installer-sanitizers]="${{ needs.installer-sanitizers.result }}"
 
           all_passed=true
           for job in "${!job_results[@]}"; do
