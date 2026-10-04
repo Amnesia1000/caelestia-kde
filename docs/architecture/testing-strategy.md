@@ -71,6 +71,11 @@ Add a Linux job for changes under `shell/`, `installer/`, `scripts/`, `src/`, `p
 7. Compare installed path lists and hashes, allowing only explicitly documented package-only files.
 8. Verify revision, dependency revision, and generated metadata.
 
+The reusable comparator in `.github/scripts/check_artifact_parity.py` now enforces the path and SHA-256
+part of this contract, with focused tests for missing files, drift, and documented package-only paths.
+The required `build-parity` job invokes it against two real staged trees after separate offline source
+and package builds, then validates both CMake install manifests.
+
 This directly enforces the P0 acceptance checks rather than relying on source assertions in [test_reproducible_build_inputs.sh](../../tests/test_reproducible_build_inputs.sh) and [test_install_fs.sh](../../tests/test_install_fs.sh).
 
 Acceptance: a missing runtime file, network access during offline configure, mutable dependency, package-only drift, or hash mismatch fails the PR job.
@@ -85,6 +90,10 @@ The repository enables strict compiler warnings in [shell/CMakeLists.txt](../../
 - Fuzz or property tests for input parsers and boundary-heavy helpers where practical.
 
 Keep Qt/KDE process tests separate from pure C++ tests so sanitizer failures identify the responsible layer.
+
+The required `installer-build` job now compiles the POSIX TUI with `-Wall -Wextra -Werror`.
+The repository still has no separable pure-C++ CTest target or sanitizer configuration; those remain
+follow-up work rather than being represented by a nominal test.
 
 Acceptance: every native change runs a compile job; native logic has executable tests; sanitizer failures are required for the affected PR path.
 

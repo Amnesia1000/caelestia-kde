@@ -97,17 +97,8 @@ def hypr_paths(tree: str) -> set[str]:
     return {p for p in out.splitlines() if p}
 
 
-def do_fetch() -> None:
-    print("Fetching upstream ...")
-    git("fetch", "upstream")
-    git("branch", "-f", MIRROR_BRANCH, UPSTREAM)
-    print(f"{MIRROR_BRANCH} -> {git('rev-parse', '--short', UPSTREAM).strip()}")
-
-
-def do_report(full: bool) -> None:
-    shell = ls_tree(SHELL_TREE)
-    up = ls_tree(UPSTREAM)
-
+def classify_paths(shell: dict[str, str], up: dict[str, str]) -> dict[str, list[str]]:
+    """Classify paths without reading repository state or producing output."""
     in_sync: list[str] = []
     missing: list[str] = []
     kde_only: list[str] = []
@@ -123,6 +114,30 @@ def do_report(full: bool) -> None:
     for path in shell:
         if path not in up:
             kde_only.append(path)
+
+    return {
+        "in_sync": in_sync,
+        "missing": missing,
+        "kde_only": kde_only,
+        "diverged": diverged,
+    }
+
+
+def do_fetch() -> None:
+    print("Fetching upstream ...")
+    git("fetch", "upstream")
+    git("branch", "-f", MIRROR_BRANCH, UPSTREAM)
+    print(f"{MIRROR_BRANCH} -> {git('rev-parse', '--short', UPSTREAM).strip()}")
+
+
+def do_report(full: bool) -> None:
+    shell = ls_tree(SHELL_TREE)
+    up = ls_tree(UPSTREAM)
+    classified = classify_paths(shell, up)
+    in_sync = classified["in_sync"]
+    missing = classified["missing"]
+    kde_only = classified["kde_only"]
+    diverged = classified["diverged"]
 
     missing_kept = [p for p in missing if not p.startswith(SKIP_PREFIXES)]
     missing_skipped = [p for p in missing if p.startswith(SKIP_PREFIXES)]
