@@ -19,7 +19,32 @@ Popup {
     property string currentKey: ""
     property string capturedKey: ""
     property var targetItem: null
-    readonly property string conflict: capturedKey === "" ? "" : KeybindsModel.getKeyCollisionForPart(shortcutName, capturedKey)
+    readonly property var conflictInfo: {
+        if (capturedKey === "")
+            return null;
+        const all = KeybindsModel.query("");
+        for (let i = 0; i < all.length; i++) {
+            if (all[i].name === shortcutName)
+                continue;
+            const parts = String(all[i].bind || "").split(";");
+            for (let j = 0; j < parts.length; j++) {
+                if (parts[j].trim() === capturedKey)
+                    return {
+                        name: all[i].name,
+                        label: all[i].description || all[i].name
+                    };
+            }
+        }
+        const stolen = KeybindsModel.getKeyCollisionForPart(shortcutName, capturedKey);
+        if (stolen !== "")
+            return {
+                name: "",
+                label: stolen
+            };
+        return null;
+    }
+    readonly property string conflict: root.conflictInfo ? root.conflictInfo.name : ""
+    readonly property string conflictLabel: root.conflictInfo ? root.conflictInfo.label : ""
 
     signal confirm(string name, string newKey)
     signal clear(string name)
@@ -247,7 +272,7 @@ Popup {
         StyledText {
             Layout.fillWidth: true
             visible: root.conflict !== ""
-            text: qsTr("Already used by %1").arg(root.conflict)
+            text: qsTr("Already used by %1").arg(root.conflictLabel)
             color: Colours.palette.m3error
             font: Tokens.font.label.small
             elide: Text.ElideRight
