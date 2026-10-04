@@ -73,7 +73,8 @@ PageBase {
             }
             stderr: StdioCollector {
                 onStreamFinished: {
-                    root.exportStatus = qsTr("Export failed");
+                    if (text.trim() !== "")
+                        root.exportStatus = qsTr("Export failed");
                 }
             }
             onExited: code => {
