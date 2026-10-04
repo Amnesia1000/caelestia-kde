@@ -695,7 +695,7 @@ StyledWindow {
                     return n;
                 }
                 readonly property int edgeOffset: sameEdgeBefore * bar.contentWidth
-                readonly property int islandsMargin: GlobalConfig.appearance.islands ? Tokens.spacing.extraLarge : 0
+                readonly property int islandsMargin: Tokens.spacing.extraLarge
 
                 screen: root.screen
                 visibilities: visibilities
