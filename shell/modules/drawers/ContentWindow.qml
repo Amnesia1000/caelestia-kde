@@ -824,10 +824,10 @@ StyledWindow {
             vAnchor: "none"
             hAnchor: "none"
             blurQuality: borderBlurSettings.blurQuality
-            inLeft: Math.max(bar.position === "left" ? bar.implicitWidth : 0, root.borderThickness) + root.borderRounding
-            inRight: root.width - Math.max(bar.position === "right" ? bar.implicitWidth : 0, root.borderThickness) - root.borderRounding
-            inTop: Math.max(bar.position === "top" ? bar.implicitHeight : 0, root.borderThickness) + root.borderRounding
-            inBottom: root.height - Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness) - root.borderRounding
+            inLeft: Math.max((bar.position === "left" ? bar.implicitWidth : 0) + overlayLeftExtent, root.borderThickness) + root.borderRounding
+            inRight: root.width - Math.max((bar.position === "right" ? bar.implicitWidth : 0) + overlayRightExtent, root.borderThickness) - root.borderRounding
+            inTop: Math.max((bar.position === "top" ? bar.implicitHeight : 0) + overlayTopExtent, root.borderThickness) + root.borderRounding
+            inBottom: root.height - Math.max((bar.position === "bottom" ? bar.implicitHeight : 0) + overlayBottomExtent, root.borderThickness) - root.borderRounding
             rTop: !GlobalConfig.appearance.islands ? root.borderRounding : 0
             rBottom: !GlobalConfig.appearance.islands ? root.borderRounding : 0
             rLeft: !GlobalConfig.appearance.islands ? root.borderRounding : 0
