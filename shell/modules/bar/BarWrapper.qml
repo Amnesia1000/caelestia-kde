@@ -87,12 +87,6 @@ Item {
     visible: isHorizontal ? height > Config.border.thickness : width > Config.border.thickness
     implicitWidth: isHorizontal ? 0 : (fullscreen ? 0 : Config.border.thickness)
     implicitHeight: isHorizontal ? (fullscreen ? 0 : Config.border.thickness) : 0
-
-    Rectangle {
-        anchors.fill: parent
-        visible: root.isOverlay
-        color: Colours.palette.m3surfaceContainer
-    }
     states: State {
         name: "visible"
         when: root.shouldBeVisible
@@ -212,5 +206,15 @@ Item {
                 }
             }
         ]
+    }
+
+    // Overlay background. Last child for section order, z -1 so bar
+    // content paints above it.
+    Rectangle {
+        anchors.fill: parent
+        visible: root.isOverlay
+        color: Colours.tPalette.m3surface
+        radius: GlobalConfig.appearance.islands ? Config.border.rounding : 0
+        z: -1
     }
 }
