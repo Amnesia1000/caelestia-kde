@@ -99,10 +99,11 @@ test_the_greeter_step_selects_without_installing_the_theme() {
     assert_contains "$script" "skip \"The display manager's dependencies belong to the package.\"" "the distro dependencies should be skipped"
     assert_contains "$script" 'register_greeter_sync "SDDM theme installed."' "while the posthook is still registered for both kinds"
 
-    local pkgbuild
+    local cmake pkgbuild
+    cmake="$(cat "$REPO_ROOT/shell/CMakeLists.txt")"
     pkgbuild="$(cat "$REPO_ROOT/packaging/aur/caelestia-kde/PKGBUILD")"
-    assert_contains "$pkgbuild" 'usr/share/sddm/themes/caelestia' "the package should install the theme"
-    assert_contains "$pkgbuild" 'scripts/sync.sh' "and the helper the posthook runs"
+    assert_contains "$cmake" 'usr/share/sddm/themes/caelestia' "CMake should install the theme the posthook re-syncs"
+    assert_contains "$cmake" 'src/sddm/sync.sh' "and the helper the posthook runs"
     assert_contains "$pkgbuild" 'etc/sddm.conf.d/zz-caelestia.conf' "and the drop-in that selects it"
     assert_contains "$pkgbuild" 'usr/lib/udev/rules.d/70-uinput.rules' "and the udev rule the system block writes for a checkout"
 }
@@ -130,6 +131,30 @@ test_shared_runtime_files_have_one_cmake_owner() {
         "CMake should own the fallback wallpaper"
     assert_contains "$cmake" '"${CAELESTIA_ROOT_DIR}/assets/org.quickshell.desktop"' \
         "CMake should own the desktop integration asset"
+    assert_contains "$cmake" 'PATTERN ".git*" EXCLUDE' \
+        "CMake must not install the checkout's VCS metadata"
+    assert_contains "$cmake" 'option(CAELESTIA_PACKAGE' \
+        "CMake should own package-only repository assets"
+    assert_contains "$cmake" 'if(NOT CAELESTIA_BIN_FILES)' \
+        "CMake should refuse a configure where the CLI glob matched nothing"
+    assert_contains "$cmake" 'if(NOT CAELESTIA_STEP_SCRIPTS)' \
+        "CMake should refuse a configure where the step-script glob matched nothing"
+    assert_contains "$pkgbuild" '-DCAELESTIA_PACKAGE=ON' \
+        "the package should enable package-only CMake assets"
+    assert_contains "$pkgbuild" 'install_manifest.txt' \
+        "the package should validate CMake's install manifest"
+    assert_contains "$pkgbuild" 'validate_install_manifest' \
+        "the package should reuse the shared manifest validator"
+    assert_not_contains "$pkgbuild" 'caelestia-install-manifest' \
+        "the package must not ship a second, hand-maintained manifest"
+    assert_not_contains "$pkgbuild" 'usr/share/caelestia/src/dots' \
+        "the package must not re-declare CMake-owned data paths"
+    assert_not_contains "$pkgbuild" 'usr/share/caelestia/scripts/03-deploy-configs.sh' \
+        "the package must not re-declare CMake-owned installer scripts"
+    assert_not_contains "$pkgbuild" 'usr/share/sddm/themes/caelestia' \
+        "the package must not re-declare the CMake-owned SDDM theme"
+    assert_not_contains "$pkgbuild" 'etc/xdg/quickshell/caelestia/assets/icons' \
+        "the package must not re-declare the CMake-owned icon tree"
     assert_not_contains "$pkgbuild" 'install -m755 src/bin/*' \
         "the package must not copy CLI wrappers outside CMake"
     assert_not_contains "$pkgbuild" 'cp -r src/matugen src/schemes' \
@@ -232,10 +257,6 @@ test_the_release_tarball_is_the_thing_the_package_sources() {
 
     assert_contains "$workflow" 'tar -C dist -czf "$ARTIFACT" "caelestia-kde-$PKGVER"' "the archive should carry the directory makepkg extracts to"
 
-    # The checkout must not fan out over every gitlink: one that has no .gitmodules
-    # entry stopped the whole job at v2.4.3 and the release went out without its
-    # source, so the job takes the submodule paths from .gitmodules itself and
-    # refuses to tar a tree whose submodules did not land.
     assert_not_contains "$workflow" 'submodules: recursive' "the checkout must not recurse over every gitlink"
     assert_contains "$workflow" 'git config -f .gitmodules --get-regexp' "the job should read the submodule paths from .gitmodules"
     assert_contains "$workflow" 'git submodule update --init --recursive --depth 1 --force "$path"' "and inline each declared submodule"
@@ -283,10 +304,25 @@ test_the_checkout_build_script_builds_the_same_tarball() {
 }
 
 test_the_payload_carries_no_version_control_metadata() {
+    local cmake directory_installs exclusions
+    cmake="$(cat "$REPO_ROOT/shell/CMakeLists.txt")"
+    directory_installs="$(grep -cF 'install(DIRECTORY' <<<"$cmake")"
+    exclusions="$(grep -cF 'PATTERN ".git*" EXCLUDE' <<<"$cmake")"
+
+    assert_ne "0" "$directory_installs" "the CMake install tree should have directory installs to check"
+    assert_eq "$directory_installs" "$exclusions" "every install(DIRECTORY) should exclude version control metadata"
+}
+
+test_the_package_prune_leaves_cmake_owned_paths_alone() {
     local pkgbuild
     pkgbuild="$(cat "$REPO_ROOT/packaging/aur/caelestia-kde/PKGBUILD")"
 
-    assert_contains "$pkgbuild" "-name '.git' -o -name '.github' -o -name '.gitignore'" "the package should strip version control metadata"
+    assert_not_contains "$pkgbuild" 'cp -r src/sddm/themes/full' \
+        "CMake should own the SDDM theme tree"
+    assert_not_contains "$pkgbuild" 'cp -r src/yet-another-monochrome-icon-set' \
+        "CMake should own the icon tree"
+    assert_not_contains "$pkgbuild" 'cp -r src/kde/shells/caelestia.desktop' \
+        "CMake should own the Plasma shell tree"
 }
 
 test_the_install_says_how_to_start_the_shell_now() {
