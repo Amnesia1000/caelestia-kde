@@ -169,13 +169,17 @@ endif()
 if("shell" IN_LIST ENABLE_MODULES)
     set(CAELESTIA_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
+    function(caelestia_install_directory)
+        install(DIRECTORY ${ARGV} PATTERN ".git*" EXCLUDE)
+    endfunction()
+
     file(GLOB CAELESTIA_BIN_FILES CONFIGURE_DEPENDS "${CAELESTIA_ROOT_DIR}/src/bin/*")
     if(NOT CAELESTIA_BIN_FILES)
         message(FATAL_ERROR "No CLI wrappers found in ${CAELESTIA_ROOT_DIR}/src/bin")
     endif()
     install(PROGRAMS ${CAELESTIA_BIN_FILES} DESTINATION "${INSTALL_BINDIR}")
 
-    install(DIRECTORY
+    caelestia_install_directory(
         "${CAELESTIA_ROOT_DIR}/src/matugen"
         "${CAELESTIA_ROOT_DIR}/src/schemes"
         DESTINATION "${INSTALL_DATADIR}"
@@ -188,10 +192,10 @@ if("shell" IN_LIST ENABLE_MODULES)
     endif()
     install(PROGRAMS ${CAELESTIA_STEP_SCRIPTS}
         DESTINATION "${INSTALL_DATADIR}/scripts")
-    install(DIRECTORY "${CAELESTIA_ROOT_DIR}/scripts/lib"
+    caelestia_install_directory("${CAELESTIA_ROOT_DIR}/scripts/lib"
         DESTINATION "${INSTALL_DATADIR}/scripts"
         PATTERN ".git*" EXCLUDE)
-    install(DIRECTORY
+    caelestia_install_directory(
         "${CAELESTIA_ROOT_DIR}/src/dots"
         "${CAELESTIA_ROOT_DIR}/src/dots-extra"
         DESTINATION "${INSTALL_DATADIR}/src"
@@ -204,14 +208,13 @@ if("shell" IN_LIST ENABLE_MODULES)
         DESTINATION "${INSTALL_DATADIR}/assets")
 
     foreach(dir assets components modules services utils)
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
+        caelestia_install_directory(${CMAKE_CURRENT_SOURCE_DIR}/${dir}
                 DESTINATION ${INSTALL_QSCONFDIR}
                 PATTERN ".git*" EXCLUDE)
     endforeach()
 
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/
+    caelestia_install_directory(${CMAKE_CURRENT_SOURCE_DIR}/scripts/
             DESTINATION ${INSTALL_QSCONFDIR}/scripts
-            PATTERN ".git*" EXCLUDE
             PATTERN "qml-lint-conventions.py" EXCLUDE
             PATTERN "menu_perf_stats.py" EXCLUDE)
 
@@ -226,24 +229,24 @@ if("shell" IN_LIST ENABLE_MODULES)
 
     if(CAELESTIA_PACKAGE)
         set(_SDDM_THEME_DIR "usr/share/sddm/themes/caelestia")
-        install(DIRECTORY
+        caelestia_install_directory(
             "${CAELESTIA_ROOT_DIR}/src/sddm/themes/full/"
             DESTINATION "${_SDDM_THEME_DIR}"
-            PATTERN ".git*" EXCLUDE)
+            )
         install(PROGRAMS
             "${CAELESTIA_ROOT_DIR}/src/sddm/sync.sh"
             DESTINATION "${_SDDM_THEME_DIR}/scripts")
         install(FILES
             "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop/contents/fonts/GoogleSansFlex.ttf"
             DESTINATION "${_SDDM_THEME_DIR}/assets/google-sans-flex")
-        install(DIRECTORY
+        caelestia_install_directory(
             "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop"
             DESTINATION "usr/share/plasma/shells"
-            PATTERN ".git*" EXCLUDE)
-        install(DIRECTORY
+            )
+        caelestia_install_directory(
             "${CAELESTIA_ROOT_DIR}/src/yet-another-monochrome-icon-set"
             DESTINATION "${INSTALL_QSCONFDIR}/assets/icons"
-            PATTERN ".git*" EXCLUDE)
+            )
     endif()
 
     find_package(Qt6 QUIET COMPONENTS LinguistTools)

@@ -111,6 +111,12 @@ validate_install_manifest() {
     fi
 
     while IFS= read -r path || [[ -n "$path" ]]; do
+        case "$path" in
+            */.git|*/.git/*|*/.github|*/.github/*|*/.gitignore|*/.gitmodules|*/.gitattributes)
+                printf 'install manifest contains VCS metadata: %s\n' "$path" >&2
+                return 1
+                ;;
+        esac
         if [[ ! -e "$root$path" ]]; then
             printf 'install manifest references a missing path: %s%s\n' "$root" "$path" >&2
             return 1
