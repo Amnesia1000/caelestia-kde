@@ -5,12 +5,11 @@ import qs.components
 import qs.components.effects
 import qs.services
 import qs.utils
-import qs.modules.nexus
 
 Item {
     id: root
 
-    readonly property int launcherPageIdx: PageRegistry.indexForKey("panels")
+    required property var bar
 
     implicitWidth: Math.round(Tokens.font.body.large.pointSize * 1.2)
     implicitHeight: Math.round(Tokens.font.body.large.pointSize * 1.2)
@@ -24,10 +23,16 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onClicked: mouse => {
             if (mouse.button === Qt.RightButton) {
-                WindowFactory.create(null, {
-                    initialPageIdx: root.launcherPageIdx,
-                    initialSubPageIdx: 3
-                });
+                const popouts = root.bar.popouts;
+                if (!popouts)
+                    return;
+                if (popouts.hasCurrent && popouts.currentName === "osiconcontext") {
+                    popouts.hasCurrent = false;
+                } else {
+                    popouts.currentName = "osiconcontext";
+                    popouts.currentCenter = root.bar.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
+                    popouts.hasCurrent = true;
+                }
                 return;
             }
             const visibilities = Visibilities.getForActive();
