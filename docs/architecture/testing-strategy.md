@@ -74,7 +74,8 @@ Add a Linux job for changes under `shell/`, `installer/`, `scripts/`, `src/`, `p
 The reusable comparator in `.github/scripts/check_artifact_parity.py` now enforces the path and SHA-256
 part of this contract, with focused tests for missing files, drift, and documented package-only paths.
 The required `build-parity` job invokes it against two real staged trees after separate offline source
-and package builds, then validates both CMake install manifests.
+and package builds, then validates both CMake install manifests and the generated path-independent
+build provenance manifest.
 
 This directly enforces the P0 acceptance checks rather than relying on source assertions in [test_reproducible_build_inputs.sh](../../tests/test_reproducible_build_inputs.sh) and [test_install_fs.sh](../../tests/test_install_fs.sh).
 
@@ -154,9 +155,14 @@ The final required status should be a small explicit gate job that fails when an
 
 ### P2: Test upstream boundaries and provenance
 
-For [tools/sync-shell.py](../../tools/sync-shell.py), add fixture repositories representing upstream-only, KDE-adapted, and port-only files. Assert that the report classifies each correctly and that sync cannot overwrite KDE-owned files without an explicit decision.
+For [tools/sync-shell.py](../../tools/sync-shell.py), the deterministic fixture tests represent
+upstream-only, KDE-adapted, and port-only files, and assert that existing files require an explicit
+force decision.
 
-For release artifacts, test that the installed diagnostics identify project revision, upstream revision, dependency revisions, build type, compiler, Qt version, and hashes without leaking user paths. Compare source, package, and prebuilt metadata in CI.
+For release artifacts, the installed provenance manifest identifies project revision, dependency
+revision, build type, compiler, Qt version, and install-manifest hashes without leaking user paths.
+The parity job validates it in both source and package layouts. Prebuilt archive comparison remains
+dependent on the release runner.
 
 ## Proposed implementation order
 

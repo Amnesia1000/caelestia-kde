@@ -350,6 +350,10 @@ jobs:
           source scripts/lib/install-fs.sh
           validate_install_manifest build-source/install_manifest.txt stage-source
           validate_install_manifest build-package/install_manifest.txt stage-package
+          python3 .github/scripts/check_provenance.py \
+            stage-source/usr/share/caelestia/build-provenance.json
+          python3 .github/scripts/check_provenance.py \
+            stage-package/usr/share/caelestia/build-provenance.json
 
   installer-build:
     name: Build installer TUI with strict warnings

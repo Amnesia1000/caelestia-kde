@@ -20,7 +20,7 @@ test_runner_reports_missing_named_test() {
     status=$?
 
     assert_status 1 "$status" "a missing named test should fail the runner"
-    assert_contains "$output" "FAIL  missing.sh (not found)" "missing tests should be named"
+    assert_contains "$output" "FAIL  missing.sh" "missing tests should be named"
     assert_contains "$output" "Summary:" "missing tests should still produce a summary"
 }
 

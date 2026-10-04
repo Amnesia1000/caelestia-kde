@@ -93,6 +93,7 @@ option(CAELESTIA_OFFLINE "Disallow downloading build dependencies" OFF)
 option(CAELESTIA_PACKAGE "Install package-owned repository assets" OFF)
 set(CAELESTIA_M3SHAPES_SOURCE_DIR "" CACHE PATH
     "Pre-fetched M3Shapes source directory")
+set(M3SHAPES_REV "unknown")
 
 if("m3shapes" IN_LIST ENABLE_MODULES)
     include(FetchContent)
@@ -250,6 +251,18 @@ if("shell" IN_LIST ENABLE_MODULES)
     endif()
 
     find_package(Qt6 QUIET COMPONENTS LinguistTools)
+    if(DEFINED Qt6_VERSION)
+        set(CAELESTIA_QT_VERSION "${Qt6_VERSION}")
+    else()
+        set(CAELESTIA_QT_VERSION "unknown")
+    endif()
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/build-provenance.json.in"
+        "${CMAKE_BINARY_DIR}/build-provenance.json"
+        @ONLY)
+    install(FILES "${CMAKE_BINARY_DIR}/build-provenance.json"
+        DESTINATION "${INSTALL_DATADIR}")
+
     file(GLOB TS_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/*.ts")
     file(GLOB PREBUILT_QM_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/*.qm")
 
