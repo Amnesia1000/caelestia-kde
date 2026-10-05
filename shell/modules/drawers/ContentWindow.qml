@@ -37,11 +37,11 @@ StyledWindow {
     // active workspace changes — hasFullscreenOn() filters by workspace, but
     // a plain function call only re-runs when its direct property deps change.
     readonly property bool actualFullscreen: (Kwin.activeWsId, Kwin.hasFullscreenOn(screen?.name ?? ""))
-    // Extra bars from Config.bar.bars (enabled + matching this screen). The
+    // Extra bars from GlobalConfig.bar.bars (enabled + matching this screen). The
     // legacy primary bar above always renders from the global keys; these
     // are overlay bars with their own position/widgets/visibility that
     // dock to the edges without taking an exclusive zone.
-    readonly property var overlayBarDefs: ((Config.bar.bars ? Config.bar.bars.values : null) ?? []).filter(b => b && b.enabled !== false && (!b.screens || b.screens.length === 0 || b.screens.includes(root.screen.name)))
+    readonly property var overlayBarDefs: ((GlobalConfig.bar.bars ? GlobalConfig.bar.bars.values : null) ?? []).filter(b => b && b.enabled !== false && (!b.screens || b.screens.length === 0 || b.screens.includes(root.screen.name)))
     // Frame cutout widening where overlay bars sit, so the frame surface
     // itself becomes their background. Gated like overlay visibility.
     readonly property int overlayLeftExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "left") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
@@ -718,13 +718,52 @@ StyledWindow {
                         n++;
                     return n;
                 }
-                readonly property int edgeOffset: sameEdgeBefore * bar.contentWidth
+                readonly property int edgeOffset: {
+                    let total = 0;
+                    const gap = 8;
+                    if (bar.position === effPos && !bar.disabled) {
+                        total += bar.contentWidth + gap;
+                    }
+                    const arr = overlayBarRepeater.model;
+                    for (let i = 0; i < index; i++) {
+                        const prev = arr[i];
+                        if (((prev && prev.position) || "bottom") === effPos) {
+                            total += Math.round(Tokens.sizes.bar.innerWidth * (prev && prev.scale ? Math.max(0.6, prev.scale) : 1.0)) + gap;
+                        }
+                    }
+                    return total;
+                }
+                readonly property int separatorOffset: {
+                    if (index === 0) return -1;
+                    let total = 0;
+                    if (bar.position === effPos && !bar.disabled) {
+                        total += bar.contentWidth + 7;
+                    }
+                    const arr = overlayBarRepeater.model;
+                    for (let i = 0; i < index; i++) {
+                        const prev = arr[i];
+                        if (((prev && prev.position) || "bottom") === effPos) {
+                            const w = Math.round(Tokens.sizes.bar.innerWidth * (prev && prev.scale ? Math.max(0.6, prev.scale) : 1.0));
+                            total += w + 8;
+                        }
+                    }
+                    return total - 1;
+                }
 
                 screen: root.screen
                 visibilities: visibilities
                 popouts: panels.popouts
                 fullscreen: root.hasFullscreen
                 barDef: modelData
+
+                // Pass separatorOffset to BarWrapper for rendering separator line
+                Component.onCompleted: {
+                    const barWrapper = content.item;
+                    if (barWrapper) {
+                        barWrapper.sepOffset = separatorOffset;
+                        console.log("SET sepOffset idx=" + index + " value=" + separatorOffset);
+                    }
+                }
 
                 anchors.top: effPos === "top" ? parent.top : undefined
                 anchors.bottom: effPos === "bottom" ? parent.bottom : undefined

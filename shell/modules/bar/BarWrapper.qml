@@ -28,6 +28,8 @@ Item {
     readonly property string effectivePosition: root.isOverlay && root.barDef.position ? root.barDef.position : Config.bar.position
     readonly property bool effectivePersistent: root.isOverlay && root.barDef.persistent !== undefined ? root.barDef.persistent : Config.bar.persistent
     readonly property bool disabled: root.isOverlay ? false : Strings.testRegexList(Config.bar.excludedScreens, screen.name)
+    // Separator offset for stacked overlay panels (passed from ContentWindow)
+    property int sepOffset: -1
     readonly property string position: root.effectivePosition
     readonly property real barScale: Math.max(0.6, !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0)
     readonly property int padding: Math.max(Tokens.padding.small, Config.border.thickness)
@@ -208,14 +210,30 @@ Item {
         ]
     }
 
-    // Overlay background: the widened frame surface shows through, so this
-    // stays fully transparent except in islands mode (no frame there).
-    // Last child for section order, z -1 so bar content paints above it.
+    // Separator line between stacked overlay panels (no background - the frame IS the panel)
     Rectangle {
-        anchors.fill: parent
-        visible: root.isOverlay && GlobalConfig.appearance.islands
-        color: Colours.tPalette.m3surface
-        radius: Config.border.rounding
-        z: -1
+        visible: root.isOverlay && root.sepOffset !== undefined && root.sepOffset >= 0
+        color: Colours.palette.m3outline
+        z: 0
+        width: root.isHorizontal ? parent.width : 1
+        height: root.isHorizontal ? 1 : parent.height
+        anchors.top: root.isHorizontal ? parent.top : undefined
+        anchors.bottom: root.isHorizontal ? undefined : undefined
+        anchors.left: !root.isHorizontal ? parent.left : undefined
+        anchors.right: !root.isHorizontal ? undefined : undefined
+        x: root.isHorizontal ? 0 : root.sepOffset
+        y: root.isHorizontal ? root.sepOffset : 0
+    }
+    // Overlay bars get the same blur as the primary bar so they match the frame
+    BlurMask {
+        visible: root.isOverlay
+        target: content.item
+        contentItem: root.contentItem
+        blurOffsetTop: root.blurOffsetTop
+        blurOffsetBottom: root.blurOffsetBottom
+        blurOffsetLeft: root.blurOffsetLeft
+        blurOffsetRight: root.blurOffsetRight
+        vAnchor: root.vAnchor
+        hAnchor: root.hAnchor
     }
 }

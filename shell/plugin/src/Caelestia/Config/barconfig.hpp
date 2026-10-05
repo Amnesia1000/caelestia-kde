@@ -226,7 +226,8 @@ class BarConfig : public settings::ObjectNode {
     CONFIG_NODE(BarConfig, settings::ObjectNode)
 
     // When empty, a single bar is built from the legacy keys below.
-    CONFIG_LIST(BarDefinitionList, bars, DEFAULT_ARG({}))
+    // Global so all screens share the same extra panels list.
+    CONFIG_GLOBAL_LIST(BarDefinitionList, bars, DEFAULT_ARG({}))
 
     CONFIG_PROPERTY(qreal, scale, 1.0)
     CONFIG_PROPERTY(qreal, previewScale, 1.0)

@@ -62,7 +62,7 @@ PageBase {
     }
 
     function freePanelName(base: string): string {
-        const taken = Config.bar.bars.values.map(b => b.name);
+        const taken = GlobalConfig.bar.bars.values.map(b => b.name);
         let name = base;
         let n = 1;
         while (taken.includes(name)) {
@@ -71,6 +71,24 @@ PageBase {
         }
         return name;
     }
+
+    // Positions already used by the primary bar (global bar.position) AND existing overlay bars
+    readonly property var occupiedPositions: (() => {
+        const pos = [];
+        if (GlobalConfig.bar.position)
+            pos.push(GlobalConfig.bar.position);
+        // Add positions from enabled overlay bars
+        const overlayBars = GlobalConfig.bar.bars.values.filter(b => b && b.enabled !== false);
+        for (let i = 0; i < overlayBars.length; i++) {
+            const p = overlayBars[i].position || "bottom";
+            if (!pos.includes(p))
+                pos.push(p);
+        }
+        return pos;
+    })()
+
+    // Available positions for new overlay panels
+    readonly property var availableOverlayPositions: root.positionItems.filter(item => !root.occupiedPositions.includes(item.value))
 
     title: qsTr("Taskbar")
     isSubPage: true
@@ -187,7 +205,7 @@ PageBase {
             }
 
             first: true
-            values: Config.bar.bars.values
+            values: GlobalConfig.bar.bars.values
             onItemMoved: (from, to) => GlobalConfig.bar.bars.move(from, to)
             onItemRemoved: index => GlobalConfig.bar.bars.remove(index)
             onItemToggled: (index, checked) => GlobalConfig.bar.bars.at(index).enabled = checked
@@ -199,10 +217,11 @@ PageBase {
             label: qsTr("Add panel")
             header: qsTr("Add new panel")
             acceptLabel: qsTr("Add")
-            model: root.positionItems.map(item => ({
+            model: root.availableOverlayPositions.map(item => ({
                         id: item.value,
                         label: item.text
                     }))
+            enabled: root.availableOverlayPositions.length > 0
             onAccepted: {
                 if (selectedItem) {
                     const label = (root.positionItems.find(item => item.value === selectedItem) ?? root.positionItems[0]).text;
