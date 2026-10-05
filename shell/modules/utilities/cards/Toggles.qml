@@ -137,6 +137,16 @@ StyledRect {
             root.currentPage = clamped;
     }
 
+    // These guards also run during component init, when pageCount can still hold
+    // its default 0; without the lower clamp currentPage ends up -1, every page
+    // slice comes out empty and the card renders collapsed until a wheel event
+    // happens to call requestPage.
+    function clampPage(): void {
+        const clamped = Math.max(0, Math.min(root.pageCount - 1, root.currentPage));
+        if (clamped !== root.currentPage)
+            root.currentPage = clamped;
+    }
+
     function startDrag(item, px: real, py: real): void {
         root.dragOrder = root.quickToggles.map(t => ({
                     id: t.id
@@ -234,14 +244,8 @@ StyledRect {
         root.dragOrder = [];
     }
 
-    onPageCountChanged: {
-        if (root.currentPage >= root.pageCount)
-            root.currentPage = root.pageCount - 1;
-    }
-    onPerPageChanged: {
-        if (root.currentPage >= root.pageCount)
-            root.currentPage = root.pageCount - 1;
-    }
+    onPageCountChanged: root.clampPage()
+    onPerPageChanged: root.clampPage()
 
     Layout.fillWidth: true
     implicitHeight: layout.implicitHeight + Tokens.padding.extraLargeIncreased
