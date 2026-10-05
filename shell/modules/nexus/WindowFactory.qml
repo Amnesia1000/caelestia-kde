@@ -6,6 +6,7 @@ import Quickshell.Wayland
 import Caelestia.Config
 import qs.components
 import qs.services
+import qs.utils
 import qs.modules.nexus
 
 Singleton {
@@ -21,15 +22,18 @@ Singleton {
                 win.nexus.nState.goToSubPage(props.initialPageIdx, props.initialSubPageIdx ?? -1);
             win.visible = true;
             win.raise();
-            if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
-                console.info("[lifecycle] nexus=reused");
+            Diagnostics.mark("nexus=reused");
             return win;
         }
         const win = nexusComp.createObject(parent ?? dummy, props);
         root.openWindow = win;
-        if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
-            console.info("[lifecycle] nexus=created");
+        Diagnostics.mark("nexus=created");
         return win;
+    }
+
+    function close(): void {
+        if (root.openWindow)
+            root.openWindow.destroy();
     }
 
     QtObject {
@@ -55,8 +59,7 @@ Singleton {
             }
 
             Component.onDestruction: {
-                if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
-                    console.info("[lifecycle] nexus=destroyed");
+                Diagnostics.mark("nexus=destroyed");
                 if (root.openWindow === win)
                     root.openWindow = null;
             }

@@ -12,6 +12,7 @@ import Caelestia.Config
 import Caelestia.Services
 import qs.components
 import qs.services
+import qs.utils
 
 Item {
     id: root
@@ -287,10 +288,7 @@ Item {
         }
     }
 
-    onScreenChanged: {
-        if (Quickshell.env("CAELESTIA_RUNTIME_TEST") === "1")
-            console.info("[perf] bar-ready");
-    }
+    Component.onCompleted: Diagnostics.mark("bar-ready")
 
     clip: true
 
