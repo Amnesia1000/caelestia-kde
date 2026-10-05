@@ -9,11 +9,16 @@ Options:
   --install-root PATH  Installed tree containing etc/xdg and usr/lib/qt6/qml
   --runs COUNT         Number of launch and shutdown cycles (default: 3)
   --timeout SECONDS    Per-cycle readiness timeout (default: 30)
-    --max-startup-ms N   Fail when a cycle exceeds this startup time
-    --max-rss-kb N       Fail when a cycle exceeds this resident memory
-    --max-ipc-ms N       Fail when an IPC interaction exceeds this latency
-    --baseline PATH      JSON file containing max_startup_ms, max_rss_kb, and max_ipc_ms
+  --max-startup-ms N   Fail when a cycle exceeds this startup time
+  --max-rss-kb N       Fail when a cycle exceeds this resident memory
+  --max-ipc-ms N       Fail when an IPC interaction exceeds this latency
+  --max-idle-cpu N     Fail when a cycle idles above this CPU percentage
+  --baseline PATH      JSON file with max_startup_ms, max_rss_kb, max_ipc_ms
+                       and max_idle_cpu_percent; flags win over the baseline
   --log-dir PATH       Directory for Weston and Quickshell logs
+
+A limit without a value - no flag and no baseline key - skips that check. The
+measurement is still reported in the results document.
 EOF
 }
 
@@ -23,6 +28,7 @@ timeout_seconds=30
 max_startup_ms=
 max_rss_kb=
 max_ipc_limit_ms=
+max_idle_cpu=
 baseline=
 log_dir=
 
@@ -50,6 +56,10 @@ while (($#)); do
             ;;
         --max-ipc-ms)
             max_ipc_limit_ms=${2:?missing value for --max-ipc-ms}
+            shift 2
+            ;;
+        --max-idle-cpu)
+            max_idle_cpu=${2:?missing value for --max-idle-cpu}
             shift 2
             ;;
         --baseline)
@@ -84,21 +94,23 @@ if ! [[ "$runs" =~ ^[1-9][0-9]*$ && "$timeout_seconds" =~ ^[1-9][0-9]*$ ]]; then
 fi
 if [[ -n "$max_startup_ms" && ! "$max_startup_ms" =~ ^[1-9][0-9]*$ ]] || \
     [[ -n "$max_rss_kb" && ! "$max_rss_kb" =~ ^[1-9][0-9]*$ ]] || \
-    [[ -n "$max_ipc_limit_ms" && ! "$max_ipc_limit_ms" =~ ^[1-9][0-9]*$ ]]; then
+    [[ -n "$max_ipc_limit_ms" && ! "$max_ipc_limit_ms" =~ ^[1-9][0-9]*$ ]] || \
+    [[ -n "$max_idle_cpu" && ! "$max_idle_cpu" =~ ^[1-9][0-9]*$ ]]; then
     echo "performance limits must be positive integers" >&2
     exit 2
 fi
 if [[ -n "$baseline" ]]; then
     [[ -f "$baseline" ]] || { echo "baseline not found: $baseline" >&2; exit 2; }
     baseline_value() {
-        python3 -c 'import json, sys; print(json.load(open(sys.argv[1], encoding="utf-8"))[sys.argv[2]])' "$baseline" "$1"
+        python3 -c 'import json, sys; data = json.load(open(sys.argv[1], encoding="utf-8")); print(data.get(sys.argv[2], ""))' "$baseline" "$1"
     }
     max_startup_ms=${max_startup_ms:-$(baseline_value max_startup_ms)}
     max_rss_kb=${max_rss_kb:-$(baseline_value max_rss_kb)}
     max_ipc_limit_ms=${max_ipc_limit_ms:-$(baseline_value max_ipc_ms)}
+    max_idle_cpu=${max_idle_cpu:-$(baseline_value max_idle_cpu_percent)}
 fi
 
-for command_name in dbus-run-session quickshell weston; do
+for command_name in dbus-run-session python3 quickshell weston; do
     command -v "$command_name" >/dev/null || {
         echo "required runtime command not found: $command_name" >&2
         exit 2
@@ -121,8 +133,41 @@ fi
 runtime_dir=$(mktemp -d)
 chmod 700 "$runtime_dir"
 weston_pid=
+results_tsv="$runtime_dir/results.tsv"
+: >"$results_tsv"
+results_emitted=0
+
+# Built here rather than with printf so a log path containing a quote or a
+# backslash cannot produce a broken document.
+emit_results() {
+    if ((results_emitted)); then
+        return 0
+    fi
+    results_emitted=1
+    python3 - "$runs" "$log_dir" "$results_tsv" <<'PY'
+import json
+import sys
+
+runs, log_dir, tsv = sys.argv[1], sys.argv[2], sys.argv[3]
+records = []
+with open(tsv, encoding="utf-8") as stream:
+    for line in stream:
+        run, scenario, startup, rss, cpu, ipc = line.rstrip("\n").split("\t")
+        records.append({
+            "run": int(run),
+            "scenario": scenario,
+            "startup_ms": int(startup),
+            "rss_kb": int(rss),
+            "idle_cpu_percent": float(cpu),
+            "max_ipc_ms": int(ipc),
+        })
+print(json.dumps({"runs": int(runs), "results": records, "log_dir": log_dir}, indent=2))
+PY
+}
 
 cleanup() {
+    local status=$?
+    emit_results
     if [[ -n "$weston_pid" ]] && kill -0 "$weston_pid" 2>/dev/null; then
         kill "$weston_pid" 2>/dev/null || true
         wait "$weston_pid" 2>/dev/null || true
@@ -131,15 +176,22 @@ cleanup() {
     if ((remove_log_dir)); then
         rm -rf "$log_dir"
     fi
+    trap - EXIT INT TERM
+    exit "$status"
 }
-trap cleanup EXIT INT TERM
+
+on_signal() {
+    exit 130
+}
+
+trap cleanup EXIT
+trap on_signal INT TERM
 
 export XDG_RUNTIME_DIR="$runtime_dir"
 export XDG_CONFIG_HOME="$install_root/etc/xdg"
 export XDG_STATE_HOME="$runtime_dir/state"
 export QML2_IMPORT_PATH="$qml_import_path"
 export QT_QPA_PLATFORM=wayland
-export CAELESTIA_RUNTIME_TEST=1
 export LD_LIBRARY_PATH="$install_root/usr/lib/caelestia${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 mkdir -p "$XDG_STATE_HOME/caelestia"
 printf '{invalid scheme state' >"$XDG_STATE_HOME/caelestia/scheme.json"
@@ -161,6 +213,12 @@ now_ms() {
     date +%s%3N
 }
 
+# pgrep matches an extended regular expression, so a path cannot be
+# interpolated into the pattern as-is.
+ere_escape() {
+    printf '%s' "$1" | sed 's/[][\\.^$*+?(){}|]/\\&/g'
+}
+
 ipc_call() {
     echo "runtime IPC: $*" >&2
     ipc_start_ms=$(now_ms)
@@ -169,14 +227,58 @@ ipc_call() {
         return 1
     fi
     ipc_elapsed_ms=$(( $(now_ms) - ipc_start_ms ))
-    ((ipc_elapsed_ms > max_ipc_ms)) && max_ipc_ms=$ipc_elapsed_ms
+    if ((ipc_elapsed_ms > max_ipc_ms)); then
+        max_ipc_ms=$ipc_elapsed_ms
+    fi
 }
 
 ipc_try() {
     ipc_call "$@" 2>/dev/null || true
 }
 
-printf '{"runs":%d,"results":[' "$runs"
+# Readiness markers and how often each one must appear in a run. The IPC
+# sequence below toggles every drawer twice and opens/closes the nexus, so those
+# markers have to show up twice; the rest only have to show up once.
+check_run_marks() {
+    local log_file="$1" run="$2"
+    local entry marker minimum count created destroyed
+    for entry in \
+        "1|Configuration Loaded" \
+        "1|[caelestia] bar-ready" \
+        "1|[caelestia] wallpaper-ready" \
+        "1|[caelestia] shortcuts-ready" \
+        "1|[Preload] Utilities loaded successfully" \
+        "1|[perf][ContextMenuStore] load disk" \
+        "1|[perf][DesktopContextMenu] build model" \
+        "1|[caelestia] nexus=created" \
+        "1|[caelestia] nexus=reused" \
+        "1|[caelestia] nexus=destroyed" \
+        "2|[caelestia] drawer=launcher toggled" \
+        "2|[caelestia] drawer=sidebar toggled" \
+        "2|[caelestia] drawer=dashboard toggled" \
+        "2|[caelestia] drawer=utilities toggled" \
+        "2|[caelestia] drawer=overview toggled" \
+        "2|[caelestia] drawer=session toggled"; do
+        minimum="${entry%%|*}"
+        marker="${entry#*|}"
+        count=$(grep -Fc -- "$marker" "$log_file" || true)
+        if ((count < minimum)); then
+            echo "runtime smoke run $run saw ${count} of the ${minimum} required '${marker}'" >&2
+            return 1
+        fi
+    done
+
+    # Everything created has to be destroyed again. Only the balance is
+    # asserted: the engine may process the final close later than the last IPC
+    # reply, so the individual counts are not fixed.
+    created=$(grep -Fc -- '[caelestia] nexus=created' "$log_file" || true)
+    destroyed=$(grep -Fc -- '[caelestia] nexus=destroyed' "$log_file" || true)
+    if ((created < 1 || created != destroyed)); then
+        echo "runtime smoke run $run created ${created} nexus window(s) but destroyed ${destroyed}" >&2
+        return 1
+    fi
+    return 0
+}
 for ((run = 1; run <= runs; run++)); do
     log_file="$log_dir/quickshell-$run.log"
     max_ipc_ms=0
@@ -225,38 +327,24 @@ for ((run = 1; run <= runs; run++)); do
     ipc_try nexus open
     ipc_try nexus close
 
-    shell_pid=$(pgrep -n -f "quickshell.*${config_path}" || true)
+    shell_pid=$(pgrep -n -f "quickshell.*$(ere_escape "$config_path")" || true)
     rss_kb=0
     idle_cpu_percent=0
     sleep 2
     if [[ -n "$shell_pid" && -r "/proc/$shell_pid/status" ]]; then
         rss_kb=$(awk '/VmRSS:/ {print $2}' "/proc/$shell_pid/status")
         idle_cpu_percent=$(ps -p "$shell_pid" -o %cpu= | tr -d ' ')
-    fi
-    for marker in 'Configuration Loaded' '[perf] bar-ready' '[perf] wallpaper-ready' '[perf] shortcuts-ready' \
-        '[Preload] Utilities loaded successfully' '[perf][ContextMenuStore] load disk' \
-        '[perf][DesktopContextMenu] build model' \
-        '[lifecycle] nexus=created' '[lifecycle] nexus=reused' '[lifecycle] nexus=destroyed' \
-        '[lifecycle] drawer=launcher toggled' '[lifecycle] drawer=sidebar toggled' \
-        '[lifecycle] drawer=dashboard toggled' '[lifecycle] drawer=utilities toggled' \
-        '[lifecycle] drawer=overview toggled' '[lifecycle] drawer=session toggled'; do
-        grep -Fq "$marker" "$log_file" || {
-            echo "runtime smoke run $run missed readiness marker: $marker" >&2
-            cat "$log_file" >&2
-            exit 1
-        }
-    done
-    for marker in '[lifecycle] nexus=created' '[lifecycle] nexus=reused' '[lifecycle] nexus=destroyed' \
-        '[lifecycle] drawer=launcher toggled' '[lifecycle] drawer=sidebar toggled' \
-        '[lifecycle] drawer=dashboard toggled' '[lifecycle] drawer=utilities toggled' \
-        '[lifecycle] drawer=overview toggled' '[lifecycle] drawer=session toggled'; do
-        marker_count=$(grep -Fc "$marker" "$log_file" || true)
-        if ((marker_count < 2)); then
-            echo "runtime smoke run $run did not observe two lifecycle events: $marker" >&2
-            cat "$log_file" >&2
-            exit 1
+        if [[ -z "$rss_kb" ]]; then
+            rss_kb=0
         fi
-    done
+        if [[ -z "$idle_cpu_percent" ]]; then
+            idle_cpu_percent=0
+        fi
+    fi
+    if ! check_run_marks "$log_file" "$run"; then
+        cat "$log_file" >&2
+        exit 1
+    fi
     if grep -Eq 'ERROR: Failed to load configuration|Cannot load library|Type .* unavailable' "$log_file"; then
         echo "runtime smoke run $run reported a fatal QML/plugin error" >&2
         grep -E 'ERROR: Failed to load configuration|Cannot load library|Type .* unavailable' "$log_file" >&2
@@ -277,10 +365,16 @@ for ((run = 1; run <= runs; run++)); do
         echo "runtime smoke run $run exceeded IPC limit: ${max_ipc_ms}ms > ${max_ipc_limit_ms}ms" >&2
         exit 1
     fi
-    ((run > 1)) && printf ','
+    if [[ -n "$max_idle_cpu" ]] && awk -v cpu="$idle_cpu_percent" -v limit="$max_idle_cpu" \
+        'BEGIN { exit !(cpu > limit) }'; then
+        echo "runtime smoke run $run exceeded idle CPU limit: ${idle_cpu_percent}% > ${max_idle_cpu}%" >&2
+        exit 1
+    fi
+
     scenario=cold
-    ((run > 1)) && scenario=warm
-    printf '{"run":%d,"scenario":"%s","startup_ms":%d,"rss_kb":%d,"idle_cpu_percent":"%s","max_ipc_ms":%d}' \
-        "$run" "$scenario" "$startup_ms" "$rss_kb" "$idle_cpu_percent" "$max_ipc_ms"
+    if ((run > 1)); then
+        scenario=warm
+    fi
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' \
+        "$run" "$scenario" "$startup_ms" "$rss_kb" "$idle_cpu_percent" "$max_ipc_ms" >>"$results_tsv"
 done
-printf '],"log_dir":"%s"}\n' "$log_dir"
