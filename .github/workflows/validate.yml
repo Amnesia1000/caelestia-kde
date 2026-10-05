@@ -277,16 +277,11 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     steps:
-      - name: Install shell build dependencies
-        run: |
-          pacman -Syu --noconfirm --needed git cmake ninja python qt6-base qt6-declarative \
-            qt6-shadertools qt6-wayland qt6-tools extra-cmake-modules kwindowsystem \
-            kguiaddons kglobalaccel kconfig kcoreaddons networkmanager-qt pulseaudio-qt \
-            libqalculate pipewire libpipewire aubio lm_sensors fftw ncurses alsa-lib \
-            iniparser libglvnd sdl2 portaudio sndio libpulse
-
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install shell build dependencies
+        uses: ./.github/actions/install-build-deps
 
       - name: Fetch pinned build dependency
         run: |
@@ -305,15 +300,11 @@ jobs:
           cmake -G Ninja -B build-source -S shell -DCMAKE_BUILD_TYPE=Release \
             -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
             -DCAELESTIA_PACKAGE=OFF -DCMAKE_INSTALL_PREFIX=/ \
-            -DINSTALL_DATADIR=usr/share/caelestia \
-            -DCMAKE_C_FLAGS="-ffile-prefix-map=$PWD/build-source=/caelestia-build -ffile-prefix-map=$PWD=/caelestia-source" \
-            -DCMAKE_CXX_FLAGS="-ffile-prefix-map=$PWD/build-source=/caelestia-build -ffile-prefix-map=$PWD=/caelestia-source"
+            -DINSTALL_DATADIR=usr/share/caelestia
           cmake --build build-source --parallel
           DESTDIR="$PWD/stage-source" cmake --install build-source
           python3 .github/scripts/write_provenance_hash.py \
-            stage-source/usr/share/caelestia/build-provenance.json stage-source/usr \
-            share/sddm/themes/caelestia share/plasma/shells/caelestia.desktop \
-            share/caelestia/assets/icons
+            stage-source/usr/share/caelestia/build-provenance.json stage-source/usr
 
       - name: Build and stage package layout offline
         env:
@@ -326,20 +317,12 @@ jobs:
           cmake -G Ninja -B build-package -S shell -DCMAKE_BUILD_TYPE=Release \
             -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
             -DCAELESTIA_PACKAGE=ON -DCMAKE_INSTALL_PREFIX=/ \
-            -DINSTALL_DATADIR=usr/share/caelestia \
-            -DCMAKE_C_FLAGS="-ffile-prefix-map=$PWD/build-package=/caelestia-build -ffile-prefix-map=$PWD=/caelestia-source" \
-            -DCMAKE_CXX_FLAGS="-ffile-prefix-map=$PWD/build-package=/caelestia-build -ffile-prefix-map=$PWD=/caelestia-source"
+            -DINSTALL_DATADIR=usr/share/caelestia
           cmake --build build-package --parallel
           DESTDIR="$PWD/stage-package" cmake --install build-package
           python3 .github/scripts/write_provenance_hash.py \
-            stage-package/usr/share/caelestia/build-provenance.json stage-package/usr \
-            share/sddm/themes/caelestia share/plasma/shells/caelestia.desktop \
-            share/caelestia/assets/icons
-          python3 .github/scripts/check_artifact_parity.py \
-            stage-source/usr stage-package/usr \
-            --allow-right-only-prefix share/sddm/themes/caelestia \
-            --allow-right-only-prefix share/plasma/shells/caelestia.desktop \
-            --allow-right-only-prefix share/caelestia/assets/icons
+            stage-package/usr/share/caelestia/build-provenance.json stage-package/usr
+          python3 .github/scripts/check_artifact_parity.py stage-source/usr stage-package/usr
 
       - name: Validate installed manifests
         run: |
@@ -399,16 +382,13 @@ jobs:
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     steps:
-      - name: Install runtime and build dependencies
-        run: |
-          pacman -Syu --noconfirm --needed git cmake ninja python dbus quickshell weston \
-            qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-multimedia qt6-tools extra-cmake-modules \
-            kwindowsystem kguiaddons kglobalaccel kconfig kcoreaddons networkmanager-qt \
-            pulseaudio-qt libqalculate pipewire libpipewire aubio lm_sensors fftw ncurses \
-            alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse
-
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install runtime and build dependencies
+        uses: ./.github/actions/install-build-deps
+        with:
+          extra-packages: dbus quickshell weston
 
       - name: Fetch pinned build dependency
         run: |
@@ -416,53 +396,23 @@ jobs:
           export CAELESTIA_DEPS_DIR="$PWD/.ci-deps"
           bash scripts/fetch-dependencies.sh
 
-      - name: Build and install runtime tree
-        env:
-          CAELESTIA_DEPS_DIR: ${{ github.workspace }}/.ci-deps
-          http_proxy: http://127.0.0.1:9
-          https_proxy: http://127.0.0.1:9
-          all_proxy: http://127.0.0.1:9
-        run: |
-          set -euo pipefail
-          cmake -G Ninja -B build-runtime -S shell -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-            -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
-            -DCAELESTIA_PACKAGE=OFF -DCMAKE_INSTALL_PREFIX="$PWD/runtime-install"
-          cmake --build build-runtime --parallel
-          cmake --install build-runtime
-
-      - name: Run installed runtime and lifecycle smoke
-        run: |
-          set -euo pipefail
-          bash tests/runtime-smoke.sh \
-            --install-root "$PWD/runtime-install" \
-            --runs 3 \
-            --timeout 60 \
-            --baseline .github/ci-baselines/runtime-smoke.json \
-            --log-dir "$PWD/runtime-smoke"
-
-      - name: Upload runtime diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Build and run the installed runtime smoke
+        uses: ./.github/actions/runtime-smoke
         with:
-          name: runtime-smoke-diagnostics
-          path: runtime-smoke/
-          if-no-files-found: ignore
+          deps-dir: ${{ github.workspace }}/.ci-deps
+          install-root: ${{ github.workspace }}/runtime-install
+          log-dir: ${{ github.workspace }}/runtime-smoke
 
   shell-sanitizers:
     name: Build shell plugins with sanitizers
     runs-on: ubuntu-latest
     container: archlinux:base-devel
     steps:
-      - name: Install shell build dependencies
-        run: |
-          pacman -Syu --noconfirm --needed git cmake ninja python qt6-base qt6-declarative \
-            qt6-shadertools qt6-wayland qt6-tools extra-cmake-modules kwindowsystem \
-            kguiaddons kglobalaccel kconfig kcoreaddons networkmanager-qt pulseaudio-qt \
-            libqalculate pipewire libpipewire aubio lm_sensors fftw ncurses alsa-lib \
-            iniparser libglvnd sdl2 portaudio sndio libpulse
-
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install shell build dependencies
+        uses: ./.github/actions/install-build-deps
 
       - name: Fetch pinned build dependency
         run: |

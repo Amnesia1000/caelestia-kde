@@ -1,0 +1,62 @@
+name: Installed runtime smoke
+description: >-
+  Build the shell offline, install it into a prefix, and run the headless
+  Weston/Quickshell runtime and lifecycle smoke test against the installed tree.
+
+inputs:
+  deps-dir:
+    description: Directory holding the pre-fetched pinned build dependency
+    required: true
+  install-root:
+    description: CMAKE_INSTALL_PREFIX for the runtime tree
+    required: true
+  log-dir:
+    description: Directory for the smoke logs and the results document
+    required: true
+  runs:
+    description: Number of launch and shutdown cycles
+    required: false
+    default: "3"
+  timeout:
+    description: Per-cycle readiness timeout in seconds
+    required: false
+    default: "60"
+
+runs:
+  using: composite
+  steps:
+    - name: Build and install runtime tree
+      shell: bash
+      env:
+        CAELESTIA_DEPS_DIR: ${{ inputs.deps-dir }}
+        http_proxy: http://127.0.0.1:9
+        https_proxy: http://127.0.0.1:9
+        all_proxy: http://127.0.0.1:9
+      run: |
+        set -euo pipefail
+        cmake -G Ninja -B build-runtime -S shell -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+          -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
+          -DCAELESTIA_PACKAGE=OFF -DCMAKE_INSTALL_PREFIX="${{ inputs.install-root }}"
+        cmake --build build-runtime --parallel
+        cmake --install build-runtime
+
+    - name: Run installed runtime and lifecycle smoke
+      shell: bash
+      run: |
+        set -euo pipefail
+        mkdir -p "${{ inputs.log-dir }}"
+        bash tests/runtime-smoke.sh \
+          --install-root "${{ inputs.install-root }}" \
+          --runs "${{ inputs.runs }}" \
+          --timeout "${{ inputs.timeout }}" \
+          --baseline .github/ci-baselines/runtime-smoke.json \
+          --log-dir "${{ inputs.log-dir }}" \
+          | tee "${{ inputs.log-dir }}/results.json"
+
+    - name: Upload runtime diagnostics
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: runtime-smoke-diagnostics
+        path: ${{ inputs.log-dir }}
+        if-no-files-found: ignore
