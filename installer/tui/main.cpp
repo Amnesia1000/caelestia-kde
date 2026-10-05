@@ -143,15 +143,15 @@ int main(int argc, char** argv) {
     }
     check_signals();
 
-    // render_menu walks the tree by index, so only a real array qualifies: any other
-    // menu.json shape would abort the TUI on a bad element access.
+    // parse_menu is the single typed traversal of menu.json: anything else the
+    // file contains is skipped there, so only a real array reaches this point.
     if (!g_menu.is_null() && g_menu.contains("menu") && g_menu["menu"].is_array()) {
         std::cerr << "[installer] phase 3: configure + review" << std::endl;
-        UI::init_menu_defaults(g_menu["menu"]);
+        const std::vector<UI::MenuItem> root_menu = UI::parse_menu(g_menu["menu"]);
 
         bool begin = false;
         while (!begin && !g_quit) {
-            if (!UI::render_menu(g_menu["menu"], "CONFIGURATION")) {
+            if (!UI::render_menu(root_menu, "CONFIGURATION")) {
                 std::cerr << "[installer] user backed out of menu" << std::endl;
                 Term::restore();
                 return 0;
