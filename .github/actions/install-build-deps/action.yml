@@ -22,7 +22,7 @@ runs:
           qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-tools \
           qt6-multimedia qt6-5compat \
           kwindowsystem kguiaddons kglobalaccel kconfig kcoreaddons \
-          networkmanager-qt pulseaudio-qt libqalculate \
+          kpipewire networkmanager-qt pulseaudio-qt libqalculate \
           pipewire libpipewire aubio lm_sensors fftw ncurses alsa-lib \
           iniparser libglvnd sdl2 portaudio sndio libpulse \
           ${{ inputs.extra-packages }}

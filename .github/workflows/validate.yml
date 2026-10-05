@@ -399,9 +399,9 @@ jobs:
       - name: Build and run the installed runtime smoke
         uses: ./.github/actions/runtime-smoke
         with:
-          deps-dir: ${{ github.workspace }}/.ci-deps
-          install-root: ${{ github.workspace }}/runtime-install
-          log-dir: ${{ github.workspace }}/runtime-smoke
+          deps-dir: .ci-deps
+          install-root: runtime-install
+          log-dir: runtime-smoke
 
   shell-sanitizers:
     name: Build shell plugins with sanitizers

@@ -28,16 +28,17 @@ jobs:
           command -v dbus-run-session
           test -x /usr/lib/qt6/bin/qmllint
           test -d /usr/lib/qt6/qml/Qt5Compat/GraphicalEffects
+          test -d /usr/lib/qt6/qml/org/kde/pipewire
 
       - name: Fetch pinned build dependency
         run: |
           set -euo pipefail
-          export CAELESTIA_DEPS_DIR="$RUNNER_TEMP/caelestia-deps"
+          export CAELESTIA_DEPS_DIR="$PWD/.ci-deps"
           bash scripts/fetch-dependencies.sh
 
       - name: Build and run the installed runtime smoke
         uses: ./.github/actions/runtime-smoke
         with:
-          deps-dir: ${{ runner.temp }}/caelestia-deps
-          install-root: ${{ runner.temp }}/caelestia-install
-          log-dir: ${{ runner.temp }}/runtime-smoke
+          deps-dir: .ci-deps
+          install-root: runtime-install
+          log-dir: runtime-smoke
