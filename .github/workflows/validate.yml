@@ -305,7 +305,9 @@ jobs:
           cmake -G Ninja -B build-source -S shell -DCMAKE_BUILD_TYPE=Release \
             -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
             -DCAELESTIA_PACKAGE=OFF -DCMAKE_INSTALL_PREFIX=/ \
-            -DINSTALL_DATADIR=usr/share/caelestia
+            -DINSTALL_DATADIR=usr/share/caelestia \
+            -DCMAKE_C_FLAGS="-ffile-prefix-map=$PWD/build-source=/caelestia-build -ffile-prefix-map=$PWD=/caelestia-source" \
+            -DCMAKE_CXX_FLAGS="-ffile-prefix-map=$PWD/build-source=/caelestia-build -ffile-prefix-map=$PWD=/caelestia-source"
           cmake --build build-source --parallel
           DESTDIR="$PWD/stage-source" cmake --install build-source
           python3 .github/scripts/write_provenance_hash.py \
@@ -324,7 +326,9 @@ jobs:
           cmake -G Ninja -B build-package -S shell -DCMAKE_BUILD_TYPE=Release \
             -DCAELESTIA_CACHE_DEPS=ON -DCAELESTIA_OFFLINE=ON \
             -DCAELESTIA_PACKAGE=ON -DCMAKE_INSTALL_PREFIX=/ \
-            -DINSTALL_DATADIR=usr/share/caelestia
+            -DINSTALL_DATADIR=usr/share/caelestia \
+            -DCMAKE_C_FLAGS="-ffile-prefix-map=$PWD/build-package=/caelestia-build -ffile-prefix-map=$PWD=/caelestia-source" \
+            -DCMAKE_CXX_FLAGS="-ffile-prefix-map=$PWD/build-package=/caelestia-build -ffile-prefix-map=$PWD=/caelestia-source"
           cmake --build build-package --parallel
           DESTDIR="$PWD/stage-package" cmake --install build-package
           python3 .github/scripts/write_provenance_hash.py \
