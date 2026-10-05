@@ -44,6 +44,30 @@ class ArtifactParityTests(unittest.TestCase):
         self.assertEqual(1, len(failures))
         self.assertIn("hash mismatch: quickshell/shell.qml", failures[0])
 
+    def test_compiled_artifacts_are_compared_by_presence_only(self) -> None:
+        """Two build trees differ in every .so; that is not packaging drift."""
+        self.write_both("lib/qt6/qml/Caelestia/lib/libcaelestia-core.so", "build-source")
+        (self.right / "lib/qt6/qml/Caelestia/lib/libcaelestia-core.so").write_text(
+            "build-package", encoding="utf-8"
+        )
+        self.assertEqual([], compare_trees(self.left, self.right))
+
+    def test_missing_compiled_artifact_still_fails(self) -> None:
+        self.write_both("lib/qt6/qml/Caelestia/lib/libcaelestia-core.so", "binary")
+        (self.right / "lib/qt6/qml/Caelestia/lib/libcaelestia-core.so").unlink()
+        self.assertEqual(
+            ["missing from right tree: lib/qt6/qml/Caelestia/lib/libcaelestia-core.so"],
+            compare_trees(self.left, self.right),
+        )
+
+    def test_cli_applies_the_packaging_contract_without_flags(self) -> None:
+        """Callers cannot forget the contract: it is the default."""
+        self.write_both("share/caelestia/shell.qml", "qml")
+        extra = self.right / "share/sddm/themes/caelestia/Main.qml"
+        extra.parent.mkdir(parents=True)
+        extra.write_text("theme", encoding="utf-8")
+        self.assertEqual(0, main([str(self.left), str(self.right)]))
+
     def test_documented_package_only_file_is_allowed(self) -> None:
         self.write_both("bin/caelestia", "binary")
         extra = self.right / "etc/sddm.conf.d/zz-caelestia.conf"

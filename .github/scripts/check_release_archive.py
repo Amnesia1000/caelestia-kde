@@ -4,26 +4,11 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import tarfile
 import tempfile
 from pathlib import Path
 
-
-def digest(path: Path) -> str:
-    hasher = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            hasher.update(chunk)
-    return hasher.hexdigest()
-
-
-def files(root: Path) -> dict[str, Path]:
-    return {
-        str(path.relative_to(root)).replace("\\", "/"): path
-        for path in root.rglob("*")
-        if path.is_file()
-    }
+from packaging_contract import file_hash, files_under
 
 
 def main() -> int:
@@ -37,7 +22,7 @@ def main() -> int:
     if not args.staged_root.is_dir():
         parser.error(f"staged root does not exist: {args.staged_root}")
 
-    expected = files(args.staged_root)
+    expected = files_under(args.staged_root)
     with tempfile.TemporaryDirectory() as temporary:
         extracted = Path(temporary)
         with tarfile.open(args.archive, "r:gz") as archive:
@@ -49,14 +34,14 @@ def main() -> int:
                     raise SystemExit(f"archive member escapes extraction root: {member.name}")
             archive.extractall(extracted)
 
-        actual = files(extracted)
+        actual = files_under(extracted)
         if set(expected) != set(actual):
             missing = sorted(set(expected) - set(actual))
             extra = sorted(set(actual) - set(expected))
             raise SystemExit(f"archive path mismatch: missing={missing} extra={extra}")
 
         for relative_path in sorted(expected):
-            if digest(expected[relative_path]) != digest(actual[relative_path]):
+            if file_hash(expected[relative_path]) != file_hash(actual[relative_path]):
                 raise SystemExit(f"archive content mismatch: {relative_path}")
 
     print(f"release archive verified: {len(expected)} files")

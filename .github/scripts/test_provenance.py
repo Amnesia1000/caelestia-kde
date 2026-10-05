@@ -58,12 +58,50 @@ class ProvenanceTests(unittest.TestCase):
             (root / "bin/tool").parent.mkdir(parents=True)
             (root / "bin/tool").write_text("stable", encoding="utf-8")
             metadata.write_text(json.dumps(data), encoding="utf-8")
-            update(metadata, root, ())
+            update(metadata, root)
             first = json.loads(metadata.read_text(encoding="utf-8"))["artifact_root_hash"]
-            update(metadata, root, ())
+            update(metadata, root)
             second = json.loads(metadata.read_text(encoding="utf-8"))["artifact_root_hash"]
             self.assertEqual(first, second)
             self.assertEqual(len(first), 64)
+
+    def _metadata(self, root: Path) -> Path:
+        metadata = root / "share/caelestia/build-provenance.json"
+        metadata.parent.mkdir(parents=True, exist_ok=True)
+        metadata.write_text(json.dumps({"hash_algorithm": "sha256"}), encoding="utf-8")
+        return metadata
+
+    def _root_hash(self, metadata: Path) -> str:
+        return json.loads(metadata.read_text(encoding="utf-8"))["artifact_root_hash"]
+
+    def test_root_hash_ignores_compiled_artifacts(self) -> None:
+        """Compiled bytes track the build environment, not the layout."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "usr"
+            metadata = self._metadata(root)
+            library = root / "lib/qt6/qml/Caelestia/lib/libcaelestia-core.so"
+            library.parent.mkdir(parents=True, exist_ok=True)
+            library.write_text("build-source", encoding="utf-8")
+            update(metadata, root)
+            source_layout = self._root_hash(metadata)
+            library.write_text("build-package", encoding="utf-8")
+            update(metadata, root)
+            self.assertEqual(source_layout, self._root_hash(metadata))
+
+    def test_root_hash_ignores_package_only_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "usr"
+            metadata = self._metadata(root)
+            shell = root / "share/caelestia/shell.qml"
+            shell.parent.mkdir(parents=True, exist_ok=True)
+            shell.write_text("qml", encoding="utf-8")
+            update(metadata, root)
+            source_layout = self._root_hash(metadata)
+            theme = root / "share/sddm/themes/caelestia/Main.qml"
+            theme.parent.mkdir(parents=True)
+            theme.write_text("theme", encoding="utf-8")
+            update(metadata, root)
+            self.assertEqual(source_layout, self._root_hash(metadata))
 
 
 if __name__ == "__main__":

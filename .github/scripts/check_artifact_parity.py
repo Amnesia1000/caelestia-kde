@@ -1,28 +1,25 @@
 #!/usr/bin/env python3
-"""Compare two installed artifact trees by relative paths and SHA-256 hashes."""
+"""Compare two installed artifact trees by relative paths and content hashes.
+
+Every file must line up in both directions. Content is compared for the files
+that carry the packaging contract; compiled artifacts are compared by presence
+only, since their bytes depend on the build directory and toolchain rather than
+on the packaging layout. See ``packaging_contract`` for the details.
+"""
 
 from __future__ import annotations
 
 import argparse
-import hashlib
 import sys
 from pathlib import Path
 
-
-def file_hash(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def files_under(root: Path) -> dict[str, Path]:
-    return {
-        path.relative_to(root).as_posix(): path
-        for path in root.rglob("*")
-        if path.is_file()
-    }
+from packaging_contract import (
+    PACKAGE_ONLY_PREFIXES,
+    file_hash,
+    files_under,
+    is_compiled,
+    matches_prefix,
+)
 
 
 def compare_trees(
@@ -41,10 +38,12 @@ def compare_trees(
     for relative in sorted(left_files.keys() - right_files.keys()):
         failures.append(f"missing from right tree: {relative}")
     for relative in sorted(right_files.keys() - left_files.keys() - allowed):
-        if any(relative == prefix or relative.startswith(f"{prefix}/") for prefix in allowed_prefixes):
+        if matches_prefix(relative, allowed_prefixes):
             continue
         failures.append(f"unexpected in right tree: {relative}")
     for relative in sorted(left_files.keys() & right_files.keys()):
+        if is_compiled(relative):
+            continue
         left_hash = file_hash(left_files[relative])
         right_hash = file_hash(right_files[relative])
         if left_hash != right_hash:
@@ -66,7 +65,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--allow-right-only-prefix",
         action="append",
-        default=[],
+        default=list(PACKAGE_ONLY_PREFIXES),
         metavar="PATH",
         help="right-only relative path prefix allowed by the packaging contract (repeatable)",
     )
@@ -89,7 +88,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"- {failure}", file=sys.stderr)
         return 1
 
-    print(f"Artifact parity check passed: {args.left} == {args.right}")
+    left_files = files_under(args.left)
+    compiled = sum(1 for relative in left_files if is_compiled(relative))
+    print(
+        f"Artifact parity check passed: {args.left} == {args.right} "
+        f"({len(left_files)} files, {compiled} compiled compared by presence)"
+    )
     return 0
 
 

@@ -23,7 +23,7 @@ BASH   ?= bash
 .DEFAULT_GOAL := help
 
 .PHONY: help install update uninstall build-shell fetch-dependencies installer \
-	test test-bash test-fast test-isolated test-artifacts test-repo validate hygiene \
+        test test-bash test-fast test-isolated test-artifacts test-repo validate hygiene \
         check check-shell check-python check-qml search-coverage \
         sync-fetch sync-report translations clean
 
@@ -68,10 +68,10 @@ test-fast: ## Run fast Bash tests only
 test-isolated: ## Run isolated workflow Bash tests only
 	$(BASH) $(TESTS_DIR)/run-tests.sh --suite isolated
 
-test-artifacts: ## Check source/package artifact parity logic
+test-artifacts: ## Run the artifact parity and provenance tests on their own (test-repo runs them too)
 	$(PYTHON) -m unittest discover -s $(CI_DIR) -p 'test_artifact_parity.py'
 
-test-repo: ## Check cross-cutting invariants (paths, versions, workflows, submodules)
+test-repo: ## Check cross-cutting invariants (paths, versions, workflows, submodules, artifact checks)
 	$(PYTHON) -m unittest discover -s $(CI_DIR) -p 'test_*.py'
 
 validate: ## Validate the installer's menu.json and theme.json
