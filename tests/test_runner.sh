@@ -56,7 +56,8 @@ test_runner_filters_fast_and_isolated_suites() {
     local tmp output status
     tmp="$(new_tmpdir)"
     make_case "$tmp" test_fast.sh 'exit 0'
-    make_case "$tmp" test_isolated_example.sh 'exit 0'
+    make_case "$tmp" test_isolated_example.sh '# suite: isolated
+exit 0'
 
     output="$(bash "$RUNNER" --suite fast "$tmp/test_fast.sh" "$tmp/test_isolated_example.sh" 2>&1)"
     status=$?

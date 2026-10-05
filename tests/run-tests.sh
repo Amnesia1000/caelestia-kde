@@ -18,6 +18,7 @@ requested=()
 usage() {
     printf 'Usage: %s [--suite fast|isolated|all] [--timeout seconds] [--artifacts dir] [test ...]\n' \
         "$(basename "$0")"
+    printf 'Each test file declares its suite with a "# suite: fast|isolated" line; the default is fast.\n'
 }
 
 while [[ $# -gt 0 ]]; do
@@ -114,10 +115,9 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 suite_for_file() {
-    case "$(basename "$1")" in
-        test_isolated_*.sh|test_install_*.sh|test_uninstall.sh|test_update_*.sh) printf 'isolated' ;;
-        *) printf 'fast' ;;
-    esac
+    local declared
+    declared="$(awk '/^# suite: (fast|isolated)$/ { print $3; exit }' "$1")"
+    printf '%s' "${declared:-fast}"
 }
 
 for file in "${files[@]}"; do
@@ -130,6 +130,7 @@ for file in "${files[@]}"; do
     file_suite="$(suite_for_file "$file")"
     if [[ "$suite" != all && "$suite" != "$file_suite" ]]; then
         skipped=$((skipped + 1))
+        echo "SKIP  [$file_suite] $(basename "$file")"
         continue
     fi
 
@@ -170,9 +171,7 @@ for file in "${files[@]}"; do
 done
 
 echo
+echo "Summary: $passed passed, $failed failed, $skipped skipped of $ran run test file(s) in $((SECONDS - started_at))s"
 if [[ $failed -gt 0 ]]; then
-    echo "Summary: $passed passed, $failed failed, $skipped skipped of $ran run test file(s) in $((SECONDS - started_at))s"
     exit 1
 fi
-
-echo "Summary: $passed passed, $failed failed, $skipped skipped of $ran run test file(s) in $((SECONDS - started_at))s"
