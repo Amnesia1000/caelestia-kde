@@ -15,6 +15,8 @@ Item {
 
     property bool installing: false
     property string installProgress: ""
+    // id of the plugin currently being installed, for per-row progress feedback
+    property string installingId: ""
 
     property bool restartRequired: false
 
@@ -63,9 +65,13 @@ Item {
 
         let installBranch = branch || "main";
 
-        let actualRepoPath = repoPath || ("plugins/" + id);
+        // repoPath must be a relative path inside the store repo. Installed plugins
+        // report an absolute *install* dir as their path, which must never be used
+        // here - it would make the clone step target itself and wipe the plugin.
+        let actualRepoPath = (typeof repoPath === "string" && repoPath !== "" && !repoPath.startsWith("/") && !repoPath.includes("..")) ? repoPath : ("plugins/" + id);
 
         installing = true;
+        installingId = id;
         installProgress = "Cloning plugin '" + id + "'...";
 
         let targetDir = (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/caelestia/plugins/" + id;
@@ -79,6 +85,7 @@ git config core.sparseCheckout true
 echo "$2/*" >> .git/info/sparse-checkout
 git fetch -q --depth 1 --filter=blob:none origin "$3"
 git reset --hard -q "origin/$3"
+test -d "$2"
 mkdir -p "$(dirname "$4")"
 rm -rf "$4"
 mv "$2" "$4"
@@ -178,6 +185,7 @@ echo "DONE"`;
 
         onExited: (code) => {
             storeRoot.installing = false;
+            storeRoot.installingId = "";
             if (code !== 0) {
                 console.log("PluginStore: install error for", installProc.pendingId, ":", installErr.text, installOut.text);
             } else {
