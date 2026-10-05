@@ -27,7 +27,8 @@ class AudioCollector;
 
 class PipeWireWorker {
 public:
-    explicit PipeWireWorker(std::stop_token token, AudioCollector* collector);
+    explicit PipeWireWorker(
+        std::stop_token token, AudioCollector* collector, caelestia::config::VisualiserInput::Enum captureMode);
 
     void run();
 
@@ -61,10 +62,6 @@ public:
     quint32 readChunk(float* out, quint32 count = 0);
     quint32 readChunk(double* out, quint32 count = 0);
 
-    // What the capture stream taps: the default output's monitor or the default input.
-    [[nodiscard]] caelestia::config::VisualiserInput::Enum captureMode() const;
-    void setCaptureMode(caelestia::config::VisualiserInput::Enum mode);
-
 private:
     explicit AudioCollector(QObject* parent = nullptr);
     ~AudioCollector();
@@ -74,7 +71,6 @@ private:
     std::vector<float> m_buffer2;
     std::atomic<std::vector<float>*> m_readBuffer;
     std::atomic<std::vector<float>*> m_writeBuffer;
-    std::atomic<caelestia::config::VisualiserInput::Enum> m_captureMode;
 
     void start() override;
     void stop() override;
