@@ -5,6 +5,8 @@ import QtQuick
 import QtCore
 import Quickshell
 import Quickshell.Io
+import Caelestia
+import Caelestia.Services
 
 Item {
     id: storeRoot
@@ -17,6 +19,7 @@ Item {
     property string installProgress: ""
     // id of the plugin currently being installed, for per-row progress feedback
     property string installingId: ""
+    property var updatesAvailable: []
 
     property bool restartRequired: false
 
@@ -28,6 +31,42 @@ Item {
 
     signal indexFetched()
     signal installedStateChanged()
+
+    function compareVersions(a, b) {
+        const pa = String(a || "").split(".");
+        const pb = String(b || "").split(".");
+        const len = Math.max(pa.length, pb.length);
+        for (let i = 0; i < len; i++) {
+            const na = parseInt(pa[i], 10);
+            const va = isNaN(na) ? 0 : na;
+            const nb = parseInt(pb[i], 10);
+            const vb = isNaN(nb) ? 0 : nb;
+            if (va !== vb)
+                return va < vb ? -1 : 1;
+        }
+        return 0;
+    }
+
+    function checkForUpdates() {
+        const installed = {};
+        for (let i = 0; i < CaelestiaApi.plugins.available.count; i++) {
+            const p = CaelestiaApi.plugins.available.get(i);
+            installed[p.id || p.name] = p.version || "";
+        }
+        const updates = [];
+        for (let i = 0; i < storePlugins.count; i++) {
+            const sp = storePlugins.get(i);
+            const id = sp.pluginId || sp.id;
+            if (id && installed[id] !== undefined && compareVersions(installed[id], sp.version) < 0)
+                updates.push(id);
+        }
+        updatesAvailable = updates;
+        if (updates.length === 1) {
+            Toaster.toast(qsTr("Plugin update available"), qsTr("1 plugin can be updated"), "update");
+        } else if (updates.length > 1) {
+            Toaster.toast(qsTr("Plugin updates available"), qsTr("%1 plugins can be updated").arg(updates.length), "update");
+        }
+    }
 
     function fetchIndex(branch) {
         let fetchBranch = branch || "main";
@@ -123,8 +162,11 @@ echo "DONE"`;
         target: PluginLoader
 
         function onPluginsReloaded() {
-            if (storeRoot.baselineLoaded)
+            if (storeRoot.baselineLoaded) {
+                if (storeRoot.indexData)
+                    storeRoot.checkForUpdates();
                 return;
+            }
             storeRoot.baselineLoaded = true;
             let ids = [];
             let av = CaelestiaApi.plugins.available;
@@ -134,7 +176,6 @@ echo "DONE"`;
             console.log("PluginStore: baseline loaded, installed:", JSON.stringify(ids));
         }
     }
-
 
     Process {
         id: fetchProc
@@ -164,6 +205,7 @@ echo "DONE"`;
                         storeRoot.storePlugins.append(p);
                     }
                     storeRoot.indexFetched();
+                    storeRoot.checkForUpdates();
                 } catch (e) {
                     storeRoot.error = true;
                     storeRoot.errorMessage = "Failed to parse index JSON: " + e;
@@ -171,7 +213,6 @@ echo "DONE"`;
             }
         }
     }
-
 
     Process {
         id: installProc
@@ -201,7 +242,6 @@ echo "DONE"`;
             }
         }
     }
-
 
     Process {
         id: removeProc
