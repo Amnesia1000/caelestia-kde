@@ -30,12 +30,30 @@ jobs:
       - name: Check the base branch
         env:
           BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_BRANCH: ${{ github.head_ref }}
         run: |
-          if [[ "$BASE_BRANCH" != "dev" ]]; then
-            echo "::error::Pull requests must target dev (this one targets '${BASE_BRANCH:-<none>}')."
-            exit 1
+          set -euo pipefail
+
+          # Feature work targets dev. main moves only through a release promotion,
+          # and the protection ruleset there requires a pull request to do it, so
+          # that one case has to stay open.
+          is_release_branch=false
+          case "$HEAD_BRANCH" in
+            [Rr]elease/*) is_release_branch=true ;;
+          esac
+
+          if [[ "$BASE_BRANCH" == "dev" ]]; then
+            echo "Pull request targets dev."
+            exit 0
           fi
-          echo "Pull request targets dev."
+
+          if [[ "$BASE_BRANCH" == "main" && "$is_release_branch" == "true" ]]; then
+            echo "Release promotion '$HEAD_BRANCH' targets main."
+            exit 0
+          fi
+
+          echo "::error::Pull requests must target dev, except a Release/* branch promoting a release to main (this one is '${HEAD_BRANCH:-<none>}' onto '${BASE_BRANCH:-<none>}')."
+          exit 1
 
   changed-files:
     runs-on: ubuntu-latest
