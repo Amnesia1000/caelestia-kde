@@ -267,7 +267,7 @@ Item {
             StyledText {
                 text: qsTr("Windows:")
                 color: Colours.palette.m3onSurfaceVariant
-                font: Tokens.font.label.small
+                font: Tokens.font.label.builders.small.size(10).build()
                 Layout.rightMargin: Tokens.spacing.small
             }
 
@@ -392,7 +392,7 @@ Item {
                     StyledText {
                         anchors.centerIn: parent
                         text: (winRect.index + 1).toString()
-                        font: Tokens.font.label.small
+                        font: Tokens.font.label.builders.small.size(10).build()
                         color: winRect.index === 0
                             ? Colours.palette.m3onPrimaryContainer
                             : Colours.palette.m3onSecondaryContainer

@@ -64,7 +64,7 @@ PageBase {
             Layout.leftMargin: Tokens.padding.largeIncreased
             text: qsTr("Stored in your session keyring, not in shell.json. The %1 environment variable overrides it.").arg(keyField.envName)
             color: Colours.palette.m3onSurfaceVariant
-            font: Tokens.font.label.small
+            font: Tokens.font.label.builders.small.size(10).build()
             wrapMode: Text.Wrap
         }
 
@@ -765,7 +765,7 @@ exit $status`]
                             Layout.fillWidth: true
                             text: accRect.isActive ? qsTr("Active") : qsTr("Tap to select")
                             color: Colours.palette.m3onSurfaceVariant
-                            font: Tokens.font.label.small
+                            font: Tokens.font.label.builders.small.size(10).build()
                             elide: Text.ElideRight
                         }
                     }

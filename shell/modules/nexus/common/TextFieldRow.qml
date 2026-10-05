@@ -64,7 +64,7 @@ ConnectedRect {
                 visible: root.subtext
                 text: input.isError && root.errorText ? root.errorText : root.subtext
                 color: input.isError && root.errorText ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
-                font: Tokens.font.label.small
+                font: Tokens.font.label.builders.small.size(10).build()
                 elide: Text.ElideRight
                 animate: root.errorText
             }

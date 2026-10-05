@@ -56,7 +56,7 @@ ConnectedRect {
 
                 visible: text
                 color: Colours.palette.m3onSurfaceVariant
-                font: Tokens.font.label.small
+                font: Tokens.font.label.builders.small.size(10).build()
                 elide: Text.ElideRight
                 animate: true
             }
