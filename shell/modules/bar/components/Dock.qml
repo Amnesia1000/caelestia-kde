@@ -97,6 +97,86 @@ Item {
         }
     }
 
+    function activateEntry(entry: var): void {
+        if (!entry)
+            return;
+
+        if (entry.toplevels.length > 0) {
+            let activeIdx = -1;
+            let activeAddr = "";
+
+            if (Kwin.activeWindow) {
+                activeAddr = Kwin.activeWindow.address ? String(Kwin.activeWindow.address) : "";
+            } else if (root.activeTop && root.activeTop.address) {
+                activeAddr = String(root.activeTop.address);
+            }
+
+            for (let i = 0; i < entry.toplevels.length; i++) {
+                let top = entry.toplevels[i];
+                let topAddr = String(top.address);
+                let isMinimized = top.minimized || false;
+                if (!isMinimized && (top.focused || (activeAddr !== "" && activeAddr === topAddr))) {
+                    activeIdx = i;
+                    break;
+                }
+            }
+
+            const isKWin = (Kwin.windowList.length > 0);
+
+            if (entry.toplevels.length === 1) {
+                let addr = String(entry.toplevels[0].address);
+                if (activeIdx === 0) {
+                    if (isKWin) {
+                        Kwin.minimizeWindow(addr);
+                    }
+                } else {
+                    if (isKWin) {
+                        Kwin.focusWindow(addr);
+                    } else {
+                        Kwin.dispatch(Kwin.usingLua ? `hl.dsp.focus({ window = "address:0x${addr}" })` : `focuswindow address:0x${addr}`);
+                    }
+                }
+            } else {
+                let nextIdx = activeIdx !== -1 ? (activeIdx + 1) % entry.toplevels.length : 0;
+                let addr = String(entry.toplevels[nextIdx].address);
+                if (isKWin) {
+                    Kwin.focusWindow(addr);
+                } else {
+                    Kwin.dispatch(Kwin.usingLua ? `hl.dsp.focus({ window = "address:0x${addr}" })` : `focuswindow address:0x${addr}`);
+                }
+            }
+        } else if (entry.entry) {
+            let newLaunching = Object.assign({}, root.launchingApps);
+            newLaunching[entry.appClass || entry.id] = true;
+            root.launchingApps = newLaunching;
+
+            Launch.launchEntry(entry.entry);
+        }
+    }
+
+    function activateIndex(idx: int): void {
+        if (idx < 0 || idx >= root.modelDataArray.length)
+            return;
+        root.activateEntry(root.modelDataArray[idx]);
+    }
+
+    function activateNewIndex(idx: int): void {
+        if (idx < 0 || idx >= root.modelDataArray.length)
+            return;
+        const entry = root.modelDataArray[idx];
+        if (!entry)
+            return;
+        if (entry.entry) {
+            let newLaunching = Object.assign({}, root.launchingApps);
+            newLaunching[entry.appClass || entry.id] = true;
+            root.launchingApps = newLaunching;
+
+            Launch.launchEntry(entry.entry);
+        } else if (entry.toplevels.length > 0) {
+            root.activateEntry(entry);
+        }
+    }
+
     function saveNewOrder(): void {
         const newArr = [];
         const newFavs = [];
@@ -499,57 +579,7 @@ Item {
                                     bounceAnim.start();
                                 }
 
-                                if (modelData.toplevels.length > 0) {
-                                    let activeIdx = -1;
-                                    let activeAddr = "";
-
-                                    if (Kwin.activeWindow) {
-                                        activeAddr = Kwin.activeWindow.address ? String(Kwin.activeWindow.address) : "";
-                                    } else if (root.activeTop && root.activeTop.address) {
-                                        activeAddr = String(root.activeTop.address);
-                                    }
-
-                                    for (let i = 0; i < modelData.toplevels.length; i++) {
-                                        let top = modelData.toplevels[i];
-                                        let topAddr = String(top.address);
-                                        let isMinimized = top.minimized || false;
-                                        if (!isMinimized && (top.focused || (activeAddr !== "" && activeAddr === topAddr))) {
-                                            activeIdx = i;
-                                            break;
-                                        }
-                                    }
-
-                                    const isKWin = (Kwin.windowList.length > 0);
-
-                                    if (modelData.toplevels.length === 1) {
-                                        let addr = String(modelData.toplevels[0].address);
-                                        if (activeIdx === 0) {
-                                            if (isKWin) {
-                                                Kwin.minimizeWindow(addr);
-                                            }
-                                        } else {
-                                            if (isKWin) {
-                                                Kwin.focusWindow(addr);
-                                            } else {
-                                                Kwin.dispatch(Kwin.usingLua ? `hl.dsp.focus({ window = "address:0x${addr}" })` : `focuswindow address:0x${addr}`);
-                                            }
-                                        }
-                                    } else {
-                                        let nextIdx = activeIdx !== -1 ? (activeIdx + 1) % modelData.toplevels.length : 0;
-                                        let addr = String(modelData.toplevels[nextIdx].address);
-                                        if (isKWin) {
-                                            Kwin.focusWindow(addr);
-                                        } else {
-                                            Kwin.dispatch(Kwin.usingLua ? `hl.dsp.focus({ window = "address:0x${addr}" })` : `focuswindow address:0x${addr}`);
-                                        }
-                                    }
-                                } else if (modelData.entry) {
-                                    let newLaunching = Object.assign({}, root.launchingApps);
-                                    newLaunching[modelData.appClass || modelData.id] = true;
-                                    root.launchingApps = newLaunching;
-
-                                    Launch.launchEntry(modelData.entry);
-                                }
+                                root.activateEntry(modelData);
                             } else if (mouse.button === Qt.RightButton) {
                                 bar.popouts.currentName = "dockcontext";
                                 bar.popouts.currentCenter = bar.isHorizontal ? delegateItem.mapToItem(null, delegateItem.width / 2, 0).x : (delegateItem.mapToItem(null, 0, delegateItem.height / 2).y ?? 0);
@@ -1083,5 +1113,14 @@ Item {
         }
     }
 
-    Component.onCompleted: root.rebuildModel()
+    Component.onCompleted: {
+        root.rebuildModel();
+        if (root.bar && root.bar.screen)
+            Visibilities.registerDock(root.bar.screen, root);
+    }
+
+    Component.onDestruction: {
+        if (root.bar && root.bar.screen)
+            Visibilities.unregisterDock(root.bar.screen);
+    }
 }

@@ -56,6 +56,33 @@ PageBase {
         return iconString;
     }
 
+    // Version of an installed plugin in the store, "" when the store has no entry for it.
+    function storeVersionFor(pluginId) {
+        const n = PluginStore.storePlugins.count;
+        for (let i = 0; i < n; i++) {
+            const p = PluginStore.storePlugins.get(i);
+            if (p.pluginId === pluginId)
+                return p.version || "";
+        }
+        return "";
+    }
+
+    // True when the store ships a newer version than the installed one.
+    function isUpdateAvailableFor(pluginId, installedVersion) {
+        const storeVersion = root.storeVersionFor(pluginId);
+        if (!storeVersion || !installedVersion)
+            return false;
+        const a = storeVersion.split(".");
+        const b = installedVersion.split(".");
+        for (let i = 0; i < Math.max(a.length, b.length); i++) {
+            const n1 = parseInt(a[i] || 0, 10);
+            const n2 = parseInt(b[i] || 0, 10);
+            if (n1 > n2) return true;
+            if (n1 < n2) return false;
+        }
+        return false;
+    }
+
     title: qsTr("Plugins")
 
     headerActions: [
@@ -186,6 +213,11 @@ PageBase {
                     Layout.fillWidth: true
                     visible: bundledDelegate.source === "bundled"
 
+                    isUpdateAvailable: root.isUpdateAvailableFor(bundledDelegate.id || bundledDelegate.name, bundledDelegate.version)
+                    updateVersionText: root.storeVersionFor(bundledDelegate.id || bundledDelegate.name)
+                    updateBusy: PluginStore.installing && PluginStore.installingId === (bundledDelegate.id || bundledDelegate.name)
+                    onUpdateRequested: PluginStore.installPlugin(bundledDelegate.id || bundledDelegate.name, bundledDelegate.path, root.storeBranch, bundledDelegate.restart)
+
                     titleText: bundledDelegate.name
                     versionText: bundledDelegate.version
                     descriptionText: bundledDelegate.description
@@ -254,6 +286,11 @@ PageBase {
 
                     Layout.fillWidth: true
                     visible: userDelegate.source === "user"
+
+                    isUpdateAvailable: root.isUpdateAvailableFor(userDelegate.id || userDelegate.name, userDelegate.version)
+                    updateVersionText: root.storeVersionFor(userDelegate.id || userDelegate.name)
+                    updateBusy: PluginStore.installing && PluginStore.installingId === (userDelegate.id || userDelegate.name)
+                    onUpdateRequested: PluginStore.installPlugin(userDelegate.id || userDelegate.name, userDelegate.path, root.storeBranch, userDelegate.restart)
 
                     titleText: userDelegate.name
                     versionText: userDelegate.version
@@ -444,24 +481,6 @@ PageBase {
                     required property string mediaurl
 
                     readonly property bool isInstalled: PluginStore.installedPluginIds.indexOf(storeDelegate.pluginId) !== -1
-                    readonly property bool isUpdateAvailable: {
-                        if (!isInstalled)
-                            return false;
-                        for (let i = 0; i < CaelestiaApi.plugins.available.count; i++) {
-                            let p = CaelestiaApi.plugins.available.get(i);
-                            if (p.id === storeDelegate.pluginId && p.version && storeDelegate.version) {
-                                let v1 = storeDelegate.version.split('.');
-                                let v2 = p.version.split('.');
-                                for (let j = 0; j < Math.max(v1.length, v2.length); j++) {
-                                    let n1 = parseInt(v1[j] || 0);
-                                    let n2 = parseInt(v2[j] || 0);
-                                    if (n1 > n2) return true;
-                                    if (n1 < n2) break;
-                                }
-                            }
-                        }
-                        return false;
-                    }
 
                     Layout.fillWidth: true
 
@@ -480,8 +499,9 @@ PageBase {
 
                     actionComponent: Component {
                         TextButton {
-                            text: storeDelegate.isUpdateAvailable ? qsTr("Update") : (storeDelegate.isInstalled ? qsTr("Installed") : qsTr("Install"))
-                            enabled: (!storeDelegate.isInstalled || storeDelegate.isUpdateAvailable) && !PluginStore.installing
+                            // Installed plugins stay greyed out; only installable ones keep the filled colour
+                            text: storeDelegate.isInstalled ? qsTr("Installed") : qsTr("Install")
+                            disabled: storeDelegate.isInstalled || PluginStore.installing
                             onClicked: {
                                 PluginStore.installPlugin(storeDelegate.pluginId, storeDelegate.path, root.storeBranch, storeDelegate.restart);
                             }

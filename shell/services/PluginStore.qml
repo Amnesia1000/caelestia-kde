@@ -5,6 +5,8 @@ import QtQuick
 import QtCore
 import Quickshell
 import Quickshell.Io
+import Caelestia
+import Caelestia.Services
 
 Item {
     id: storeRoot
@@ -17,6 +19,10 @@ Item {
     property string installProgress: ""
     property string installError: ""
 
+    // id of the plugin currently being installed, for per-row progress feedback
+    property string installingId: ""
+    property var updatesAvailable: []
+
     property bool restartRequired: false
 
     property var installedPluginIds: []
@@ -27,6 +33,42 @@ Item {
 
     signal indexFetched()
     signal installedStateChanged()
+
+    function compareVersions(a, b) {
+        const pa = String(a || "").split(".");
+        const pb = String(b || "").split(".");
+        const len = Math.max(pa.length, pb.length);
+        for (let i = 0; i < len; i++) {
+            const na = parseInt(pa[i], 10);
+            const va = isNaN(na) ? 0 : na;
+            const nb = parseInt(pb[i], 10);
+            const vb = isNaN(nb) ? 0 : nb;
+            if (va !== vb)
+                return va < vb ? -1 : 1;
+        }
+        return 0;
+    }
+
+    function checkForUpdates() {
+        const installed = {};
+        for (let i = 0; i < CaelestiaApi.plugins.available.count; i++) {
+            const p = CaelestiaApi.plugins.available.get(i);
+            installed[p.id || p.name] = p.version || "";
+        }
+        const updates = [];
+        for (let i = 0; i < storePlugins.count; i++) {
+            const sp = storePlugins.get(i);
+            const id = sp.pluginId || sp.id;
+            if (id && installed[id] !== undefined && compareVersions(installed[id], sp.version) < 0)
+                updates.push(id);
+        }
+        updatesAvailable = updates;
+        if (updates.length === 1) {
+            Toaster.toast(qsTr("Plugin update available"), qsTr("1 plugin can be updated"), "update");
+        } else if (updates.length > 1) {
+            Toaster.toast(qsTr("Plugin updates available"), qsTr("%1 plugins can be updated").arg(updates.length), "update");
+        }
+    }
 
     function fetchIndex(branch) {
         let fetchBranch = branch || "main";
@@ -64,9 +106,13 @@ Item {
 
         let installBranch = branch || "main";
 
-        let actualRepoPath = repoPath || ("plugins/" + id);
+        // repoPath must be a relative path inside the store repo. Installed plugins
+        // report an absolute *install* dir as their path, which must never be used
+        // here - it would make the clone step target itself and wipe the plugin.
+        let actualRepoPath = (typeof repoPath === "string" && repoPath !== "" && !repoPath.startsWith("/") && !repoPath.includes("..")) ? repoPath : ("plugins/" + id);
 
         installing = true;
+        installingId = id;
         installProgress = "Cloning plugin '" + id + "'...";
 
         let targetDir = (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/caelestia/plugins/" + id;
@@ -80,6 +126,7 @@ git config core.sparseCheckout true
 echo "$2/*" >> .git/info/sparse-checkout
 git fetch -q --depth 1 --filter=blob:none origin "$3"
 git reset --hard -q "origin/$3"
+test -d "$2"
 mkdir -p "$(dirname "$4")"
 rm -rf "$4"
 mv "$2" "$4"
@@ -117,8 +164,11 @@ echo "DONE"`;
         target: PluginLoader
 
         function onPluginsReloaded() {
-            if (storeRoot.baselineLoaded)
+            if (storeRoot.baselineLoaded) {
+                if (storeRoot.indexData)
+                    storeRoot.checkForUpdates();
                 return;
+            }
             storeRoot.baselineLoaded = true;
             let ids = [];
             let av = CaelestiaApi.plugins.available;
@@ -128,7 +178,6 @@ echo "DONE"`;
             console.log("PluginStore: baseline loaded, installed:", JSON.stringify(ids));
         }
     }
-
 
     Process {
         id: fetchProc
@@ -158,6 +207,7 @@ echo "DONE"`;
                         storeRoot.storePlugins.append(p);
                     }
                     storeRoot.indexFetched();
+                    storeRoot.checkForUpdates();
                 } catch (e) {
                     storeRoot.error = true;
                     storeRoot.errorMessage = "Failed to parse index JSON: " + e;
@@ -233,6 +283,7 @@ echo "INSTALLED:$ID:$2/$ID"`;
 
         onExited: (code) => {
             storeRoot.installing = false;
+            storeRoot.installingId = "";
             if (code !== 0) {
                 console.log("PluginStore: install error for", installProc.pendingId, ":", installErr.text, installOut.text);
             } else {
@@ -248,7 +299,6 @@ echo "INSTALLED:$ID:$2/$ID"`;
             }
         }
     }
-
 
     Process {
         id: removeProc
