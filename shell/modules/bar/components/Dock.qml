@@ -37,6 +37,9 @@ Item {
     readonly property int baseThickness: Tokens.sizes.bar.innerWidth
     readonly property int effectiveThickness: rawScale < 1.0 ? baseThickness : barThickness
     readonly property real configuredItemSize: Math.max(16, Math.min(effectiveThickness, Config.bar.dock.iconSize || 32))
+    // Icon size of a dock item. Derived from the configured item size rather than the
+    // delegate's laid-out width, which is still 0 while the delegate is being created.
+    readonly property real iconSize: Math.round(configuredItemSize * 0.7 / 2) * 2
 
     implicitWidth: bar.isHorizontal ? container.width : container.implicitWidth
     implicitHeight: bar.isHorizontal ? container.implicitHeight : container.height
@@ -649,7 +652,7 @@ Item {
                         id: icon
 
                         anchors.centerIn: parent
-                        implicitSize: Math.round((root.configuredItemSize * 0.7) / 2) * 2
+                        implicitSize: root.iconSize
                         source: modelData ? WinIcons.sourceFor(modelData.entry, modelData.appClass, modelData.iconName, modelData.pid ?? 0) : ""
                         visible: !(Config.bar.dock.recolourIcons ?? false)
 
@@ -662,7 +665,8 @@ Item {
                     }
 
                     ColouredIcon {
-                        anchors.fill: icon
+                        anchors.centerIn: parent
+                        implicitSize: root.iconSize
                         source: icon.source
                         colour: Colours.palette.m3secondary
                         layer.enabled: true
@@ -681,7 +685,7 @@ Item {
                     StyledRect {
                         id: countBadge
 
-                        readonly property int badgeHeight: Math.max(12, Math.round((icon.implicitSize || 0) * 0.55))
+                        readonly property int badgeHeight: Math.max(12, Math.round(root.iconSize * 0.55))
                         readonly property int dotSize: Math.max(6, Math.round(badgeHeight * 0.75))
                         readonly property bool asDot: (delegateItem.badge?.count ?? 0) <= 0
 
@@ -720,7 +724,7 @@ Item {
                         anchors.top: icon.bottom
                         anchors.topMargin: 1
                         anchors.horizontalCenter: parent.horizontalCenter
-                        width: icon.implicitSize
+                        width: root.iconSize
                         height: 3
                         radius: Tokens.rounding.full
                         color: Qt.alpha(Colours.palette.m3onSurface, 0.15)
