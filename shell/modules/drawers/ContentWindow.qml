@@ -1011,6 +1011,7 @@ StyledWindow {
         property real deformAmount: 0.15
 
         group: panel.visible ? blobGroup : null
+        visible: panel.visible
         x: panel.x + panels.leftMargin
         y: panel.y + panels.topMargin
         implicitWidth: panel.width

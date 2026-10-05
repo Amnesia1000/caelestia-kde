@@ -29,6 +29,8 @@ class DesktopClock : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, enabled, true)
     CONFIG_PROPERTY(qreal, scale, 1.0)
     CONFIG_PROPERTY(QString, position, QStringLiteral("bottom-right"))
+    CONFIG_PROPERTY(qreal, offsetX, 0.0)
+    CONFIG_PROPERTY(qreal, offsetY, 0.0)
     CONFIG_PROPERTY(bool, invertColors, false)
     CONFIG_SUBOBJECT(DesktopClockBackground, background)
     CONFIG_SUBOBJECT(DesktopClockShadow, shadow)
