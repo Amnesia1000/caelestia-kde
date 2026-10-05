@@ -288,7 +288,7 @@ Item {
         }
     }
 
-    Component.onCompleted: Diagnostics.mark("bar-ready")
+    Component.onCompleted: Logger.mark("bar-ready")
 
     clip: true
 

@@ -63,7 +63,7 @@ Scope {
 
     Component.onCompleted: {
         let _ = KeybindsModel;
-        Diagnostics.mark("shortcuts-ready");
+        Logger.mark("shortcuts-ready");
     }
     // qmllint disable unresolved-type
 
@@ -435,7 +435,7 @@ Scope {
                     Visibilities.setOverview(!visibilities.overview);
                 else
                     visibilities[drawer] = !visibilities[drawer];
-                Diagnostics.mark(`drawer=${drawer} toggled`);
+                Logger.mark(`drawer=${drawer} toggled`);
             } else {
                 console.warn(lc, `Drawer "${drawer}" does not exist`);
             }

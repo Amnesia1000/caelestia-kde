@@ -22,12 +22,12 @@ Singleton {
                 win.nexus.nState.goToSubPage(props.initialPageIdx, props.initialSubPageIdx ?? -1);
             win.visible = true;
             win.raise();
-            Diagnostics.mark("nexus=reused");
+            Logger.mark("nexus=reused");
             return win;
         }
         const win = nexusComp.createObject(parent ?? dummy, props);
         root.openWindow = win;
-        Diagnostics.mark("nexus=created");
+        Logger.mark("nexus=created");
         return win;
     }
 
@@ -59,7 +59,7 @@ Singleton {
             }
 
             Component.onDestruction: {
-                Diagnostics.mark("nexus=destroyed");
+                Logger.mark("nexus=destroyed");
                 if (root.openWindow === win)
                     root.openWindow = null;
             }
