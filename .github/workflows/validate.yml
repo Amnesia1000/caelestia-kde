@@ -402,7 +402,7 @@ jobs:
       - name: Install runtime and build dependencies
         run: |
           pacman -Syu --noconfirm --needed git cmake ninja python dbus quickshell weston \
-            qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-tools extra-cmake-modules \
+            qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-multimedia qt6-tools extra-cmake-modules \
             kwindowsystem kguiaddons kglobalaccel kconfig kcoreaddons networkmanager-qt \
             pulseaudio-qt libqalculate pipewire libpipewire aubio lm_sensors fftw ncurses \
             alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse
