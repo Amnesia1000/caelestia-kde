@@ -87,7 +87,10 @@ CustomMouseArea {
     }
     function inTopPanel(panel: Item, x: real, y: real, edge = Config.border.thickness, span = 100): bool {
         const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0)); // qmllint disable missing-property
-        return y < Math.max(Config.border.minThickness, edge + panelHeight) && withinPanelWidth(panel, x, y, panelHeight > 0 ? 100 : span);
+        // A grown top border (overlay panel) owns that strip: its own widgets are
+        // the triggers now, so hover/drag only start at the panel's lower edge.
+        const base = panels.topExtent;
+        return y >= base && y < base + Math.max(Config.border.minThickness, edge + panelHeight) && withinPanelWidth(panel, x, y, panelHeight > 0 ? 100 : span);
     }
     function inBottomPanel(panel: Item, x: real, y: real, isCorner = false, edge = Config.border.thickness, span = 100): bool {
         const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0)); // qmllint disable missing-property

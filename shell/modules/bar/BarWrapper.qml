@@ -10,6 +10,7 @@ import qs.components.controls
 import qs.services
 import qs.utils
 import qs.modules.bar.popouts as BarPopouts
+import qs.modules.drawers.blur as Blur
 
 Item {
     id: root
@@ -225,15 +226,19 @@ Item {
         y: root.isHorizontal ? root.sepOffset : 0
     }
     // Overlay bars get the same blur as the primary bar so they match the frame
-    BlurMask {
+    // (BlurMask doesn't support visible, conditionally create via Loader)
+    Loader {
         visible: root.isOverlay
-        target: content.item
-        contentItem: root.contentItem
-        blurOffsetTop: root.blurOffsetTop
-        blurOffsetBottom: root.blurOffsetBottom
-        blurOffsetLeft: root.blurOffsetLeft
-        blurOffsetRight: root.blurOffsetRight
-        vAnchor: root.vAnchor
-        hAnchor: root.hAnchor
+        active: root.isOverlay
+        sourceComponent: Blur.BlurMask {
+            target: content.item
+            contentItem: root.contentItem
+            blurOffsetTop: root.blurOffsetTop
+            blurOffsetBottom: root.blurOffsetBottom
+            blurOffsetLeft: root.blurOffsetLeft
+            blurOffsetRight: root.blurOffsetRight
+            vAnchor: root.vAnchor
+            hAnchor: root.hAnchor
+        }
     }
 }

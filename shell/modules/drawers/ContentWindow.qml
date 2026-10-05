@@ -105,13 +105,6 @@ StyledWindow {
         visibilities.dashboard = false;
         panels.popouts.close();
     }
-    onTopPanelActiveChanged: {
-        if (topPanelActive) {
-            visibilities.dashboard = false;
-            visibilities.utilities = false;
-        }
-    }
-
     name: "drawers"
 
     WlrLayershell.namespace: "dock"
@@ -657,6 +650,7 @@ StyledWindow {
             bar: bar
             borderThickness: root.borderThickness
             overviewBorderThickness: root.overviewBorderThickness
+            topExtent: root.overlayTopExtent
             overviewAnimConfig: root.overviewAnimConfig
             utilities.horizontalStretch: (sidebarBg.rawDeformMatrix.m11 - 1) / 2 + 1
             utilities.deformMatrix: utilsBg.rawDeformMatrix
@@ -763,7 +757,9 @@ StyledWindow {
                         barWrapper.sepOffset = separatorOffset;
                         console.log("SET sepOffset idx=" + index + " value=" + separatorOffset);
                     }
+                    Visibilities.registerBar(root.screen, modelData.name || ("overlay" + index), this, false);
                 }
+                Component.onDestruction: Visibilities.unregisterBar(root.screen, modelData.name || ("overlay" + index))
 
                 anchors.top: effPos === "top" ? parent.top : undefined
                 anchors.bottom: effPos === "bottom" ? parent.bottom : undefined
@@ -775,9 +771,6 @@ StyledWindow {
                 anchors.rightMargin: effPos === "right" ? edgeOffset : 0
                 width: effPos === "left" || effPos === "right" ? implicitWidth : undefined
                 height: effPos === "top" || effPos === "bottom" ? implicitHeight : undefined
-
-                Component.onCompleted: Visibilities.registerBar(root.screen, modelData.name || ("overlay" + index), this, false)
-                Component.onDestruction: Visibilities.unregisterBar(root.screen, modelData.name || ("overlay" + index))
             }
         }
         Connections {

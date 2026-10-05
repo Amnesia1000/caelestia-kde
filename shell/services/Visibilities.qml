@@ -73,15 +73,6 @@ Singleton {
         const monitor = Kwin.monitors[Kwin.cursorOutputName()] || Kwin.focusedMonitor;
         return screens.get(monitor) || screens.values().next().value;
     }
-    function isTopPanelActive(screenName: string): bool {
-        const defs = GlobalConfig.bar.bars.values;
-        for (let i = 0; i < defs.length; i++) {
-            const d = defs[i];
-            if (d && d.enabled !== false && ((d.position || "bottom") === "top") && (!d.screens || d.screens.length === 0 || d.screens.includes(screenName)))
-                return true;
-        }
-        return false;
-    }
     function setDrag(address: string, x: real, y: real, w: real, h: real, originScreen: string): void {
         dragAddress = address;
         dragX = x;

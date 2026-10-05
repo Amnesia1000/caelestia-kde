@@ -119,14 +119,7 @@ Scope {
         description: qsTr("Toggle launcher, dashboard and osd")
         onPressed: {
             const v = Visibilities.getForActive();
-            if (Visibilities.isTopPanelActive(v.screenName)) {
-                const target = !(v.launcher || v.osd);
-                v.launcher = v.osd = target;
-                v.dashboard = false;
-                v.utilities = false;
-            } else {
-                v.launcher = v.dashboard = v.osd = v.utilities = !(v.launcher || v.dashboard || v.osd || v.utilities);
-            }
+            v.launcher = v.dashboard = v.osd = v.utilities = !(v.launcher || v.dashboard || v.osd || v.utilities);
         }
     }
     // qmllint disable unresolved-type
@@ -136,10 +129,7 @@ Scope {
         description: qsTr("Toggle dashboard")
         onPressed: {
             const visibilities = Visibilities.getForActive();
-            if (Visibilities.isTopPanelActive(visibilities.screenName))
-                visibilities.dashboard = false;
-            else
-                visibilities.dashboard = !visibilities.dashboard;
+            visibilities.dashboard = !visibilities.dashboard;
         }
     }
     // qmllint disable unresolved-type
@@ -268,10 +258,7 @@ Scope {
         description: qsTr("Toggle utilities")
         onPressed: {
             const visibilities = Visibilities.getForActive();
-            if (Visibilities.isTopPanelActive(visibilities.screenName))
-                visibilities.utilities = false;
-            else
-                visibilities.utilities = !visibilities.utilities;
+            visibilities.utilities = !visibilities.utilities;
         }
     }
     // qmllint disable unresolved-type

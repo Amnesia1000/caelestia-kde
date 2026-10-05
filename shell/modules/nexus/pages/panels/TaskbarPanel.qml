@@ -48,6 +48,24 @@ PageBase {
         return Screens.screens.filter(s => GlobalConfig.forScreen(s.name).bar.overrides.includes("position"));
     }
 
+    // Positions already used by the primary bar (global bar.position) AND existing overlay bars
+    readonly property var occupiedPositions: (() => {
+        const pos = [];
+        if (GlobalConfig.bar.position)
+            pos.push(GlobalConfig.bar.position);
+        // Add positions from enabled overlay bars
+        const overlayBars = GlobalConfig.bar.bars.values.filter(b => b && b.enabled !== false);
+        for (let i = 0; i < overlayBars.length; i++) {
+            const p = overlayBars[i].position || "bottom";
+            if (!pos.includes(p))
+                pos.push(p);
+        }
+        return pos;
+    })()
+
+    // Available positions for new overlay panels
+    readonly property var availableOverlayPositions: root.positionItems.filter(item => !root.occupiedPositions.includes(item.value))
+
     function itemForPosition(pos: string): MenuItem {
         for (let i = 0; i < root.positionItems.length; i++) {
             if (root.positionItems[i].value === pos)
@@ -71,24 +89,6 @@ PageBase {
         }
         return name;
     }
-
-    // Positions already used by the primary bar (global bar.position) AND existing overlay bars
-    readonly property var occupiedPositions: (() => {
-        const pos = [];
-        if (GlobalConfig.bar.position)
-            pos.push(GlobalConfig.bar.position);
-        // Add positions from enabled overlay bars
-        const overlayBars = GlobalConfig.bar.bars.values.filter(b => b && b.enabled !== false);
-        for (let i = 0; i < overlayBars.length; i++) {
-            const p = overlayBars[i].position || "bottom";
-            if (!pos.includes(p))
-                pos.push(p);
-        }
-        return pos;
-    })()
-
-    // Available positions for new overlay panels
-    readonly property var availableOverlayPositions: root.positionItems.filter(item => !root.occupiedPositions.includes(item.value))
 
     title: qsTr("Taskbar")
     isSubPage: true
