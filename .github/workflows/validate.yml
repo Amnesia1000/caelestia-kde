@@ -333,9 +333,9 @@ jobs:
             share/caelestia/assets/icons
           python3 .github/scripts/check_artifact_parity.py \
             stage-source/usr stage-package/usr \
-            --allow-right-only-prefix usr/share/sddm/themes/caelestia \
-            --allow-right-only-prefix usr/share/plasma/shells/caelestia.desktop \
-            --allow-right-only-prefix usr/share/caelestia/assets/icons
+            --allow-right-only-prefix share/sddm/themes/caelestia \
+            --allow-right-only-prefix share/plasma/shells/caelestia.desktop \
+            --allow-right-only-prefix share/caelestia/assets/icons
 
       - name: Validate installed manifests
         run: |
