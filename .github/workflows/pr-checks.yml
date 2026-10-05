@@ -27,13 +27,15 @@ jobs:
   branch-name:
     runs-on: ubuntu-latest
     steps:
-      - name: Check branch name
+      - name: Check the base branch
         env:
-          BRANCH_NAME: ${{ github.head_ref }}
+          BASE_BRANCH: ${{ github.base_ref }}
         run: |
-          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "dev" ]]; then
-            echo "::warning::Branch '$BRANCH_NAME' as source - consider using a feature branch instead."
+          if [[ "$BASE_BRANCH" != "dev" ]]; then
+            echo "::error::Pull requests must target dev (this one targets '${BASE_BRANCH:-<none>}')."
+            exit 1
           fi
+          echo "Pull request targets dev."
 
   changed-files:
     runs-on: ubuntu-latest
@@ -154,7 +156,8 @@ jobs:
             if [[ "$result" == "success" ]]; then
               echo "- [PASS] **${job}**" >> $GITHUB_STEP_SUMMARY
             elif [[ "$result" == "skipped" ]]; then
-              echo "- [SKIP] **${job}**" >> $GITHUB_STEP_SUMMARY
+              echo "- [FAIL] **${job}** - required PR job was skipped" >> $GITHUB_STEP_SUMMARY
+              all_passed=false
             else
               echo "- [FAIL] **${job}** - ${result}" >> $GITHUB_STEP_SUMMARY
               all_passed=false

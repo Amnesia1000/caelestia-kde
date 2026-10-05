@@ -55,6 +55,7 @@ Item {
                 one.screen = screen;
                 Qt.callLater(() => one.update());
                 completed = true;
+                Logger.mark("wallpaper-ready");
             });
     }
 

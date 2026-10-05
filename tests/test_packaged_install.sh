@@ -195,6 +195,25 @@ test_a_failing_step_stops_the_run() {
     assert_not_contains "$(cat "$CALLS")" "06-services.sh" "nothing after the failing step should run"
 }
 
+test_every_packaged_step_failure_stops_before_the_next_step() {
+    local index failing next status calls
+    for index in "${!EXPECTED_STEPS[@]}"; do
+        failing="${EXPECTED_STEPS[$index]}"
+        stub_steps "$failing"
+
+        CAELESTIA_DATA_DIR="$DATA" CAELESTIA_INSTALL_KIND=package "$CLI" install > "$DIR/out.txt" 2>&1
+        status=$?
+        assert_status 1 "$status" "$failing should fail the packaged run"
+
+        calls="$(cat "$CALLS")"
+        assert_contains "$calls" "$failing" "$failing should be reached before failure"
+        if (( index + 1 < ${#EXPECTED_STEPS[@]} )); then
+            next="${EXPECTED_STEPS[$((index + 1))]}"
+            assert_not_contains "$calls" "$next" "a failure in $failing must stop before $next"
+        fi
+    done
+}
+
 test_missing_scripts_say_where_they_come_from() {
     DIR="$(new_tmpdir)"
     mkdir -p "$DIR/bin"

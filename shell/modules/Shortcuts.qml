@@ -101,6 +101,7 @@ Scope {
 
     Component.onCompleted: {
         let _ = KeybindsModel;
+        Logger.mark("shortcuts-ready");
     }
 
     // qmllint disable unresolved-type
@@ -475,6 +476,7 @@ Scope {
                     Visibilities.setOverview(!visibilities.overview);
                 else
                     visibilities[drawer] = !visibilities[drawer];
+                Logger.mark(`drawer=${drawer} toggled`);
             } else {
                 console.warn(lc, `Drawer "${drawer}" does not exist`);
             }
@@ -515,6 +517,9 @@ Scope {
                 initialPageIdx: parseInt(pageIdx),
                 initialSubPageIdx: hasSubPage ? parseInt(subPageIdx) : -1
             });
+        }
+        function close(): void {
+            WindowFactory.close();
         }
 
         target: "nexus"
