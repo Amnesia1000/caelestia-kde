@@ -28,6 +28,32 @@ patch_breeze_login_wallpaper() {
     fi
 }
 
+# cliphist's watchers only read the clipboard, but wl-clip-persist reads every MIME
+# type of a new selection and then re-offers the clipboard itself. Applications that
+# put a process-private payload on the clipboard rely on still owning the selection
+# when they paste: Krita reads raw KisNode pointers back out of
+# application/x-krita-node-internal-pointer, and Inkscape does the same for
+# image/x-inkscape-svg. Once wl-clip-persist serves that payload, they cast released
+# pointers and crash on paste (ladybug-me/caelestia-kde#942). The filter skips those
+# events; every other type, including text and images, still persists.
+write_cliphist_unit() {
+    mkdir -p "$HOME/.config/systemd/user"
+    cat > "$HOME/.config/systemd/user/cliphist.service" << 'EOF'
+[Unit]
+Description=Clipboard history service
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/bin/bash -c 'command -v wl-paste >/dev/null 2>&1 || { echo "missing: wl-paste" >&2; exit 1; }; command -v cliphist >/dev/null 2>&1 || { echo "missing: cliphist" >&2; exit 1; }; command -v wl-clip-persist >/dev/null 2>&1 || { echo "missing: wl-clip-persist" >&2; exit 1; }; wl-paste --type text --watch cliphist store & wl-paste --type image --watch cliphist store & wl-clip-persist --clipboard regular --all-mime-type-regex "(?i)^(?!(?:application/x-krita-|image/x-inkscape-svg)).+" & wait -n'
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target
+EOF
+}
+
 echo
 echo ""
 info "Applying KDE settings"
@@ -80,21 +106,7 @@ else
 fi
 
 info "Setting up cliphist background service..."
-mkdir -p "$HOME/.config/systemd/user"
-cat > "$HOME/.config/systemd/user/cliphist.service" << 'EOF'
-[Unit]
-Description=Clipboard history service
-After=graphical-session.target
-
-[Service]
-Type=simple
-ExecStart=/bin/bash -c 'command -v wl-paste >/dev/null 2>&1 || { echo "missing: wl-paste" >&2; exit 1; }; command -v cliphist >/dev/null 2>&1 || { echo "missing: cliphist" >&2; exit 1; }; command -v wl-clip-persist >/dev/null 2>&1 || { echo "missing: wl-clip-persist" >&2; exit 1; }; wl-paste --type text --watch cliphist store & wl-paste --type image --watch cliphist store & wl-clip-persist --clipboard regular & wait -n'
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=default.target
-EOF
+write_cliphist_unit
 systemctl --user daemon-reload
 systemctl --user enable --now cliphist.service 2>/dev/null || true
 ok "Cliphist background service enabled."
