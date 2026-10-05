@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""Compare two installed artifact trees by relative paths and content hashes.
+"""Compare two staged install trees by relative paths and content hashes.
 
 Every file must line up in both directions. Content is compared for the files
 that carry the packaging contract; compiled artifacts are compared by presence
 only, since their bytes depend on the build directory and toolchain rather than
-on the packaging layout. See ``packaging_contract`` for the details.
+on the packaging layout. Both roots are staging roots, not install prefixes, so
+the comparison covers the whole install. See ``packaging_contract`` for the
+details.
 """
 
 from __future__ import annotations
@@ -25,19 +27,21 @@ from packaging_contract import (
 def compare_trees(
     left: Path,
     right: Path,
-    allowed_right_only: set[str] | None = None,
     allowed_right_only_prefixes: set[str] | None = None,
 ) -> list[str]:
-    """Return parity failures, allowing explicitly documented right-only files."""
-    allowed = allowed_right_only or set()
-    allowed_prefixes = allowed_right_only_prefixes or set()
+    """Return parity failures, allowing the packaging contract's extra paths."""
+    allowed_prefixes = (
+        allowed_right_only_prefixes
+        if allowed_right_only_prefixes is not None
+        else set(PACKAGE_ONLY_PREFIXES)
+    )
     left_files = files_under(left)
     right_files = files_under(right)
     failures: list[str] = []
 
     for relative in sorted(left_files.keys() - right_files.keys()):
         failures.append(f"missing from right tree: {relative}")
-    for relative in sorted(right_files.keys() - left_files.keys() - allowed):
+    for relative in sorted(right_files.keys() - left_files.keys()):
         if matches_prefix(relative, allowed_prefixes):
             continue
         failures.append(f"unexpected in right tree: {relative}")
@@ -53,33 +57,25 @@ def compare_trees(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("left", type=Path, help="source/reference tree")
-    parser.add_argument("right", type=Path, help="package/release tree")
-    parser.add_argument(
-        "--allow-right-only",
-        action="append",
-        default=[],
-        metavar="PATH",
-        help="right-only relative path allowed by the packaging contract (repeatable)",
-    )
+    parser.add_argument("left", type=Path, help="source/reference staging root")
+    parser.add_argument("right", type=Path, help="package/release staging root")
     parser.add_argument(
         "--allow-right-only-prefix",
         action="append",
         default=list(PACKAGE_ONLY_PREFIXES),
         metavar="PATH",
-        help="right-only relative path prefix allowed by the packaging contract (repeatable)",
+        help="right-only relative path allowed by the packaging contract (repeatable)",
     )
     args = parser.parse_args(argv)
 
     for root in (args.left, args.right):
         if not root.is_dir():
-            print(f"artifact tree is not a directory: {root}", file=sys.stderr)
+            print(f"staging root is not a directory: {root}", file=sys.stderr)
             return 2
 
     failures = compare_trees(
         args.left,
         args.right,
-        set(args.allow_right_only),
         set(args.allow_right_only_prefix),
     )
     if failures:

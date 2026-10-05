@@ -4,6 +4,7 @@ import unittest
 from pathlib import Path
 
 from check_provenance import validate
+from packaging_contract import PACKAGE_ONLY_PREFIXES, PROVENANCE_RELATIVE
 from write_provenance_hash import update
 
 
@@ -52,11 +53,11 @@ class ProvenanceTests(unittest.TestCase):
             "artifact_root_hash": "pending-install",
         }
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory) / "usr"
-            metadata = root / "share/caelestia/build-provenance.json"
+            root = Path(directory)
+            metadata = root / PROVENANCE_RELATIVE
             metadata.parent.mkdir(parents=True)
-            (root / "bin/tool").parent.mkdir(parents=True)
-            (root / "bin/tool").write_text("stable", encoding="utf-8")
+            (root / "usr/bin/tool").parent.mkdir(parents=True)
+            (root / "usr/bin/tool").write_text("stable", encoding="utf-8")
             metadata.write_text(json.dumps(data), encoding="utf-8")
             update(metadata, root)
             first = json.loads(metadata.read_text(encoding="utf-8"))["artifact_root_hash"]
@@ -66,7 +67,7 @@ class ProvenanceTests(unittest.TestCase):
             self.assertEqual(len(first), 64)
 
     def _metadata(self, root: Path) -> Path:
-        metadata = root / "share/caelestia/build-provenance.json"
+        metadata = root / PROVENANCE_RELATIVE
         metadata.parent.mkdir(parents=True, exist_ok=True)
         metadata.write_text(json.dumps({"hash_algorithm": "sha256"}), encoding="utf-8")
         return metadata
@@ -77,9 +78,9 @@ class ProvenanceTests(unittest.TestCase):
     def test_root_hash_ignores_compiled_artifacts(self) -> None:
         """Compiled bytes track the build environment, not the layout."""
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory) / "usr"
+            root = Path(directory)
             metadata = self._metadata(root)
-            library = root / "lib/qt6/qml/Caelestia/lib/libcaelestia-core.so"
+            library = root / "usr/lib/qt6/qml/Caelestia/lib/libcaelestia-core.so"
             library.parent.mkdir(parents=True, exist_ok=True)
             library.write_text("build-source", encoding="utf-8")
             update(metadata, root)
@@ -88,20 +89,25 @@ class ProvenanceTests(unittest.TestCase):
             update(metadata, root)
             self.assertEqual(source_layout, self._root_hash(metadata))
 
-    def test_root_hash_ignores_package_only_paths(self) -> None:
+    def test_root_hash_ignores_every_package_only_path(self) -> None:
+        """The hash has to cover the same paths the parity check allows, or the
+        two staged trees would produce different hashes for the same layout."""
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory) / "usr"
+            root = Path(directory)
             metadata = self._metadata(root)
-            shell = root / "share/caelestia/shell.qml"
+            shell = root / "usr/share/caelestia/shell.qml"
             shell.parent.mkdir(parents=True, exist_ok=True)
             shell.write_text("qml", encoding="utf-8")
             update(metadata, root)
             source_layout = self._root_hash(metadata)
-            theme = root / "share/sddm/themes/caelestia/Main.qml"
-            theme.parent.mkdir(parents=True)
-            theme.write_text("theme", encoding="utf-8")
-            update(metadata, root)
-            self.assertEqual(source_layout, self._root_hash(metadata))
+
+            for prefix in PACKAGE_ONLY_PREFIXES:
+                with self.subTest(prefix=prefix):
+                    package_only = root / prefix / "content"
+                    package_only.parent.mkdir(parents=True, exist_ok=True)
+                    package_only.write_text("package only", encoding="utf-8")
+                    update(metadata, root)
+                    self.assertEqual(source_layout, self._root_hash(metadata))
 
 
 if __name__ == "__main__":

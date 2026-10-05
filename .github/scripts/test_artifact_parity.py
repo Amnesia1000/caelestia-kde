@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 from check_artifact_parity import compare_trees, main
+from packaging_contract import PACKAGE_ONLY_PREFIXES
 
 
 class ArtifactParityTests(unittest.TestCase):
@@ -25,81 +26,65 @@ class ArtifactParityTests(unittest.TestCase):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(content, encoding="utf-8")
 
+    def write_right_only(self, relative: str, content: str) -> None:
+        path = self.right / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+
     def test_identical_trees_pass(self) -> None:
-        self.write_both("bin/caelestia", "#!/bin/sh\n")
+        self.write_both("usr/bin/caelestia", "#!/bin/sh\n")
         self.assertEqual([], compare_trees(self.left, self.right))
 
     def test_missing_file_fails(self) -> None:
-        self.write_both("lib/caelestia/module", "module")
-        (self.right / "lib/caelestia/module").unlink()
+        self.write_both("usr/lib/caelestia/module", "module")
+        (self.right / "usr/lib/caelestia/module").unlink()
         self.assertEqual(
-            ["missing from right tree: lib/caelestia/module"],
+            ["missing from right tree: usr/lib/caelestia/module"],
             compare_trees(self.left, self.right),
         )
 
     def test_hash_drift_fails(self) -> None:
-        self.write_both("quickshell/shell.qml", "old")
-        (self.right / "quickshell/shell.qml").write_text("new", encoding="utf-8")
+        self.write_both("etc/xdg/quickshell/caelestia/shell.qml", "old")
+        (self.right / "etc/xdg/quickshell/caelestia/shell.qml").write_text(
+            "new", encoding="utf-8"
+        )
         failures = compare_trees(self.left, self.right)
         self.assertEqual(1, len(failures))
-        self.assertIn("hash mismatch: quickshell/shell.qml", failures[0])
+        self.assertIn("hash mismatch: etc/xdg/quickshell/caelestia/shell.qml", failures[0])
 
     def test_compiled_artifacts_are_compared_by_presence_only(self) -> None:
         """Two build trees differ in every .so; that is not packaging drift."""
-        self.write_both("lib/qt6/qml/Caelestia/lib/libcaelestia-core.so", "build-source")
-        (self.right / "lib/qt6/qml/Caelestia/lib/libcaelestia-core.so").write_text(
-            "build-package", encoding="utf-8"
-        )
+        library = "usr/lib/qt6/qml/Caelestia/lib/libcaelestia-core.so"
+        self.write_both(library, "build-source")
+        (self.right / library).write_text("build-package", encoding="utf-8")
         self.assertEqual([], compare_trees(self.left, self.right))
 
     def test_missing_compiled_artifact_still_fails(self) -> None:
-        self.write_both("lib/qt6/qml/Caelestia/lib/libcaelestia-core.so", "binary")
-        (self.right / "lib/qt6/qml/Caelestia/lib/libcaelestia-core.so").unlink()
+        library = "usr/lib/qt6/qml/Caelestia/lib/libcaelestia-core.so"
+        self.write_both(library, "binary")
+        (self.right / library).unlink()
         self.assertEqual(
-            ["missing from right tree: lib/qt6/qml/Caelestia/lib/libcaelestia-core.so"],
+            [f"missing from right tree: {library}"],
             compare_trees(self.left, self.right),
         )
 
-    def test_cli_applies_the_packaging_contract_without_flags(self) -> None:
-        """Callers cannot forget the contract: it is the default."""
-        self.write_both("share/caelestia/shell.qml", "qml")
-        extra = self.right / "share/sddm/themes/caelestia/Main.qml"
-        extra.parent.mkdir(parents=True)
-        extra.write_text("theme", encoding="utf-8")
+    def test_cli_allows_the_package_only_paths_the_contract_declares(self) -> None:
+        """Every declared prefix has to cover real package content, and passing
+        the contract explicitly has to mean the same thing as defaulting to it."""
+        self.write_both("usr/share/caelestia/shell.qml", "qml")
+        for prefix in PACKAGE_ONLY_PREFIXES:
+            self.write_right_only(f"{prefix}/content", "package only")
+
         self.assertEqual(0, main([str(self.left), str(self.right)]))
-
-    def test_documented_package_only_file_is_allowed(self) -> None:
-        self.write_both("bin/caelestia", "binary")
-        extra = self.right / "etc/sddm.conf.d/zz-caelestia.conf"
-        extra.parent.mkdir(parents=True)
-        extra.write_text("[Theme]\nCurrent=caelestia\n", encoding="utf-8")
+        self.assertEqual([], compare_trees(self.left, self.right, set(PACKAGE_ONLY_PREFIXES)))
         self.assertEqual(
-            [],
-            compare_trees(
-                self.left,
-                self.right,
-                {"etc/sddm.conf.d/zz-caelestia.conf"},
-            ),
-        )
-
-    def test_documented_package_only_prefix_is_allowed(self) -> None:
-        self.write_both("bin/caelestia", "binary")
-        extra = self.right / "usr/share/sddm/themes/caelestia/theme.conf"
-        extra.parent.mkdir(parents=True)
-        extra.write_text("theme", encoding="utf-8")
-        self.assertEqual(
-            [],
-            compare_trees(
-                self.left,
-                self.right,
-                allowed_right_only_prefixes={"usr/share/sddm/themes/caelestia"},
-            ),
+            sorted(f"unexpected in right tree: {prefix}/content" for prefix in PACKAGE_ONLY_PREFIXES),
+            sorted(compare_trees(self.left, self.right, set())),
         )
 
     def test_cli_rejects_undocumented_extra(self) -> None:
-        self.write_both("bin/caelestia", "binary")
-        extra = self.right / "unexpected"
-        extra.write_text("drift", encoding="utf-8")
+        self.write_both("usr/bin/caelestia", "binary")
+        self.write_right_only("etc/sddm.conf.d/zz-caelestia.conf", "[Theme]\nCurrent=caelestia\n")
         self.assertEqual(1, main([str(self.left), str(self.right)]))
 
 

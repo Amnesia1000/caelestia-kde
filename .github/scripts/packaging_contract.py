@@ -6,6 +6,12 @@ not - see the ``if(CAELESTIA_PACKAGE)`` block in ``shell/CMakeLists.txt``. The
 parity check and the provenance hash both have to agree on which paths those
 are, so they are declared here once instead of being repeated for every caller.
 
+Every path is relative to the staging root - the ``DESTDIR`` tree a build
+installs into, holding ``usr/`` and ``etc/`` side by side. That is the only root
+that covers the whole install; a ``usr/`` root leaves the package's half of
+``etc/xdg/quickshell/caelestia`` outside the checks, which is exactly where
+``CAELESTIA_PACKAGE=ON`` adds the icon set.
+
 Compiled artifacts sit outside the contract on purpose. Their bytes depend on
 the build directory and the toolchain rather than on the packaging layout, so
 the checks compare them by presence only. Hashing them would measure build
@@ -18,16 +24,18 @@ import hashlib
 from collections.abc import Iterable
 from pathlib import Path
 
-# Installed only by CAELESTIA_PACKAGE=ON, relative to the install tree root.
+# Installed only by CAELESTIA_PACKAGE=ON, relative to the staging root.
+# Keep in step with the if(CAELESTIA_PACKAGE) block in shell/CMakeLists.txt:
+# the icons land under INSTALL_QSCONFDIR, which is etc/xdg, not usr/share.
 PACKAGE_ONLY_PREFIXES = (
-    "share/caelestia/assets/icons",
-    "share/plasma/shells/caelestia.desktop",
-    "share/sddm/themes/caelestia",
+    "etc/xdg/quickshell/caelestia/assets/icons",
+    "usr/share/plasma/shells/caelestia.desktop",
+    "usr/share/sddm/themes/caelestia",
 )
 
 COMPILED_SUFFIXES = (".so", ".dylib", ".dll")
 
-PROVENANCE_RELATIVE = "share/caelestia/build-provenance.json"
+PROVENANCE_RELATIVE = "usr/share/caelestia/build-provenance.json"
 
 
 def file_hash(path: Path) -> str:

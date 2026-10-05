@@ -238,6 +238,9 @@ if("shell" IN_LIST ENABLE_MODULES)
     install(FILES LICENSE DESTINATION "${INSTALL_QSCONFDIR}")
 
     if(CAELESTIA_PACKAGE)
+        # Anything added here and nowhere else is package-only content. The
+        # artifact checks have to allow for it: add the installed prefix to
+        # PACKAGE_ONLY_PREFIXES in .github/scripts/packaging_contract.py.
         set(_SDDM_THEME_DIR "usr/share/sddm/themes/caelestia")
         caelestia_install_directory(
             "${CAELESTIA_ROOT_DIR}/src/sddm/themes/full/"
