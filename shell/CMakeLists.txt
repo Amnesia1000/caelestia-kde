@@ -91,8 +91,15 @@ set(INSTALL_QMLDIR "usr/lib/qt6/qml" CACHE STRING "QML install dir")
 set(INSTALL_QSCONFDIR "etc/xdg/quickshell/caelestia" CACHE STRING "Quickshell config install dir")
 option(CAELESTIA_OFFLINE "Disallow downloading build dependencies" OFF)
 option(CAELESTIA_PACKAGE "Install package-owned repository assets" OFF)
+option(CAELESTIA_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if(CAELESTIA_ENABLE_SANITIZERS)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
+
 set(CAELESTIA_M3SHAPES_SOURCE_DIR "" CACHE PATH
     "Pre-fetched M3Shapes source directory")
+set(M3SHAPES_REV "unknown")
 
 if("m3shapes" IN_LIST ENABLE_MODULES)
     include(FetchContent)
@@ -132,6 +139,9 @@ if("m3shapes" IN_LIST ENABLE_MODULES)
         GIT_TAG        ${M3SHAPES_REV}
         SOURCE_DIR     "${_M3SHAPES_SOURCE_DIR}"
     )
+    if(EXISTS "${_M3SHAPES_SOURCE_DIR}/CMakeLists.txt")
+        set(FETCHCONTENT_SOURCE_DIR_M3SHAPES_EXTERNAL "${_M3SHAPES_SOURCE_DIR}")
+    endif()
     message(STATUS "Using M3Shapes source: ${_M3SHAPES_SOURCE_DIR}")
     FetchContent_MakeAvailable(m3shapes_external)
 
@@ -228,6 +238,9 @@ if("shell" IN_LIST ENABLE_MODULES)
     install(FILES LICENSE DESTINATION "${INSTALL_QSCONFDIR}")
 
     if(CAELESTIA_PACKAGE)
+        # Anything added here and nowhere else is package-only content. The
+        # artifact checks have to allow for it: add the installed prefix to
+        # PACKAGE_ONLY_PREFIXES in .github/scripts/packaging_contract.py.
         set(_SDDM_THEME_DIR "usr/share/sddm/themes/caelestia")
         caelestia_install_directory(
             "${CAELESTIA_ROOT_DIR}/src/sddm/themes/full/"
@@ -250,6 +263,19 @@ if("shell" IN_LIST ENABLE_MODULES)
     endif()
 
     find_package(Qt6 QUIET COMPONENTS LinguistTools)
+    if(DEFINED Qt6_VERSION)
+        set(CAELESTIA_QT_VERSION "${Qt6_VERSION}")
+    else()
+        set(CAELESTIA_QT_VERSION "unknown")
+    endif()
+    set(CAELESTIA_ARTIFACT_ROOT_HASH "pending-install")
+    configure_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/build-provenance.json.in"
+        "${CMAKE_BINARY_DIR}/build-provenance.json"
+        @ONLY)
+    install(FILES "${CMAKE_BINARY_DIR}/build-provenance.json"
+        DESTINATION "${INSTALL_DATADIR}")
+
     file(GLOB TS_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/*.ts")
     file(GLOB PREBUILT_QM_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/*.qm")
 

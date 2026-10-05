@@ -210,6 +210,22 @@ PageBase {
                 onSelected: item => GlobalConfig.background.desktopClock.position = item.value
             }
 
+            SliderRow {
+                Layout.fillWidth: true
+                label: qsTr("Horizontal offset")
+                valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
+                value: Config.background.desktopClock.offsetX / 0.2 + 0.5
+                onMoved: v => GlobalConfig.background.desktopClock.offsetX = v * 0.2 - 0.1
+            }
+
+            SliderRow {
+                Layout.fillWidth: true
+                label: qsTr("Vertical offset")
+                valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
+                value: Config.background.desktopClock.offsetY / 0.2 + 0.5
+                onMoved: v => GlobalConfig.background.desktopClock.offsetY = v * 0.2 - 0.1
+            }
+
             ToggleRow {
                 last: true
                 Layout.fillWidth: true
@@ -275,22 +291,6 @@ PageBase {
                 onMoved: v => GlobalConfig.background.desktopLyrics.scale = v
             }
 
-            SliderRow {
-                Layout.fillWidth: true
-                label: qsTr("Horizontal offset")
-                valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
-                value: Config.background.desktopLyrics.offsetX / 0.2 + 0.5
-                onMoved: v => GlobalConfig.background.desktopLyrics.offsetX = v * 0.2 - 0.1
-            }
-
-            SliderRow {
-                Layout.fillWidth: true
-                label: qsTr("Vertical offset")
-                valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
-                value: Config.background.desktopLyrics.offsetY / 0.2 + 0.5
-                onMoved: v => GlobalConfig.background.desktopLyrics.offsetY = v * 0.2 - 0.1
-            }
-
             SelectRow {
                 Layout.fillWidth: true
                 label: qsTr("Position")
@@ -319,6 +319,22 @@ PageBase {
                 }
                 menuItems: root.alignmentItems
                 onSelected: item => GlobalConfig.background.desktopLyrics.alignment = item.value
+            }
+
+            SliderRow {
+                Layout.fillWidth: true
+                label: qsTr("Horizontal offset")
+                valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
+                value: Config.background.desktopLyrics.offsetX / 0.2 + 0.5
+                onMoved: v => GlobalConfig.background.desktopLyrics.offsetX = v * 0.2 - 0.1
+            }
+
+            SliderRow {
+                Layout.fillWidth: true
+                label: qsTr("Vertical offset")
+                valueLabel: Math.round((value * 0.2 - 0.1) * 100) + "%"
+                value: Config.background.desktopLyrics.offsetY / 0.2 + 0.5
+                onMoved: v => GlobalConfig.background.desktopLyrics.offsetY = v * 0.2 - 0.1
             }
 
             ToggleRow {
