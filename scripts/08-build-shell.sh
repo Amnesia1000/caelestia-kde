@@ -188,6 +188,26 @@ cleanup_legacy_fonts() {
     done
 }
 
+# The SF fonts were selectable once, so a config written back then still stores a family
+# that resolves to nothing now. Clearing just those values lands those installs on the
+# "Follow system" font option without touching a family the user still has.
+cleanup_stale_font_families() {
+    local cfg="$HOME/.config/caelestia/shell.json"
+    local updated
+
+    [[ -f "$cfg" ]] || return 0
+    grep -q '"SF Pro"\|"SF Mono"' "$cfg" || return 0
+
+    updated=$(jq '
+        if .appearance.font? then
+            .appearance.font |= walk(if type == "string" and (. == "SF Pro" or . == "SF Mono") then "" else . end)
+        else . end' "$cfg" 2>/dev/null) || return 0
+
+    if printf '%s\n' "$updated" >"$cfg.tmp" && mv "$cfg.tmp" "$cfg"; then
+        ok "Cleared the removed SF font families from shell.json; those fonts now follow the system."
+    fi
+}
+
 install_lockscreen_greeter() {
     local src="$BUNDLE_DIR/src/kde/shells/caelestia.desktop"
     local dest="$HOME/.local/share/plasma/shells/caelestia.desktop"
@@ -629,6 +649,7 @@ record_installed_revision "$BUNDLE_DIR" "$HOME/.config/quickshell/caelestia" || 
 # Outside the deploy guard on purpose: CAELESTIA_SKIP_DEPLOY is about the config files this
 # step deploys, and this is the assets an older install left behind.
 cleanup_legacy_fonts
+cleanup_stale_font_families
 
 if [[ "${CAELESTIA_SKIP_DEPLOY:-0}" == "0" && "${APPLY_LOCKSCREEN:-true}" != "false" ]]; then
     cleanup_legacy_lockscreen

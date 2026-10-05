@@ -18,11 +18,13 @@ PageBase {
     id: root
 
     property var fonts: [
+        { label: qsTr("Follow system"), family: "", mono: false },
         { label: qsTr("Google Sans Flex"), family: "GoogleSansFlex", mono: false },
         { label: qsTr("Rubik"), family: "Rubik", mono: false },
     ]
 
     property var monoFonts: [
+        { label: qsTr("Follow system"), family: "", mono: true },
         { label: qsTr("CaskaydiaCove NF"), family: "CaskaydiaCove NF", mono: true },
         { label: qsTr("JetBrainsMono Nerd Font"), family: "JetBrainsMono Nerd Font", mono: true },
     ]

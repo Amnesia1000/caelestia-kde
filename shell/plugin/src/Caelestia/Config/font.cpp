@@ -18,7 +18,11 @@ QFont FontStyleBase::small() const {
 
 QFont FontStyleBase::buildFont(const FontConfigNode* cfg, const QString& fallbackFamily, qreal scale) {
     QFont font;
-    font.setFamily(cfg->family().isEmpty() ? fallbackFamily : cfg->family());
+    // Both empty: leave the default-constructed family alone so the font follows the
+    // system instead of carrying an empty family string around.
+    const auto family = cfg->family().isEmpty() ? fallbackFamily : cfg->family();
+    if (!family.isEmpty())
+        font.setFamily(family);
     const int scaledSize = static_cast<int>(cfg->size() * scale);
     const int cappedSize = scaledSize > 0 ? scaledSize : 1;
     font.setPointSize(cappedSize);
