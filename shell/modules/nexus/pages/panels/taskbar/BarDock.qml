@@ -47,6 +47,33 @@ PageBase {
                 }
                 return false;
             }
+            // Custom reset: enabled state lives in bar.entries, default is true
+            reset: ({
+                customGet: () => {
+                    const entries = GlobalConfig.bar.entries || [];
+                    for (let i = 0; i < entries.length; i++)
+                        if (entries[i].id === "dock")
+                            return entries[i].enabled;
+                    return false;
+                },
+                customDef: true,
+                customSet: v => {
+                    let newEntries = [...(GlobalConfig.bar.entries || [])];
+                    let found = false;
+                    for (let i = 0; i < newEntries.length; i++) {
+                        if (newEntries[i].id === "dock") {
+                            newEntries[i].enabled = v;
+                            if (!newEntries[i].zone)
+                                newEntries[i].zone = "middle";
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                        newEntries.push({ id: "dock", enabled: v, zone: "middle" });
+                    GlobalConfig.bar.entries = newEntries;
+                }
+            })
             onToggled: {
                 let newEntries = [...GlobalConfig.bar.entries];
                 let found = false;
@@ -72,6 +99,7 @@ PageBase {
             Layout.fillWidth: true
             label: qsTr("Icon size")
             subtext: qsTr("Size of app icons in the dock")
+            reset: ({ node: GlobalConfig.bar.dock, setting: "iconSize" })
             value: Config.bar.dock.iconSize
             from: 20
             to: Math.max(20, Tokens.sizes.bar.innerWidth)
@@ -83,6 +111,7 @@ PageBase {
             Layout.fillWidth: true
             text: qsTr("Recolor icons")
             subtext: qsTr("Recolor application icons using the system theme")
+            reset: ({ node: GlobalConfig.bar.dock, setting: "recolourIcons" })
             checked: Config.bar.dock.recolourIcons
             onToggled: GlobalConfig.bar.dock.recolourIcons = checked
         }
@@ -91,6 +120,7 @@ PageBase {
             Layout.fillWidth: true
             text: qsTr("Show app badges")
             subtext: qsTr("Show the count, progress and urgency an app publishes for its dock icon")
+            reset: ({ node: GlobalConfig.bar.dock, setting: "showBadges" })
             checked: Config.bar.dock.showBadges
             onToggled: GlobalConfig.bar.dock.showBadges = checked
         }
@@ -99,6 +129,7 @@ PageBase {
             Layout.fillWidth: true
             text: qsTr("Filter by current desktop")
             subtext: qsTr("Only show applications and windows belonging to the active virtual desktop")
+            reset: ({ node: GlobalConfig.bar.dock, setting: "currentDesktopOnly" })
             checked: Config.bar.dock.currentDesktopOnly
             onToggled: GlobalConfig.bar.dock.currentDesktopOnly = checked
         }
@@ -117,6 +148,7 @@ PageBase {
             last: true
             text: qsTr("Preview window on desktop")
             subtext: qsTr("Highlight and show the window itself on the workspace while hovering over dock previews")
+            reset: ({ node: GlobalConfig.bar.dock, setting: "previewOnDesktop" })
             checked: Config.bar.dock.previewOnDesktop
             onToggled: GlobalConfig.bar.dock.previewOnDesktop = checked
         }
