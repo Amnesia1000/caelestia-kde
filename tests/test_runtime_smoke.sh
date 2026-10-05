@@ -13,6 +13,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SMOKE="$REPO_ROOT/tests/runtime-smoke.sh"
 BASELINE="$REPO_ROOT/.github/ci-baselines/runtime-smoke.json"
+MARKS="$REPO_ROOT/tests/runtime-smoke-marks.txt"
 
 setup_env() {
     DIR="$(new_tmpdir)"
@@ -45,25 +46,20 @@ PY
     write_full_log
 }
 
-# Every marker the script requires, with the counts it requires.
+# A log that satisfies every requirement, derived from the same declaration the
+# smoke script asserts against - so a new marker does not need a matching edit
+# here for the suite to keep testing the script's own logic.
 write_full_log() {
-    cat >"$DIR/markers.log" <<'LOG'
-Configuration Loaded
-[caelestia] bar-ready
-[caelestia] wallpaper-ready
-[caelestia] shortcuts-ready
-[Preload] Utilities loaded successfully
-[perf][ContextMenuStore] load disk ms=3 entries=12
-[perf][DesktopContextMenu] build model source=config items=4 ms=1
-[caelestia] nexus=created
-[caelestia] nexus=reused
-[caelestia] nexus=destroyed
-LOG
-    local drawer
-    for drawer in launcher sidebar dashboard utilities overview session; do
-        printf '[caelestia] drawer=%s toggled\n' "$drawer" >>"$DIR/markers.log"
-        printf '[caelestia] drawer=%s toggled\n' "$drawer" >>"$DIR/markers.log"
-    done
+    local minimum marker i
+    : >"$DIR/markers.log"
+    while IFS='|' read -r minimum marker; do
+        if [[ -z "$minimum" || "$minimum" == \#* ]]; then
+            continue
+        fi
+        for ((i = 0; i < minimum; i++)); do
+            printf '%s\n' "$marker" >>"$DIR/markers.log"
+        done
+    done <"$MARKS"
 }
 
 # run_smoke <case> <cpu> [script args...]

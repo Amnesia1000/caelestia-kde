@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+marks_file="$script_dir/runtime-smoke-marks.txt"
+
 usage() {
     cat <<'EOF'
 Usage: runtime-smoke.sh --install-root PATH [options]
@@ -121,6 +124,7 @@ config_path="$install_root/etc/xdg/quickshell/caelestia/shell.qml"
 qml_import_path="$install_root/usr/lib/qt6/qml"
 [[ -f "$config_path" ]] || { echo "installed shell not found: $config_path" >&2; exit 2; }
 [[ -d "$qml_import_path" ]] || { echo "installed QML imports not found: $qml_import_path" >&2; exit 2; }
+[[ -f "$marks_file" ]] || { echo "runtime mark declaration not found: $marks_file" >&2; exit 2; }
 
 if [[ -z "$log_dir" ]]; then
     log_dir=$(mktemp -d)
@@ -236,37 +240,23 @@ ipc_try() {
     ipc_call "$@" 2>/dev/null || true
 }
 
-# Readiness markers and how often each one must appear in a run. The IPC
-# sequence below toggles every drawer twice and opens/closes the nexus, so those
-# markers have to show up twice; the rest only have to show up once.
 check_run_marks() {
     local log_file="$1" run="$2"
-    local entry marker minimum count created destroyed
-    for entry in \
-        "1|Configuration Loaded" \
-        "1|[caelestia] bar-ready" \
-        "1|[caelestia] wallpaper-ready" \
-        "1|[caelestia] shortcuts-ready" \
-        "1|[Preload] Utilities loaded successfully" \
-        "1|[perf][ContextMenuStore] load disk" \
-        "1|[perf][DesktopContextMenu] build model" \
-        "1|[caelestia] nexus=created" \
-        "1|[caelestia] nexus=reused" \
-        "1|[caelestia] nexus=destroyed" \
-        "2|[caelestia] drawer=launcher toggled" \
-        "2|[caelestia] drawer=sidebar toggled" \
-        "2|[caelestia] drawer=dashboard toggled" \
-        "2|[caelestia] drawer=utilities toggled" \
-        "2|[caelestia] drawer=overview toggled" \
-        "2|[caelestia] drawer=session toggled"; do
-        minimum="${entry%%|*}"
-        marker="${entry#*|}"
+    local minimum marker count created destroyed
+    while IFS='|' read -r minimum marker; do
+        case "$minimum" in
+            ''|'#'*) continue ;;
+        esac
+        if [[ ! "$minimum" =~ ^[1-9][0-9]*$ || -z "$marker" ]]; then
+            echo "malformed runtime mark declaration: ${minimum}|${marker}" >&2
+            return 1
+        fi
         count=$(grep -Fc -- "$marker" "$log_file" || true)
         if ((count < minimum)); then
             echo "runtime smoke run $run saw ${count} of the ${minimum} required '${marker}'" >&2
             return 1
         fi
-    done
+    done <"$marks_file"
 
     # Everything created has to be destroyed again. Only the balance is
     # asserted: the engine may process the final close later than the last IPC
