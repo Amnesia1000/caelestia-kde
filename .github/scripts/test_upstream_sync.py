@@ -1,6 +1,7 @@
 import importlib.util
 import pathlib
 import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -39,14 +40,18 @@ class UpstreamBoundaryTests(unittest.TestCase):
         git("commit", "-qm", "upstream snapshot")
         git("checkout", "-q", "-B", "main", "HEAD~1")
 
+    def run_tool(self, root: pathlib.Path, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(TOOL_PATH), "--root", str(root), *args],
+            capture_output=True, text=True, check=True,
+        )
+
     def test_report_classifies_real_fixture_repository(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
             self.make_fixture_repo(root)
-            result = subprocess.run(
-                ["python3", str(TOOL_PATH), "--root", str(root), "report", "--full"],
-                capture_output=True, text=True, check=True,
-            )
+            result = self.run_tool(root, "report", "--full")
+
             self.assertIn("adapted.qml", result.stdout)
             self.assertIn("upstream-only.qml", result.stdout)
             self.assertIn("kde-only: 2", result.stdout)
@@ -65,10 +70,10 @@ class UpstreamBoundaryTests(unittest.TestCase):
 
         result = sync_shell.classify_paths(shell, upstream)
 
-        self.assertEqual(result["in_sync"], ["shared.qml"])
-        self.assertEqual(result["diverged"], ["adapted.qml"])
-        self.assertEqual(result["missing"], ["upstream-only.qml"])
-        self.assertEqual(result["kde_only"], ["kde-only.qml"])
+        self.assertEqual(result.in_sync, ["shared.qml"])
+        self.assertEqual(result.diverged, ["adapted.qml"])
+        self.assertEqual(result.missing, ["upstream-only.qml"])
+        self.assertEqual(result.kde_only, ["kde-only.qml"])
 
     def test_classification_does_not_treat_kde_files_as_missing(self) -> None:
         result = sync_shell.classify_paths(
@@ -76,18 +81,32 @@ class UpstreamBoundaryTests(unittest.TestCase):
             {"modules/upstream.qml": "remote"},
         )
 
-        self.assertEqual(result["missing"], ["modules/upstream.qml"])
-        self.assertEqual(result["kde_only"], ["modules/kde.qml"])
+        self.assertEqual(result.missing, ["modules/upstream.qml"])
+        self.assertEqual(result.kde_only, ["modules/kde.qml"])
 
-    def test_bring_command_requires_force_for_existing_files(self) -> None:
-        parser = sync_shell.argparse.ArgumentParser()
-        subparsers = parser.add_subparsers(dest="cmd", required=True)
-        bring = subparsers.add_parser("bring")
-        bring.add_argument("--force", action="store_true")
-        bring.add_argument("paths", nargs="+")
+    def test_bring_refuses_to_overwrite_an_existing_file_without_force(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            self.make_fixture_repo(root)
+            target = root / "shell" / "adapted.qml"
 
-        self.assertFalse(parser.parse_args(["bring", "modules/example.qml"]).force)
-        self.assertTrue(parser.parse_args(["bring", "--force", "modules/example.qml"]).force)
+            result = self.run_tool(root, "bring", "adapted.qml")
+            self.assertIn("already exists in shell/", result.stdout)
+            self.assertEqual("kde-adaptation", target.read_text(encoding="utf-8"))
+
+            result = self.run_tool(root, "bring", "--force", "adapted.qml")
+            self.assertIn("overwrite adapted.qml", result.stdout)
+            self.assertEqual("upstream-version", target.read_text(encoding="utf-8"))
+
+    def test_bring_reports_paths_absent_from_upstream(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            self.make_fixture_repo(root)
+
+            result = self.run_tool(root, "bring", "kde-only.qml")
+
+            self.assertIn("not present in upstream/main", result.stdout)
+            self.assertEqual("port-only", (root / "shell" / "kde-only.qml").read_text(encoding="utf-8"))
 
 
 if __name__ == "__main__":
