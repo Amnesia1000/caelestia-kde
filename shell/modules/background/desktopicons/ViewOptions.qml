@@ -98,7 +98,7 @@ Item {
                             // Shown as chosen only while it keeps applying, under auto-arrange.
                             internalChecked: DesktopLayout.autoArrange && DesktopLayout.sortKey === modelData.key
                             text: modelData.label
-                            onClicked: root.controller.sortBy(modelData.key)
+                            onClicked: root.controller?.sortBy(modelData.key)
                         }
                     }
                 }
@@ -126,7 +126,23 @@ Item {
 
                     StyledSwitch {
                         checked: DesktopLayout.autoArrange
-                        onToggled: root.controller.setAutoArrange(checked)
+                        onToggled: root.controller?.setAutoArrange(checked)
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Tokens.spacing.medium
+
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: qsTr("Rounded icon corners")
+                        font: Tokens.font.body.medium
+                    }
+
+                    StyledSwitch {
+                        checked: DesktopLayout.roundIcons
+                        onToggled: DesktopLayout.setRoundIcons(checked)
                     }
                 }
 

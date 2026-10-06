@@ -18,8 +18,8 @@ Controls.Menu {
     property string screenName: ""
     property var itemPool: ({})
     property var entryByKey: ({})
-    readonly property bool iconsEnabled: ContextMenuStore.iconsShownOn(screenName)
-    readonly property bool iconsShown: GlobalConfig.forScreen(screenName).background.wallpaperEnabled && GlobalConfig.forScreen(screenName).background.desktopIconsEnabled
+    readonly property bool iconsEnabled: screenName ? ContextMenuStore.iconsShownOn(screenName) : GlobalConfig.background.desktopIconsEnabled
+    readonly property bool iconsShown: (screenName ? GlobalConfig.forScreen(screenName) : GlobalConfig).background.wallpaperEnabled && (screenName ? GlobalConfig.forScreen(screenName) : GlobalConfig).background.desktopIconsEnabled
 
     function executeEntryByKey(key) {
         let entry = root.entryByKey[key];
@@ -31,6 +31,10 @@ Controls.Menu {
         // or spawns a process waits for the menu to finish closing.
         if (entry.action === "Paste") {
             DesktopLayout.pasteRequested(root.screenName, root.attachTo.x, root.attachTo.y);
+            return;
+        }
+        if (entry.action === "AddWidget") {
+            DesktopLayout.addWidgetRequested(root.screenName, root.attachTo.x, root.attachTo.y);
             return;
         }
         if (entry.action === "ArrangeIcons") {
@@ -99,13 +103,17 @@ Controls.Menu {
                 item.text = entry.label;
                 item.icon = entry.icon || "content_paste";
                 item.visible = Qt.binding(() => root.iconsShown && DesktopLayout.clipboardHasFiles);
+            } else if (entry.action === "AddWidget") {
+                item.text = entry.label;
+                item.icon = entry.icon || "widgets";
+                item.visible = Qt.binding(() => root.iconsShown);
             } else if (entry.action === "ArrangeIcons") {
                 item.text = entry.label;
                 item.icon = entry.icon || "sort";
                 item.visible = Qt.binding(() => root.iconsShown);
             } else {
                 item.text = entry.label;
-                item.icon = entry.icon || "application-x-executable";
+                item.icon = entry.icon || "widgets";
                 item.visible = true;
             }
             newArr.push(item);

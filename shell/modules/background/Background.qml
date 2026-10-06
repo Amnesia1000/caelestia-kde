@@ -90,6 +90,7 @@ Variants {
             id: desktopIcons
 
             screenData: win.modelData
+            wallpaper: behindClock
             z: 3
         }
         Loader {
