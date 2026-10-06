@@ -76,7 +76,7 @@ PageBase {
         NavRow {
             icon: "graphic_eq"
             label: qsTr("Now playing")
-            status: qsTr("Spotify widget, visualiser, volume")
+            status: qsTr("Media widget, visualiser, volume")
             onClicked: root.nState.openSubPage(19)
         }
 

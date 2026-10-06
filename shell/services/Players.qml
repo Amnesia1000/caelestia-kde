@@ -15,7 +15,7 @@ Singleton {
     readonly property MprisPlayer active: props.manualActive ?? list.find(p => getIdentity(p) === GlobalConfig.services.defaultPlayer) ?? list[0] ?? null
     property alias manualActive: props.manualActive
 
-    readonly property list<string> appVolumePlayers: ["Spotify", "Fastpotify"]
+    readonly property list<string> appVolumePlayers: ["Spotify", "Fastpotify", "YouTube Music"]
 
     property string lastNowPlayingKey: ""
 

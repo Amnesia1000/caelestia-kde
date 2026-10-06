@@ -27,6 +27,7 @@ ColumnLayout {
     property bool _isSidebarOpen: false
 
     readonly property MprisPlayer player: Players.active
+    readonly property string sourceName: Players.getIdentity(root.player)
     readonly property bool hasUnknownLength: (player?.length ?? 0) > 2147483647
 
     readonly property PwNode playerStream: Audio.streams.find(s => {
@@ -43,7 +44,7 @@ ColumnLayout {
 
     readonly property real currentVolume: (Players.supportsAppVolume(root.player) && root.player?.volume !== undefined && root.player?.volume !== null) ? root.player.volume : (root.playerStream ? Audio.getStreamVolume(root.playerStream) : Audio.volume)
 
-    readonly property bool isHorizontalVolume: Config.bar.spotify.horizontalVolume
+    readonly property bool isHorizontalVolume: Config.bar.media.horizontalVolume
 
     function setVolumeLevel(v: real): void {
         const clamped = Math.max(0, Math.min(1, v));
@@ -79,6 +80,20 @@ ColumnLayout {
         triggeredOnStart: true
         repeat: true
         onTriggered: root.player?.positionChanged()
+    }
+
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Tokens.spacing.small
+        visible: root.sourceName !== ""
+
+        StyledText {
+            Layout.fillWidth: true
+            text: root.sourceName
+            font: Tokens.font.label.medium
+            color: Colours.palette.m3onSurfaceVariant
+            elide: Text.ElideRight
+        }
     }
 
     RowLayout {

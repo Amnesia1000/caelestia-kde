@@ -138,7 +138,7 @@ QtObject {
                     TabSwitcherPanel {}
                 }
                 Component {
-                    BarSpotify {}
+                    BarMedia {}
                 }
             }
         },

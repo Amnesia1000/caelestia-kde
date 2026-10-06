@@ -17,7 +17,7 @@ StyledRect {
     readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
     readonly property MprisPlayer player: Players.active
 
-    readonly property int maxLen: Config.bar.spotify.maxTitleLength
+    readonly property int maxLen: Config.bar.media.maxTitleLength
     readonly property string rawTitle: player?.trackTitle || qsTr("Nothing playing")
     readonly property string trackTitle: rawTitle.length > maxLen ? rawTitle.substring(0, maxLen) + "…" : rawTitle
     readonly property bool isPlaying: player?.isPlaying ?? false
@@ -26,14 +26,14 @@ StyledRect {
     implicitWidth: isHorizontal ? contentLayout.implicitWidth + Tokens.padding.medium * 2 : Tokens.sizes.bar.innerWidth
     implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : contentLayout.implicitHeight + Tokens.padding.medium * 2
 
-    color: Config.bar.spotify.background ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
+    color: Config.bar.media.background ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
     radius: Tokens.rounding.full
 
     // A bar entry with auto-hide collapses instead of leaving an empty pill.
-    visible: enabled && (!Config.bar.spotify.autoHide || available)
+    visible: enabled && (!Config.bar.media.autoHide || available)
 
     ServiceRef {
-        service: Config.bar.spotify.showVisualiser ? Audio.cava : null
+        service: Config.bar.media.showVisualiser ? Audio.cava : null
     }
 
     GridLayout {
@@ -49,7 +49,7 @@ StyledRect {
             id: textContainer
 
             Layout.alignment: Qt.AlignCenter
-            Layout.row: root.isHorizontal ? 0 : (Config.bar.spotify.inverted ? 1 : 0)
+            Layout.row: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 1 : 0)
             Layout.column: 0
 
             implicitWidth: root.isHorizontal ? titleText.implicitWidth : titleText.implicitHeight
@@ -65,7 +65,7 @@ StyledRect {
                 elide: Text.ElideRight
                 animate: true
 
-                rotation: root.isHorizontal ? 0 : (Config.bar.spotify.inverted ? 270 : 90)
+                rotation: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 270 : 90)
             }
         }
 
@@ -73,10 +73,10 @@ StyledRect {
             id: equalizerContainer
 
             Layout.alignment: Qt.AlignCenter
-            Layout.row: root.isHorizontal ? 0 : (Config.bar.spotify.inverted ? 0 : 1)
+            Layout.row: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 0 : 1)
             Layout.column: root.isHorizontal ? 1 : 0
 
-            visible: Config.bar.spotify.showVisualiser
+            visible: Config.bar.media.showVisualiser
             implicitWidth: root.isHorizontal ? (visible ? 23 : 0) : 20
             implicitHeight: root.isHorizontal ? 20 : (visible ? 23 : 0)
 
@@ -85,7 +85,7 @@ StyledRect {
                 width: 23
                 height: 20
 
-                rotation: root.isHorizontal ? 0 : (Config.bar.spotify.inverted ? 270 : 90)
+                rotation: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 270 : 90)
 
                 Repeater {
                     model: 5

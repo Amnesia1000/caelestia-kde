@@ -7,7 +7,7 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    title: qsTr("Spotify")
+    title: qsTr("Media")
     isSubPage: true
 
     ColumnLayout {
@@ -25,9 +25,9 @@ PageBase {
             first: true
             text: qsTr("Background")
             subtext: qsTr("Render a solid background behind the widget")
-            checked: Config.bar.spotify.background
+            checked: Config.bar.media.background
             onToggled: {
-                GlobalConfig.bar.spotify.background = checked;
+                GlobalConfig.bar.media.background = checked;
                 GlobalConfig.save();
             }
         }
@@ -35,9 +35,9 @@ PageBase {
         ToggleRow {
             text: qsTr("Show visualiser")
             subtext: qsTr("Display animated frequency bars next to the title")
-            checked: Config.bar.spotify.showVisualiser
+            checked: Config.bar.media.showVisualiser
             onToggled: {
-                GlobalConfig.bar.spotify.showVisualiser = checked;
+                GlobalConfig.bar.media.showVisualiser = checked;
                 GlobalConfig.save();
             }
         }
@@ -45,9 +45,9 @@ PageBase {
         ToggleRow {
             text: qsTr("Inverted text direction")
             subtext: qsTr("Rotate the title the opposite way when the bar is vertical")
-            checked: Config.bar.spotify.inverted
+            checked: Config.bar.media.inverted
             onToggled: {
-                GlobalConfig.bar.spotify.inverted = checked;
+                GlobalConfig.bar.media.inverted = checked;
                 GlobalConfig.save();
             }
         }
@@ -55,9 +55,9 @@ PageBase {
         ToggleRow {
             text: qsTr("Auto-hide")
             subtext: qsTr("Hide the widget when no media source is available")
-            checked: Config.bar.spotify.autoHide
+            checked: Config.bar.media.autoHide
             onToggled: {
-                GlobalConfig.bar.spotify.autoHide = checked;
+                GlobalConfig.bar.media.autoHide = checked;
                 GlobalConfig.save();
             }
         }
@@ -66,9 +66,9 @@ PageBase {
             last: true
             text: qsTr("Horizontal volume slider")
             subtext: qsTr("Place the volume slider below the controls in the popout")
-            checked: Config.bar.spotify.horizontalVolume
+            checked: Config.bar.media.horizontalVolume
             onToggled: {
-                GlobalConfig.bar.spotify.horizontalVolume = checked;
+                GlobalConfig.bar.media.horizontalVolume = checked;
                 GlobalConfig.save();
             }
         }
@@ -82,12 +82,12 @@ PageBase {
             last: true
             label: qsTr("Max title length")
             subtext: qsTr("Character count before the track title is cut off")
-            value: Config.bar.spotify.maxTitleLength
+            value: Config.bar.media.maxTitleLength
             from: 5
             to: 100
             stepSize: 1
             onMoved: v => {
-                GlobalConfig.bar.spotify.maxTitleLength = Math.round(v);
+                GlobalConfig.bar.media.maxTitleLength = Math.round(v);
                 GlobalConfig.save();
             }
         }

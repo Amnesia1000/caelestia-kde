@@ -62,7 +62,7 @@ PageBase {
                     ToolTip.text: qsTr("Reset all to 0")
                     ToolTip.visible: hovered
                     onClicked: {
-                        const keys = ["greeter", "audio", "battery", "bluetooth", "clock", "dock", "github", "spotify", "lockStatus", "network", "notifications", "peripheralBattery", "trayMenu", "wirelessPassword"];
+                        const keys = ["greeter", "audio", "battery", "bluetooth", "clock", "dock", "github", "media", "lockStatus", "network", "notifications", "peripheralBattery", "trayMenu", "wirelessPassword"];
                         for (let k of keys) {
                             GlobalConfig.bar.previewScales[k] = 0.0;
                             GlobalConfig.bar.previewFontScales[k] = 0.0;
@@ -325,15 +325,15 @@ PageBase {
                 first: false
                 last: true
                 label: qsTr("Now playing")
-                resetKey: "spotify"
+                resetKey: "media"
                 
-                scaleValue: GlobalConfig.bar.previewScales.spotify
+                scaleValue: GlobalConfig.bar.previewScales.media
                 scaleFrom: -1.0; scaleTo: 1.0; scaleStepSize: 0.05
-                onScaleMoved: v => GlobalConfig.bar.previewScales.spotify = v
-                
-                fontValue: GlobalConfig.bar.previewFontScales.spotify
+                onScaleMoved: v => GlobalConfig.bar.previewScales.media = v
+
+                fontValue: GlobalConfig.bar.previewFontScales.media
                 fontFrom: -1.0; fontTo: 1.0; fontStepSize: 0.05
-                onFontMoved: v => GlobalConfig.bar.previewFontScales.spotify = v
+                onFontMoved: v => GlobalConfig.bar.previewFontScales.media = v
             }
         }
     }
