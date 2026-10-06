@@ -201,6 +201,7 @@ Singleton {
         readonly property bool writesHardwareDirectly: isAppleDisplay || isDdc
         property real brightness: 1.0
         property real dimming: 1.0
+        readonly property real effectiveBrightness: brightness * dimming
         property real queuedBrightness: NaN
         property bool verifying: false
 

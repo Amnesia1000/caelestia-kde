@@ -33,7 +33,7 @@ Item {
         muted = Audio.muted;
         sourceVolume = Audio.sourceVolume;
         sourceMuted = Audio.sourceMuted;
-        brightness = root.monitor?.brightness ?? 0;
+        brightness = root.monitor?.effectiveBrightness ?? 0;
     }
     visible: offsetScale < 1
     anchors.leftMargin: Config.bar.position === "right" ? (-implicitWidth - 5 - sidebarOffset) * offsetScale : 0
@@ -68,7 +68,11 @@ Item {
     Connections {
         function onBrightnessChanged(): void {
             root.show();
-            root.brightness = root.monitor?.brightness ?? 0;
+            root.brightness = root.monitor?.effectiveBrightness ?? 0;
+        }
+
+        function onDimmingChanged(): void {
+            root.brightness = root.monitor?.effectiveBrightness ?? 0;
         }
 
         target: root.monitor
