@@ -36,6 +36,13 @@ void KdeOutputDevice::kde_output_device_v2_brightness(uint32_t brightness) {
     }
 }
 
+void KdeOutputDevice::kde_output_device_v2_dimming(uint32_t multiplier) {
+    if (m_dimming != multiplier) {
+        m_dimming = multiplier;
+        emit dimmingChanged();
+    }
+}
+
 void KdeOutputDevice::kde_output_device_v2_capabilities(uint32_t flags) {
     bool has = (flags & capability_brightness);
     if (m_hasBrightness != has) {
@@ -158,6 +165,43 @@ void BrightnessWatcher::setBrightness(const QString& outputName, qreal value) {
     cfg.destroy();
 }
 
+qreal BrightnessWatcher::dimming(const QString& outputName) const {
+    if (m_devices.contains(outputName)) {
+        auto* dev = m_devices[outputName];
+        if (dev->hasBrightness()) {
+            return dev->dimming() / 10000.0;
+        }
+    }
+    return -1.0;
+}
+
+void BrightnessWatcher::clearDimming(const QString& outputName) {
+    if (!m_management->isInitialized()) {
+        qCWarning(lcBrightnessWatcher) << "Cannot clear dimming: kde_output_management_v2 is not available.";
+        return;
+    }
+
+    if (!m_devices.contains(outputName)) {
+        qCWarning(lcBrightnessWatcher) << "Cannot clear dimming: unknown output" << outputName;
+        return;
+    }
+
+    auto* dev = m_devices[outputName];
+    if (!dev->hasBrightness()) {
+        qCWarning(lcBrightnessWatcher) << "Cannot clear dimming: output" << outputName << "does not support brightness";
+        return;
+    }
+
+    auto* config = m_management->create_configuration();
+    if (!config)
+        return;
+
+    QtWayland::kde_output_configuration_v2 cfg(config);
+    cfg.set_dimming(dev->object(), 10000);
+    cfg.apply();
+    cfg.destroy();
+}
+
 void BrightnessWatcher::onDeviceAdded(KdeOutputDevice* device) {
     connect(device, &KdeOutputDevice::nameChanged, this, [this, device]() {
         if (!device->name().isEmpty()) {
@@ -165,6 +209,10 @@ void BrightnessWatcher::onDeviceAdded(KdeOutputDevice* device) {
 
             connect(device, &KdeOutputDevice::brightnessChanged, this, [this, device]() {
                 emit brightnessChanged(device->name(), device->brightness() / 10000.0);
+            });
+
+            connect(device, &KdeOutputDevice::dimmingChanged, this, [this, device]() {
+                emit dimmingChanged(device->name(), device->dimming() / 10000.0);
             });
         }
     });

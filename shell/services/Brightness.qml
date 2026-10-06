@@ -105,6 +105,13 @@ Singleton {
                 monitor.brightness = value;
             }
         }
+
+        function onDimmingChanged(outputName: string, value: real): void {
+            const monitor = root.getMonitor(outputName);
+            if (monitor && monitor.dimming !== value) {
+                monitor.dimming = value;
+            }
+        }
     }
 
     // qmllint disable unresolved-type
@@ -130,6 +137,14 @@ Singleton {
 
         function getFor(query: string): real {
             return root.getMonitor(query)?.brightness ?? -1;
+        }
+
+        function getDimming(): real {
+            return getDimmingFor("active");
+        }
+
+        function getDimmingFor(query: string): real {
+            return root.getMonitor(query)?.dimming ?? -1;
         }
 
         function set(value: string): string {
@@ -185,6 +200,7 @@ Singleton {
         readonly property bool isAppleDisplay: root.appleDisplayPresent && modelData.model.startsWith("StudioDisplay")
         readonly property bool writesHardwareDirectly: isAppleDisplay || isDdc
         property real brightness: 1.0
+        property real dimming: 1.0
         property real queuedBrightness: NaN
         property bool verifying: false
 
@@ -254,6 +270,13 @@ Singleton {
         function setBrightness(value: real): void {
             value = Math.max(0, Math.min(1, value));
             const rounded = Math.round(value * 100);
+
+            if (dimming >= 0 && dimming < 1) {
+                BrightnessWatcher.setBrightness(modelData.name, value);
+                BrightnessWatcher.clearDimming(modelData.name);
+                dimming = 1;
+            }
+
             if (Math.round(brightness * 100) === rounded) {
                 syncKwinRecord(rounded / 100);
 
@@ -280,6 +303,10 @@ Singleton {
         }
 
         function initBrightness(): void {
+            const dim = BrightnessWatcher.dimming(modelData.name);
+            if (dim >= 0.0)
+                monitor.dimming = dim;
+
             if (isAppleDisplay)
                 readProc.command = ["asdbctl", "get"];
             else if (isDdc)

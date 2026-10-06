@@ -27,6 +27,8 @@ public:
 
     uint32_t brightness() const { return m_brightness; }
 
+    uint32_t dimming() const { return m_dimming; }
+
     bool hasBrightness() const { return m_hasBrightness; }
 
     void notifyRemoved();
@@ -34,17 +36,20 @@ public:
 signals:
     void nameChanged();
     void brightnessChanged();
+    void dimmingChanged();
     void removed();
 
 protected:
     void kde_output_device_v2_name(const QString& name) override;
     void kde_output_device_v2_brightness(uint32_t brightness) override;
+    void kde_output_device_v2_dimming(uint32_t multiplier) override;
     void kde_output_device_v2_capabilities(uint32_t flags) override;
     void kde_output_device_v2_removed() override;
 
 private:
     QString m_name;
     uint32_t m_brightness = 0;
+    uint32_t m_dimming = 10000;
     bool m_hasBrightness = false;
 };
 
@@ -88,9 +93,12 @@ public:
 
     Q_INVOKABLE qreal brightness(const QString& outputName) const;
     Q_INVOKABLE void setBrightness(const QString& outputName, qreal value);
+    Q_INVOKABLE qreal dimming(const QString& outputName) const;
+    Q_INVOKABLE void clearDimming(const QString& outputName);
 
 signals:
     void brightnessChanged(const QString& outputName, qreal value);
+    void dimmingChanged(const QString& outputName, qreal value);
 
 private slots:
     void onDeviceAdded(KdeOutputDevice* device);
