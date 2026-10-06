@@ -62,7 +62,7 @@ PageBase {
                     ToolTip.text: qsTr("Reset all to 0")
                     ToolTip.visible: hovered
                     onClicked: {
-                        const keys = ["greeter", "audio", "battery", "bluetooth", "clock", "dock", "github", "lockStatus", "network", "notifications", "peripheralBattery", "trayMenu", "wirelessPassword"];
+                        const keys = ["greeter", "audio", "battery", "bluetooth", "clock", "dock", "github", "spotify", "lockStatus", "network", "notifications", "peripheralBattery", "trayMenu", "wirelessPassword"];
                         for (let k of keys) {
                             GlobalConfig.bar.previewScales[k] = 0.0;
                             GlobalConfig.bar.previewFontScales[k] = 0.0;
@@ -309,7 +309,7 @@ PageBase {
             }
             DoubleStepperRow {
                 first: false
-                last: true
+                last: false
                 label: qsTr("Wireless password")
                 resetKey: "wirelessPassword"
                 
@@ -320,6 +320,20 @@ PageBase {
                 fontValue: GlobalConfig.bar.previewFontScales.wirelessPassword
                 fontFrom: -1.0; fontTo: 1.0; fontStepSize: 0.05
                 onFontMoved: v => GlobalConfig.bar.previewFontScales.wirelessPassword = v
+            }
+            DoubleStepperRow {
+                first: false
+                last: true
+                label: qsTr("Now playing")
+                resetKey: "spotify"
+                
+                scaleValue: GlobalConfig.bar.previewScales.spotify
+                scaleFrom: -1.0; scaleTo: 1.0; scaleStepSize: 0.05
+                onScaleMoved: v => GlobalConfig.bar.previewScales.spotify = v
+                
+                fontValue: GlobalConfig.bar.previewFontScales.spotify
+                fontFrom: -1.0; fontTo: 1.0; fontStepSize: 0.05
+                onFontMoved: v => GlobalConfig.bar.previewFontScales.spotify = v
             }
         }
     }

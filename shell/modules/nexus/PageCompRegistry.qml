@@ -137,6 +137,9 @@ QtObject {
                 Component {
                     TabSwitcherPanel {}
                 }
+                Component {
+                    BarSpotify {}
+                }
             }
         },
         Component {

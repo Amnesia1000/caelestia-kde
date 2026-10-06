@@ -163,6 +163,13 @@ Item {
         }
 
         Popout {
+            name: "spotify"
+            sourceComponent: Spotify {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             name: "updateIndicator"
             sourceComponent: Updates {
                 popouts: root.popouts
