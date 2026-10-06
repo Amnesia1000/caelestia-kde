@@ -19,6 +19,7 @@ Controls.Menu {
     property var itemPool: ({})
     property var entryByKey: ({})
     readonly property bool iconsEnabled: ContextMenuStore.iconsShownOn(screenName)
+    readonly property bool iconsShown: GlobalConfig.forScreen(screenName).background.wallpaperEnabled && GlobalConfig.forScreen(screenName).background.desktopIconsEnabled
 
     function executeEntryByKey(key) {
         let entry = root.entryByKey[key];
@@ -28,6 +29,14 @@ Controls.Menu {
 
         // In-shell state changes run right away; anything that opens a window
         // or spawns a process waits for the menu to finish closing.
+        if (entry.action === "Paste") {
+            DesktopLayout.pasteRequested(root.screenName, root.attachTo.x, root.attachTo.y);
+            return;
+        }
+        if (entry.action === "ArrangeIcons") {
+            DesktopLayout.viewOptionsRequested(root.screenName, root.attachTo.x, root.attachTo.y);
+            return;
+        }
         if (entry.action === "ToggleDesktopIcons") {
             ContextMenuStore.toggleIcons(root.screenName);
             return;
@@ -85,9 +94,19 @@ Controls.Menu {
             if (entry.action === "ToggleDesktopIcons") {
                 item.text = Qt.binding(() => root.iconsEnabled ? qsTr("Hide Desktop Icons") : qsTr("Show Desktop Icons"));
                 item.icon = Qt.binding(() => root.iconsEnabled ? "visibility_off" : "visibility");
+                item.visible = true;
+            } else if (entry.action === "Paste") {
+                item.text = entry.label;
+                item.icon = entry.icon || "content_paste";
+                item.visible = Qt.binding(() => root.iconsShown && DesktopLayout.clipboardHasFiles);
+            } else if (entry.action === "ArrangeIcons") {
+                item.text = entry.label;
+                item.icon = entry.icon || "sort";
+                item.visible = Qt.binding(() => root.iconsShown);
             } else {
                 item.text = entry.label;
                 item.icon = entry.icon || "application-x-executable";
+                item.visible = true;
             }
             newArr.push(item);
         }
@@ -134,8 +153,10 @@ Controls.Menu {
     onRightClickedAt: (x, y) => ContextMenuStore.openDesktopContextMenu(x, y, root.screenName)
 
     onExpandedChanged: {
-        if (expanded)
+        if (expanded) {
+            DesktopLayout.refreshClipboard();
             refresh();
+        }
     }
 
     Component.onCompleted: reloadMenu(true)
