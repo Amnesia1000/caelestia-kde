@@ -46,9 +46,10 @@ ColumnLayout {
 
     Item {
         Layout.fillWidth: true
-        Layout.preferredHeight: 150
+        Layout.preferredHeight: smallWeather.implicitHeight
 
         SmallWeather {
+            id: smallWeather
         }
     }
 

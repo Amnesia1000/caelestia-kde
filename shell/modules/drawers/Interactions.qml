@@ -162,7 +162,7 @@ CustomMouseArea {
             if (Config.utilities.showOnHover && !utilitiesShortcutActive)
                 visibilities.utilities = false;
 
-            if (!popoutHideTimer.running)
+            if (Visibilities.openDialogs === 0 && !popoutHideTimer.running)
                 popoutHideTimer.start();
 
             if (Config.bar.showOnHover)
@@ -308,7 +308,7 @@ CustomMouseArea {
         } else {
             bar.resetHover();
             if ((!popouts.currentName.startsWith("traymenu") || (Config.bar.popouts.tray && ((popouts.current as StackView)?.depth ?? 0) <= 1)) && !inLeftPanel(panels.popoutsWrapper, x, y)) {
-                if (!popoutHideTimer.running) popoutHideTimer.start();
+                if (Visibilities.openDialogs === 0 && !popoutHideTimer.running) popoutHideTimer.start();
             } else {
                 popoutHideTimer.stop();
             }
@@ -378,7 +378,7 @@ CustomMouseArea {
 
         interval: 150
         onTriggered: {
-            if (!popouts.currentName.startsWith("traymenu") || ((popouts.current as StackView)?.depth ?? 0) <= 1) {
+            if (Visibilities.openDialogs === 0 && (!popouts.currentName.startsWith("traymenu") || ((popouts.current as StackView)?.depth ?? 0) <= 1)) {
                 popouts.hasCurrent = false;
                 bar.closeTray();
             }

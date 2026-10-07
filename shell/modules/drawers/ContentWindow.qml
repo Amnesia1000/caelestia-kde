@@ -506,7 +506,7 @@ StyledWindow {
             topRightRadius: GlobalConfig.appearance.islands ? radius : ((bar.position === "bottom" && connectedToSidebar) ? 0 : radius)
             y: {
                 const baseY = panels.popoutsWrapper.y + panels.popouts.y + panels.topMargin;
-                if (bar.position === "top")
+                if (bar.position === "top" || panels.popouts.fromTopPanel)
                     return baseY - panels.popouts.implicitHeight * extraShift;
                 if (bar.position === "bottom" && connectedToSidebar)
                     return baseY - Tokens.spacing.extraLarge - 10;

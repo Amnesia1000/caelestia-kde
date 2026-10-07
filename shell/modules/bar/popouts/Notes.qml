@@ -261,6 +261,10 @@ ColumnLayout {
                             Layout.fillWidth: true
                             elide: Text.ElideRight
                             maximumLineCount: 1
+                            visible: {
+                                const t = noteItem.modelData.type;
+                                return !t || t === "text";
+                            }
                             text: noteItem.modelData.body || qsTr("No additional text")
                             font: Tokens.font.body.small
                             opacity: 0.7
