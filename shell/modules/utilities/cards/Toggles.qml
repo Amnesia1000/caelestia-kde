@@ -107,6 +107,7 @@ StyledRect {
         case "hotspot": return "wifi_tethering";
         case "dnd": return "notifications_off";
         case "vpn": return "vpn_key";
+        case "quickShare": return "near_me";
         case "badapple": return "nutrition";
         default: return "toggle_on";
         }
@@ -524,6 +525,14 @@ StyledRect {
                         isToggle: VPN.status.state !== "needs-auth" && VPN.status.state !== "error"
                         inactiveOnColour: Colours.palette.m3onSurfaceVariant
                         onClicked: VPN.toggle()
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "quickShare"
+                    delegate: Toggle {
+                        icon: "near_me"
+                        checked: QuickShare.isEnabled
+                        onClicked: QuickShare.toggle()
                     }
                 }
                 DelegateChoice {
