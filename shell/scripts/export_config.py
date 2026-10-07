@@ -3,28 +3,20 @@
 
 import json
 import os
-import re
 import sys
+
+errors = []
 
 
 def load_json(path, default):
+    if not os.path.exists(path):
+        return default
     try:
         with open(path) as f:
             return json.load(f)
-    except Exception:
+    except Exception as e:
+        errors.append(f"{path}: {e}")
         return default
-
-
-def load_text(path):
-    try:
-        with open(path) as f:
-            content = f.read()
-        try:
-            return json.loads(content)
-        except Exception:
-            return content
-    except Exception:
-        return None
 
 
 def scalar(v):
@@ -34,9 +26,9 @@ def scalar(v):
         return "true" if v else "false"
     if isinstance(v, (int, float)):
         return str(v)
+    # All strings are quoted so a reload never coerces them
+    # ("1.0" stays a string, "007" keeps its zeros, "no" is not False).
     t = str(v)
-    if t != "" and re.match(r"^[A-Za-z0-9_.\-]+$", t) and t not in ("null", "true", "false"):
-        return t
     return '"' + t.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
 
 
@@ -50,11 +42,11 @@ def dump(v, ind):
             if isinstance(item, (dict, list)):
                 nested = dump(item, ind + 1)
                 if nested in ("[]\n", "{}\n"):
-                    out += pad + str(k) + ": " + nested
+                    out += pad + scalar(k) + ": " + nested
                 else:
-                    out += pad + str(k) + ":\n" + nested
+                    out += pad + scalar(k) + ":\n" + nested
             else:
-                out += pad + str(k) + ": " + scalar(item) + "\n"
+                out += pad + scalar(k) + ": " + scalar(item) + "\n"
         return out
     if isinstance(v, list):
         if not v:
@@ -72,29 +64,28 @@ def dump(v, ind):
 def main():
     config_dir, state_dir, plugins_json = sys.argv[1:4]
     out = {}
-    out["shell"] = load_json(os.path.join(config_dir, "caelestia", "shell.json"), {})
-    out["keybinds"] = load_json(os.path.join(config_dir, "caelestia", "keybinds.json"), {})
-    out["cli"] = load_json(os.path.join(config_dir, "caelestia", "cli.json"), {})
-    out["notes"] = load_json(os.path.join(state_dir, "caelestia", "notes_tab.json"), [])
+    out["shell"] = load_json(os.path.join(config_dir, "shell.json"), {})
+    out["keybinds"] = load_json(os.path.join(config_dir, "keybinds.json"), {})
+    out["cli"] = load_json(os.path.join(config_dir, "cli.json"), {})
+    out["notes"] = load_json(os.path.join(state_dir, "notes_tab.json"), [])
     monitors = {}
-    mon_dir = os.path.join(config_dir, "caelestia", "monitors")
-    try:
+    mon_dir = os.path.join(config_dir, "monitors")
+    if os.path.isdir(mon_dir):
         for name in sorted(os.listdir(mon_dir)):
-            entry = os.path.join(mon_dir, name)
-            if os.path.isdir(entry):
-                v = load_text(os.path.join(entry, "shell.json"))
-            else:
-                v = load_text(entry)
+            v = load_json(os.path.join(mon_dir, name, "shell.json"), None)
             if v is not None:
                 monitors[name] = v
-    except Exception:
-        pass
     out["monitors"] = monitors
     try:
         out["plugins"] = json.loads(plugins_json)
-    except Exception:
+    except Exception as e:
+        errors.append(f"plugins: {e}")
         out["plugins"] = []
-    with open(os.path.join(config_dir, "caelestia", "shell.yaml"), "w") as f:
+    if errors:
+        for e in errors:
+            print(f"export_config: {e}", file=sys.stderr)
+        sys.exit(1)
+    with open(os.path.join(config_dir, "shell.yaml"), "w") as f:
         f.write(dump(out, 0))
     print("DONE")
 

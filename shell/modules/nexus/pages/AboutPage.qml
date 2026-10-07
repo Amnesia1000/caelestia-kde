@@ -20,14 +20,6 @@ PageBase {
     property string cliVersion
     property string exportStatus: qsTr("Save shell.json as YAML")
 
-    function configDir(): string {
-        return Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config");
-    }
-
-    function stateDir(): string {
-        return Quickshell.env("XDG_STATE_HOME") || (Quickshell.env("HOME") + "/.local/state");
-    }
-
     function exportYaml(): void {
         const plugins = [];
         for (let i = 0; i < CaelestiaApi.plugins.available.count; i++) {
@@ -65,21 +57,9 @@ PageBase {
 
             property string pluginsJson: "[]"
 
-            command: ["python3", Quickshell.shellPath("scripts/export_config.py"), root.configDir(), root.stateDir(), pluginsJson]
-            stdout: StdioCollector {
-                onStreamFinished: {
-                    root.exportStatus = qsTr("Saved to shell.yaml");
-                }
-            }
-            stderr: StdioCollector {
-                onStreamFinished: {
-                    if (text.trim() !== "")
-                        root.exportStatus = qsTr("Export failed");
-                }
-            }
+            command: ["python3", Quickshell.shellPath("scripts/export_config.py"), Paths.config, Paths.state, pluginsJson]
             onExited: code => {
-                if (code !== 0)
-                    root.exportStatus = qsTr("Export failed");
+                root.exportStatus = code === 0 ? qsTr("Saved to shell.yaml") : qsTr("Export failed");
             }
         }
 
