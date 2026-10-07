@@ -70,6 +70,7 @@ PageBase {
                 Layout.fillWidth: true
                 text: qsTr("Recolor wallpaper")
                 subtext: qsTr("Tint the wallpaper to match static color schemes")
+                reset: ({ node: GlobalConfig.background, setting: "wallpaperRecolor" })
                 checked: Config.background.wallpaperRecolor
                 onToggled: { 
                     GlobalConfig.background.wallpaperRecolor = checked; 
@@ -89,6 +90,7 @@ PageBase {
                 icon: ""
                 label: qsTr("Recolor strength")
                 valueLabel: Math.round(value * 100) + "%"
+                reset: ({ node: GlobalConfig.background, setting: "wallpaperRecolorStrength" })
                 value: Config.background.wallpaperRecolorStrength
                 enabled: Config.background.wallpaperRecolor && Config.background.wallpaperEnabled
                 onMoved: v => GlobalConfig.background.wallpaperRecolorStrength = v

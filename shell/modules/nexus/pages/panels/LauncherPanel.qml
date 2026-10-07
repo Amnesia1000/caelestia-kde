@@ -48,6 +48,7 @@ PageBase {
         ToggleRow {
             first: true
             text: qsTr("Enabled")
+            reset: ({ node: GlobalConfig.launcher, setting: "enabled" })
             checked: Config.launcher.enabled
             onToggled: GlobalConfig.launcher.enabled = checked
         }
@@ -56,6 +57,12 @@ PageBase {
             text: qsTr("Use alternative logo")
             subtext: qsTr("Use the Caelestia logo or a custom image instead of your distribution's logo")
             checked: GlobalConfig.general.logo !== ""
+            // Custom reset: default is the distro logo (empty path)
+            reset: ({
+                customGet: () => GlobalConfig.general.logo !== "",
+                customDef: false,
+                customSet: v => GlobalConfig.general.logo = v ? "caelestia" : ""
+            })
             onToggled: {
                 if (checked) {
                     if (GlobalConfig.general.logo === "") {
@@ -113,6 +120,12 @@ PageBase {
             text: qsTr("Tint custom logo")
             subtext: qsTr("Apply the Material You accent color to your custom logo")
             checked: SysInfo.recolourCustomLogo
+            // Custom reset: Qt Settings property, not a config node
+            reset: ({
+                customGet: () => SysInfo.recolourCustomLogo,
+                customDef: false,
+                customSet: v => SysInfo.recolourCustomLogo = v
+            })
             onToggled: SysInfo.recolourCustomLogo = checked
         }
 
@@ -120,6 +133,12 @@ PageBase {
             visible: GlobalConfig.general.logo !== "" && GlobalConfig.general.logo !== "caelestia"
             label: qsTr("Logo size (%)")
             value: SysInfo.customLogoSize
+            // Custom reset: Qt Settings property, not a config node
+            reset: ({
+                customGet: () => SysInfo.customLogoSize,
+                customDef: 100,
+                customSet: v => SysInfo.customLogoSize = v
+            })
             from: 50
             to: 200
             stepSize: 10
@@ -130,6 +149,7 @@ PageBase {
             last: true
             text: qsTr("Show on hover")
             subtext: qsTr("Reveal when the cursor reaches the screen edge")
+            reset: ({ node: GlobalConfig.launcher, setting: "showOnHover" })
             checked: Config.launcher.showOnHover
             onToggled: GlobalConfig.launcher.showOnHover = checked
         }
@@ -142,6 +162,7 @@ PageBase {
             first: true
             text: qsTr("Browse apps when search is empty")
             subtext: qsTr("Show the categorized app grid in the launcher when the search field is empty")
+            reset: ({ node: GlobalConfig.launcher, setting: "showBrowseOnEmpty" })
             checked: Config.launcher.showBrowseOnEmpty
             onToggled: GlobalConfig.launcher.showBrowseOnEmpty = checked
         }
@@ -157,12 +178,14 @@ PageBase {
         ToggleRow {
             text: qsTr("Show power menu")
             subtext: qsTr("Show the quick session controls (shutdown, sleep, logout) at the bottom")
+            reset: ({ node: GlobalConfig.launcher, setting: "showPowerMenu" })
             checked: Config.launcher.showPowerMenu
             onToggled: GlobalConfig.launcher.showPowerMenu = checked
         }
 
         StepperRow {
             label: qsTr("Max items shown")
+            reset: ({ node: GlobalConfig.launcher, setting: "maxShown" })
             value: Config.launcher.maxShown
             from: 1
             to: 20
@@ -172,6 +195,7 @@ PageBase {
 
         StepperRow {
             label: qsTr("Max wallpapers")
+            reset: ({ node: GlobalConfig.launcher, setting: "maxWallpapers" })
             value: Config.launcher.maxWallpapers
             from: 1
             to: 30
@@ -182,6 +206,7 @@ PageBase {
         StepperRow {
             label: qsTr("Hover trigger depth")
             subtext: qsTr("Distance in from the screen edge that opens the launcher")
+            reset: ({ node: GlobalConfig.launcher, setting: "hoverThickness" })
             value: Config.launcher.hoverThickness
             from: 1
             to: 100
@@ -192,6 +217,7 @@ PageBase {
         StepperRow {
             label: qsTr("Hover trigger width")
             subtext: qsTr("How much of the bottom edge opens the launcher, as a percentage of its width")
+            reset: ({ node: GlobalConfig.launcher, setting: "hoverWidth" })
             value: Config.launcher.hoverWidth
             from: 10
             to: 100
@@ -203,6 +229,7 @@ PageBase {
             last: true
             label: qsTr("Drag threshold")
             subtext: qsTr("Pixels dragged before the launcher opens")
+            reset: ({ node: GlobalConfig.launcher, setting: "dragThreshold" })
             value: Config.launcher.dragThreshold
             from: 0
             to: 200
@@ -218,6 +245,7 @@ PageBase {
             first: true
             label: qsTr("Max clipboard entries")
             subtext: qsTr("Number of copied items kept in history")
+            reset: ({ node: GlobalConfig.launcher, setting: "clipboardMaxEntries" })
             value: Config.launcher.clipboardMaxEntries
             from: 1
             to: 2048
@@ -229,6 +257,7 @@ PageBase {
             last: true
             text: qsTr("Confirm clear")
             subtext: qsTr("Ask before clearing the clipboard history")
+            reset: ({ node: GlobalConfig.launcher, setting: "confirmClearClipboard" })
             checked: GlobalConfig.launcher.confirmClearClipboard
             onToggled: GlobalConfig.launcher.confirmClearClipboard = checked
         }
@@ -241,6 +270,7 @@ PageBase {
             first: true
             text: qsTr("Vim keybinds")
             subtext: qsTr("Navigate results with Ctrl+hjkl")
+            reset: ({ node: GlobalConfig.launcher, setting: "vimKeybinds" })
             checked: GlobalConfig.launcher.vimKeybinds
             onToggled: GlobalConfig.launcher.vimKeybinds = checked
         }
@@ -249,6 +279,7 @@ PageBase {
             last: true
             text: qsTr("Enable dangerous actions")
             subtext: qsTr("Allow actions that shut down or log out")
+            reset: ({ node: GlobalConfig.launcher, setting: "enableDangerousActions" })
             checked: GlobalConfig.launcher.enableDangerousActions
             onToggled: GlobalConfig.launcher.enableDangerousActions = checked
         }
@@ -260,24 +291,28 @@ PageBase {
         ToggleRow {
             first: true
             text: qsTr("Apps")
+            reset: ({ node: GlobalConfig.launcher.useFuzzy, setting: "apps" })
             checked: GlobalConfig.launcher.useFuzzy.apps
             onToggled: GlobalConfig.launcher.useFuzzy.apps = checked
         }
 
         ToggleRow {
             text: qsTr("Actions")
+            reset: ({ node: GlobalConfig.launcher.useFuzzy, setting: "actions" })
             checked: GlobalConfig.launcher.useFuzzy.actions
             onToggled: GlobalConfig.launcher.useFuzzy.actions = checked
         }
 
         ToggleRow {
             text: qsTr("Schemes")
+            reset: ({ node: GlobalConfig.launcher.useFuzzy, setting: "schemes" })
             checked: GlobalConfig.launcher.useFuzzy.schemes
             onToggled: GlobalConfig.launcher.useFuzzy.schemes = checked
         }
 
         ToggleRow {
             text: qsTr("Variants")
+            reset: ({ node: GlobalConfig.launcher.useFuzzy, setting: "variants" })
             checked: GlobalConfig.launcher.useFuzzy.variants
             onToggled: GlobalConfig.launcher.useFuzzy.variants = checked
         }
@@ -285,6 +320,7 @@ PageBase {
         ToggleRow {
             last: true
             text: qsTr("Wallpapers")
+            reset: ({ node: GlobalConfig.launcher.useFuzzy, setting: "wallpapers" })
             checked: GlobalConfig.launcher.useFuzzy.wallpapers
             onToggled: GlobalConfig.launcher.useFuzzy.wallpapers = checked
         }

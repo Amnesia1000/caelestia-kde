@@ -304,6 +304,55 @@ same question with an exit status (3 means enabled but not loaded).
 
 ---
 
+### 3.9 Copy/Paste Crashes Krita or Inkscape (cliphist.service)
+
+Krita crashes when a selection is copied and pasted inside the document, while
+pasting an image copied from another application works. Inkscape crashes on
+copy/paste of anything. Stopping the clipboard service stops the crashes:
+
+```bash
+systemctl --user stop cliphist.service   # the crash should go away with it
+systemctl --user start cliphist.service
+pgrep -a wl-clip-persist                 # confirms the helper below is running
+```
+
+The unit runs three helpers: two `wl-paste --watch cliphist store` watchers and
+`wl-clip-persist`. The watchers only read the clipboard, so they cannot disturb
+it. `wl-clip-persist` does: it reads **every** MIME type of a new selection into
+memory and then re-offers the clipboard itself, so the application that copied no
+longer owns the selection.
+
+Applications that put a process-private payload on the clipboard expect to read
+it back out of their own clipboard object. Krita serialises raw `KisNode*`
+pointers into `application/x-krita-node-internal-pointer` and hands the payload
+straight back to `dynamic_cast` on paste as long as the pid in it is its own
+(`KisMimeData::tryLoadInternalNodes`); Inkscape does the same for
+`image/x-inkscape-svg`. Once `wl-clip-persist` re-offers the payload, the
+pointers are stale and the paste dies in `__dynamic_cast`.
+
+The unit therefore passes `--all-mime-type-regex` to `wl-clip-persist`, which
+makes it leave alone any selection event that offers one of those private
+formats. `wl-clip-persist` handles an event only when **every** MIME type it
+offers matches the filter, so a selection carrying both a private format and,
+say, `text/plain` is skipped whole: the watchers still add it to the clipboard
+history, but it no longer survives the application it was copied from.
+Selections offering only public formats persist as before; the install keeps that
+list in `~/.local/bin/caelestia-cliphist`, next to the flag that reads it.
+
+On an install older than the fix, or if you run your own clipboard setup, pass
+the same flag yourself:
+
+```bash
+wl-clip-persist --clipboard regular \
+    --all-mime-type-regex '(?i)^(?!(?:application/x-krita-|image/x-inkscape-svg)).+'
+```
+
+Any other application that crashes when pasting its own content while the
+service runs belongs to the same class: report it so its format can be added to
+the filter.
+
+---
+
 ## 4. Runtime Issues — Lock Screen
 
 ### 4.1 Lock Screen Greeter Diagnostic
@@ -857,3 +906,4 @@ systemctl --user restart plasma-plasmashell
 | Installer compiles but flashes/exits | Check `/tmp/caelestia_installer_err.log` |
 | Recording not working | Verify `gpu-screen-recorder` is installed |
 | Screenshot not working | Verify `spectacle` is installed |
+| Krita/Inkscape crashes on copy/paste | `systemctl --user stop cliphist.service` stops the crash; update Caelestia so `wl-clip-persist` runs with the `--all-mime-type-regex` filter (see 3.9) |
