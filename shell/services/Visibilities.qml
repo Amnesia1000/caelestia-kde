@@ -81,7 +81,7 @@ Singleton {
         docks = new Map(docks);
     }
     function getForActive(): DrawerVisibilities {
-        const monitor = Kwin.monitors[Kwin.cursorOutputName()] || Kwin.focusedMonitor;
+        const monitor = Kwin.monitors.find(m => m.name === Kwin.cursorOutputName()) || Kwin.focusedMonitor;
         return screens.get(monitor) || screens.values().next().value;
     }
 
