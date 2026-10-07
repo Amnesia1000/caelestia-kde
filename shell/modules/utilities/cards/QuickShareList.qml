@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 import Caelestia.Config
+import Caelestia.Services.QuickShare
 import qs.components
 import qs.components.containers
 import qs.components.controls
@@ -41,7 +42,7 @@ StyledRect {
                 implicitHeight: icon.implicitHeight + Tokens.padding.small * 2
 
                 radius: Tokens.rounding.full
-                color: QuickShare.isEnabled ? Colours.palette.m3secondary : Colours.palette.m3secondaryContainer
+                color: QuickShareService.isEnabled ? Colours.palette.m3secondary : Colours.palette.m3secondaryContainer
 
                 MaterialIcon {
                     id: icon
@@ -49,7 +50,7 @@ StyledRect {
                     anchors.centerIn: parent
                     anchors.verticalCenterOffset: Centering.pixelAlign(parent.height, height)
                     text: "near_me"
-                    color: QuickShare.isEnabled ? Colours.palette.m3onSecondary : Colours.palette.m3onSecondaryContainer
+                    color: QuickShareService.isEnabled ? Colours.palette.m3onSecondary : Colours.palette.m3onSecondaryContainer
                     fontStyle: Tokens.font.icon.large
                 }
             }
@@ -67,7 +68,7 @@ StyledRect {
 
                 StyledText {
                     Layout.fillWidth: true
-                    text: !QuickShare.isEnabled ? qsTr("Disabled") : QuickShare.isVisible ? qsTr("Visible to nearby devices") : qsTr("Hidden")
+                    text: !QuickShareService.isEnabled ? qsTr("Disabled") : QuickShareService.isVisible ? qsTr("Visible to nearby devices") : qsTr("Hidden")
                     color: Colours.palette.m3onSurfaceVariant
                     font: Tokens.font.body.small
                     elide: Text.ElideRight
@@ -161,7 +162,7 @@ StyledRect {
             StyledListView {
                 id: transfersList
 
-                model: QuickShare.transferHistory
+                model: QuickShareService.transferHistory
 
                 Layout.fillWidth: true
                 Layout.rightMargin: -Tokens.spacing.small
@@ -174,7 +175,6 @@ StyledRect {
 
                 delegate: RowLayout {
                     required property var modelData
-                    required property int index
 
                     anchors.left: transfersList.contentItem.left
                     anchors.right: transfersList.contentItem.right
@@ -225,7 +225,7 @@ StyledRect {
                         inactiveOnColour: Colours.palette.m3error
                         onClicked: {
                             root.props.quickShareConfirmDeletePath = modelData.filePath;
-                            root.props.quickShareConfirmDeleteIndex = index;
+                            root.props.quickShareConfirmDeleteTimestamp = modelData.timestamp;
                         }
                     }
                 }

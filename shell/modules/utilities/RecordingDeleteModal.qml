@@ -21,87 +21,48 @@ Loader {
     opacity: root.props.recordingConfirmDelete ? 1 : 0
     active: opacity > 0
 
-    sourceComponent: MouseArea {
-        id: deleteConfirmation
-
+    sourceComponent: DrawerModal {
+        // The prop is cleared as soon as the modal is dismissed, but the card keeps
+        // naming the recording while it fades out.
         property string path
+
+        deformMatrix: root.deformMatrix
+        open: root.props.recordingConfirmDelete !== ""
+        onDismissed: root.props.recordingConfirmDelete = ""
 
         Component.onCompleted: path = root.props.recordingConfirmDelete
 
-        hoverEnabled: true
-        onClicked: root.props.recordingConfirmDelete = ""
-
-        DrawerScrim {
-            deformMatrix: root.deformMatrix
+        StyledText {
+            text: qsTr("Delete recording?")
+            font: Tokens.font.body.large
         }
 
-        StyledRect {
-            anchors.centerIn: parent
-            radius: Tokens.rounding.extraLarge
-            color: Colours.palette.m3surfaceContainerHigh
+        StyledText {
+            Layout.fillWidth: true
+            text: qsTr("Recording '%1' will be permanently deleted.").arg(path)
+            color: Colours.palette.m3onSurfaceVariant
+            font: Tokens.font.body.small
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+        }
 
-            scale: 0
-            Component.onCompleted: scale = Qt.binding(() => root.props.recordingConfirmDelete ? 1 : 0)
+        RowLayout {
+            Layout.topMargin: Tokens.spacing.medium
+            Layout.alignment: Qt.AlignRight
+            spacing: Tokens.spacing.medium
 
-            width: Math.min(parent.width - Tokens.padding.extraLargeIncreased, implicitWidth)
-            implicitWidth: deleteConfirmationLayout.implicitWidth + Tokens.padding.extraExtraLarge
-            implicitHeight: deleteConfirmationLayout.implicitHeight + Tokens.padding.extraExtraLarge
-
-            MouseArea {
-                anchors.fill: parent
+            TextButton {
+                text: qsTr("Cancel")
+                type: TextButton.Text
+                onClicked: root.props.recordingConfirmDelete = ""
             }
 
-            Elevation {
-                anchors.fill: parent
-                radius: parent.radius
-                z: -1
-                level: 3
-            }
-
-            ColumnLayout {
-                id: deleteConfirmationLayout
-
-                anchors.fill: parent
-                anchors.margins: Tokens.padding.large * 1.5
-                spacing: Tokens.spacing.medium
-
-                StyledText {
-                    text: qsTr("Delete recording?")
-                    font: Tokens.font.body.large
+            TextButton {
+                text: qsTr("Delete")
+                type: TextButton.Text
+                onClicked: {
+                    CUtils.deleteFile(Qt.resolvedUrl(path));
+                    root.props.recordingConfirmDelete = "";
                 }
-
-                StyledText {
-                    Layout.fillWidth: true
-                    text: qsTr("Recording '%1' will be permanently deleted.").arg(deleteConfirmation.path)
-                    color: Colours.palette.m3onSurfaceVariant
-                    font: Tokens.font.body.small
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                }
-
-                RowLayout {
-                    Layout.topMargin: Tokens.spacing.medium
-                    Layout.alignment: Qt.AlignRight
-                    spacing: Tokens.spacing.medium
-
-                    TextButton {
-                        text: qsTr("Cancel")
-                        type: TextButton.Text
-                        onClicked: root.props.recordingConfirmDelete = ""
-                    }
-
-                    TextButton {
-                        text: qsTr("Delete")
-                        type: TextButton.Text
-                        onClicked: {
-                            CUtils.deleteFile(Qt.resolvedUrl(root.props.recordingConfirmDelete));
-                            root.props.recordingConfirmDelete = "";
-                        }
-                    }
-                }
-            }
-
-            Behavior on scale {
-                Anim {}
             }
         }
     }

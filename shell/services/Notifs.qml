@@ -91,6 +91,7 @@ Singleton {
             summary: params.summary ?? "",
             body: params.body ?? "",
             appIcon: params.appIcon ?? "",
+            materialIcon: params.materialIcon ?? "",
             actions: params.actions ?? [],
             resident: params.resident ?? true
         });

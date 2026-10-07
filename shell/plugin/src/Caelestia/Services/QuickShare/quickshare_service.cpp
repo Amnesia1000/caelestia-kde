@@ -1,15 +1,35 @@
 #include "quickshare_service.hpp"
 
+#include <QDateTime>
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QStandardPaths>
+#include <QSaveFile>
 #include <QSysInfo>
 #include <QTimer>
 
 using Qt::StringLiterals::operator""_s;
 
 namespace caelestia::services {
+
+namespace {
+
+/// The shell keeps its state under XDG_STATE_HOME (Paths.state in the QML), so the
+/// transfer history belongs there rather than in Qt's per-application data directory.
+QString historyFilePath() {
+    const QString stateHome = qEnvironmentVariable("XDG_STATE_HOME", QDir::homePath() + u"/.local/state"_s);
+    return stateHome + u"/caelestia/quickshare_history.json"_s;
+}
+
+/// The name to show for a peer that has not introduced itself yet.
+QString deviceLabel(const QuickShareConnection* connection) {
+    const QString name = connection->deviceName();
+    return name.isEmpty() ? u"Nearby Device"_s : name;
+}
+
+} // namespace
 
 QuickShareService::QuickShareService(QObject* parent)
     : QObject(parent)
@@ -104,65 +124,82 @@ QVariantList QuickShareService::transferHistory() const {
 }
 
 void QuickShareService::sendFile(const QString& deviceId, const QString& filePath) {
-    auto it = std::find_if(m_devices.begin(), m_devices.end(), [&](const QuickShareDevice& d) {
+    const auto device = std::find_if(m_devices.cbegin(), m_devices.cend(), [&](const QuickShareDevice& d) {
         return d.id == deviceId;
     });
-    if (it == m_devices.end())
+    if (device == m_devices.cend())
         return;
 
-    QuickShareConnection* conn = new QuickShareConnection(it->address, it->port, this);
-    m_activeConnections.insert(deviceId, conn);
+    const QString deviceName = device->name;
+    auto* connection = new QuickShareConnection(device->address, device->port, this);
 
-    connect(conn, &QuickShareConnection::transferProgress, this, [this, deviceId](qint64 sent, qint64 total) {
-        emit transferProgress(deviceId, sent, total);
-    });
+    // The file itself goes out once the handshake finishes.
+    connect(connection, &QuickShareConnection::stateChanged, this,
+        [connection, filePath](QuickShareConnection::State state) {
+            if (state == QuickShareConnection::ConnectionAccepted)
+                connection->sendFile(filePath);
+        });
 
-    connect(conn, &QuickShareConnection::transferFinished, this, [this, deviceId, filePath](bool success) {
-        emit transferFinished(deviceId, success);
+    connect(connection, &QuickShareConnection::transferProgress, this,
+        [this, deviceId](qint64 sent, qint64 total) { emit outgoingTransferProgress(deviceId, sent, total); });
 
-        if (success) {
-            QVariantMap entry;
-            entry[u"fileName"_s] = QFileInfo(filePath).fileName();
-            entry[u"filePath"_s] = filePath;
-            entry[u"timestamp"_s] = QDateTime::currentDateTime().toSecsSinceEpoch();
-            entry[u"direction"_s] = u"sent"_s;
-            entry[u"deviceName"_s] = deviceId;
-            m_transferHistory.prepend(entry);
-            emit transferHistoryChanged();
-            saveHistory();
-        }
+    connect(connection, &QuickShareConnection::transferFinished, this,
+        [this, connection, deviceId, deviceName, filePath](bool success) {
+            if (success)
+                appendHistoryEntry(u"sent"_s, QFileInfo(filePath).fileName(), filePath, deviceName);
 
-        if (m_activeConnections.contains(deviceId)) {
-            QuickShareConnection* c = m_activeConnections.take(deviceId);
-            QTimer::singleShot(2000, c, &QObject::deleteLater);
-        }
-    });
+            emit outgoingTransferFinished(deviceId, success);
 
-    // We send file once handshake completes
-    connect(conn, &QuickShareConnection::stateChanged, this, [conn, filePath](QuickShareConnection::State state) {
-        if (state == QuickShareConnection::ConnectionAccepted) {
-            conn->sendFile(filePath);
-        }
-    });
+            // Let anything still in flight reach the peer before the socket goes.
+            QTimer::singleShot(2000, connection, &QObject::deleteLater);
+        });
 }
 
 void QuickShareService::acceptIncomingTransfer() {
-    if (m_pendingIncomingConnection) {
-        m_pendingIncomingConnection->acceptTransfer();
-    }
+    if (m_pendingIncomingRequest)
+        m_pendingIncomingRequest->acceptTransfer();
 }
 
 void QuickShareService::rejectIncomingTransfer() {
-    if (m_pendingIncomingConnection) {
-        m_pendingIncomingConnection->rejectTransfer();
-        m_pendingIncomingConnection->deleteLater();
-        m_pendingIncomingConnection = nullptr;
-        emit transferFinished(u"incoming"_s, false);
-    }
+    QuickShareConnection* connection = m_pendingIncomingRequest.data();
+    if (!connection)
+        return;
+
+    // Rejecting reports itself through transferFinished, which drops the request.
+    connection->rejectTransfer();
+    QTimer::singleShot(2000, connection, &QObject::deleteLater);
 }
 
 void QuickShareService::clearHistory() {
     m_transferHistory.clear();
+    emit transferHistoryChanged();
+    saveHistory();
+}
+
+void QuickShareService::appendHistoryEntry(
+    const QString& direction, const QString& fileName, const QString& filePath, const QString& deviceName) {
+    QVariantMap entry;
+    entry[u"direction"_s] = direction;
+    entry[u"fileName"_s] = fileName;
+    entry[u"filePath"_s] = filePath;
+    entry[u"deviceName"_s] = deviceName;
+    entry[u"timestamp"_s] = QDateTime::currentDateTime().toSecsSinceEpoch();
+
+    m_transferHistory.prepend(entry);
+    emit transferHistoryChanged();
+    saveHistory();
+}
+
+void QuickShareService::removeHistoryEntry(const QString& filePath, qint64 timestamp) {
+    const auto entry = std::find_if(m_transferHistory.begin(), m_transferHistory.end(), [&](const QVariant& value) {
+        const QVariantMap map = value.toMap();
+        return map.value(u"filePath"_s).toString() == filePath
+            && map.value(u"timestamp"_s).toLongLong() == timestamp;
+    });
+    if (entry == m_transferHistory.end())
+        return;
+
+    m_transferHistory.erase(entry);
     emit transferHistoryChanged();
     saveHistory();
 }
@@ -195,50 +232,39 @@ void QuickShareService::onNewConnection() {
     if (!socket)
         return;
 
-    QuickShareConnection* conn = new QuickShareConnection(socket, this);
-    m_pendingIncomingConnection = conn;
+    auto* connection = new QuickShareConnection(socket, this);
 
-    connect(
-        conn, &QuickShareConnection::transferRequested, this, [this, conn](const QString& fileName, qint64 fileSize) {
-            emit incomingTransferRequested(
-                conn->deviceName().isEmpty() ? u"Nearby Device"_s : conn->deviceName(), fileName, fileSize);
+    connect(connection, &QuickShareConnection::transferRequested, this,
+        [this, connection](const QString& fileName, qint64 fileSize) {
+            // The newest request is the one acceptIncomingTransfer() answers.
+            m_pendingIncomingRequest = connection;
+            emit incomingTransferRequested(deviceLabel(connection), fileName, fileSize);
         });
 
-    connect(conn, &QuickShareConnection::pinCodeReady, this, [this](const QString& pinCode) {
-        emit incomingTransferPinReady(pinCode);
-    });
+    connect(connection, &QuickShareConnection::pinCodeReady, this,
+        [this](const QString& pinCode) { emit incomingTransferPinReady(pinCode); });
 
-    connect(conn, &QuickShareConnection::transferFinished, this, [this](bool success) {
-        if (success && m_pendingIncomingConnection) {
-            QVariantMap entry;
-            QString fileName = m_pendingIncomingConnection->incomingFileName();
-            entry[u"fileName"_s] = fileName;
-            entry[u"filePath"_s] = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + u'/' + fileName;
-            entry[u"timestamp"_s] = QDateTime::currentDateTime().toSecsSinceEpoch();
-            entry[u"direction"_s] = u"received"_s;
-            entry[u"deviceName"_s] = m_pendingIncomingConnection->deviceName().isEmpty()
-                                         ? u"Nearby Device"_s
-                                         : m_pendingIncomingConnection->deviceName();
-            m_transferHistory.prepend(entry);
-            emit transferHistoryChanged();
-            saveHistory();
+    connect(connection, &QuickShareConnection::transferFinished, this, [this, connection](bool success) {
+        if (m_pendingIncomingRequest == connection) {
+            m_pendingIncomingRequest = nullptr;
+            if (success)
+                appendHistoryEntry(u"received"_s, connection->incomingFileName(), connection->incomingFilePath(),
+                    deviceLabel(connection));
         }
 
-        emit transferFinished(u"incoming"_s, success);
-
-        if (m_pendingIncomingConnection) {
-            m_pendingIncomingConnection->deleteLater();
-            m_pendingIncomingConnection = nullptr;
-        }
+        emit incomingTransferFinished(success);
+        QTimer::singleShot(2000, connection, &QObject::deleteLater);
     });
-}
 
-void QuickShareService::removeHistoryEntry(int index) {
-    if (index >= 0 && index < m_transferHistory.size()) {
-        m_transferHistory.removeAt(index);
-        emit transferHistoryChanged();
-        saveHistory();
-    }
+    // A peer that walks away mid-request: drop the request so the prompt and the
+    // card stop offering to accept it.
+    connect(connection, &QuickShareConnection::closed, this, [this, connection] {
+        if (m_pendingIncomingRequest != connection)
+            return;
+
+        m_pendingIncomingRequest = nullptr;
+        emit incomingTransferFinished(false);
+    });
 }
 
 void QuickShareService::startBleWakeupBroadcast() {
@@ -254,24 +280,28 @@ void QuickShareService::stopBleWakeupBroadcast() {
 }
 
 void QuickShareService::loadHistory() {
-    QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + u"/quickshare_history.json"_s;
-    QFile file(path);
-    if (file.open(QIODevice::ReadOnly)) {
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        if (doc.isArray()) {
-            m_transferHistory = doc.array().toVariantList();
-        }
-    }
+    QFile file(historyFilePath());
+    if (!file.open(QIODevice::ReadOnly))
+        return;
+
+    const QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+    if (doc.isArray())
+        m_transferHistory = doc.array().toVariantList();
 }
 
 void QuickShareService::saveHistory() {
-    QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + u"/quickshare_history.json"_s;
-    QFile file(path);
-    if (file.open(QIODevice::WriteOnly)) {
-        QJsonArray arr = QJsonArray::fromVariantList(m_transferHistory);
-        QJsonDocument doc(arr);
-        file.write(doc.toJson());
+    const QString path = historyFilePath();
+    QDir().mkpath(QFileInfo(path).absolutePath());
+
+    QSaveFile file(path);
+    if (!file.open(QIODevice::WriteOnly)) {
+        qWarning() << u"QuickShareService: Failed to open"_s << path;
+        return;
     }
+
+    file.write(QJsonDocument(QJsonArray::fromVariantList(m_transferHistory)).toJson());
+    if (!file.commit())
+        qWarning() << u"QuickShareService: Failed to write"_s << path;
 }
 
 } // namespace caelestia::services

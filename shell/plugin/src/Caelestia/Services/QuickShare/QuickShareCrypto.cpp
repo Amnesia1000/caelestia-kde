@@ -9,8 +9,11 @@
 #include <openssl/sha.h>
 
 #include <QDebug>
+#include <cstring>
 #include <string>
 
+#include "device_to_device_messages.pb.h"
+#include "securegcm.pb.h"
 #include "securemessage.pb.h"
 #include "ukey.pb.h"
 
@@ -434,76 +437,131 @@ QByteArray QuickShareCrypto::generateClientFinished() {
     return m_clientFinishedMsgData;
 }
 
-QByteArray QuickShareCrypto::encryptPayload(const QByteArray& plaintext) {
-    if (!m_handshakeComplete)
-        return plaintext;
+QByteArray QuickShareCrypto::sealDeviceToDevice(int sequenceNumber, const QByteArray& plaintext) {
+    securegcm::DeviceToDeviceMessage message;
+    message.set_message(plaintext.constData(), plaintext.size());
+    message.set_sequence_number(sequenceNumber);
 
-    QByteArray iv;
-    iv.resize(16);
-    RAND_bytes((unsigned char*)iv.data(), iv.size());
+    QByteArray body;
+    body.resize(static_cast<qsizetype>(message.ByteSizeLong()));
+    if (!message.SerializeToArray(body.data(), static_cast<int>(body.size())))
+        return {};
+
+    QByteArray iv(16, '\0');
+    if (RAND_bytes(reinterpret_cast<unsigned char*>(iv.data()), static_cast<int>(iv.size())) != 1)
+        return {};
 
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, (const unsigned char*)m_encodeKey.constData(),
-        (const unsigned char*)iv.constData());
-
-    QByteArray ciphertext;
-    ciphertext.resize(plaintext.size() + EVP_CIPHER_block_size(EVP_aes_256_cbc()));
-    int len1 = 0, len2 = 0;
-    EVP_EncryptUpdate(
-        ctx, (unsigned char*)ciphertext.data(), &len1, (const unsigned char*)plaintext.constData(), plaintext.size());
-    EVP_EncryptFinal_ex(ctx, (unsigned char*)ciphertext.data() + len1, &len2);
+    if (!ctx)
+        return {};
+    QByteArray ciphertext(body.size() + EVP_CIPHER_block_size(EVP_aes_256_cbc()), '\0');
+    int written = 0;
+    int padding = 0;
+    const bool encrypted = EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr,
+                                 reinterpret_cast<const unsigned char*>(m_encodeKey.constData()),
+                                 reinterpret_cast<const unsigned char*>(iv.constData()))
+            == 1
+        && EVP_EncryptUpdate(ctx, reinterpret_cast<unsigned char*>(ciphertext.data()), &written,
+               reinterpret_cast<const unsigned char*>(body.constData()), static_cast<int>(body.size()))
+            == 1
+        && EVP_EncryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(ciphertext.data()) + written, &padding) == 1;
     EVP_CIPHER_CTX_free(ctx);
-    ciphertext.resize(len1 + len2);
+    if (!encrypted)
+        return {};
+    ciphertext.resize(written + padding);
 
-    QByteArray hmacData = iv + ciphertext;
-    QByteArray hmac;
-    hmac.resize(32);
-    unsigned int hmacLen = 0;
-    HMAC(EVP_sha256(), m_hmacEncodeKey.constData(), static_cast<int>(m_hmacEncodeKey.size()),
-        reinterpret_cast<const unsigned char*>(hmacData.constData()), hmacData.size(),
-        reinterpret_cast<unsigned char*>(hmac.data()), &hmacLen);
+    securemessage::Header header;
+    header.set_signature_scheme(securemessage::HMAC_SHA256);
+    header.set_encryption_scheme(securemessage::AES_256_CBC);
+    header.set_iv(iv.constData(), iv.size());
 
-    return iv + ciphertext + hmac;
+    securegcm::GcmMetadata metadata;
+    metadata.set_type(securegcm::DEVICE_TO_DEVICE_MESSAGE);
+    metadata.set_version(1);
+    QByteArray metadataBytes;
+    metadataBytes.resize(static_cast<qsizetype>(metadata.ByteSizeLong()));
+    if (!metadata.SerializeToArray(metadataBytes.data(), static_cast<int>(metadataBytes.size())))
+        return {};
+    header.set_public_metadata(metadataBytes.constData(), metadataBytes.size());
+
+    securemessage::HeaderAndBody headerAndBody;
+    *headerAndBody.mutable_header() = header;
+    headerAndBody.set_body(ciphertext.constData(), ciphertext.size());
+
+    QByteArray headerAndBodyBytes;
+    headerAndBodyBytes.resize(static_cast<qsizetype>(headerAndBody.ByteSizeLong()));
+    if (!headerAndBody.SerializeToArray(headerAndBodyBytes.data(), static_cast<int>(headerAndBodyBytes.size())))
+        return {};
+
+    unsigned char signature[EVP_MAX_MD_SIZE];
+    unsigned int signatureLength = 0;
+    if (!HMAC(EVP_sha256(), m_hmacEncodeKey.constData(), static_cast<int>(m_hmacEncodeKey.size()),
+            reinterpret_cast<const unsigned char*>(headerAndBodyBytes.constData()),
+            static_cast<size_t>(headerAndBodyBytes.size()), signature, &signatureLength))
+        return {};
+
+    securemessage::SecureMessage secureMessage;
+    secureMessage.set_header_and_body(headerAndBodyBytes.constData(), headerAndBodyBytes.size());
+    secureMessage.set_signature(signature, signatureLength);
+
+    QByteArray out;
+    out.resize(static_cast<qsizetype>(secureMessage.ByteSizeLong()));
+    if (!secureMessage.SerializeToArray(out.data(), static_cast<int>(out.size())))
+        return {};
+    return out;
 }
 
-QByteArray QuickShareCrypto::decryptPayload(const QByteArray& ciphertextBytes) {
-    if (!m_handshakeComplete)
-        return ciphertextBytes;
+QByteArray QuickShareCrypto::openDeviceToDevice(const QByteArray& secureMessage) {
+    securemessage::SecureMessage message;
+    if (!message.ParseFromArray(secureMessage.constData(), static_cast<int>(secureMessage.size())))
+        return {};
 
-    if (ciphertextBytes.size() < 16 + 32)
-        return QByteArray();
+    const QByteArray headerAndBody(
+        message.header_and_body().data(), static_cast<qsizetype>(message.header_and_body().size()));
 
-    QByteArray iv = ciphertextBytes.left(16);
-    QByteArray hmac = ciphertextBytes.right(32);
-    QByteArray ciphertext = ciphertextBytes.mid(16, ciphertextBytes.size() - 16 - 32);
-
-    QByteArray hmacData = iv + ciphertext;
-    QByteArray expectedHmac;
-    expectedHmac.resize(32);
-    unsigned int hmacLen = 0;
-    HMAC(EVP_sha256(), m_hmacDecodeKey.constData(), static_cast<int>(m_hmacDecodeKey.size()),
-        reinterpret_cast<const unsigned char*>(hmacData.constData()), hmacData.size(),
-        reinterpret_cast<unsigned char*>(expectedHmac.data()), &hmacLen);
-
-    if (hmac != expectedHmac) {
-        return QByteArray();
+    unsigned char signature[EVP_MAX_MD_SIZE];
+    unsigned int signatureLength = 0;
+    if (!HMAC(EVP_sha256(), m_hmacDecodeKey.constData(), static_cast<int>(m_hmacDecodeKey.size()),
+            reinterpret_cast<const unsigned char*>(headerAndBody.constData()),
+            static_cast<size_t>(headerAndBody.size()), signature, &signatureLength))
+        return {};
+    if (static_cast<int>(signatureLength) != message.signature().size()
+        || memcmp(signature, message.signature().data(), signatureLength) != 0) {
+        qWarning() << u"QuickShareCrypto: HMAC verification failed"_s;
+        return {};
     }
 
+    securemessage::HeaderAndBody parsed;
+    if (!parsed.ParseFromArray(headerAndBody.constData(), static_cast<int>(headerAndBody.size())))
+        return {};
+
+    const QByteArray iv(parsed.header().iv().data(), static_cast<qsizetype>(parsed.header().iv().size()));
+    const QByteArray ciphertext(parsed.body().data(), static_cast<qsizetype>(parsed.body().size()));
+
     EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
-    EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr, reinterpret_cast<const unsigned char*>(m_decodeKey.constData()),
-        reinterpret_cast<const unsigned char*>(iv.constData()));
-
-    QByteArray plaintext;
-    plaintext.resize(ciphertext.size());
-
-    int len1 = 0, len2 = 0;
-    EVP_DecryptUpdate(ctx, reinterpret_cast<unsigned char*>(plaintext.data()), &len1,
-        reinterpret_cast<const unsigned char*>(ciphertext.constData()), ciphertext.size());
-    EVP_DecryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(plaintext.data()) + len1, &len2);
+    if (!ctx)
+        return {};
+    QByteArray plaintext(ciphertext.size() + EVP_CIPHER_block_size(EVP_aes_256_cbc()), '\0');
+    int written = 0;
+    int padding = 0;
+    const bool decrypted = EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr,
+                                 reinterpret_cast<const unsigned char*>(m_decodeKey.constData()),
+                                 reinterpret_cast<const unsigned char*>(iv.constData()))
+            == 1
+        && EVP_DecryptUpdate(ctx, reinterpret_cast<unsigned char*>(plaintext.data()), &written,
+               reinterpret_cast<const unsigned char*>(ciphertext.constData()), static_cast<int>(ciphertext.size()))
+            == 1
+        && EVP_DecryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(plaintext.data()) + written, &padding) == 1;
     EVP_CIPHER_CTX_free(ctx);
-    plaintext.resize(len1 + len2);
+    if (!decrypted)
+        return {};
+    plaintext.resize(written + padding);
 
-    return plaintext;
+    securegcm::DeviceToDeviceMessage deviceToDevice;
+    if (!deviceToDevice.ParseFromArray(plaintext.constData(), static_cast<int>(plaintext.size())))
+        return {};
+
+    return QByteArray(deviceToDevice.message().data(), static_cast<qsizetype>(deviceToDevice.message().size()));
 }
 
 } // namespace caelestia::services

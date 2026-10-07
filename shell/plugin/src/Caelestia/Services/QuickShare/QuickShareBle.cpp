@@ -9,12 +9,42 @@
 
 using Qt::StringLiterals::operator""_s;
 
+namespace caelestia::services {
+
+namespace {
+
+/// Pulls the first object path carrying `interface` out of an ObjectManager reply.
+QString findAdapterPath(const QDBusMessage& reply, const QString& interface) {
+    if (reply.arguments().isEmpty())
+        return {};
+
+    const QDBusArgument argument = reply.arguments().at(0).value<QDBusArgument>();
+    QMap<QDBusObjectPath, QMap<QString, QVariantMap>> objects;
+    argument >> objects;
+
+    for (auto it = objects.constBegin(); it != objects.constEnd(); ++it) {
+        if (it.value().contains(interface))
+            return it.key().path();
+    }
+    return {};
+}
+
+} // namespace
+
 // --------------------------------------------------------------------------------
 // QuickShareBleAdvertisementAdaptor
 // --------------------------------------------------------------------------------
 
 QuickShareBleAdvertisementAdaptor::QuickShareBleAdvertisementAdaptor(QObject* parent)
     : QDBusAbstractAdaptor(parent) {}
+
+QString QuickShareBleAdvertisementAdaptor::type() const {
+    return u"broadcast"_s;
+}
+
+QStringList QuickShareBleAdvertisementAdaptor::serviceUUIDs() const {
+    return { u"0000fe2c-0000-1000-8000-00805f9b34fb"_s };
+}
 
 QVariantMap QuickShareBleAdvertisementAdaptor::serviceData() const {
     QVariantMap map;
@@ -73,16 +103,7 @@ void QuickShareBleAdvertiser::onGetManagedObjectsFinished(const QDBusMessage& re
         return;
     }
 
-    const QDBusArgument arg = reply.arguments().at(0).value<QDBusArgument>();
-    QMap<QDBusObjectPath, QMap<QString, QVariantMap>> objects;
-    arg >> objects;
-
-    for (auto it = objects.constBegin(); it != objects.constEnd(); ++it) {
-        if (it.value().contains(u"org.bluez.LEAdvertisingManager1"_s)) {
-            m_adapterPath = it.key().path();
-            break;
-        }
-    }
+    m_adapterPath = findAdapterPath(reply, u"org.bluez.LEAdvertisingManager1"_s);
 
     if (m_adapterPath.isEmpty()) {
         qWarning() << u"No adapter with LEAdvertisingManager1 found."_s;
@@ -147,16 +168,7 @@ void QuickShareBleScanner::onGetManagedObjectsFinished(const QDBusMessage& reply
         return;
     }
 
-    const QDBusArgument arg = reply.arguments().at(0).value<QDBusArgument>();
-    QMap<QDBusObjectPath, QMap<QString, QVariantMap>> objects;
-    arg >> objects;
-
-    for (auto it = objects.constBegin(); it != objects.constEnd(); ++it) {
-        if (it.value().contains(u"org.bluez.Adapter1"_s)) {
-            m_adapterPath = it.key().path();
-            break;
-        }
-    }
+    m_adapterPath = findAdapterPath(reply, u"org.bluez.Adapter1"_s);
 
     if (m_adapterPath.isEmpty()) {
         qWarning() << u"No adapter with org.bluez.Adapter1 found."_s;
@@ -238,3 +250,5 @@ void QuickShareBleScanner::checkDeviceProperties(const QVariantMap& props) {
         }
     }
 }
+
+} // namespace caelestia::services

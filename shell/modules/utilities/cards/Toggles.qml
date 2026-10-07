@@ -7,6 +7,7 @@ import Quickshell
 import Quickshell.Bluetooth
 import Caelestia.Components
 import Caelestia.Config
+import Caelestia.Services.QuickShare
 import qs.components
 import qs.components.controls
 import qs.services
@@ -19,6 +20,8 @@ StyledRect {
 
     required property DrawerVisibilities visibilities
     required property BarPopouts.Wrapper popouts
+
+    readonly property real nonAnimHeight: implicitHeight
 
     readonly property var quickToggles: {
         const configToggles = Config.utilities.quickToggles || [];
@@ -531,7 +534,7 @@ StyledRect {
                     roleValue: "quickShare"
                     delegate: Toggle {
                         icon: "near_me"
-                        checked: QuickShare.isEnabled
+                        checked: QuickShareService.isEnabled
                         onClicked: QuickShare.toggle()
                     }
                 }

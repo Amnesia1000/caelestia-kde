@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Caelestia.Config
+import Caelestia.Services.QuickShare
 import qs.components
 import qs.services
 import qs.modules.nexus.common
@@ -25,11 +26,11 @@ PageBase {
         ToggleRow {
             first: true
             text: qsTr("Enable Quick Share")
-            subtext: QuickShare.isEnabled ? qsTr("Listening for nearby devices") : qsTr("Disabled")
-            checked: QuickShare.isEnabled
+            subtext: QuickShareService.isEnabled ? qsTr("Listening for nearby devices") : qsTr("Disabled")
+            checked: QuickShareService.isEnabled
             onToggled: {
-                QuickShare.setEnabled(checked);
-                QuickShare.setVisible(checked);
+                QuickShareService.isEnabled = checked;
+                QuickShareService.isVisible = checked;
             }
         }
 
@@ -37,9 +38,9 @@ PageBase {
             last: true
             text: qsTr("Discoverable")
             subtext: qsTr("Advertise this machine so nearby devices can send to it")
-            enabled: QuickShare.isEnabled
-            checked: QuickShare.isVisible
-            onToggled: QuickShare.setVisible(checked)
+            enabled: QuickShareService.isEnabled
+            checked: QuickShareService.isVisible
+            onToggled: QuickShareService.isVisible = checked
         }
 
         SectionHeader {
@@ -70,9 +71,9 @@ PageBase {
             last: true
             icon: "delete_sweep"
             text: qsTr("Clear transfer history")
-            subtext: qsTr("%n transfer(s) recorded", "", QuickShare.transferHistory.length)
+            subtext: qsTr("%n transfer(s) recorded", "", QuickShareService.transferHistory.length)
             trailingIcon: "chevron_right"
-            onClicked: QuickShare.clearHistory()
+            onClicked: QuickShareService.clearHistory()
         }
     }
 }

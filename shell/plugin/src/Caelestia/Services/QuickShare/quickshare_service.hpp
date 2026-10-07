@@ -3,6 +3,7 @@
 #include <qqmlintegration.h>
 
 #include <QObject>
+#include <QPointer>
 #include <QTcpServer>
 #include <QVariantList>
 #include <QVariantMap>
@@ -34,13 +35,16 @@ public:
     void setVisible(bool visible);
 
     QVariantList nearbyDevices() const;
+    /// Each entry is { direction: "sent" | "received", fileName, filePath, deviceName, timestamp }.
     QVariantList transferHistory() const;
 
     Q_INVOKABLE void sendFile(const QString& deviceId, const QString& filePath);
     Q_INVOKABLE void acceptIncomingTransfer();
     Q_INVOKABLE void rejectIncomingTransfer();
     Q_INVOKABLE void clearHistory();
-    Q_INVOKABLE void removeHistoryEntry(int index);
+    /// Removes the entry naming this file and timestamp. Every transfer reorders the
+    /// list, so a position is not a stable way to name one.
+    Q_INVOKABLE void removeHistoryEntry(const QString& filePath, qint64 timestamp);
 
     Q_INVOKABLE void startBleWakeupBroadcast();
     Q_INVOKABLE void stopBleWakeupBroadcast();
@@ -56,8 +60,11 @@ signals:
     // UI notifications
     void incomingTransferRequested(const QString& deviceName, const QString& fileName, qint64 fileSize);
     void incomingTransferPinReady(const QString& pinCode);
-    void transferProgress(const QString& deviceId, qint64 bytesSent, qint64 bytesTotal);
-    void transferFinished(const QString& deviceId, bool success);
+    void outgoingTransferProgress(const QString& deviceId, qint64 bytesSent, qint64 bytesTotal);
+    /// The transfer this shell started with `deviceId` ended.
+    void outgoingTransferFinished(const QString& deviceId, bool success);
+    /// The transfer a nearby device started with this shell ended.
+    void incomingTransferFinished(bool success);
 
 private slots:
     void onDeviceFound(const QuickShareDevice& device);
@@ -67,6 +74,10 @@ private slots:
     void saveHistory();
 
 private:
+    /// Files a finished transfer at the top of the history and persists it.
+    void appendHistoryEntry(
+        const QString& direction, const QString& fileName, const QString& filePath, const QString& deviceName);
+
     bool m_isEnabled = false;
     bool m_isVisible = false;
 
@@ -78,9 +89,9 @@ private:
     QList<QuickShareDevice> m_devices;
     QVariantList m_transferHistory;
 
-    // Active connections
-    QMap<QString, QuickShareConnection*> m_activeConnections;
-    QuickShareConnection* m_pendingIncomingConnection = nullptr;
+    /// The incoming request the shell can still answer. Every connection is owned by
+    /// this object and tracked by the handlers that created it.
+    QPointer<QuickShareConnection> m_pendingIncomingRequest;
 };
 
 } // namespace caelestia::services

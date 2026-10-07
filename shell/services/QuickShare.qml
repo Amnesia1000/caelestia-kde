@@ -8,17 +8,13 @@ import Caelestia.Config
 import Caelestia.Services.QuickShare
 import qs.services
 
-/// Adapter over the C++ QuickShareService singleton, plus the shell-side parts of
-/// the feature: the incoming-transfer prompt and the auto-start on shell launch.
-/// Referencing this singleton is what creates the C++ service, so the shell root
-/// holds a reference to it (see shell.qml) rather than letting the drawer be first.
+/// The shell-side part of Quick Share: the prompt for a transfer another device
+/// started, and turning the service on at shell launch. The service itself is a QML
+/// singleton consumers use directly (QuickShareService); this only exists because the
+/// prompt outlives a single drawer, and referencing it is what brings the service up
+/// on launch (see shell.qml).
 Singleton {
     id: root
-
-    readonly property bool isEnabled: QuickShareService.isEnabled
-    readonly property bool isVisible: QuickShareService.isVisible
-    readonly property var nearbyDevices: QuickShareService.nearbyDevices
-    readonly property var transferHistory: QuickShareService.transferHistory
 
     /// The live incoming-transfer prompt, while one is pending. Null otherwise.
     property NotifData prompt: null
@@ -36,22 +32,12 @@ Singleton {
     /// Quick Share card in the utilities drawer.
     property bool pendingIncoming: false
 
-    function setEnabled(enabled: bool): void {
-        QuickShareService.isEnabled = enabled;
-    }
-
-    function setVisible(visible: bool): void {
-        QuickShareService.isVisible = visible;
-    }
-
+    /// Turns the service on or off, keeping the "visible to nearby devices" flag in
+    /// step so that toggling off stops advertising as well.
     function toggle(): void {
-        const enabled = !root.isEnabled;
-        root.setEnabled(enabled);
-        root.setVisible(enabled);
-    }
-
-    function sendFile(deviceId: string, filePath: string): void {
-        QuickShareService.sendFile(deviceId, filePath);
+        const enabled = !QuickShareService.isEnabled;
+        QuickShareService.isEnabled = enabled;
+        QuickShareService.isVisible = enabled;
     }
 
     function acceptIncomingTransfer(): void {
@@ -62,22 +48,6 @@ Singleton {
     function rejectIncomingTransfer(): void {
         root.pendingIncoming = false;
         QuickShareService.rejectIncomingTransfer();
-    }
-
-    function clearHistory(): void {
-        QuickShareService.clearHistory();
-    }
-
-    function removeHistoryEntry(index: int): void {
-        QuickShareService.removeHistoryEntry(index);
-    }
-
-    function startBleWakeupBroadcast(): void {
-        QuickShareService.startBleWakeupBroadcast();
-    }
-
-    function stopBleWakeupBroadcast(): void {
-        QuickShareService.stopBleWakeupBroadcast();
     }
 
     function clearPrompt(): void {
@@ -98,10 +68,11 @@ Singleton {
     }
 
     Component.onCompleted: {
-        if (GlobalConfig.services.quickShareAutoStart) {
-            root.setEnabled(true);
-            root.setVisible(true);
-        }
+        if (!GlobalConfig.services.quickShareAutoStart)
+            return;
+
+        QuickShareService.isEnabled = true;
+        QuickShareService.isVisible = true;
     }
 
     Connections {
@@ -115,6 +86,7 @@ Singleton {
                 summary: qsTr("Incoming file"),
                 body: root.promptBody(),
                 appName: qsTr("Quick Share"),
+                materialIcon: "near_me",
                 actions: [
                     { identifier: "decline", text: qsTr("Decline"), invoke: () => root.rejectIncomingTransfer() },
                     { identifier: "accept", text: qsTr("Accept"), invoke: () => root.acceptIncomingTransfer() }
@@ -130,9 +102,8 @@ Singleton {
                 root.prompt.body = root.promptBody();
         }
 
-        function onTransferFinished(deviceId: string, success: bool): void {
-            if (deviceId !== "incoming")
-                return;
+        function onIncomingTransferFinished(success: bool): void {
+            // Ended either way: the request is no longer answerable.
             root.pendingIncoming = false;
             root.clearPrompt();
         }

@@ -4,13 +4,16 @@
 #include <QDBusMessage>
 #include <QDBusObjectPath>
 #include <QDateTime>
+#include <QMap>
 #include <QObject>
 #include <QString>
 #include <QStringList>
 #include <QVariantMap>
 
-using Qt::StringLiterals::operator""_s;
+namespace caelestia::services {
 
+/// The org.bluez.LEAdvertisement1 object BlueZ asks the shell to expose while it
+/// advertises a Quick Share wakeup beacon.
 class QuickShareBleAdvertisementAdaptor : public QDBusAbstractAdaptor {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "org.bluez.LEAdvertisement1")
@@ -21,9 +24,9 @@ class QuickShareBleAdvertisementAdaptor : public QDBusAbstractAdaptor {
 public:
     explicit QuickShareBleAdvertisementAdaptor(QObject* parent);
 
-    QString type() const { return u"broadcast"_s; }
+    QString type() const;
 
-    QStringList serviceUUIDs() const { return { u"0000fe2c-0000-1000-8000-00805f9b34fb"_s }; }
+    QStringList serviceUUIDs() const;
 
     QVariantMap serviceData() const;
 
@@ -79,3 +82,5 @@ private:
     bool m_isScanning;
     QDateTime m_lastEmit;
 };
+
+} // namespace caelestia::services

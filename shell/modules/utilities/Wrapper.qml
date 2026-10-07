@@ -22,7 +22,7 @@ Item {
         property bool quickShareListExpanded: false
         property bool quickShareDeviceSelectorOpen: false
         property string quickShareConfirmDeletePath: ""
-        property int quickShareConfirmDeleteIndex: -1
+        property real quickShareConfirmDeleteTimestamp: 0
         property string captureMode
         property string recordingConfirmDelete
         property string recordingMode

@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Widgets
 import Caelestia.Config
+import Caelestia.Services.QuickShare
 import qs.components
 import qs.components.containers
 import qs.components.controls
@@ -27,127 +28,87 @@ Loader {
     opacity: root.props.quickShareDeviceSelectorOpen ? 1 : 0
     active: opacity > 0
 
+    // The beacon only has to be up while the selector is open.
     onActiveChanged: {
         if (active)
-            QuickShare.startBleWakeupBroadcast();
+            QuickShareService.startBleWakeupBroadcast();
         else
-            QuickShare.stopBleWakeupBroadcast();
+            QuickShareService.stopBleWakeupBroadcast();
     }
 
-    sourceComponent: MouseArea {
-        id: selector
+    sourceComponent: DrawerModal {
+        deformMatrix: root.deformMatrix
+        open: root.props.quickShareDeviceSelectorOpen
+        onDismissed: root.closeSelector()
 
-        hoverEnabled: true
-        onClicked: root.closeSelector()
-
-        DrawerScrim {
-            deformMatrix: root.deformMatrix
+        StyledText {
+            text: qsTr("Send a file")
+            font: Tokens.font.body.large
         }
 
-        StyledRect {
-            anchors.centerIn: parent
-            radius: Tokens.rounding.extraLarge
-            color: Colours.palette.m3surfaceContainerHigh
+        StyledText {
+            Layout.fillWidth: true
+            text: QuickShareService.nearbyDevices.length === 0 ? qsTr("Looking for nearby devices that have Quick Share open.") : qsTr("Choose a nearby device to send the file to.")
+            color: Colours.palette.m3onSurfaceVariant
+            font: Tokens.font.body.small
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            animate: true
+        }
 
-            scale: 0
-            Component.onCompleted: scale = Qt.binding(() => root.props.quickShareDeviceSelectorOpen ? 1 : 0)
+        StyledListView {
+            id: deviceList
 
-            width: Math.min(parent.width - Tokens.padding.extraLargeIncreased, implicitWidth)
-            implicitWidth: selectorLayout.implicitWidth + Tokens.padding.extraExtraLarge
-            implicitHeight: selectorLayout.implicitHeight + Tokens.padding.extraExtraLarge
+            Layout.fillWidth: true
+            implicitWidth: 300
+            implicitHeight: count > 0 ? Math.min(count * 48, 200) : 0
+            visible: count > 0
+            clip: true
 
-            MouseArea {
-                anchors.fill: parent
-            }
+            model: QuickShareService.nearbyDevices
 
-            Elevation {
-                anchors.fill: parent
-                radius: parent.radius
-                z: -1
-                level: 3
-            }
+            delegate: WrapperMouseArea {
+                required property var modelData
 
-            ColumnLayout {
-                id: selectorLayout
+                width: deviceList.width
+                height: 48
 
-                anchors.fill: parent
-                anchors.margins: Tokens.padding.large * 1.5
-                spacing: Tokens.spacing.medium
+                cursorShape: Qt.PointingHandCursor
 
-                StyledText {
-                    text: qsTr("Send a file")
-                    font: Tokens.font.body.large
-                }
-
-                StyledText {
-                    Layout.fillWidth: true
-                    text: QuickShare.nearbyDevices.length === 0 ? qsTr("Looking for nearby devices that have Quick Share open.") : qsTr("Choose a nearby device to send the file to.")
-                    color: Colours.palette.m3onSurfaceVariant
-                    font: Tokens.font.body.small
-                    wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                    animate: true
-                }
-
-                StyledListView {
-                    id: deviceList
-
-                    Layout.fillWidth: true
-                    implicitWidth: 300
-                    implicitHeight: count > 0 ? Math.min(count * 48, 200) : 0
-                    visible: count > 0
-                    clip: true
-
-                    model: QuickShare.nearbyDevices
-
-                    delegate: WrapperMouseArea {
-                        required property var modelData
-
-                        width: deviceList.width
-                        height: 48
-
-                        cursorShape: Qt.PointingHandCursor
-
-                        onClicked: {
-                            fileDialog.targetDeviceId = modelData.id;
-                            fileDialog.open();
-                        }
-
-                        RowLayout {
-                            anchors.fill: parent
-                            spacing: Tokens.spacing.medium
-
-                            MaterialIcon {
-                                Layout.alignment: Qt.AlignVCenter
-                                text: "smartphone"
-                                color: Colours.palette.m3primary
-                                fontStyle: Tokens.font.icon.large
-                            }
-
-                            StyledText {
-                                Layout.fillWidth: true
-                                text: modelData.name
-                                font: Tokens.font.body.medium
-                                elide: Text.ElideRight
-                            }
-                        }
-                    }
+                onClicked: {
+                    fileDialog.targetDeviceId = modelData.id;
+                    fileDialog.open();
                 }
 
                 RowLayout {
-                    Layout.topMargin: Tokens.spacing.medium
-                    Layout.alignment: Qt.AlignRight
+                    anchors.fill: parent
                     spacing: Tokens.spacing.medium
 
-                    TextButton {
-                        text: qsTr("Cancel")
-                        type: TextButton.Text
-                        onClicked: root.closeSelector()
+                    MaterialIcon {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: "smartphone"
+                        color: Colours.palette.m3primary
+                        fontStyle: Tokens.font.icon.large
+                    }
+
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: modelData.name
+                        font: Tokens.font.body.medium
+                        elide: Text.ElideRight
                     }
                 }
             }
+        }
 
-            Behavior on scale {
-                Anim {}
+        RowLayout {
+            Layout.topMargin: Tokens.spacing.medium
+            Layout.alignment: Qt.AlignRight
+            spacing: Tokens.spacing.medium
+
+            TextButton {
+                text: qsTr("Cancel")
+                type: TextButton.Text
+                onClicked: root.closeSelector()
             }
         }
     }
@@ -166,7 +127,7 @@ Loader {
         title: qsTr("Select a file to send")
         onAccepted: path => {
             if (fileDialog.targetDeviceId !== "")
-                QuickShare.sendFile(fileDialog.targetDeviceId, path.toString().replace("file://", ""));
+                QuickShareService.sendFile(fileDialog.targetDeviceId, path.toString().replace("file://", ""));
             root.closeSelector();
         }
         onRejected: root.closeSelector()
