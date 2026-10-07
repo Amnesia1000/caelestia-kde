@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell.Services.Mpris
+import Quickshell.Services.Pipewire
 import Caelestia.Config
 import Caelestia.Services
 import qs.components
@@ -25,6 +26,33 @@ StyledRect {
     readonly property bool showTitle: Config.bar.media.showTitle
     readonly property real contentWidth: root.showTitle ? contentLayout.implicitWidth : modeIcon.implicitWidth
     readonly property real contentHeight: root.showTitle ? contentLayout.implicitHeight : modeIcon.implicitHeight
+
+    // Stream-aware volume: MPRIS app volume first, then the matching
+    // PipeWire stream, then the global sink. Driven by mouse scroll.
+    readonly property PwNode playerStream: Audio.streams.find(s => {
+        const identity = root.player?.identity?.toLowerCase() ?? "";
+        const entry = (root.player?.entry ?? "").toString().toLowerCase();
+        if (!identity && !entry)
+            return false;
+        const streamName = Audio.getStreamName(s).toLowerCase();
+        const binary = (s.properties["application.process.binary"] ?? "").toString().toLowerCase();
+        const appName = (s.properties["app.name"] ?? "").toString().toLowerCase();
+        const playerNames = [identity, entry].filter(n => n);
+        const streamNames = [streamName, binary, appName].filter(n => n);
+        return streamNames.some(sn => playerNames.some(pn => sn.includes(pn) || pn.includes(sn)));
+    }) || null
+    readonly property real currentVolume: (Players.supportsAppVolume(root.player) && root.player?.volume !== undefined && root.player?.volume !== null) ? root.player.volume : (root.playerStream ? Audio.getStreamVolume(root.playerStream) : Audio.volume)
+
+    function setVolumeLevel(v: real): void {
+        const clamped = Math.max(0, Math.min(1, v));
+        if (Players.supportsAppVolume(root.player) && root.player && root.player.volume !== undefined) {
+            root.player.volume = clamped;
+        } else if (root.playerStream) {
+            Audio.setStreamVolume(root.playerStream, clamped);
+        } else {
+            Audio.setVolume(clamped);
+        }
+    }
 
     implicitWidth: isHorizontal ? contentWidth + Tokens.padding.medium * 2 : Tokens.sizes.bar.innerWidth
     implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : contentHeight + Tokens.padding.medium * 2
@@ -130,5 +158,15 @@ StyledRect {
         text: "graphic_eq"
         color: Colours.palette.m3onSurface
         fontStyle: Tokens.font.icon.builders.medium.build()
+    }
+
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => {
+            if (event.angleDelta.y > 0)
+                root.setVolumeLevel(root.currentVolume + 0.05);
+            else if (event.angleDelta.y < 0)
+                root.setVolumeLevel(root.currentVolume - 0.05);
+        }
     }
 }
