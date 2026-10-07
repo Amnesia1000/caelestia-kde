@@ -26,7 +26,7 @@ StyledSwitch {
 
     indicator.anchors.verticalCenter: verticalCenter
     indicator.anchors.right: right
-    indicator.anchors.rightMargin: resetBtn.visible ? resetBtn.width + Tokens.spacing.small * 2 : root.horizontalPadding
+    indicator.anchors.rightMargin: resetBtn.visible ? resetBtn.width + resetBtn.anchors.rightMargin + Tokens.spacing.small : root.horizontalPadding
 
     onPressed: stateLayer.press(stateLayer.mouseX, stateLayer.mouseY)
 
@@ -85,8 +85,10 @@ StyledSwitch {
     SettingResetButton {
         id: resetBtn
 
+        // Same right inset as SliderRow/StepperRow so reset icons line up
+        // in one column across every row type.
         anchors.right: parent.right
-        anchors.rightMargin: Tokens.spacing.small
+        anchors.rightMargin: Tokens.padding.medium
         anchors.verticalCenter: parent.verticalCenter
         options: root.reset
     }

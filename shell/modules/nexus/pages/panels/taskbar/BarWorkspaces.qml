@@ -55,6 +55,7 @@ PageBase {
             first: true
             label: qsTr("Shown")
             subtext: qsTr("Number of workspaces displayed")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "shown" })
             value: Config.bar.workspaces.shown
             from: 1
             to: 20
@@ -76,18 +77,21 @@ PageBase {
 
         ToggleRow {
             text: qsTr("Active indicator")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "activeIndicator" })
             checked: Config.bar.workspaces.activeIndicator
             onToggled: GlobalConfig.bar.workspaces.activeIndicator = checked
         }
 
         ToggleRow {
             text: qsTr("Active trail")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "activeTrail" })
             checked: Config.bar.workspaces.activeTrail
             onToggled: GlobalConfig.bar.workspaces.activeTrail = checked
         }
 
         ToggleRow {
             text: qsTr("Occupied background")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "occupiedBg" })
             checked: Config.bar.workspaces.occupiedBg
             onToggled: GlobalConfig.bar.workspaces.occupiedBg = checked
         }
@@ -105,6 +109,7 @@ PageBase {
             Layout.fillWidth: true
             text: qsTr("Show windows")
             subtext: qsTr("Show icons of open windows on each workspace")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "showWindows" })
             checked: Config.bar.workspaces.showWindows
             onToggled: GlobalConfig.bar.workspaces.showWindows = checked
         }
@@ -113,18 +118,21 @@ PageBase {
             Layout.fillWidth: true
             text: qsTr("Show unoccupied")
             subtext: qsTr("Show workspaces that are inactive and empty")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "showUnoccupied" })
             checked: Config.bar.workspaces.showUnoccupied
             onToggled: GlobalConfig.bar.workspaces.showUnoccupied = checked
         }
 
         ToggleRow {
             text: qsTr("Windows on special workspaces")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "showWindowsOnSpecialWorkspaces" })
             checked: Config.bar.workspaces.showWindowsOnSpecialWorkspaces
             onToggled: GlobalConfig.bar.workspaces.showWindowsOnSpecialWorkspaces = checked
         }
 
         StepperRow {
             label: qsTr("Max window icons")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "maxWindowIcons" })
             value: Config.bar.workspaces.maxWindowIcons
             from: 0
             to: 20
@@ -136,6 +144,7 @@ PageBase {
             last: true
             text: qsTr("Per monitor")
             subtext: qsTr("Hide workspaces not on the current monitor")
+            reset: ({ node: GlobalConfig.bar.workspaces, setting: "perMonitor" })
             checked: Config.bar.workspaces.perMonitor
             onToggled: GlobalConfig.bar.workspaces.perMonitor = checked
         }
