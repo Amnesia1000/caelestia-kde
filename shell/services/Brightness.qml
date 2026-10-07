@@ -182,6 +182,7 @@ Singleton {
         readonly property bool isDdc: ddcInfo !== null
         readonly property string busNum: ddcInfo?.busNum ?? ""
         readonly property bool isAppleDisplay: root.appleDisplayPresent && modelData.model.startsWith("StudioDisplay")
+        readonly property bool writesHardwareDirectly: isAppleDisplay || isDdc
         property real brightness: 1.0
         property real queuedBrightness: NaN
         property bool verifying: false
@@ -228,15 +229,13 @@ Singleton {
             }
         }
 
-        function syncKwinBrightness(value: real): void {
-            if ((isDdc || isAppleDisplay) && BrightnessWatcher.brightness(modelData.name) >= 0)
+        function syncKwinRecord(value: real): void {
+            if (writesHardwareDirectly && BrightnessWatcher.brightness(modelData.name) >= 0)
                 BrightnessWatcher.setBrightness(modelData.name, value);
         }
 
         function writeBrightness(value: real): void {
             const rounded = Math.round(value * 100);
-
-            syncKwinBrightness(value);
 
             if (isAppleDisplay)
                 Quickshell.execDetached(["asdbctl", "set", rounded]);
@@ -250,7 +249,7 @@ Singleton {
             value = Math.max(0, Math.min(1, value));
             const rounded = Math.round(value * 100);
             if (Math.round(brightness * 100) === rounded) {
-                syncKwinBrightness(value);
+                syncKwinRecord(rounded / 100);
 
                 if (isDdc && !timer.running && !readProc.running) {
                     verifying = true;
@@ -263,6 +262,8 @@ Singleton {
                 queuedBrightness = value;
                 return;
             }
+
+            syncKwinRecord(rounded / 100);
 
             brightness = value;
             writeBrightness(value);
