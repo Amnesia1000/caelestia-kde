@@ -5,7 +5,7 @@ import QtQuick
 import Quickshell
 import Caelestia
 import Caelestia.Config
-import Caelestia.Services
+import Caelestia.Services.QuickShare
 import qs.services
 
 /// Adapter over the C++ QuickShareService singleton, plus the shell-side parts of
