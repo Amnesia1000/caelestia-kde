@@ -6,6 +6,7 @@ import Caelestia.Config
 import qs.components
 import qs.components.controls
 import qs.services
+import qs.modules.nexus.common
 
 StyledRect {
     id: root
@@ -85,7 +86,7 @@ StyledRect {
                         visible: root.subtext !== ""
                         text: root.subtext
                         color: Colours.palette.m3onSurfaceVariant
-                        font: Tokens.font.label.builders.small.size(10).build()
+                        font: NexusStyle.secondaryFont
                         elide: Text.ElideRight
                     }
                 }

@@ -404,7 +404,7 @@ PageBase {
                         Layout.fillWidth: true
                         text: PluginStore.installError !== "" ? PluginStore.installError : PluginStore.installing ? PluginStore.installProgress : qsTr("The repository root must contain metadata.json")
                         color: PluginStore.installError !== "" ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
-                        font: Tokens.font.label.builders.small.size(10).build()
+                        font: NexusStyle.secondaryFont
                         elide: Text.ElideRight
                     }
 

@@ -173,7 +173,7 @@ PageBase {
                                 Layout.fillWidth: true
                                 text: qsTr("Uses xdg-open (KDE Default)")
                                 color: Colours.palette.m3onSurfaceVariant
-                                font: Tokens.font.label.builders.small.size(10).build()
+                                font: NexusStyle.secondaryFont
                                 elide: Text.ElideRight
                             }
                         }
@@ -226,7 +226,7 @@ PageBase {
                                 visible: text !== ""
                                 text: (appItem.modelData.comment || appItem.modelData.genericName) ?? ""
                                 color: Colours.palette.m3onSurfaceVariant
-                                font: Tokens.font.label.builders.small.size(10).build()
+                                font: NexusStyle.secondaryFont
                                 elide: Text.ElideRight
                             }
                         }

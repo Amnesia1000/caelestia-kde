@@ -148,7 +148,7 @@ StyledRect {
                                 anchors.centerIn: parent
                                 text: "v" + root.versionText
                                 color: Colours.palette.m3onSurfaceVariant
-                                font: Tokens.font.label.builders.small.size(10).build()
+                                font: NexusStyle.secondaryFont
                             }
                         }
 
@@ -212,7 +212,7 @@ StyledRect {
                                     visible: root.updateVersionText !== ""
                                     text: root.updateVersionText
                                     color: Colours.palette.m3onPrimary
-                                    font: Tokens.font.label.builders.small.size(10).build()
+                                    font: NexusStyle.secondaryFont
                                 }
                             }
 
@@ -233,7 +233,7 @@ StyledRect {
                 StyledText {
                     Layout.fillWidth: true
                     text: root.descriptionText
-                    font: Tokens.font.label.builders.small.size(10).build()
+                    font: NexusStyle.secondaryFont
                     color: Colours.palette.m3onSurfaceVariant
                     elide: Text.ElideRight
                     wrapMode: root.isExpanded ? Text.Wrap : Text.NoWrap
@@ -312,7 +312,7 @@ StyledRect {
 
                     anchors.centerIn: parent
                     text: root.authorNameText ? "by " + root.authorNameText : ""
-                    font: Tokens.font.label.builders.small.size(10).build()
+                    font: NexusStyle.secondaryFont
                     color: Colours.palette.m3primary
                 }
             }

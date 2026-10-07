@@ -148,7 +148,7 @@ PageBase {
                             Layout.fillWidth: true
                             text: newDevice.modelData?.pairing ? qsTr("Pairing...") : (newDevice.modelData?.address ?? "")
                             color: Colours.palette.m3onSurfaceVariant
-                            font: Tokens.font.label.builders.small.size(10).build()
+                            font: NexusStyle.secondaryFont
                             elide: Text.ElideRight
                             animate: true
                         }
