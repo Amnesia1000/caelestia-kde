@@ -96,6 +96,13 @@ Item {
         }
 
         Popout {
+            name: "weather"
+            sourceComponent: Weather {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             id: passwordPopout
 
             name: "wirelesspassword"

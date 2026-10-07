@@ -19,7 +19,7 @@ Item {
         anchors.centerIn: parent
         text: "sticky_note_2"
         fontStyle: Tokens.font.icon.builders.medium.weight(Font.Medium).build()
-        color: Colours.palette.m3onSurface
+        color: Colours.palette.m3primary
     }
 
     MouseArea {
