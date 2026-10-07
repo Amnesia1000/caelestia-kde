@@ -71,6 +71,8 @@ Singleton {
         }
     }
 
+    Component.onCompleted: root.rescan()
+
     Connections {
         function onDndWhileStreamingChanged(): void {
             if (!Config.utilities.toasts.dndWhileStreaming && root.autoDnd) {
@@ -116,6 +118,4 @@ Singleton {
 
         target: Recorder
     }
-
-    Component.onCompleted: root.rescan()
 }
