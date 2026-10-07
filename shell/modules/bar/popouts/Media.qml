@@ -5,8 +5,8 @@ import QtQuick.Layouts
 import Quickshell.Services.Mpris
 import Caelestia.Config
 import qs.components
-import qs.modules.dashboard.dash as DashMedia
 import qs.services
+import qs.modules.dashboard.dash as DashMedia
 
 // Bar popout reusing the dashboard mini player, with a source line on top.
 ColumnLayout {
