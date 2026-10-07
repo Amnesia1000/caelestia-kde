@@ -25,6 +25,7 @@ PageBase {
             available: BarComponents.GithubStore.available,
             unavailableText: qsTr("GitHub token not detected")
         },
+        "media": { icon: "graphic_eq", name: qsTr("Now playing") },
         "greeter": { icon: "waving_hand", name: qsTr("Greeter") },
         "notes": { icon: "sticky_note_2", name: qsTr("Notes") },
         "tray": { icon: "expand_more", name: qsTr("System tray") },

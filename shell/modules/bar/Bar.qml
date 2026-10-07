@@ -218,6 +218,21 @@ Item {
         } else if (id === "notes") {
             // Click-to-toggle entry: the component opens/closes its own
             // popout, so hover leaves the popout state alone.
+        } else if (id === "media") {
+            const item = ch.item as Item;
+            if (item) {
+                const relPos = pos - top;
+                const inside = isHorizontal ? (relPos >= 0 && relPos <= item.implicitWidth) : (relPos >= 0 && relPos <= item.implicitHeight);
+                if (inside) {
+                    popouts.currentName = "media";
+                    popouts.currentCenter = isHorizontal ? item.mapToItem(null, item.implicitWidth / 2, 0).x : (item.mapToItem(null, 0, item.implicitHeight / 2).y ?? 0);
+                    popouts.hasCurrent = true;
+                } else {
+                    popouts.hasCurrent = false;
+                }
+            } else {
+                popouts.hasCurrent = false;
+            }
         } else if (id === "updateIndicator") {
             const item = ch.item as Item;
             if (item) {
@@ -535,6 +550,14 @@ Item {
                 delegate: WrappedLoader {
                     visible: enabled && GithubStore.available
                     sourceComponent: GithubActivity {
+                        popouts: root.popouts
+                    }
+                }
+            }
+            DelegateChoice {
+                roleValue: "media"
+                delegate: WrappedLoader {
+                    sourceComponent: Media {
                         popouts: root.popouts
                     }
                 }

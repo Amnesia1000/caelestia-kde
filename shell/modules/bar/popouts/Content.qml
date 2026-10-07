@@ -170,6 +170,13 @@ Item {
         }
 
         Popout {
+            name: "media"
+            sourceComponent: Media {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             name: "updateIndicator"
             sourceComponent: Updates {
                 popouts: root.popouts
