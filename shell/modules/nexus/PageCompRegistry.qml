@@ -137,6 +137,9 @@ QtObject {
                 Component {
                     TabSwitcherPanel {}
                 }
+                Component {
+                    BarMedia {}
+                }
             }
         },
         Component {
