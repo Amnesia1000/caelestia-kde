@@ -42,11 +42,12 @@ ColumnLayout {
     Item {
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: root.miniWidth
-        Layout.preferredHeight: 450
+        Layout.preferredHeight: 340
 
         DashMedia.Media {
             width: root.miniWidth
             extraButtons: true
+            showGif: false
         }
     }
 }

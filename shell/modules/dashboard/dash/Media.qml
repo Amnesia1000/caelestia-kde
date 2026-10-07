@@ -27,6 +27,10 @@ Item {
     // as before.
     property bool extraButtons: false
 
+    // Lets embedders hide the gif block to compact the player.
+    // Defaults to true, so the dashboard renders exactly as before.
+    property bool showGif: true
+
     anchors.top: parent.top
     anchors.bottom: parent.bottom
     implicitWidth: Tokens.sizes.dashboard.mediaWidth
@@ -209,6 +213,7 @@ Item {
     Item {
         id: bongocat
 
+        visible: root.showGif
         anchors.top: controls.bottom
         anchors.bottom: parent.bottom
         anchors.left: parent.left
