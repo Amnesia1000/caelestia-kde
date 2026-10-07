@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QFile>
 #include <QObject>
 #include <QTcpSocket>
 
@@ -75,6 +76,9 @@ private:
     void sendConnectionResponse();
     void sendDisconnection();
     void sendFilePayload();
+    /// Keeps the socket's write buffer fed while it drains, so sending a file
+    /// neither blocks the shell nor holds the whole file in memory.
+    void pumpOutgoingFile();
     void sendPayloadChunk(qint64 payloadId,
         location::nearby::connections::PayloadTransferFrame::PayloadHeader::PayloadType type, qint64 totalSize,
         qint64 offset, bool lastChunk, const QByteArray& body, const QString& fileName = {});
@@ -99,7 +103,12 @@ private:
 
     qint64 m_outgoingFilePayloadId = 0;
     QString m_outgoingFilePath;
+    QString m_outgoingFileName;
     qint64 m_outgoingFileSize = 0;
+    qint64 m_outgoingOffset = 0;
+    QFile m_outgoingFile;
+    /// The file and its trailer are on the wire; only the socket draining is left.
+    bool m_outgoingFileQueued = false;
 
     QMap<qint64, QByteArray> m_payloadBuffers;
 

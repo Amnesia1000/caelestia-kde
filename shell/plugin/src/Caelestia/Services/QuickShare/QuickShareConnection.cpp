@@ -4,6 +4,7 @@
 #include <openssl/rand.h>
 
 #include <QDebug>
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QMimeDatabase>
@@ -32,6 +33,38 @@ using location::nearby::connections::V1Frame;
 
 /// The payload chunk size this implementation writes.
 constexpr qint64 chunkSize = 1024 * 1024;
+
+/// How much of an outgoing file may sit in Qt's socket write buffer before the
+/// send waits for the socket to drain.
+constexpr qint64 sendBufferLimit = 4 * chunkSize;
+
+/// The name to save a received file under. The peer chose it, so it can name a
+/// path: keep only the last component and refuse anything that would still
+/// traverse or name nothing at all.
+QString safeIncomingFileName(const QString& proposed) {
+    QString name = proposed;
+    name.replace(u'\\', u'/');
+    name = name.section(u'/', -1).trimmed();
+    if (name.isEmpty() || name == u"."_s || name == u".."_s)
+        return u"received-file"_s;
+    return name;
+}
+
+/// A path in `directory` that does not overwrite what is already there.
+QString uniqueFilePath(const QString& directory, const QString& fileName) {
+    const QString direct = directory + u'/' + fileName;
+    if (!QFile::exists(direct))
+        return direct;
+
+    const QFileInfo info(fileName);
+    const QString suffix = info.suffix();
+    const QString tail = suffix.isEmpty() ? QString() : u'.' + suffix;
+    for (int n = 1;; n++) {
+        const QString candidate = QString(u"%1/%2 (%3)%4"_s).arg(directory, info.completeBaseName()).arg(n).arg(tail);
+        if (!QFile::exists(candidate))
+            return candidate;
+    }
+}
 
 void writeLengthPrefixed(QTcpSocket* socket, const QByteArray& data) {
     const uint32_t length = qToBigEndian(static_cast<uint32_t>(data.size()));
@@ -99,6 +132,7 @@ QuickShareConnection::~QuickShareConnection() {
 
 void QuickShareConnection::connectSocket() {
     connect(m_socket, &QTcpSocket::readyRead, this, &QuickShareConnection::onReadyRead);
+    connect(m_socket, &QTcpSocket::bytesWritten, this, &QuickShareConnection::pumpOutgoingFile);
     connect(m_socket, &QTcpSocket::disconnected, this, &QuickShareConnection::onDisconnected);
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     connect(m_socket, &QTcpSocket::errorOccurred, this, &QuickShareConnection::onError);
@@ -121,6 +155,7 @@ void QuickShareConnection::finishTransfer(bool success) {
         return;
 
     m_finished = true;
+    m_outgoingFile.close();
     emit transferFinished(success);
 }
 
@@ -479,20 +514,21 @@ void QuickShareConnection::handleFileChunk(const PayloadTransferFrame& packet, c
 }
 
 void QuickShareConnection::saveIncomingFile() {
-    const QString savePath =
-        QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + u'/' + m_incomingFileName;
-    QFile file(savePath);
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(m_fileBuffer);
-        file.close();
-    } else {
-        qWarning() << u"QuickShareConnection: Failed to save file to"_s << savePath;
-    }
+    const QString directory = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    QDir().mkpath(directory);
 
-    m_incomingFilePath = savePath;
+    const QString savePath = directory.isEmpty() ? QString() : uniqueFilePath(directory, m_incomingFileName);
+    QFile file(savePath);
+    const bool saved = file.open(QIODevice::WriteOnly) && file.write(m_fileBuffer) == m_fileBuffer.size();
+    if (saved)
+        file.close();
+    else
+        qWarning() << u"QuickShareConnection: Failed to save"_s << m_incomingFileName << u"to"_s << savePath;
+
+    m_incomingFilePath = saved ? savePath : QString();
     m_fileTransferActive = false;
     m_fileBuffer.clear();
-    finishTransfer(true);
+    finishTransfer(saved);
 }
 
 void QuickShareConnection::handleByteChunk(const PayloadTransferFrame& packet, const QByteArray& body) {
@@ -532,7 +568,7 @@ void QuickShareConnection::handleSharingFrame(const sharing::nearby::Frame& fram
             break;
 
         const auto& metadata = introduction.file_metadata(0);
-        m_incomingFileName = QString::fromStdString(metadata.name());
+        m_incomingFileName = safeIncomingFileName(QString::fromStdString(metadata.name()));
         m_incomingFileSize = metadata.size();
         emit transferRequested(m_incomingFileName, m_incomingFileSize);
         break;
@@ -552,29 +588,45 @@ void QuickShareConnection::handleSharingFrame(const sharing::nearby::Frame& fram
 }
 
 void QuickShareConnection::sendFilePayload() {
-    QFile file(m_outgoingFilePath);
-    if (!file.open(QIODevice::ReadOnly)) {
+    if (m_outgoingFile.isOpen() || m_outgoingFileQueued || m_finished)
+        return;
+
+    m_outgoingFile.setFileName(m_outgoingFilePath);
+    if (!m_outgoingFile.open(QIODevice::ReadOnly)) {
         qWarning() << u"QuickShareConnection: Failed to open file to send!"_s << m_outgoingFilePath;
         finishTransfer(false);
         return;
     }
 
-    const QString fileName = QFileInfo(m_outgoingFilePath).fileName();
-    qint64 offset = 0;
-    while (!file.atEnd()) {
-        const QByteArray chunk = file.read(chunkSize);
-        sendPayloadChunk(m_outgoingFilePayloadId, PayloadTransferFrame::PayloadHeader::FILE, m_outgoingFileSize, offset,
-            false, chunk, fileName);
-        offset += chunk.size();
-        emit transferProgress(offset, m_outgoingFileSize);
-    }
-    file.close();
+    m_outgoingFileName = QFileInfo(m_outgoingFilePath).fileName();
+    m_outgoingOffset = 0;
+    pumpOutgoingFile();
+}
 
-    // An empty last chunk terminates the file payload.
-    sendPayloadChunk(m_outgoingFilePayloadId, PayloadTransferFrame::PayloadHeader::FILE, m_outgoingFileSize,
-        m_outgoingFileSize, true, {}, fileName);
-    sendDisconnection();
-    finishTransfer(true);
+void QuickShareConnection::pumpOutgoingFile() {
+    if (m_outgoingFile.isOpen()) {
+        while (!m_outgoingFile.atEnd() && m_socket->bytesToWrite() < sendBufferLimit) {
+            const QByteArray chunk = m_outgoingFile.read(chunkSize);
+            sendPayloadChunk(m_outgoingFilePayloadId, PayloadTransferFrame::PayloadHeader::FILE, m_outgoingFileSize,
+                m_outgoingOffset, false, chunk, m_outgoingFileName);
+            m_outgoingOffset += chunk.size();
+            emit transferProgress(m_outgoingOffset, m_outgoingFileSize);
+        }
+
+        if (m_outgoingFile.atEnd()) {
+            m_outgoingFile.close();
+            // An empty last chunk terminates the file payload.
+            sendPayloadChunk(m_outgoingFilePayloadId, PayloadTransferFrame::PayloadHeader::FILE, m_outgoingFileSize,
+                m_outgoingFileSize, true, {}, m_outgoingFileName);
+            sendDisconnection();
+            m_outgoingFileQueued = true;
+        }
+    }
+
+    // Report the transfer only once the socket has handed every byte to the peer:
+    // the transfer is the file, the terminator and the disconnection after it.
+    if (m_outgoingFileQueued && m_socket->bytesToWrite() == 0)
+        finishTransfer(true);
 }
 
 void QuickShareConnection::sendDisconnection() {
