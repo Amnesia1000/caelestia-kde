@@ -22,9 +22,12 @@ StyledRect {
     readonly property string trackTitle: rawTitle.length > maxLen ? rawTitle.substring(0, maxLen) + "…" : rawTitle
     readonly property bool isPlaying: player?.isPlaying ?? false
     readonly property bool available: player !== null
+    readonly property bool showTitle: Config.bar.media.showTitle
+    readonly property real contentWidth: root.showTitle ? contentLayout.implicitWidth : modeIcon.implicitWidth
+    readonly property real contentHeight: root.showTitle ? contentLayout.implicitHeight : modeIcon.implicitHeight
 
-    implicitWidth: isHorizontal ? contentLayout.implicitWidth + Tokens.padding.medium * 2 : Tokens.sizes.bar.innerWidth
-    implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : contentLayout.implicitHeight + Tokens.padding.medium * 2
+    implicitWidth: isHorizontal ? contentWidth + Tokens.padding.medium * 2 : Tokens.sizes.bar.innerWidth
+    implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : contentHeight + Tokens.padding.medium * 2
 
     color: Config.bar.media.background ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
     radius: Tokens.rounding.full
@@ -47,6 +50,8 @@ StyledRect {
 
         Item {
             id: textContainer
+
+            visible: root.showTitle
 
             Layout.alignment: Qt.AlignCenter
             Layout.row: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 1 : 0)
@@ -76,7 +81,7 @@ StyledRect {
             Layout.row: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 0 : 1)
             Layout.column: root.isHorizontal ? 1 : 0
 
-            visible: Config.bar.media.showVisualiser
+            visible: Config.bar.media.showVisualiser && root.showTitle
             implicitWidth: root.isHorizontal ? (visible ? 23 : 0) : 20
             implicitHeight: root.isHorizontal ? 20 : (visible ? 23 : 0)
 
@@ -115,5 +120,15 @@ StyledRect {
                 }
             }
         }
+    }
+
+    MaterialIcon {
+        id: modeIcon
+
+        anchors.centerIn: parent
+        visible: !root.showTitle
+        text: "graphic_eq"
+        color: Colours.palette.m3onSurface
+        fontStyle: Tokens.font.icon.builders.medium.build()
     }
 }

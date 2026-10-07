@@ -64,11 +64,11 @@ PageBase {
 
         ToggleRow {
             last: true
-            text: qsTr("Horizontal volume slider")
-            subtext: qsTr("Place the volume slider below the controls in the popout")
-            checked: Config.bar.media.horizontalVolume
+            text: qsTr("Show title")
+            subtext: qsTr("Show the track title in the bar, otherwise show an icon")
+            checked: Config.bar.media.showTitle
             onToggled: {
-                GlobalConfig.bar.media.horizontalVolume = checked;
+                GlobalConfig.bar.media.showTitle = checked;
                 GlobalConfig.save();
             }
         }
