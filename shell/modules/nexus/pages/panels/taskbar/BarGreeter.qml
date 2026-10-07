@@ -74,6 +74,32 @@ PageBase {
                 }
                 return false;
             }
+            // Custom reset: enabled state lives in bar.entries, default is true
+            reset: ({
+                customGet: () => {
+                    const entries = GlobalConfig.bar.entries || [];
+                    for (let i = 0; i < entries.length; i++)
+                        if (entries[i].id === "greeter")
+                            return entries[i].enabled;
+                    return false;
+                },
+                customDef: true,
+                customSet: v => {
+                    let newEntries = [...(GlobalConfig.bar.entries || [])];
+                    let found = false;
+                    for (let i = 0; i < newEntries.length; i++) {
+                        if (newEntries[i].id === "greeter") {
+                            newEntries[i].enabled = v;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                        newEntries.push({ id: "greeter", enabled: v, zone: "left" });
+                    GlobalConfig.bar.entries = newEntries;
+                    GlobalConfig.save();
+                }
+            })
             onToggled: {
                 let newEntries = [...(GlobalConfig.bar.entries || [])];
                 let found = false;
@@ -96,6 +122,7 @@ PageBase {
 
         ToggleRow {
             text: qsTr("Inverted")
+            reset: ({ node: GlobalConfig.bar.greeter, setting: "inverted" })
             checked: Config.bar.greeter?.inverted ?? false
             onToggled: {
                 GlobalConfig.bar.greeter.inverted = checked;
@@ -106,6 +133,7 @@ PageBase {
         ToggleRow {
             text: qsTr("Show on hover")
             subtext: qsTr("Only show the greeter while hovering")
+            reset: ({ node: GlobalConfig.bar.greeter, setting: "showOnHover" })
             checked: Config.bar.greeter?.showOnHover ?? true
             onToggled: {
                 GlobalConfig.bar.greeter.showOnHover = checked;
@@ -117,6 +145,7 @@ PageBase {
             last: true
             text: qsTr("Popout on hover")
             subtext: qsTr("Show a greeter popout when hovering")
+            reset: ({ node: GlobalConfig.bar.popouts, setting: "greeter" })
             checked: Config.bar.popouts?.greeter ?? true
             onToggled: {
                 GlobalConfig.bar.popouts.greeter = checked;
@@ -171,6 +200,7 @@ PageBase {
             visible: (Config.bar.greeter?.mode ?? "timeOfDay") !== "slideshow"
             label: qsTr("Morning start time")
             subtext: root.formatHour(Config.bar.greeter?.morningStart ?? 5)
+            reset: ({ node: GlobalConfig.bar.greeter, setting: "morningStart" })
             value: Config.bar.greeter?.morningStart ?? 5
             from: 0
             to: 23
@@ -216,6 +246,7 @@ PageBase {
             visible: (Config.bar.greeter?.mode ?? "timeOfDay") !== "slideshow"
             label: qsTr("Afternoon start time")
             subtext: root.formatHour(Config.bar.greeter?.afternoonStart ?? 12)
+            reset: ({ node: GlobalConfig.bar.greeter, setting: "afternoonStart" })
             value: Config.bar.greeter?.afternoonStart ?? 12
             from: 0
             to: 23
@@ -261,6 +292,7 @@ PageBase {
             visible: (Config.bar.greeter?.mode ?? "timeOfDay") !== "slideshow"
             label: qsTr("Evening start time")
             subtext: root.formatHour(Config.bar.greeter?.eveningStart ?? 17)
+            reset: ({ node: GlobalConfig.bar.greeter, setting: "eveningStart" })
             value: Config.bar.greeter?.eveningStart ?? 17
             from: 0
             to: 23
@@ -306,6 +338,7 @@ PageBase {
             visible: (Config.bar.greeter?.mode ?? "timeOfDay") !== "slideshow"
             label: qsTr("Night start time")
             subtext: root.formatHour(Config.bar.greeter?.nightStart ?? 20)
+            reset: ({ node: GlobalConfig.bar.greeter, setting: "nightStart" })
             value: Config.bar.greeter?.nightStart ?? 20
             from: 0
             to: 23
@@ -338,6 +371,7 @@ PageBase {
             first: true
             label: qsTr("Slide interval")
             subtext: qsTr("%1 seconds").arg(Math.round(Config.bar.greeter?.slideshowInterval ?? 60))
+            reset: ({ node: GlobalConfig.bar.greeter, setting: "slideshowInterval" })
             value: Config.bar.greeter?.slideshowInterval ?? 60
             from: 5
             to: 3600
@@ -352,6 +386,7 @@ PageBase {
             visible: (Config.bar.greeter?.mode ?? "timeOfDay") === "slideshow"
             text: qsTr("Random shuffle")
             subtext: qsTr("Pick random media instead of cycling sequentially")
+            reset: ({ node: GlobalConfig.bar.greeter, setting: "slideshowRandom" })
             checked: Config.bar.greeter?.slideshowRandom ?? false
             onToggled: {
                 GlobalConfig.bar.greeter.slideshowRandom = checked;
