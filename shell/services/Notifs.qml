@@ -59,11 +59,11 @@ Singleton {
     /// Raises a notification the shell authored itself: there is no D-Bus
     /// notification behind it, and its actions run shell callbacks rather than
     /// the sender's. Kept out of the on-disk history, since those callbacks
-    /// cannot survive a restart (see NotifData.transient).
-    function addCustomNotification(params: var): NotifData {
+    /// cannot survive a restart (see NotifData.shellRaised).
+    function addShellNotification(params: var): NotifData {
         const comp = notifComp.createObject(root, {
             popup: root.shouldShowPopup(),
-            transient: true,
+            shellRaised: true,
             image: "",
             hints: ({}),
             appName: params.appName ?? qsTr("Caelestia"),
@@ -142,7 +142,7 @@ Singleton {
     }
 
     function serializeState(): string {
-        return JSON.stringify(root.notClosed().filter(n => !n.transient).map(n => ({
+        return JSON.stringify(root.notClosed().filter(n => !n.shellRaised).map(n => ({
                         time: n.time,
                         id: n.id,
                         summary: n.summary,

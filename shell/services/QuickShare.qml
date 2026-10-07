@@ -99,7 +99,7 @@ Singleton {
             root.promptDeviceName = deviceName;
             root.promptFileName = fileName;
             root.promptFileSize = fileSize;
-            root.prompt = Notifs.addCustomNotification({
+            root.prompt = Notifs.addShellNotification({
                 summary: qsTr("Incoming file"),
                 body: root.promptBody(),
                 appName: qsTr("Quick Share"),

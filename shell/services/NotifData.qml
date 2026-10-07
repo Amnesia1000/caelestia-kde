@@ -43,7 +43,7 @@ QtObject {
     property bool hasActionIcons
     // A notification the shell raised itself. Kept out of the on-disk history:
     // its actions hold live callbacks that would not survive a restart.
-    property bool transient
+    property bool shellRaised
     property list<var> actions
 
     readonly property bool hasFullscreen: Kwin.hasFullscreen()
