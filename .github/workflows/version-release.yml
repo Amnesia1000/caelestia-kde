@@ -184,7 +184,8 @@ jobs:
             qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-tools \
             kwindowsystem kguiaddons kglobalaccel kconfig networkmanager-qt pulseaudio-qt \
             libqalculate pipewire libpipewire aubio lm_sensors extra-cmake-modules \
-            fftw ncurses alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse
+            fftw ncurses alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse \
+            protobuf openssl avahi
 
       - name: Install Prebuilt CAVA SDK (Arch)
         run: |

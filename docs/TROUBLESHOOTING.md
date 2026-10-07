@@ -63,6 +63,8 @@ The shell build (`08-build-shell.sh`) requires **Qt 6.9+** and several system li
 | `libcava` | Prebuilt release asset / `libcava` | Prebuilt release asset / `celestelove/libcava` (COPR) |
 | `libpulse` | `libpulse` | `pulseaudio-libs-devel` |
 | `libpam` | `pam` | `pam-devel` |
+| `protobuf` | `protobuf` | `protobuf-devel` |
+| `openssl` | `openssl` | `openssl-devel` |
 | `lm_sensors` (Fedora) | not needed | `lm_sensors-devel` |
 
 **Fedora note:** The custom `cmake/sensorslib.cmake` module loads `lm_sensors`. If it's missing, the build may silently skip sensor support.
