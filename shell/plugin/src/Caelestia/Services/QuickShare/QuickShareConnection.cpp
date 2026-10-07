@@ -351,8 +351,11 @@ void QuickShareConnection::handleOfflineFrame(const QByteArray& data) {
 
     if (frame.has_v1() && frame.v1().has_connection_request()) {
         const auto& req = frame.v1().connection_request();
-        if (req.has_endpoint_info() && endpointinfo::isVisible(req.endpoint_info()))
-            m_deviceName = endpointinfo::deviceName(req.endpoint_info());
+        if (req.has_endpoint_info()) {
+            const QByteArray info(req.endpoint_info().data(), static_cast<qsizetype>(req.endpoint_info().size()));
+            if (endpointinfo::isVisible(info))
+                m_deviceName = endpointinfo::deviceName(info);
+        }
         if (m_deviceName.isEmpty() && req.has_endpoint_name())
             m_deviceName = QString::fromUtf8(req.endpoint_name().data(), req.endpoint_name().size());
     }
