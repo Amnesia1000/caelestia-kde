@@ -188,8 +188,6 @@ cleanup_legacy_fonts() {
     done
 }
 
-# The SF font cleanup now lives in shell/services/startuptasks/04-stale-font-families.sh
-# and runs once at shell startup, so it is gone from here.
 install_lockscreen_greeter() {
     local src="$BUNDLE_DIR/src/kde/shells/caelestia.desktop"
     local dest="$HOME/.local/share/plasma/shells/caelestia.desktop"
