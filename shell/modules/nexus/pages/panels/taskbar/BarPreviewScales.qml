@@ -27,10 +27,6 @@ PageBase {
             text: qsTr("Enable per-element offsets")
             subtext: qsTr("Customize preview scale and font for each popout type")
             checked: GlobalConfig.bar.perElementPreviewScale || GlobalConfig.bar.perElementFontScale
-            onToggled: {
-                GlobalConfig.bar.perElementPreviewScale = checked;
-                GlobalConfig.bar.perElementFontScale = checked;
-            }
             // Custom reset: turns both per-element flags off together
             reset: ({
                 customGet: () => GlobalConfig.bar.perElementPreviewScale || GlobalConfig.bar.perElementFontScale,
@@ -40,6 +36,10 @@ PageBase {
                     GlobalConfig.bar.perElementFontScale = v;
                 }
             })
+            onToggled: {
+                GlobalConfig.bar.perElementPreviewScale = checked;
+                GlobalConfig.bar.perElementFontScale = checked;
+            }
         }
 
         ColumnLayout {
