@@ -93,6 +93,9 @@ Item {
     }
 
     function checkPopout(pos: real): void {
+        // Placement follows the hovered bar: a top overlay panel opens its
+        // popouts downward. The primary bar always clears the flag.
+        popouts.fromTopPanel = (root.barDef && ((root.barDef.position || "bottom") === "top")) ?? false;
         if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
             return;
 

@@ -19,6 +19,10 @@ CustomMouseArea {
     required property real borderThickness
     required property bool fullscreen
     property bool topPanelActive
+    // Overlay bar repeater + total top overlay thickness, to route hover
+    // into top panels (the primary inBarArea never covers them).
+    property var overlayBars: null
+    property real topPanelExtent: 0
     property var focusGrab: null
     property point dragStart
     property bool dashboardShortcutActive
@@ -68,8 +72,14 @@ CustomMouseArea {
             return x > screen.width - panels.rightMargin - panelWidth && withinPanelHeight(panel, x, y);
         if (bar.position === "top")
             return y < panels.topMargin + panel.y + panelHeight && (withinPanelWidth(panel, x, y) || abovePopoutItem(panel, x));
-        if (bar.position === "bottom")
+        if (bar.position === "bottom") {
+            // A popout born from a top overlay panel hangs below it, so it
+            // needs top-anchored math instead of the bottom-anchored one.
+            if (popouts.fromTopPanel && panel === panels.popoutsWrapper) {
+                return y < panels.topMargin + panel.y + panelHeight && (withinPanelWidth(panel, x, y) || abovePopoutItem(panel, x));
+            }
             return y > screen.height - panels.bottomMargin - panelHeight && (withinPanelWidth(panel, x, y) || abovePopoutItem(panel, x));
+        }
         return false;
     }
     // Next to the open sidebar a popout doesn't always cover the bar item that
@@ -283,7 +293,16 @@ CustomMouseArea {
                 visibilities.dashboard = false;
         }
 
-        if (inBarArea(x, y)) {
+        if (root.topPanelActive && root.overlayBars && y < root.topPanelExtent) {
+            for (let i = 0; i < root.overlayBars.count; i++) {
+                const w = root.overlayBars.itemAt(i);
+                if (w && w.effPos === "top") {
+                    w.checkPopout(x);
+                    popoutHideTimer.stop();
+                    break;
+                }
+            }
+        } else if (inBarArea(x, y)) {
             bar.checkPopout(isBarHorizontal ? x : y);
             popoutHideTimer.stop();
         } else {

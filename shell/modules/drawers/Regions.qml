@@ -14,6 +14,10 @@ Region {
     required property var overlayExtents
     readonly property real borderThickness: Config.border.thickness
     readonly property real clampedThickness: Config.border.clampedThickness
+    // Overlay extents widen the input area, floored at the screen edges:
+    // negative coordinates break the region combination downstream.
+    readonly property real maskX: Math.max(0, barLeftWidth + win.dragMaskPadding - overlayExtents.left)
+    readonly property real maskY: Math.max(0, barTopHeight + win.dragMaskPadding - overlayExtents.top)
     readonly property real barLeftWidth: bar.position === "left" ? bar.clampedThickness : clampedThickness
     readonly property real barRightWidth: bar.position === "right" ? bar.clampedThickness : clampedThickness
     readonly property real barTopHeight: bar.position === "top" ? bar.clampedThickness : clampedThickness
@@ -25,10 +29,10 @@ Region {
         return Math.max(borderThickness, hoverThickness);
     }
 
-    x: barLeftWidth + win.dragMaskPadding - overlayExtents.left
-    y: barTopHeight + win.dragMaskPadding - overlayExtents.top
-    width: win.width - barLeftWidth - barRightWidth - win.dragMaskPadding * 2 + overlayExtents.left + overlayExtents.right
-    height: win.height - barTopHeight - barBottomHeight - win.dragMaskPadding * 2 + overlayExtents.top + overlayExtents.bottom
+    x: maskX
+    y: maskY
+    width: win.width - barLeftWidth - barRightWidth - win.dragMaskPadding * 2 + overlayExtents.left + overlayExtents.right - (maskX - (barLeftWidth + win.dragMaskPadding - overlayExtents.left))
+    height: win.height - barTopHeight - barBottomHeight - win.dragMaskPadding * 2 + overlayExtents.top + overlayExtents.bottom - (maskY - (barTopHeight + win.dragMaskPadding - overlayExtents.top))
     intersection: Intersection.Xor
 
     R {
@@ -69,6 +73,16 @@ Region {
         panel: root.panels.utilities
         y: root.bar.position === "bottom" ? 0 : root.win.height - height
         height: panel.height * (1 - root.panels.utilities.offsetScale) + root.edgeExtent(root.Config.utilities.hoverThickness)
+    }
+    // Overlay panel bands need explicit input like drawers get: the root
+    // region excludes everything and children add back what the shell
+    // needs, so without this the panel area never receives pointer events.
+    Region {
+        x: 0
+        y: 0
+        width: root.win.width
+        height: Math.max(0, root.overlayExtents.top)
+        intersection: Intersection.Subtract
     }
     R {
         panel: root.panels.popoutsWrapper

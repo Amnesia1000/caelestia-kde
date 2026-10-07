@@ -548,6 +548,8 @@ StyledWindow {
         panels: panels
         bar: bar
         topPanelActive: root.topPanelActive
+        overlayBars: overlayBarRepeater
+        topPanelExtent: root.overlayTopExtent
         borderThickness: root.borderLayoutThickness
         fullscreen: root.hasFullscreen
         focusGrab: focusGrabState
