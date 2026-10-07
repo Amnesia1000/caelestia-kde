@@ -331,9 +331,16 @@ straight back to `dynamic_cast` on paste as long as the pid in it is its own
 pointers are stale and the paste dies in `__dynamic_cast`.
 
 The unit therefore passes `--all-mime-type-regex` to `wl-clip-persist`, which
-makes it skip selection events offering one of those private formats. Text,
-images, and everything else still persist. On an install older than the fix, or
-if you run your own clipboard setup, pass the same flag yourself:
+makes it leave alone any selection event that offers one of those private
+formats. `wl-clip-persist` handles an event only when **every** MIME type it
+offers matches the filter, so a selection carrying both a private format and,
+say, `text/plain` is skipped whole: the watchers still add it to the clipboard
+history, but it no longer survives the application it was copied from.
+Selections offering only public formats persist as before; the install keeps that
+list in `~/.local/bin/caelestia-cliphist`, next to the flag that reads it.
+
+On an install older than the fix, or if you run your own clipboard setup, pass
+the same flag yourself:
 
 ```bash
 wl-clip-persist --clipboard regular \
