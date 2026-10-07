@@ -2,12 +2,14 @@
 """Installer wiring tests.
 
 The invariants the installer's step scripts have to keep: that the entrypoints exist,
-that every numbered scripts/*.sh is run by one of the step lists, that the update path
-sparsifies only paths src/bin/caelestia-update writes, and a few ordering guarantees
-inside those scripts. They read the same few installer files and change for their own
-reasons, which is why they are not in test_repo_integrity.py.
+that every numbered scripts/*.sh is run by one of the step lists, that the sparse checkout
+the update path writes covers everything the shell build installs and sparsifies only
+paths src/bin/caelestia-update writes, and a few ordering guarantees inside those scripts.
+They read the same few installer files and change for their own reasons, which is why they
+are not in test_repo_integrity.py.
 """
 
+import posixpath
 import re
 import sys
 import unittest
@@ -114,6 +116,61 @@ class InstallerTests(unittest.TestCase):
             sorted(added - owned),
             [],
             "08-build-shell.sh sparsifies path(s) caelestia-update never writes:",
+        )
+
+    def test_the_sparse_checkout_covers_everything_the_shell_install_reads(self) -> None:
+        """#1039: cmake --install fails when an install rule's source is not sparsified.
+
+        shell/CMakeLists.txt installs files from outside shell/ - src/, scripts/ and
+        assets/ - and the update path checks the repository out sparse before it builds.
+        Configure and build only read shell/, so they succeed on a checkout that is
+        missing assets/org.quickshell.desktop; cmake --install is the first step to touch
+        it and it dies with "file INSTALL cannot find .../assets/org.quickshell.desktop",
+        aborting the update before the new revision is recorded. A full checkout has the
+        file, so only the sparse one in the update path reproduces it. Nothing else
+        compares the install rules against src/bin/caelestia-update's sparse-checkout
+        list, so an install rule added for a path nothing sparsifies is caught here.
+        """
+        updater = (ROOT / "src" / "bin" / "caelestia-update").read_text(encoding="utf-8")
+        entries = {
+            entry.rstrip("/")
+            for entry in re.findall(r'echo "([^"]+)" >+ \.git/info/sparse-checkout', updater)
+        }
+        self.assertTrue(entries, "caelestia-update should still write the sparse-checkout list")
+
+        # ${CAELESTIA_ROOT_DIR} is the repository root and ${CMAKE_CURRENT_SOURCE_DIR} the
+        # directory of the CMakeLists.txt being read, both as shell/CMakeLists.txt spells
+        # them. Resolving the two is what tells an install rule for a path authored
+        # outside shell/ from one that sits inside it and travels with the tree.
+        root_refs = re.compile(r"\$\{CAELESTIA_ROOT_DIR\}/([^\"\s)]+)")
+        here_refs = re.compile(r"\$\{CMAKE_CURRENT_SOURCE_DIR\}/([^\"\s)]+)")
+
+        required = {"shell"}  # the build configures from the shell/ tree itself
+        for cmake_lists in sorted((ROOT / "shell").rglob("CMakeLists.txt")):
+            relative = cmake_lists.relative_to(ROOT)
+            if "build" in relative.parts:
+                continue
+            base = cmake_lists.parent.relative_to(ROOT).as_posix()
+            text = cmake_lists.read_text(encoding="utf-8")
+            paths = root_refs.findall(text)
+            paths += [posixpath.join(base, ref) for ref in here_refs.findall(text)]
+            for path in paths:
+                normalized = posixpath.normpath(path)
+                if not normalized.startswith("../") and normalized not in (".", ".."):
+                    required.add(normalized.split("/", 1)[0])
+
+        self.assertLessEqual(
+            {"src", "scripts"},
+            required,
+            "the shell build should still install its CLI wrappers and step scripts from outside shell/",
+        )
+        self.assertEqual(
+            sorted(
+                name for name in required
+                if not any(name == entry or name.startswith(entry + "/") for entry in entries)
+            ),
+            [],
+            "the shell build reads path(s) that src/bin/caelestia-update never sparsifies:",
         )
 
 
