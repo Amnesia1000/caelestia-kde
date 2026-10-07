@@ -13,7 +13,8 @@ Item {
     required property BarPopouts.Wrapper popouts
     required property matrix4x4 deformMatrix
 
-    readonly property real nonAnimHeight: idleInhibit.nonAnimHeight + capture.nonAnimHeight + toggles.implicitHeight + layout.spacing * 2
+    readonly property int visibleCards: [idleInhibit, capture, quickShare, toggles].filter(card => card.visible).length
+    readonly property real nonAnimHeight: (idleInhibit.visible ? idleInhibit.nonAnimHeight : 0) + (capture.visible ? capture.nonAnimHeight : 0) + (quickShare.visible ? quickShare.nonAnimHeight : 0) + (toggles.visible ? toggles.implicitHeight : 0) + layout.spacing * Math.max(0, root.visibleCards - 1)
 
     implicitWidth: layout.implicitWidth
     implicitHeight: layout.implicitHeight
@@ -40,6 +41,15 @@ Item {
             z: 1
         }
 
+        QuickShareList {
+            id: quickShare
+
+            visible: Config.utilities.showQuickShare && QuickShare.isEnabled
+
+            props: root.props
+            visibilities: root.visibilities
+        }
+
         Toggles {
             id: toggles
 
@@ -51,6 +61,16 @@ Item {
     }
 
     RecordingDeleteModal {
+        props: root.props
+        deformMatrix: root.deformMatrix
+    }
+
+    QuickShareDeviceSelector {
+        props: root.props
+        deformMatrix: root.deformMatrix
+    }
+
+    QuickShareDeleteModal {
         props: root.props
         deformMatrix: root.deformMatrix
     }
