@@ -21,10 +21,32 @@ find_package(KF6WindowSystem REQUIRED)
 find_package(KF6GuiAddons REQUIRED)
 find_package(KF6NetworkManagerQt REQUIRED)
 find_package(KF6PulseAudioQt REQUIRED)
-# Quick Share's wire protocol is Google's Nearby Connections protobufs, and its
-# Ukey2 handshake uses OpenSSL primitives that Qt does not expose.
-find_package(Protobuf REQUIRED)
-find_package(OpenSSL REQUIRED)
+# Quick Share's wire protocol is Google's Nearby Connections protobufs, and its Ukey2
+# handshake needs OpenSSL primitives that Qt does not expose. Both are required, unlike
+# the cava provider below: the shell's QML imports Caelestia.Services.QuickShare from
+# shell.qml, the utilities drawer, the Nexus registry and the quick toggles, so a build
+# without the module ships a shell that refuses to load rather than one with a dead
+# feature. There is no degrade path for a distribution to opt into, so the configure
+# fails here instead, while it can still name what is missing.
+find_package(Protobuf QUIET)
+find_package(OpenSSL QUIET)
+if(NOT Protobuf_FOUND OR NOT OpenSSL_FOUND)
+    set(_quickshare_missing "")
+    if(NOT Protobuf_FOUND)
+        set(_quickshare_missing "protobuf")
+    endif()
+    if(NOT OpenSSL_FOUND)
+        if(_quickshare_missing)
+            string(APPEND _quickshare_missing " and ")
+        endif()
+        string(APPEND _quickshare_missing "openssl")
+    endif()
+    message(FATAL_ERROR
+        "Quick Share needs ${_quickshare_missing}, and this shell always builds Quick "
+        "Share: its QML is part of the shell, so a build without it does not start. "
+        "Install protobuf and openssl (Arch), protobuf-devel and openssl-devel (Fedora), "
+        "or libprotobuf-dev, protobuf-compiler and libssl-dev (Debian), then configure again.")
+endif()
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(Qalculate IMPORTED_TARGET libqalculate REQUIRED)
 pkg_check_modules(Pipewire IMPORTED_TARGET libpipewire-0.3 REQUIRED)
