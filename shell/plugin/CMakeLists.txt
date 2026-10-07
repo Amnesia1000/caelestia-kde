@@ -21,6 +21,10 @@ find_package(KF6WindowSystem REQUIRED)
 find_package(KF6GuiAddons REQUIRED)
 find_package(KF6NetworkManagerQt REQUIRED)
 find_package(KF6PulseAudioQt REQUIRED)
+# Quick Share's wire protocol is Google's Nearby Connections protobufs, and its
+# Ukey2 handshake uses OpenSSL primitives that Qt does not expose.
+find_package(Protobuf REQUIRED)
+find_package(OpenSSL REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(Qalculate IMPORTED_TARGET libqalculate REQUIRED)
 pkg_check_modules(Pipewire IMPORTED_TARGET libpipewire-0.3 REQUIRED)

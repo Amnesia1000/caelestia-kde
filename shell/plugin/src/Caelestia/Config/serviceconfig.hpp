@@ -74,6 +74,8 @@ private:
     CONFIG_GLOBAL_PROPERTY(QString, hotspotSsid, QString())
     CONFIG_GLOBAL_PROPERTY(QString, hotspotPassword, QString())
 
+    CONFIG_GLOBAL_PROPERTY(bool, quickShareAutoStart, false)
+
     CONFIG_GLOBAL_PROPERTY(bool, arpcEnabled, false)
     CONFIG_GLOBAL_PROPERTY(QString, arpcClientId, u"1126685412586733678"_s)
     CONFIG_GLOBAL_PROPERTY(QString, arpcAppName, u"Caelestia Shell"_s)

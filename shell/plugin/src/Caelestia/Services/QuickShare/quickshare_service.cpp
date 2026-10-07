@@ -1,0 +1,280 @@
+#include "quickshare_service.hpp"
+
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QStandardPaths>
+#include <QSysInfo>
+#include <QTimer>
+
+using Qt::StringLiterals::operator""_s;
+
+namespace caelestia::services {
+
+QuickShareService::QuickShareService(QObject* parent)
+    : QObject(parent)
+    , m_discovery(new QuickShareDiscovery(this))
+    , m_bleAdvertiser(new QuickShareBleAdvertiser(this))
+    , m_bleScanner(new QuickShareBleScanner(this))
+    , m_server(new QTcpServer(this)) {
+
+    connect(m_discovery, &QuickShareDiscovery::deviceFound, this, &QuickShareService::onDeviceFound);
+    connect(m_discovery, &QuickShareDiscovery::deviceLost, this, &QuickShareService::onDeviceLost);
+
+    connect(m_bleScanner, &QuickShareBleScanner::deviceFound, this, [this](const QString&, const QByteArray&) {
+        m_discovery->triggerTemporaryAdvertising(QSysInfo::machineHostName(), m_server->serverPort());
+    });
+
+    connect(m_server, &QTcpServer::newConnection, this, &QuickShareService::onNewConnection);
+
+    loadHistory();
+}
+
+QuickShareService::~QuickShareService() {
+    saveHistory();
+}
+
+bool QuickShareService::isEnabled() const {
+    return m_isEnabled;
+}
+
+void QuickShareService::setEnabled(bool enabled) {
+    if (m_isEnabled == enabled)
+        return;
+
+    if (enabled) {
+        if (!m_discovery->startDiscovery()) {
+            emit errorOccurred(u"Avahi daemon is not running. Please start avahi-daemon to use Quick Share."_s);
+            return;
+        }
+        m_isEnabled = true;
+        emit isEnabledChanged();
+
+        if (!m_server->isListening()) {
+            m_server->listen(QHostAddress::Any, 0); // Bind to any available port
+        }
+
+        m_bleScanner->startScanning();
+    } else {
+        m_isEnabled = false;
+        emit isEnabledChanged();
+        m_discovery->stopDiscovery();
+        m_bleScanner->stopScanning();
+        m_server->close();
+        setVisible(false);
+    }
+}
+
+bool QuickShareService::isVisible() const {
+    return m_isVisible;
+}
+
+void QuickShareService::setVisible(bool visible) {
+    if (m_isVisible == visible)
+        return;
+
+    if (visible && m_isEnabled) {
+        if (!m_discovery->advertise(QSysInfo::machineHostName(), m_server->serverPort())) {
+            emit errorOccurred(u"Failed to advertise Quick Share. Avahi daemon might not be running."_s);
+            return;
+        }
+        m_isVisible = true;
+        emit isVisibleChanged();
+    } else {
+        m_isVisible = false;
+        emit isVisibleChanged();
+        m_discovery->stopAdvertising();
+    }
+}
+
+QVariantList QuickShareService::nearbyDevices() const {
+    QVariantList list;
+    for (const auto& dev : m_devices) {
+        QVariantMap map;
+        map[u"id"_s] = dev.id;
+        map[u"name"_s] = dev.name;
+        map[u"address"_s] = dev.address;
+        list.append(map);
+    }
+    return list;
+}
+
+QVariantList QuickShareService::transferHistory() const {
+    return m_transferHistory;
+}
+
+void QuickShareService::sendFile(const QString& deviceId, const QString& filePath) {
+    auto it = std::find_if(m_devices.begin(), m_devices.end(), [&](const QuickShareDevice& d) {
+        return d.id == deviceId;
+    });
+    if (it == m_devices.end())
+        return;
+
+    QuickShareConnection* conn = new QuickShareConnection(it->address, it->port, this);
+    m_activeConnections.insert(deviceId, conn);
+
+    connect(conn, &QuickShareConnection::transferProgress, this, [this, deviceId](qint64 sent, qint64 total) {
+        emit transferProgress(deviceId, sent, total);
+    });
+
+    connect(conn, &QuickShareConnection::transferFinished, this, [this, deviceId, filePath](bool success) {
+        emit transferFinished(deviceId, success);
+
+        if (success) {
+            QVariantMap entry;
+            entry[u"fileName"_s] = QFileInfo(filePath).fileName();
+            entry[u"filePath"_s] = filePath;
+            entry[u"timestamp"_s] = QDateTime::currentDateTime().toSecsSinceEpoch();
+            entry[u"direction"_s] = u"sent"_s;
+            entry[u"deviceName"_s] = deviceId;
+            m_transferHistory.prepend(entry);
+            emit transferHistoryChanged();
+            saveHistory();
+        }
+
+        if (m_activeConnections.contains(deviceId)) {
+            QuickShareConnection* c = m_activeConnections.take(deviceId);
+            QTimer::singleShot(2000, c, &QObject::deleteLater);
+        }
+    });
+
+    // We send file once handshake completes
+    connect(conn, &QuickShareConnection::stateChanged, this, [conn, filePath](QuickShareConnection::State state) {
+        if (state == QuickShareConnection::ConnectionAccepted) {
+            conn->sendFile(filePath);
+        }
+    });
+}
+
+void QuickShareService::acceptIncomingTransfer() {
+    if (m_pendingIncomingConnection) {
+        m_pendingIncomingConnection->acceptTransfer();
+    }
+}
+
+void QuickShareService::rejectIncomingTransfer() {
+    if (m_pendingIncomingConnection) {
+        m_pendingIncomingConnection->rejectTransfer();
+        m_pendingIncomingConnection->deleteLater();
+        m_pendingIncomingConnection = nullptr;
+        emit transferFinished(u"incoming"_s, false);
+    }
+}
+
+void QuickShareService::clearHistory() {
+    m_transferHistory.clear();
+    emit transferHistoryChanged();
+    saveHistory();
+}
+
+void QuickShareService::onDeviceFound(const QuickShareDevice& device) {
+    if (device.name == QSysInfo::machineHostName())
+        return;
+
+    auto it = std::find_if(m_devices.begin(), m_devices.end(), [&](const QuickShareDevice& d) {
+        return d.id == device.id;
+    });
+    if (it == m_devices.end()) {
+        m_devices.append(device);
+        emit nearbyDevicesChanged();
+    }
+}
+
+void QuickShareService::onDeviceLost(const QString& deviceId) {
+    auto it = std::find_if(m_devices.begin(), m_devices.end(), [&](const QuickShareDevice& d) {
+        return d.id == deviceId;
+    });
+    if (it != m_devices.end()) {
+        m_devices.erase(it);
+        emit nearbyDevicesChanged();
+    }
+}
+
+void QuickShareService::onNewConnection() {
+    QTcpSocket* socket = m_server->nextPendingConnection();
+    if (!socket)
+        return;
+
+    QuickShareConnection* conn = new QuickShareConnection(socket, this);
+    m_pendingIncomingConnection = conn;
+
+    connect(
+        conn, &QuickShareConnection::transferRequested, this, [this, conn](const QString& fileName, qint64 fileSize) {
+            emit incomingTransferRequested(
+                conn->deviceName().isEmpty() ? u"Nearby Device"_s : conn->deviceName(), fileName, fileSize);
+        });
+
+    connect(conn, &QuickShareConnection::pinCodeReady, this, [this](const QString& pinCode) {
+        emit incomingTransferPinReady(pinCode);
+    });
+
+    connect(conn, &QuickShareConnection::transferFinished, this, [this](bool success) {
+        if (success && m_pendingIncomingConnection) {
+            QVariantMap entry;
+            QString fileName = m_pendingIncomingConnection->incomingFileName();
+            entry[u"fileName"_s] = fileName;
+            entry[u"filePath"_s] = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation) + u'/' + fileName;
+            entry[u"timestamp"_s] = QDateTime::currentDateTime().toSecsSinceEpoch();
+            entry[u"direction"_s] = u"received"_s;
+            entry[u"deviceName"_s] = m_pendingIncomingConnection->deviceName().isEmpty()
+                                         ? u"Nearby Device"_s
+                                         : m_pendingIncomingConnection->deviceName();
+            m_transferHistory.prepend(entry);
+            emit transferHistoryChanged();
+            saveHistory();
+        }
+
+        emit transferFinished(u"incoming"_s, success);
+
+        if (m_pendingIncomingConnection) {
+            m_pendingIncomingConnection->deleteLater();
+            m_pendingIncomingConnection = nullptr;
+        }
+    });
+}
+
+void QuickShareService::removeHistoryEntry(int index) {
+    if (index >= 0 && index < m_transferHistory.size()) {
+        m_transferHistory.removeAt(index);
+        emit transferHistoryChanged();
+        saveHistory();
+    }
+}
+
+void QuickShareService::startBleWakeupBroadcast() {
+    if (m_bleAdvertiser) {
+        m_bleAdvertiser->startAdvertising();
+    }
+}
+
+void QuickShareService::stopBleWakeupBroadcast() {
+    if (m_bleAdvertiser) {
+        m_bleAdvertiser->stopAdvertising();
+    }
+}
+
+void QuickShareService::loadHistory() {
+    QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + u"/quickshare_history.json"_s;
+    QFile file(path);
+    if (file.open(QIODevice::ReadOnly)) {
+        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+        if (doc.isArray()) {
+            m_transferHistory = doc.array().toVariantList();
+        }
+    }
+}
+
+void QuickShareService::saveHistory() {
+    QString path = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + u"/quickshare_history.json"_s;
+    QFile file(path);
+    if (file.open(QIODevice::WriteOnly)) {
+        QJsonArray arr = QJsonArray::fromVariantList(m_transferHistory);
+        QJsonDocument doc(arr);
+        file.write(doc.toJson());
+    }
+}
+
+} // namespace caelestia::services
