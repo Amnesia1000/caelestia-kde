@@ -3,7 +3,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Quickshell.Services.Pipewire
 import Caelestia
 import Caelestia.Config
 import qs.services
@@ -15,14 +15,39 @@ Singleton {
     property bool sharing: false
     property bool prevDnd: false
     property bool autoDnd: false
-    property bool videoFound: false
-    property bool obsFound: false
     property int seedHits: 0
     property int seedMisses: 0
 
-    function evaluate(): void {
-        const positive = root.videoFound || root.obsFound || Recorder.running;
-        if (positive) {
+    function isSharingNode(node): bool {
+        if (!node)
+            return false;
+        const props = node.properties ?? {};
+        const mediaClass = props["media.class"] || "";
+        const nodeName = props["node.name"] || node.name || "";
+        if (mediaClass === "Stream/Input/Video") {
+            const mediaName = props["media.name"] || "";
+            if (nodeName === "quickshell" || nodeName === "caelestia-shell" || mediaName.indexOf("plasma-screencast-") === 0)
+                return false;
+            return true;
+        }
+        if (mediaClass === "Video/Source") {
+            const mediaRole = props["media.role"] || "";
+            if (mediaRole === "Camera" || nodeName.indexOf("v4l2_input") === 0)
+                return false;
+            return true;
+        }
+        return false;
+    }
+
+    function rescan(): void {
+        let found = false;
+        for (const node of Pipewire.nodes.values) {
+            if (root.isSharingNode(node)) {
+                found = true;
+                break;
+            }
+        }
+        if (found || Recorder.running) {
             root.seedMisses = 0;
             if (++root.seedHits >= 2 && !root.sharing)
                 root.sharing = true;
@@ -31,65 +56,6 @@ Singleton {
             if (++root.seedMisses >= 3 && root.sharing)
                 root.sharing = false;
         }
-    }
-
-    function parseDump(text: string): void {
-        let found = false;
-        try {
-            const nodes = JSON.parse(text || "[]");
-            for (let i = 0; i < nodes.length; i++) {
-                const node = nodes[i] || {};
-                if (node.type !== "PipeWire:Interface:Node")
-                    continue;
-
-                const props = (node.info || {}).props || {};
-                const mediaClass = props["media.class"] || "";
-                const nodeName = props["node.name"] || "";
-                const mediaName = props["media.name"] || "";
-                const mediaRole = props["media.role"] || "";
-
-                if (mediaClass === "Stream/Input/Video") {
-                    if (nodeName === "quickshell" || nodeName === "caelestia-shell" || mediaName.indexOf("plasma-screencast-") === 0)
-                        continue;
-                    found = true;
-                    break;
-                }
-
-                if (mediaClass === "Video/Source") {
-                    if (mediaRole === "Camera" || nodeName.indexOf("v4l2_input") === 0)
-                        continue;
-                    found = true;
-                    break;
-                }
-            }
-        } catch (e) {
-        }
-        root.videoFound = found;
-        root.evaluate();
-    }
-
-    function parseSs(text: string): void {
-        let found = false;
-        const lines = String(text || "").split("\n");
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            if (line.indexOf("\"obs\"") < 0 && line.indexOf("\"obs64\"") < 0 && line.indexOf("\"obs-studio\"") < 0)
-                continue;
-            const fields = line.trim().split(/\s+/);
-            for (let f = 0; f < fields.length; f++) {
-                if (fields[f].indexOf("users:") === 0)
-                    continue;
-                const port = fields[f].slice(fields[f].lastIndexOf(":") + 1);
-                if (port === "1935" || port === "80" || port === "443") {
-                    found = true;
-                    break;
-                }
-            }
-            if (found)
-                break;
-        }
-        root.obsFound = found;
-        root.evaluate();
     }
 
     onSharingChanged: {
@@ -129,33 +95,27 @@ Singleton {
         target: Notifs
     }
 
-    Timer {
-        interval: 5000
-        repeat: true
-        running: true
-        onTriggered: {
-            if (!dumpProc.running)
-                dumpProc.running = true;
-            if (!ssProc.running)
-                ssProc.running = true;
+    Connections {
+        function onObjectInsertedPost(): void {
+            root.rescan();
         }
+        function onObjectRemovedPost(): void {
+            root.rescan();
+        }
+        function onValuesChanged(): void {
+            root.rescan();
+        }
+
+        target: Pipewire.nodes
     }
 
-    Process {
-        id: dumpProc
-
-        command: ["pw-dump"]
-        stdout: StdioCollector {
-            onStreamFinished: root.parseDump(text)
+    Connections {
+        function onRunningChanged(): void {
+            root.rescan();
         }
+
+        target: Recorder
     }
 
-    Process {
-        id: ssProc
-
-        command: ["ss", "-tnp", "state", "established"]
-        stdout: StdioCollector {
-            onStreamFinished: root.parseSs(text)
-        }
-    }
+    Component.onCompleted: root.rescan()
 }
