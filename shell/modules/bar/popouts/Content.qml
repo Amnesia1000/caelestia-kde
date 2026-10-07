@@ -89,6 +89,13 @@ Item {
         }
 
         Popout {
+            name: "notes"
+            sourceComponent: Notes {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             id: passwordPopout
 
             name: "wirelesspassword"

@@ -215,6 +215,9 @@ Item {
             } else {
                 popouts.hasCurrent = false;
             }
+        } else if (id === "notes") {
+            // Click-to-toggle entry: the component opens/closes its own
+            // popout, so hover leaves the popout state alone.
         } else if (id === "updateIndicator") {
             const item = ch.item as Item;
             if (item) {
@@ -431,6 +434,14 @@ Item {
                     sourceComponent: Greeter {
                         bar: root
                         monitor: Brightness.getMonitorForScreen(root.screen)
+                    }
+                }
+            }
+            DelegateChoice {
+                roleValue: "notes"
+                delegate: WrappedLoader {
+                    sourceComponent: Notes {
+                        popouts: root.popouts
                     }
                 }
             }

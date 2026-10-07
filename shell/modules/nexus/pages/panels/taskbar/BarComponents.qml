@@ -26,6 +26,7 @@ PageBase {
             unavailableText: qsTr("GitHub token not detected")
         },
         "greeter": { icon: "waving_hand", name: qsTr("Greeter") },
+        "notes": { icon: "sticky_note_2", name: qsTr("Notes") },
         "tray": { icon: "expand_more", name: qsTr("System tray") },
         "updateIndicator": { icon: "update", name: qsTr("Updates") },
         "clock": { icon: "schedule", name: qsTr("Clock") },
@@ -366,6 +367,7 @@ PageBase {
             { id: "tray", enabled: true, zone: "right" },
             { id: "updateIndicator", enabled: true, zone: "right" },
             { id: "github", enabled: false, zone: "right" },
+            { id: "notes", enabled: false, zone: "right" },
             { id: "clock", enabled: true, zone: "right" },
             { id: "statusIcons", enabled: true, zone: "right" },
             { id: "kbLayoutIndicator", enabled: false, zone: "right" },
