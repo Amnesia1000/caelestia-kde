@@ -82,6 +82,47 @@ StyledRect {
             }
         }
 
+        // The request the prompt could not finish. Dismissing the prompt leaves no
+        // other Accept / Decline, so the card carries them until the request is
+        // answered — including the PIN, which the sender's side needs.
+        RowLayout {
+            Layout.fillWidth: true
+            visible: QuickShare.pendingIncoming
+            spacing: Tokens.spacing.small
+
+            MaterialIcon {
+                Layout.alignment: Qt.AlignVCenter
+                text: "call_received"
+                color: Colours.palette.m3primary
+                fontStyle: Tokens.font.icon.medium
+            }
+
+            StyledText {
+                Layout.fillWidth: true
+                text: {
+                    let line = qsTr("Incoming file: %1 from %2").arg(QuickShare.promptFileName).arg(QuickShare.promptDeviceName);
+                    if (QuickShare.promptPin)
+                        line += qsTr(" (PIN %1)").arg(QuickShare.promptPin);
+                    return line;
+                }
+                font: Tokens.font.body.small
+                elide: Text.ElideRight
+                animate: true
+            }
+
+            TextButton {
+                text: qsTr("Decline")
+                type: TextButton.Text
+                onClicked: QuickShare.rejectIncomingTransfer()
+            }
+
+            TextButton {
+                text: qsTr("Accept")
+                type: TextButton.Filled
+                onClicked: QuickShare.acceptIncomingTransfer()
+            }
+        }
+
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 0

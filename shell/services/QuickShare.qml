@@ -30,6 +30,11 @@ Singleton {
     property string promptFileName: ""
     property real promptFileSize: 0
     property string promptPin: ""
+    /// Whether an incoming request is still waiting for an answer. It outlives the
+    /// prompt: once the prompt is dismissed the notification loses the only Accept /
+    /// Decline the user had, so this is what keeps the request answerable from the
+    /// Quick Share card in the utilities drawer.
+    property bool pendingIncoming: false
 
     function setEnabled(enabled: bool): void {
         QuickShareService.isEnabled = enabled;
@@ -50,10 +55,12 @@ Singleton {
     }
 
     function acceptIncomingTransfer(): void {
+        root.pendingIncoming = false;
         QuickShareService.acceptIncomingTransfer();
     }
 
     function rejectIncomingTransfer(): void {
+        root.pendingIncoming = false;
         QuickShareService.rejectIncomingTransfer();
     }
 
@@ -100,6 +107,7 @@ Singleton {
     Connections {
         function onIncomingTransferRequested(deviceName: string, fileName: string, fileSize: real): void {
             root.clearPrompt();
+            root.pendingIncoming = true;
             root.promptDeviceName = deviceName;
             root.promptFileName = fileName;
             root.promptFileSize = fileSize;
@@ -123,8 +131,10 @@ Singleton {
         }
 
         function onTransferFinished(deviceId: string, success: bool): void {
-            if (deviceId === "incoming")
-                root.clearPrompt();
+            if (deviceId !== "incoming")
+                return;
+            root.pendingIncoming = false;
+            root.clearPrompt();
         }
 
         function onErrorOccurred(message: string): void {
