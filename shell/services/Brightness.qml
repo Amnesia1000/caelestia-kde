@@ -228,8 +228,15 @@ Singleton {
             }
         }
 
+        function syncKwinBrightness(value: real): void {
+            if ((isDdc || isAppleDisplay) && BrightnessWatcher.brightness(modelData.name) >= 0)
+                BrightnessWatcher.setBrightness(modelData.name, value);
+        }
+
         function writeBrightness(value: real): void {
             const rounded = Math.round(value * 100);
+
+            syncKwinBrightness(value);
 
             if (isAppleDisplay)
                 Quickshell.execDetached(["asdbctl", "set", rounded]);
@@ -243,6 +250,8 @@ Singleton {
             value = Math.max(0, Math.min(1, value));
             const rounded = Math.round(value * 100);
             if (Math.round(brightness * 100) === rounded) {
+                syncKwinBrightness(value);
+
                 if (isDdc && !timer.running && !readProc.running) {
                     verifying = true;
                     readProc.running = true;
