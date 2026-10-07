@@ -224,8 +224,11 @@ Singleton {
             interval: 500
             onTriggered: {
                 if (!isNaN(monitor.queuedBrightness)) {
-                    monitor.setBrightness(monitor.queuedBrightness);
+                    const pending = monitor.queuedBrightness;
                     monitor.queuedBrightness = NaN;
+                    monitor.brightness = pending;
+                    monitor.writeBrightness(pending);
+                    monitor.timer.restart();
                 }
             }
         }
@@ -261,6 +264,7 @@ Singleton {
 
             if (isDdc && timer.running) {
                 queuedBrightness = value;
+                brightness = value;
                 return;
             }
 
