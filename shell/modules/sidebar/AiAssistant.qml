@@ -80,8 +80,10 @@ Item {
         loadAllKeys();
         refreshAllModels();
         loadHistory();
+        AiToolCalls.onAllToolsFinished = (results, imageB64) => {
+            sendPrompt(results, true, imageB64, "multi_tool");
+        };
     }
-
 
     function logFetchError(provider) {
         Logger.log("[AI] Network error fetching models from " + (provider || "unknown"));
@@ -734,44 +736,6 @@ Item {
         return "'" + String(str).replace(/'/g, "'\\''") + "'";
     }
 
-    function parseTextToolCalls(text) {
-        var calls = [];
-        var startTag = "<tool_call>";
-        var endTag = "</tool_call>";
-        var pos = 0;
-        while (true) {
-            var start = text.indexOf(startTag, pos);
-            if (start === -1) break;
-            var end = text.indexOf(endTag, start);
-            if (end === -1) break;
-            var jsonStr = text.substring(start + startTag.length, end).trim();
-            jsonStr = jsonStr.replace(/^```[a-zA-Z]*\n?/, "");
-            jsonStr = jsonStr.replace(/```$/, "");
-            jsonStr = jsonStr.trim();
-
-            try {
-                var parsed = JSON.parse(jsonStr);
-                if (parsed.name) calls.push(parsed);
-            } catch(e) { Logger.log("[AI] Bad tool_call JSON: " + jsonStr); }
-            pos = end + endTag.length;
-        }
-        return calls;
-    }
-
-    function stripToolCalls(text) {
-        var startTag = "<tool_call>";
-        var endTag = "</tool_call>";
-        var result = text;
-        while (true) {
-            var s = result.indexOf(startTag);
-            if (s === -1) break;
-            var e = result.indexOf(endTag, s);
-            if (e === -1) { result = result.substring(0, s); break; }
-            result = result.substring(0, s) + result.substring(e + endTag.length);
-        }
-        return result.replace(/\s+$/, '');
-    }
-
     function runAgentCommand(cmd, type) {
         var commandStr = Array.isArray(cmd) ? JSON.stringify(cmd) : '["sh", "-c", ' + JSON.stringify("exec </dev/null; " + cmd) + ']';
         var processQml = "import QtQuick\n" +
@@ -803,22 +767,15 @@ Item {
         }
     }
 
-    property int runningToolsCount: 0
-
-    property string accumulatedToolResults: ""
-
-    property string accumulatedToolImage: ""
-
     function handleAgentProcessResult(type, stdout, stderr, cmd) {
         if (type === "screenshot_take") {
             var convertCmd = `magick ${Paths.runtimeTemp("orion_screenshot.png")} -resize '1024x1024>' -quality 85 ${Paths.runtimeTemp("orion_screenshot.jpg")} && base64 ${Paths.runtimeTemp("orion_screenshot.jpg")}`;
             runAgentCommand(convertCmd, "screenshot_encode");
         } else if (type === "screenshot_encode") {
             var b64 = stdout.replace(/\n/g, "").trim();
-            accumulatedToolImage = b64;
-            accumulatedToolResults += "Result of take_screenshot:\nScreenshot taken. Analyze the attached image.\n\n";
-            runningToolsCount--;
-            checkToolsFinished();
+            AiToolCalls.recordImage(b64);
+            AiToolCalls.recordResult("Result of take_screenshot:\nScreenshot taken. Analyze the attached image.\n\n");
+            AiToolCalls.finishOneTool();
         } else if (type.startsWith("exec_")) {
             var toolName = type.substring(5);
             var outText = stdout.trim();
@@ -826,19 +783,10 @@ Item {
             if (!outText && !errText) {
                 outText = "(Command completed with no output. If it was a background task, it has been launched successfully.)";
             }
-            accumulatedToolResults += "Result of " + toolName + ":\n" + outText + (errText ? "\n\nErrors reported:\n" + errText : "") + "\n\n";
-            runningToolsCount--;
-            checkToolsFinished();
+            AiToolCalls.recordResult("Result of " + toolName + ":\n" + outText + (errText ? "\n\nErrors reported:\n" + errText : "") + "\n\n");
+            AiToolCalls.finishOneTool();
         }
     }
-
-    function checkToolsFinished() {
-        if (runningToolsCount <= 0) {
-            var b64 = accumulatedToolImage ? accumulatedToolImage : null;
-            sendPrompt(accumulatedToolResults.trim(), true, b64, "multi_tool");
-        }
-    }
-
 
     function claudeCodeCwd() {
         return claudeCodeChatCwd || Quickshell.env("HOME") || ".";
@@ -1638,7 +1586,7 @@ Item {
                         if (chunkContent === "" && chunkReasoning === "")
                             continue;
 
-                        var displayContent = stripToolCalls(rawAccumulatedContentText);
+                        var displayContent = AiToolCalls.stripToolCalls(rawAccumulatedContentText);
                         var displayThought = accumulatedThoughtText;
 
                         if (accumulatedThoughtText === "") {
@@ -1679,14 +1627,12 @@ Item {
                         chatStore.persist();
                         
                         var enableTools = GlobalConfig.ai.enableCelestialMode;
-                        var textToolCalls = enableTools ? parseTextToolCalls(rawAccumulatedContentText) : [];
+                        var textToolCalls = enableTools ? AiToolCalls.parseTextToolCalls(rawAccumulatedContentText) : [];
 
                         if (textToolCalls.length > 0) {
                             if (enableTools) {
                                 currentActionText = "Using tools...";
-                                accumulatedToolResults = "";
-                                accumulatedToolImage = "";
-                                runningToolsCount = 0;
+                                AiToolCalls.reset();
 
                                 for (var t = 0; t < textToolCalls.length; t++) {
                                     var toolCall = textToolCalls[t];
@@ -1694,7 +1640,8 @@ Item {
                                     var args = toolCall.args || {};
 
                                     if (toolName === "take_screenshot" || toolName === "web_search" || toolName === "read_webpage" || toolName === "open_app" || toolName === "caelestia_command") {
-                                        runningToolsCount++;
+                                        AiToolCalls.runningToolsCount++;
+
                                     }
 
                                     if (toolName === "take_screenshot") {
@@ -1725,12 +1672,12 @@ Item {
                                         var msg = String(args.message || "Timer finished");
                                         var timerQml = "import QtQuick; Timer { interval: " + (secs * 1000) + "; running: true; onTriggered: { root.runAgentCommand(['notify-send', 'Orion Timer', " + JSON.stringify(msg) + "], 'timer_trigger'); destroy(); } }";
                                         Qt.createQmlObject(timerQml, root, "timer_" + Date.now());
-                                        accumulatedToolResults += "Tool: set_timer\nResult: Timer set for " + secs + " seconds with message: " + msg + "\n\n";
+                                        AiToolCalls.recordResult("Tool: set_timer\nResult: Timer set for " + secs + " seconds with message: " + msg + "\n\n");
 
                                     } else if (toolName === "get_weather") {
                                         currentActionText = "Checking weather...";
                                         var weatherStr = Weather.city + ": " + Weather.temp + " (" + Weather.description + "). Humidity: " + Weather.humidity + "%, Wind: " + Weather.windSpeed + " km/h";
-                                        accumulatedToolResults += "Tool: get_weather\nResult: Local weather from system dashboard: " + weatherStr + "\n\n";
+                                        AiToolCalls.recordResult("Tool: get_weather\nResult: Local weather from system dashboard: " + weatherStr + "\n\n");
 
                                     } else if (toolName === "caelestia_command") {
                                         currentActionText = "Running caelestia...";
@@ -1742,13 +1689,15 @@ Item {
 
                                     } else {
                                         Logger.log("[AI] Unknown tool: " + toolName);
-                                        runningToolsCount--;
+                                        AiToolCalls.recordResult("Tool: " + toolName + "\nResult: unknown tool; nothing was executed.\n\n");
+
                                     }
                                 }
 
-                                if (runningToolsCount === 0) {
-                                    if (accumulatedToolResults !== "") {
-                                        checkToolsFinished();
+                                if (AiToolCalls.runningToolsCount === 0) {
+                                    if (AiToolCalls.accumulatedToolResults !== "") {
+                                        AiToolCalls.checkToolsFinished();
+
                                     } else {
                                         currentActionText = "Thinking...";
                                         isTyping = false;
@@ -1828,7 +1777,7 @@ Item {
         var enableTools = GlobalConfig.ai.enableCelestialMode;
         var sysPrompt = "You are a helpful AI assistant integrated into the user's desktop OS shell (Caelestia, running on KDE Plasma/Wayland).";
         if (enableTools) {
-            sysPrompt += "\n\nYou have access to the following tools. To call a tool, output a <tool_call> block containing ONLY valid JSON. Do not output any text inside the block other than the JSON object.\n\nFORMAT:\n<tool_call>\n{\"name\": \"TOOL_NAME\", \"args\": {ARGUMENTS}}\n</tool_call>\n\nAVAILABLE TOOLS:\n- take_screenshot: Captures the user's screen for visual analysis. Args: none.\n  Example: <tool_call>\n{\"name\": \"take_screenshot\", \"args\": {}}\n</tool_call>\n\n- web_search: Searches the web. Args: query (string, required), page (number, optional).\n  Example: <tool_call>\n{\"name\": \"web_search\", \"args\": {\"query\": \"latest news\"}}\n</tool_call>\n\n- read_webpage: Fetches and reads the text of a URL. Args: url (string, required).\n  Example: <tool_call>\n{\"name\": \"read_webpage\", \"args\": {\"url\": \"https://example.com\"}}\n</tool_call>\n\n- open_app: Launches an installed desktop application. Args: app_name (string, required).\n  Example: <tool_call>\n{\"name\": \"open_app\", \"args\": {\"app_name\": \"dolphin\"}}\n</tool_call>\n\n- set_timer: Sets a countdown timer that fires a desktop notification. Args: seconds (number, required), message (string, required).\n  Example: <tool_call>\n{\"name\": \"set_timer\", \"args\": {\"seconds\": 300, \"message\": \"Break time!\"}}\n</tool_call>\n\n- get_weather: Gets the current local weather from the system dashboard. Args: none.\n  Example: <tool_call>\n{\"name\": \"get_weather\", \"args\": {}}\n</tool_call>\n\n- caelestia_command: Runs a caelestia CLI command. Valid subcommands: shell, toggle, scheme, search, screenshot, record, clipboard, emoji, wallpaper, resizer, install, update. Args: subcommand (string, required), args (string, optional extra flags).\n  Example: <tool_call>\n{\"name\": \"caelestia_command\", \"args\": {\"subcommand\": \"wallpaper\", \"args\": \"--random\"}}\n</tool_call>\n\nCRITICAL RULES:\n1. ALWAYS use a <tool_call> block to call a tool. NEVER pretend to perform actions in plain text.\n2. You may output a brief acknowledgment before the <tool_call> block (e.g. 'Opening Dolphin for you!') but you MUST include the block.\n3. You can include multiple <tool_call> blocks in one response.\n4. After receiving tool results, respond naturally to the user based on what the tool returned.";
+            sysPrompt += AiToolCalls.toolsPrompt();
         }
         
         var requestBody;
@@ -2300,7 +2249,6 @@ Item {
                  }
              }
 
-
          }
          
          Item {
@@ -2358,7 +2306,6 @@ Item {
                          if (!settingY && contentY < contentHeight - height - 2)
                              pinnedToEnd = false;
                      }
-
 
                      ScrollBar.vertical: StyledScrollBar {
                          flickable: listView
