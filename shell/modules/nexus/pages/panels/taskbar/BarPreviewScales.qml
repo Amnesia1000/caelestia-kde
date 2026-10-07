@@ -40,15 +40,6 @@ PageBase {
                 GlobalConfig.bar.perElementPreviewScale = checked;
                 GlobalConfig.bar.perElementFontScale = checked;
             }
-            // Custom reset: turns both per-element flags off together
-            reset: ({
-                customGet: () => GlobalConfig.bar.perElementPreviewScale || GlobalConfig.bar.perElementFontScale,
-                customDef: false,
-                customSet: v => {
-                    GlobalConfig.bar.perElementPreviewScale = v;
-                    GlobalConfig.bar.perElementFontScale = v;
-                }
-            })
         }
 
         ColumnLayout {
