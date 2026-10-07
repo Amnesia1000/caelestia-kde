@@ -175,6 +175,8 @@ Singleton {
 
     function getNotifIcon(summary: string, urgency: int): string {
         summary = summary.toLowerCase();
+        if (summary.includes("incoming file"))
+            return "near_me";
         if (summary.includes("reboot"))
             return "restart_alt";
         if (summary.includes("recording"))
