@@ -23,6 +23,9 @@ Item {
     property real downloadProgressValue: 0
     property string downloadingWallpaperId: ""
     property string downloadState: "idle"
+    // Set to false when embedded in a full page (e.g. Nexus) where the
+    // drawer-style frame would look like a stray gray border.
+    property bool showFrame: true
     property string downloadMessage: ""
     property var selectedWallpaper: null
     property bool detailPanelOpen: false
@@ -62,9 +65,9 @@ Item {
         id: mainClippingRect
 
         anchors.fill: parent
-        anchors.margins: Tokens.padding.medium
+        anchors.margins: root.showFrame ? Tokens.padding.medium : 0
         anchors.leftMargin: 0
-        anchors.rightMargin: Tokens.padding.medium
+        anchors.rightMargin: root.showFrame ? Tokens.padding.medium : 0
 
         radius: mainBorder.innerRadius
         color: "transparent"
@@ -85,6 +88,7 @@ Item {
     InnerBorder {
         id: mainBorder
 
+        visible: root.showFrame
         leftThickness: 0
         rightThickness: Tokens.padding.medium
     }
