@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QFile>
+#include <QMap>
 #include <QObject>
 #include <QTcpSocket>
 
@@ -56,6 +57,37 @@ private slots:
     void onError(QAbstractSocket::SocketError socketError);
 
 private:
+    /// The bytes of one payload, assembled from the chunks a peer sends. A chunk
+    /// carries the offset it continues from, so a missing or reordered one is
+    /// refused rather than appended, and the last one says the payload is whole.
+    class PayloadBuffer {
+    public:
+        /// Takes a chunk. False when it does not continue the payload.
+        bool append(qint64 offset, const QByteArray& body, bool last) {
+            if (offset != m_data.size())
+                return false;
+
+            m_data.append(body);
+            m_complete = last;
+            return true;
+        }
+
+        bool complete() const { return m_complete; }
+
+        qint64 size() const { return m_data.size(); }
+
+        const QByteArray& data() const { return m_data; }
+
+        void clear() {
+            m_data.clear();
+            m_complete = false;
+        }
+
+    private:
+        QByteArray m_data;
+        bool m_complete = false;
+    };
+
     void connectSocket();
     void setState(State state);
     /// Reports the end of the transfer once: a file save and the peer's later
@@ -110,10 +142,9 @@ private:
     /// The file and its trailer are on the wire; only the socket draining is left.
     bool m_outgoingFileQueued = false;
 
-    QMap<qint64, QByteArray> m_payloadBuffers;
+    QMap<qint64, PayloadBuffer> m_payloadBuffers;
 
-    QByteArray m_fileBuffer;
-    bool m_fileTransferActive = false;
+    PayloadBuffer m_incomingFile;
 };
 
 } // namespace caelestia::services

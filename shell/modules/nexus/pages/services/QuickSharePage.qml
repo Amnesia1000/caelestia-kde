@@ -28,10 +28,7 @@ PageBase {
             text: qsTr("Enable Quick Share")
             subtext: QuickShareService.isEnabled ? qsTr("Listening for nearby devices") : qsTr("Disabled")
             checked: QuickShareService.isEnabled
-            onToggled: {
-                QuickShareService.isEnabled = checked;
-                QuickShareService.isVisible = checked;
-            }
+            onToggled: QuickShareService.isEnabled = checked
         }
 
         ToggleRow {

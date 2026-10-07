@@ -11,7 +11,6 @@ namespace caelestia::services {
 struct QuickShareDevice {
     QString id;
     QString name;
-    QString endpointId;
     QString address;
     int port;
 };

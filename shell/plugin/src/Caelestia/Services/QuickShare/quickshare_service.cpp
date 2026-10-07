@@ -29,6 +29,15 @@ QString deviceLabel(const QuickShareConnection* connection) {
     return name.isEmpty() ? u"Nearby Device"_s : name;
 }
 
+/// How long a finished connection is kept alive, so that anything still in the
+/// socket can reach the peer before it goes.
+constexpr int connectionLingerMs = 2000;
+
+/// Lets a connection go once it has reported its transfer.
+void retire(QuickShareConnection* connection) {
+    QTimer::singleShot(connectionLingerMs, connection, &QObject::deleteLater);
+}
+
 } // namespace
 
 QuickShareService::QuickShareService(QObject* parent)
@@ -62,27 +71,32 @@ void QuickShareService::setEnabled(bool enabled) {
     if (m_isEnabled == enabled)
         return;
 
-    if (enabled) {
-        if (!m_discovery->startDiscovery()) {
-            emit errorOccurred(u"Avahi daemon is not running. Please start avahi-daemon to use Quick Share."_s);
-            return;
-        }
-        m_isEnabled = true;
-        emit isEnabledChanged();
-
-        if (!m_server->isListening()) {
-            m_server->listen(QHostAddress::Any, 0); // Bind to any available port
-        }
-
-        m_bleScanner->startScanning();
-    } else {
+    if (!enabled) {
         m_isEnabled = false;
         emit isEnabledChanged();
         m_discovery->stopDiscovery();
         m_bleScanner->stopScanning();
         m_server->close();
         setVisible(false);
+        return;
     }
+
+    if (!m_discovery->startDiscovery()) {
+        emit errorOccurred(u"Avahi daemon is not running. Please start avahi-daemon to use Quick Share."_s);
+        return;
+    }
+
+    m_isEnabled = true;
+    emit isEnabledChanged();
+
+    if (!m_server->isListening())
+        m_server->listen(QHostAddress::Any, 0); // Bind to any available port
+
+    m_bleScanner->startScanning();
+
+    // Turning Quick Share on is also what puts this shell on the network for
+    // nearby devices; hiding it again is setVisible(false).
+    setVisible(true);
 }
 
 bool QuickShareService::isVisible() const {
@@ -150,9 +164,7 @@ void QuickShareService::sendFile(const QString& deviceId, const QString& filePat
                 appendHistoryEntry(u"sent"_s, QFileInfo(filePath).fileName(), filePath, deviceName);
 
             emit outgoingTransferFinished(deviceId, success);
-
-            // Let anything still in flight reach the peer before the socket goes.
-            QTimer::singleShot(2000, connection, &QObject::deleteLater);
+            retire(connection);
         });
 }
 
@@ -168,7 +180,7 @@ void QuickShareService::rejectIncomingTransfer() {
 
     // Rejecting reports itself through transferFinished, which drops the request.
     connection->rejectTransfer();
-    QTimer::singleShot(2000, connection, &QObject::deleteLater);
+    retire(connection);
 }
 
 void QuickShareService::clearHistory() {
@@ -254,7 +266,7 @@ void QuickShareService::onNewConnection() {
         }
 
         emit incomingTransferFinished(success);
-        QTimer::singleShot(2000, connection, &QObject::deleteLater);
+        retire(connection);
     });
 
     // A peer that walks away mid-request: drop the request so the prompt and the
@@ -269,15 +281,11 @@ void QuickShareService::onNewConnection() {
 }
 
 void QuickShareService::startBleWakeupBroadcast() {
-    if (m_bleAdvertiser) {
-        m_bleAdvertiser->startAdvertising();
-    }
+    m_bleAdvertiser->startAdvertising();
 }
 
 void QuickShareService::stopBleWakeupBroadcast() {
-    if (m_bleAdvertiser) {
-        m_bleAdvertiser->stopAdvertising();
-    }
+    m_bleAdvertiser->stopAdvertising();
 }
 
 void QuickShareService::loadHistory() {

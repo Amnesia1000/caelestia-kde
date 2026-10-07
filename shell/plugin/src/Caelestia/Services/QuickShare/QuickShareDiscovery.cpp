@@ -8,6 +8,8 @@
 #include <QHostInfo>
 #include <QRandomGenerator>
 
+#include "QuickShareEndpointInfo.hpp"
+
 using Qt::StringLiterals::operator""_s;
 
 namespace caelestia::services {
@@ -97,42 +99,16 @@ bool QuickShareDiscovery::advertise(const QString& deviceName, int port) {
     m_entryGroup = new QDBusInterface(u"org.freedesktop.Avahi"_s, groupPath.value().path(),
         u"org.freedesktop.Avahi.EntryGroup"_s, QDBusConnection::systemBus(), this);
 
-    QByteArray endpointId;
-    for (int i = 0; i < 4; i++) {
-        endpointId.append(static_cast<char>(QRandomGenerator::global()->generate()));
-    }
-
-    QByteArray nameB;
-    nameB.append(static_cast<char>(0x23)); // pcp
-    nameB.append(endpointId);
-    nameB.append(static_cast<char>(0xFC)); // service_id
-    nameB.append(static_cast<char>(0x9F));
-    nameB.append(static_cast<char>(0x5E));
-    nameB.append(static_cast<char>(0x00)); // unknown bytes
-    nameB.append(static_cast<char>(0x00));
-    QString serviceName =
-        QString::fromLatin1(nameB.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
-
-    QByteArray recordBytes;
-    char deviceType = 3; // laptop
-    recordBytes.append(static_cast<char>(deviceType << 1));
-
-    for (int i = 0; i < 16; i++) {
-        recordBytes.append(static_cast<char>(QRandomGenerator::global()->generate()));
-    }
-
-    QByteArray dNameBytes = deviceName.toUtf8();
-    if (dNameBytes.length() > 255) {
-        dNameBytes.truncate(255);
-    }
-    recordBytes.append(static_cast<char>(dNameBytes.length()));
-    recordBytes.append(dNameBytes);
-
-    QString endpointInfo =
-        QString::fromLatin1(recordBytes.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals));
-
-    QList<QByteArray> txtRecord;
-    txtRecord.append(QByteArray("n=") + endpointInfo.toUtf8());
+    QByteArray serviceId;
+    serviceId.append(static_cast<char>(0x23)); // pcp
+    for (int i = 0; i < 4; i++)
+        serviceId.append(static_cast<char>(QRandomGenerator::global()->generate()));
+    serviceId.append(static_cast<char>(0xFC)); // service_id
+    serviceId.append(static_cast<char>(0x9F));
+    serviceId.append(static_cast<char>(0x5E));
+    serviceId.append(static_cast<char>(0x00)); // unknown bytes
+    serviceId.append(static_cast<char>(0x00));
+    const QString serviceName = endpointinfo::toBase64Url(serviceId);
 
     QDBusMessage reply = m_entryGroup->call(u"AddService"_s,
         -1,      // AVAHI_IF_UNSPEC
@@ -140,7 +116,7 @@ bool QuickShareDiscovery::advertise(const QString& deviceName, int port) {
         (uint)0, // flags
         serviceName, u"_FC9F5ED42C8A._tcp"_s, u"local"_s,
         u""_s, // host
-        QVariant::fromValue<quint16>(port), QVariant::fromValue(txtRecord));
+        QVariant::fromValue<quint16>(port), QVariant::fromValue(endpointinfo::txtRecord(deviceName)));
 
     if (reply.type() == QDBusMessage::ErrorMessage) {
         qWarning() << u"QuickShareDiscovery: AddService failed:"_s << reply.errorMessage();
@@ -224,22 +200,12 @@ void QuickShareDiscovery::onServiceResolved(const QDBusMessage& msg) {
         }
 
         for (const QByteArray& txt : txtRecords) {
-            if (txt.startsWith("n=")) {
-                QByteArray b64 = txt.mid(2);
-                QByteArray decoded =
-                    QByteArray::fromBase64(b64, QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
-                if (decoded.isEmpty())
-                    decoded = QByteArray::fromBase64(b64, QByteArray::Base64UrlEncoding);
-                if (decoded.isEmpty())
-                    decoded = QByteArray::fromBase64(b64);
+            if (!txt.startsWith("n="))
+                continue;
 
-                if (decoded.length() >= 18) {
-                    int nameLen = static_cast<unsigned char>(decoded[17]);
-                    if (decoded.length() >= 18 + nameLen) {
-                        device.name = QString::fromUtf8(decoded.mid(18, nameLen));
-                    }
-                }
-            }
+            const QString name = endpointinfo::deviceName(endpointinfo::fromBase64Url(txt.mid(2)));
+            if (!name.isEmpty())
+                device.name = name;
         }
 
         device.address = args[7].toString();

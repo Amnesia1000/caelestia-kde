@@ -19,7 +19,11 @@ class QuickShareService : public QObject {
     QML_ELEMENT
     QML_SINGLETON
 
+    /// Whether Quick Share is on. Turning it on also makes this shell visible to
+    /// nearby devices.
     Q_PROPERTY(bool isEnabled READ isEnabled WRITE setEnabled NOTIFY isEnabledChanged)
+    /// Whether this shell advertises itself. Only meaningful while enabled: it can
+    /// be turned off to stay reachable without being discoverable.
     Q_PROPERTY(bool isVisible READ isVisible WRITE setVisible NOTIFY isVisibleChanged)
     Q_PROPERTY(QVariantList nearbyDevices READ nearbyDevices NOTIFY nearbyDevicesChanged)
     Q_PROPERTY(QVariantList transferHistory READ transferHistory NOTIFY transferHistoryChanged)

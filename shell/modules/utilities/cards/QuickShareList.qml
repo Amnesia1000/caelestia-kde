@@ -270,50 +270,20 @@ StyledRect {
 
                         MaterialIcon {
                             Layout.alignment: Qt.AlignHCenter
+                            visible: root.props.quickShareListExpanded
                             text: "history_toggle_off"
                             color: Colours.palette.m3outline
                             fontStyle: Tokens.font.icon.extraLarge
-
-                            opacity: root.props.quickShareListExpanded ? 1 : 0
-                            scale: root.props.quickShareListExpanded ? 1 : 0
-                            Layout.preferredHeight: root.props.quickShareListExpanded ? implicitHeight : 0
-
-                            Behavior on opacity {
-                                Anim {
-                                    type: Anim.DefaultEffects
-                                }
-                            }
-                            Behavior on scale {
-                                Anim {}
-                            }
-                            Behavior on Layout.preferredHeight {
-                                Anim {}
-                            }
                         }
 
                         RowLayout {
                             spacing: Tokens.spacing.medium
 
                             MaterialIcon {
-                                Layout.alignment: Qt.AlignHCenter
+                                Layout.alignment: Qt.AlignVCenter
+                                visible: !root.props.quickShareListExpanded
                                 text: "history_toggle_off"
                                 color: Colours.palette.m3outline
-
-                                opacity: !root.props.quickShareListExpanded ? 1 : 0
-                                scale: !root.props.quickShareListExpanded ? 1 : 0
-                                Layout.preferredWidth: !root.props.quickShareListExpanded ? implicitWidth : 0
-
-                                Behavior on opacity {
-                                    Anim {
-                                        type: Anim.DefaultEffects
-                                    }
-                                }
-                                Behavior on scale {
-                                    Anim {}
-                                }
-                                Behavior on Layout.preferredWidth {
-                                    Anim {}
-                                }
                             }
 
                             StyledText {

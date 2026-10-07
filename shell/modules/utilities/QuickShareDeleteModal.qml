@@ -1,14 +1,10 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Layouts
 import Caelestia
-import Caelestia.Config
 import Caelestia.Services.QuickShare
 import qs.components
-import qs.components.controls
 import qs.components.effects
-import qs.services
 
 Loader {
     id: root
@@ -22,7 +18,7 @@ Loader {
     opacity: root.props.quickShareConfirmDeletePath ? 1 : 0
     active: opacity > 0
 
-    sourceComponent: DrawerModal {
+    sourceComponent: DrawerConfirmModal {
         // The props are cleared as soon as the modal is dismissed, but the card keeps
         // naming the file while it fades out. The entry is named by its path and time
         // rather than by a position the transfer list can shift.
@@ -36,48 +32,18 @@ Loader {
 
         deformMatrix: root.deformMatrix
         open: root.props.quickShareConfirmDeletePath !== ""
+        title: qsTr("Delete file?")
+        message: qsTr("'%1' will be permanently deleted.").arg(path)
+        confirmText: qsTr("Delete")
         onDismissed: clearConfirmation()
+        onConfirmed: {
+            CUtils.deleteFile(Qt.resolvedUrl(path));
+            QuickShareService.removeHistoryEntry(path, timestamp);
+        }
 
         Component.onCompleted: {
             path = root.props.quickShareConfirmDeletePath;
             timestamp = root.props.quickShareConfirmDeleteTimestamp;
-        }
-
-        StyledText {
-            text: qsTr("Delete file?")
-            font: Tokens.font.body.large
-        }
-
-        StyledText {
-            Layout.fillWidth: true
-            text: qsTr("'%1' will be permanently deleted.").arg(path)
-            color: Colours.palette.m3onSurfaceVariant
-            font: Tokens.font.body.small
-            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-        }
-
-        RowLayout {
-            Layout.topMargin: Tokens.spacing.medium
-            Layout.alignment: Qt.AlignRight
-            spacing: Tokens.spacing.medium
-
-            TextButton {
-                text: qsTr("Cancel")
-                type: TextButton.Text
-                onClicked: clearConfirmation()
-            }
-
-            TextButton {
-                text: qsTr("Delete")
-                type: TextButton.Text
-                onClicked: {
-                    if (path !== "") {
-                        CUtils.deleteFile(Qt.resolvedUrl(path));
-                        QuickShareService.removeHistoryEntry(path, timestamp);
-                    }
-                    clearConfirmation();
-                }
-            }
         }
     }
 

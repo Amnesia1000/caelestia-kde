@@ -32,12 +32,10 @@ Singleton {
     /// Quick Share card in the utilities drawer.
     property bool pendingIncoming: false
 
-    /// Turns the service on or off, keeping the "visible to nearby devices" flag in
-    /// step so that toggling off stops advertising as well.
+    /// Turns the service on or off. Turning it on also makes this shell visible to
+    /// nearby devices, which the service keeps in step.
     function toggle(): void {
-        const enabled = !QuickShareService.isEnabled;
-        QuickShareService.isEnabled = enabled;
-        QuickShareService.isVisible = enabled;
+        QuickShareService.isEnabled = !QuickShareService.isEnabled;
     }
 
     function acceptIncomingTransfer(): void {
@@ -72,7 +70,6 @@ Singleton {
             return;
 
         QuickShareService.isEnabled = true;
-        QuickShareService.isVisible = true;
     }
 
     Connections {

@@ -12,6 +12,7 @@
 #include <cstring>
 #include <string>
 
+#include "QuickShareProto.hpp"
 #include "device_to_device_messages.pb.h"
 #include "securegcm.pb.h"
 #include "securemessage.pb.h"
@@ -20,6 +21,61 @@
 using Qt::StringLiterals::operator""_s;
 
 namespace caelestia::services {
+
+/// The P-256 point of `key` as the GenericPublicKey the handshake carries, or an
+/// empty array if OpenSSL cannot export it.
+static QByteArray serializePublicKey(EVP_PKEY* key) {
+    EC_KEY* ecKey = key ? EVP_PKEY_get1_EC_KEY(key) : nullptr;
+    if (!ecKey)
+        return {};
+
+    const EC_GROUP* group = EC_KEY_get0_group(ecKey);
+    const EC_POINT* point = EC_KEY_get0_public_key(ecKey);
+    const size_t length = EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED, nullptr, 0, nullptr);
+    QByteArray pointBytes(static_cast<qsizetype>(length), '\0');
+    EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED, reinterpret_cast<unsigned char*>(pointBytes.data()),
+        length, nullptr);
+    EC_KEY_free(ecKey);
+
+    // A coordinate is big-endian two's complement, so one whose top bit is set
+    // needs a leading zero byte to stay positive.
+    const auto coordinate = [](const QByteArray& raw) {
+        std::string encoded;
+        if (static_cast<unsigned char>(raw.at(0)) >= 0x80)
+            encoded += '\0';
+        encoded.append(raw.constData(), raw.size());
+        return encoded;
+    };
+
+    securemessage::EcP256PublicKey ecPublicKey;
+    ecPublicKey.set_x(coordinate(pointBytes.mid(1, 32)));
+    ecPublicKey.set_y(coordinate(pointBytes.mid(33, 32)));
+
+    securemessage::GenericPublicKey genericPublicKey;
+    genericPublicKey.set_type(securemessage::EC_P256);
+    *genericPublicKey.mutable_ec_p256_public_key() = ecPublicKey;
+    return serialize(genericPublicKey);
+}
+
+/// The uncompressed point the serialized GenericPublicKey `bytes` names, or an
+/// empty array if they do not name a P-256 key.
+static QByteArray peerPublicKey(const std::string& bytes) {
+    securemessage::GenericPublicKey genericPublicKey;
+    if (!genericPublicKey.ParseFromString(bytes) || genericPublicKey.type() != securemessage::EC_P256)
+        return {};
+
+    const auto coordinate = [](std::string raw) {
+        if (raw.size() == 33 && raw[0] == '\0')
+            raw.erase(raw.begin());
+        return QByteArray(raw.data(), static_cast<qsizetype>(raw.size()));
+    };
+
+    QByteArray point;
+    point.append(static_cast<char>(0x04)); // an uncompressed point: x then y
+    point.append(coordinate(genericPublicKey.ec_p256_public_key().x()));
+    point.append(coordinate(genericPublicKey.ec_p256_public_key().y()));
+    return point;
+}
 
 static QByteArray hkdfInternal(
     const EVP_MD* md, const QByteArray& salt, const QByteArray& ikm, const QByteArray& info, size_t outLen) {
@@ -61,10 +117,6 @@ static QByteArray hkdfInternal(
     }
     EVP_PKEY_CTX_free(pctx);
     return out;
-}
-
-static QByteArray hkdfSha512(const QByteArray& salt, const QByteArray& ikm, const QByteArray& info, size_t outLen) {
-    return hkdfInternal(EVP_sha512(), salt, ikm, info, outLen);
 }
 
 static QByteArray hkdfSha256(const QByteArray& salt, const QByteArray& ikm, const QByteArray& info, size_t outLen) {
@@ -224,27 +276,11 @@ QByteArray QuickShareCrypto::processServerInit(const QByteArray& data) {
     if (!serverInit.ParseFromString(msg.message_data()))
         return QByteArray();
 
-    securemessage::GenericPublicKey genericPubKey;
-    if (!genericPubKey.ParseFromString(serverInit.public_key()))
-        return QByteArray();
-    if (genericPubKey.type() != securemessage::EC_P256)
+    const QByteArray peerKey = peerPublicKey(serverInit.public_key());
+    if (peerKey.isEmpty())
         return QByteArray();
 
-    std::string xRaw = genericPubKey.ec_p256_public_key().x();
-    std::string yRaw = genericPubKey.ec_p256_public_key().y();
-    if (xRaw.size() == 33 && xRaw[0] == '\0') {
-        xRaw.erase(xRaw.begin());
-    }
-    if (yRaw.size() == 33 && yRaw[0] == '\0') {
-        yRaw.erase(yRaw.begin());
-    }
-
-    QByteArray peerPublicKeyBytes;
-    peerPublicKeyBytes.append(static_cast<char>(0x04));
-    peerPublicKeyBytes.append(xRaw.data(), xRaw.size());
-    peerPublicKeyBytes.append(yRaw.data(), yRaw.size());
-
-    deriveKeys(peerPublicKeyBytes);
+    deriveKeys(peerKey);
     m_handshakeComplete = true;
     return generateClientFinished();
 }
@@ -260,27 +296,11 @@ bool QuickShareCrypto::processClientFinished(const QByteArray& data) {
     if (!clientFinished.ParseFromString(msg.message_data()))
         return false;
 
-    securemessage::GenericPublicKey genericPubKey;
-    if (!genericPubKey.ParseFromString(clientFinished.public_key()))
-        return false;
-    if (genericPubKey.type() != securemessage::EC_P256)
+    const QByteArray peerKey = peerPublicKey(clientFinished.public_key());
+    if (peerKey.isEmpty())
         return false;
 
-    std::string xRaw2 = genericPubKey.ec_p256_public_key().x();
-    std::string yRaw2 = genericPubKey.ec_p256_public_key().y();
-    if (xRaw2.size() == 33 && xRaw2[0] == '\0') {
-        xRaw2.erase(xRaw2.begin());
-    }
-    if (yRaw2.size() == 33 && yRaw2[0] == '\0') {
-        yRaw2.erase(yRaw2.begin());
-    }
-
-    QByteArray peerPublicKeyBytes;
-    peerPublicKeyBytes.append(static_cast<char>(0x04));
-    peerPublicKeyBytes.append(xRaw2.data(), xRaw2.size());
-    peerPublicKeyBytes.append(yRaw2.data(), yRaw2.size());
-
-    deriveKeys(peerPublicKeyBytes);
+    deriveKeys(peerKey);
 
     m_handshakeComplete = true;
     return true;
@@ -288,149 +308,55 @@ bool QuickShareCrypto::processClientFinished(const QByteArray& data) {
 
 QByteArray QuickShareCrypto::generateClientInit() {
     securegcm::Ukey2ClientFinished clientFinished;
-    if (m_dhKey) {
-        EC_KEY* ecKey = EVP_PKEY_get1_EC_KEY(m_dhKey);
-        if (ecKey) {
-            const EC_GROUP* group = EC_KEY_get0_group(ecKey);
-            const EC_POINT* point = EC_KEY_get0_public_key(ecKey);
-            size_t len = EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED, nullptr, 0, nullptr);
-            QByteArray pubKeyBytes(len, '\0');
-            EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED,
-                reinterpret_cast<unsigned char*>(pubKeyBytes.data()), len, nullptr);
-
-            QByteArray xRaw = pubKeyBytes.mid(1, 32);
-            QByteArray yRaw = pubKeyBytes.mid(33, 32);
-
-            std::string xEncoded;
-            if (static_cast<unsigned char>(xRaw[0]) >= 0x80)
-                xEncoded += '\0';
-            xEncoded.append(xRaw.constData(), 32);
-
-            std::string yEncoded;
-            if (static_cast<unsigned char>(yRaw[0]) >= 0x80)
-                yEncoded += '\0';
-            yEncoded.append(yRaw.constData(), 32);
-
-            securemessage::EcP256PublicKey ecPubKey;
-            ecPubKey.set_x(xEncoded);
-            ecPubKey.set_y(yEncoded);
-
-            securemessage::GenericPublicKey genericPubKey;
-            genericPubKey.set_type(securemessage::EC_P256);
-            *genericPubKey.mutable_ec_p256_public_key() = ecPubKey;
-
-            QByteArray serializedGenPubKey;
-            serializedGenPubKey.resize(genericPubKey.ByteSizeLong());
-            genericPubKey.SerializeToArray(serializedGenPubKey.data(), serializedGenPubKey.size());
-            clientFinished.set_public_key(serializedGenPubKey.constData(), serializedGenPubKey.size());
-            EC_KEY_free(ecKey);
-        }
-    }
-
-    std::string clientFinishedData = clientFinished.SerializeAsString();
+    const QByteArray publicKey = serializePublicKey(m_dhKey);
+    clientFinished.set_public_key(publicKey.constData(), publicKey.size());
 
     securegcm::Ukey2Message finishFrame;
     finishFrame.set_message_type(securegcm::Ukey2Message::CLIENT_FINISH);
-    finishFrame.set_message_data(clientFinishedData);
+    finishFrame.set_message_data(clientFinished.SerializeAsString());
+    m_clientFinishedMsgData = serialize(finishFrame);
 
-    std::string finishFrameSerialized = finishFrame.SerializeAsString();
-
-    m_clientFinishedMsgData = QByteArray::fromStdString(finishFrameSerialized);
-
+    // The commitment is the hash of the frame carrying that public key.
     unsigned char hash[SHA512_DIGEST_LENGTH];
-    SHA512(reinterpret_cast<const unsigned char*>(finishFrameSerialized.data()), finishFrameSerialized.size(), hash);
-
-    {
-        QString hex;
-        for (int i = 0; i < SHA512_DIGEST_LENGTH; ++i)
-            hex += QString(u"%1"_s).arg(hash[i], 2, 16, QLatin1Char('0'));
-    }
+    SHA512(reinterpret_cast<const unsigned char*>(m_clientFinishedMsgData.constData()),
+        static_cast<size_t>(m_clientFinishedMsgData.size()), hash);
 
     securegcm::Ukey2ClientInit clientInit;
     clientInit.set_version(1);
-    QByteArray randData;
-    randData.resize(32);
-    RAND_bytes((unsigned char*)randData.data(), 32);
-    clientInit.set_random(randData.constData(), 32);
+    QByteArray random(32, '\0');
+    RAND_bytes(reinterpret_cast<unsigned char*>(random.data()), static_cast<int>(random.size()));
+    clientInit.set_random(random.constData(), random.size());
     clientInit.set_next_protocol("AES_256_CBC-HMAC_SHA256");
 
-    auto* commit = clientInit.add_cipher_commitments();
-    commit->set_handshake_cipher(securegcm::P256_SHA512);
-    commit->set_commitment(reinterpret_cast<const char*>(hash), SHA512_DIGEST_LENGTH);
+    auto* commitment = clientInit.add_cipher_commitments();
+    commitment->set_handshake_cipher(securegcm::P256_SHA512);
+    commitment->set_commitment(reinterpret_cast<const char*>(hash), SHA512_DIGEST_LENGTH);
 
     securegcm::Ukey2Message msg;
     msg.set_message_type(securegcm::Ukey2Message::CLIENT_INIT);
     msg.set_message_data(clientInit.SerializeAsString());
 
-    QByteArray out;
-    out.resize(msg.ByteSizeLong());
-    msg.SerializeToArray(out.data(), out.size());
-    m_clientInitMsgData = out;
-    return out;
+    m_clientInitMsgData = serialize(msg);
+    return m_clientInitMsgData;
 }
 
 QByteArray QuickShareCrypto::generateServerInit() {
     securegcm::Ukey2ServerInit serverInit;
     serverInit.set_version(1);
-    QByteArray randData;
-    randData.resize(32);
-    RAND_bytes((unsigned char*)randData.data(), 32);
-    serverInit.set_random(randData.constData(), 32);
+    QByteArray random(32, '\0');
+    RAND_bytes(reinterpret_cast<unsigned char*>(random.data()), static_cast<int>(random.size()));
+    serverInit.set_random(random.constData(), random.size());
     serverInit.set_handshake_cipher(securegcm::P256_SHA512);
 
-    EVP_PKEY* pkey = m_dhKey;
-    if (pkey) {
-        EC_KEY* ecKey = EVP_PKEY_get1_EC_KEY(pkey);
-        if (ecKey) {
-            const EC_GROUP* group = EC_KEY_get0_group(ecKey);
-            const EC_POINT* point = EC_KEY_get0_public_key(ecKey);
-            size_t len = EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED, nullptr, 0, nullptr);
-            QByteArray pubKeyBytes;
-            pubKeyBytes.resize(len);
-            EC_POINT_point2oct(group, point, POINT_CONVERSION_UNCOMPRESSED,
-                reinterpret_cast<unsigned char*>(pubKeyBytes.data()), len, nullptr);
-
-            QByteArray xRaw = pubKeyBytes.mid(1, 32);
-            QByteArray yRaw = pubKeyBytes.mid(33, 32);
-
-            std::string xEncoded;
-            if (static_cast<unsigned char>(xRaw[0]) >= 0x80) {
-                xEncoded += '\0';
-            }
-            xEncoded.append(xRaw.constData(), 32);
-
-            std::string yEncoded;
-            if (static_cast<unsigned char>(yRaw[0]) >= 0x80) {
-                yEncoded += '\0';
-            }
-            yEncoded.append(yRaw.constData(), 32);
-
-            securemessage::EcP256PublicKey ecPubKey;
-            ecPubKey.set_x(xEncoded);
-            ecPubKey.set_y(yEncoded);
-
-            securemessage::GenericPublicKey genericPubKey;
-            genericPubKey.set_type(securemessage::EC_P256);
-            *genericPubKey.mutable_ec_p256_public_key() = ecPubKey;
-
-            QByteArray serializedGenPubKey;
-            serializedGenPubKey.resize(genericPubKey.ByteSizeLong());
-            genericPubKey.SerializeToArray(serializedGenPubKey.data(), serializedGenPubKey.size());
-
-            serverInit.set_public_key(serializedGenPubKey.constData(), serializedGenPubKey.size());
-            EC_KEY_free(ecKey);
-        }
-    }
+    const QByteArray publicKey = serializePublicKey(m_dhKey);
+    serverInit.set_public_key(publicKey.constData(), publicKey.size());
 
     securegcm::Ukey2Message msg;
     msg.set_message_type(securegcm::Ukey2Message::SERVER_INIT);
     msg.set_message_data(serverInit.SerializeAsString());
 
-    QByteArray out;
-    out.resize(msg.ByteSizeLong());
-    msg.SerializeToArray(out.data(), out.size());
-    m_serverInitMsgData = out;
-    return out;
+    m_serverInitMsgData = serialize(msg);
+    return m_serverInitMsgData;
 }
 
 QByteArray QuickShareCrypto::generateClientFinished() {
@@ -442,9 +368,8 @@ QByteArray QuickShareCrypto::sealDeviceToDevice(int sequenceNumber, const QByteA
     message.set_message(plaintext.constData(), plaintext.size());
     message.set_sequence_number(sequenceNumber);
 
-    QByteArray body;
-    body.resize(static_cast<qsizetype>(message.ByteSizeLong()));
-    if (!message.SerializeToArray(body.data(), static_cast<int>(body.size())))
+    QByteArray body = serialize(message);
+    if (body.isEmpty())
         return {};
 
     QByteArray iv(16, '\0');
@@ -477,9 +402,8 @@ QByteArray QuickShareCrypto::sealDeviceToDevice(int sequenceNumber, const QByteA
     securegcm::GcmMetadata metadata;
     metadata.set_type(securegcm::DEVICE_TO_DEVICE_MESSAGE);
     metadata.set_version(1);
-    QByteArray metadataBytes;
-    metadataBytes.resize(static_cast<qsizetype>(metadata.ByteSizeLong()));
-    if (!metadata.SerializeToArray(metadataBytes.data(), static_cast<int>(metadataBytes.size())))
+    const QByteArray metadataBytes = serialize(metadata);
+    if (metadataBytes.isEmpty())
         return {};
     header.set_public_metadata(metadataBytes.constData(), metadataBytes.size());
 
@@ -487,9 +411,8 @@ QByteArray QuickShareCrypto::sealDeviceToDevice(int sequenceNumber, const QByteA
     *headerAndBody.mutable_header() = header;
     headerAndBody.set_body(ciphertext.constData(), ciphertext.size());
 
-    QByteArray headerAndBodyBytes;
-    headerAndBodyBytes.resize(static_cast<qsizetype>(headerAndBody.ByteSizeLong()));
-    if (!headerAndBody.SerializeToArray(headerAndBodyBytes.data(), static_cast<int>(headerAndBodyBytes.size())))
+    const QByteArray headerAndBodyBytes = serialize(headerAndBody);
+    if (headerAndBodyBytes.isEmpty())
         return {};
 
     unsigned char signature[EVP_MAX_MD_SIZE];
@@ -503,11 +426,7 @@ QByteArray QuickShareCrypto::sealDeviceToDevice(int sequenceNumber, const QByteA
     secureMessage.set_header_and_body(headerAndBodyBytes.constData(), headerAndBodyBytes.size());
     secureMessage.set_signature(signature, signatureLength);
 
-    QByteArray out;
-    out.resize(static_cast<qsizetype>(secureMessage.ByteSizeLong()));
-    if (!secureMessage.SerializeToArray(out.data(), static_cast<int>(out.size())))
-        return {};
-    return out;
+    return serialize(secureMessage);
 }
 
 QByteArray QuickShareCrypto::openDeviceToDevice(const QByteArray& secureMessage) {

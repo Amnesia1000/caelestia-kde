@@ -34,14 +34,6 @@ public:
 
     bool isClient() const { return !m_isServer; }
 
-    QByteArray encodeKey() const { return m_encodeKey; }
-
-    QByteArray decodeKey() const { return m_decodeKey; }
-
-    QByteArray hmacEncodeKey() const { return m_hmacEncodeKey; }
-
-    QByteArray hmacDecodeKey() const { return m_hmacDecodeKey; }
-
     QString pinCode() const;
 
 private:

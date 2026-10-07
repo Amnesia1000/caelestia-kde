@@ -1,6 +1,5 @@
 #include "QuickShareConnection.hpp"
 
-#include <google/protobuf/message_lite.h>
 #include <openssl/rand.h>
 
 #include <QDebug>
@@ -14,6 +13,8 @@
 #include <QSysInfo>
 #include <QtEndian>
 
+#include "QuickShareEndpointInfo.hpp"
+#include "QuickShareProto.hpp"
 #include "device_to_device_messages.pb.h"
 #include "offline_wire_formats.pb.h"
 #include "securegcm.pb.h"
@@ -72,33 +73,9 @@ void writeLengthPrefixed(QTcpSocket* socket, const QByteArray& data) {
     socket->write(data);
 }
 
-QByteArray serialize(const google::protobuf::MessageLite& message) {
-    QByteArray data;
-    data.resize(static_cast<qsizetype>(message.ByteSizeLong()));
-    if (!message.SerializeToArray(data.data(), static_cast<int>(data.size())))
-        return {};
-    return data;
-}
-
 QString localDeviceName() {
     const QString hostname = QSysInfo::machineHostName();
     return hostname.isEmpty() ? u"CaelestiaClient"_s : hostname;
-}
-
-/// The endpoint info a connection request carries: the device type, a random id,
-/// then the length-prefixed device name.
-QByteArray buildEndpointInfo(const QString& deviceName) {
-    QByteArray info;
-    info.append(static_cast<char>(3 << 1)); // Laptop
-    for (int i = 0; i < 16; i++)
-        info.append(static_cast<char>(QRandomGenerator::global()->generate()));
-
-    QByteArray name = deviceName.toUtf8();
-    if (name.length() > 255)
-        name.truncate(255);
-    info.append(static_cast<char>(name.length()));
-    info.append(name);
-    return info;
 }
 
 } // namespace
@@ -167,7 +144,7 @@ void QuickShareConnection::sendConnectionRequest() {
     auto* request = v1->mutable_connection_request();
     request->set_endpoint_id("ABCD");
     request->set_endpoint_name(localDeviceName().toStdString());
-    const QByteArray info = buildEndpointInfo(localDeviceName());
+    const QByteArray info = endpointinfo::encode(localDeviceName());
     request->set_endpoint_info(info.constData(), info.size());
 
     setState(OfflineFrameExchange);
@@ -374,21 +351,10 @@ void QuickShareConnection::handleOfflineFrame(const QByteArray& data) {
 
     if (frame.has_v1() && frame.v1().has_connection_request()) {
         const auto& req = frame.v1().connection_request();
-        if (req.has_endpoint_info()) {
-            const auto& info = req.endpoint_info();
-            if (info.size() >= 18) {
-                const auto visibility = (static_cast<unsigned char>(info[0]) >> 3) & 0x01;
-                if (visibility == 0) {
-                    const int nameLen = static_cast<unsigned char>(info[17]);
-                    if (nameLen > 0 && info.size() >= 18 + nameLen) {
-                        m_deviceName = QString::fromUtf8(info.data() + 18, nameLen);
-                    }
-                }
-            }
-        }
-        if (m_deviceName.isEmpty() && req.has_endpoint_name()) {
+        if (req.has_endpoint_info() && endpointinfo::isVisible(req.endpoint_info()))
+            m_deviceName = endpointinfo::deviceName(req.endpoint_info());
+        if (m_deviceName.isEmpty() && req.has_endpoint_name())
             m_deviceName = QString::fromUtf8(req.endpoint_name().data(), req.endpoint_name().size());
-        }
     }
 
     setState(Ukey2Handshake);
@@ -497,19 +463,14 @@ void QuickShareConnection::handlePayloadTransfer(const PayloadTransferFrame& pac
 
 void QuickShareConnection::handleFileChunk(const PayloadTransferFrame& packet, const QByteArray& body) {
     const auto& chunk = packet.payload_chunk();
+    const bool last = (chunk.flags() & PayloadTransferFrame::PayloadChunk::LAST_CHUNK) != 0;
 
-    if (!m_fileTransferActive) {
-        m_fileTransferActive = true;
-        m_fileBuffer.clear();
-    }
+    if (!m_incomingFile.append(chunk.offset(), body, last))
+        return;
 
-    if (chunk.offset() != m_fileBuffer.size())
-        return; // out of order: wait for the chunk that continues the buffer
+    emit transferProgress(m_incomingFile.size(), m_incomingFileSize);
 
-    m_fileBuffer.append(body);
-    emit transferProgress(m_fileBuffer.size(), m_incomingFileSize);
-
-    if ((chunk.flags() & 1) == 1)
+    if (last)
         saveIncomingFile();
 }
 
@@ -519,39 +480,36 @@ void QuickShareConnection::saveIncomingFile() {
 
     const QString savePath = directory.isEmpty() ? QString() : uniqueFilePath(directory, m_incomingFileName);
     QFile file(savePath);
-    const bool saved = file.open(QIODevice::WriteOnly) && file.write(m_fileBuffer) == m_fileBuffer.size();
+    const bool saved = file.open(QIODevice::WriteOnly) && file.write(m_incomingFile.data()) == m_incomingFile.size();
     if (saved)
         file.close();
     else
         qWarning() << u"QuickShareConnection: Failed to save"_s << m_incomingFileName << u"to"_s << savePath;
 
     m_incomingFilePath = saved ? savePath : QString();
-    m_fileTransferActive = false;
-    m_fileBuffer.clear();
+    m_incomingFile.clear();
     finishTransfer(saved);
 }
 
 void QuickShareConnection::handleByteChunk(const PayloadTransferFrame& packet, const QByteArray& body) {
     const qint64 payloadId = packet.payload_header().id();
+    const auto& chunk = packet.payload_chunk();
 
-    if (!m_payloadBuffers.contains(payloadId)) {
-        if (packet.payload_chunk().offset() != 0)
+    auto buffer = m_payloadBuffers.find(payloadId);
+    if (buffer == m_payloadBuffers.end()) {
+        if (chunk.offset() != 0)
             return; // a continuation of a payload this connection never saw start
-        m_payloadBuffers.insert(payloadId, {});
+        buffer = m_payloadBuffers.insert(payloadId, PayloadBuffer());
     }
 
-    QByteArray& buffer = m_payloadBuffers[payloadId];
-    if (packet.payload_chunk().offset() != buffer.size())
-        return; // out of order: wait for the chunk that continues the buffer
-
-    buffer.append(body);
-    if ((packet.payload_chunk().flags() & 1) != 1)
+    const bool last = (chunk.flags() & PayloadTransferFrame::PayloadChunk::LAST_CHUNK) != 0;
+    if (!buffer->append(chunk.offset(), body, last) || !buffer->complete())
         return;
 
     sharing::nearby::Frame frame;
-    if (frame.ParseFromArray(buffer.constData(), static_cast<int>(buffer.size())))
+    if (frame.ParseFromArray(buffer->data().constData(), static_cast<int>(buffer->data().size())))
         handleSharingFrame(frame);
-    m_payloadBuffers.remove(payloadId);
+    m_payloadBuffers.erase(buffer);
 }
 
 void QuickShareConnection::handleSharingFrame(const sharing::nearby::Frame& frame) {

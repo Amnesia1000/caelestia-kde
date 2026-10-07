@@ -22,6 +22,9 @@ qml_module(caelestia-quickshare
         QuickShareCrypto.hpp
         QuickShareConnection.cpp
         QuickShareConnection.hpp
+        QuickShareEndpointInfo.cpp
+        QuickShareEndpointInfo.hpp
+        QuickShareProto.hpp
         quickshare_service.cpp
         quickshare_service.hpp
         QuickShareBle.cpp
