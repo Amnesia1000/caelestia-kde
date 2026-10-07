@@ -1,11 +1,8 @@
 #include "quickshare_service.hpp"
 
-#include <QDebug>
-#include <QDir>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QJsonObject>
 #include <QStandardPaths>
 #include <QSysInfo>
 #include <QTimer>

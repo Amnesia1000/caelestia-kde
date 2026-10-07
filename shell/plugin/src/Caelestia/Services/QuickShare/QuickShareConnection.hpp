@@ -58,15 +58,12 @@ private:
     QByteArray unwrapSecureMessage(const QByteArray& secureMessageData);
     void sendEncryptedSharingFrame(sharing::nearby::V1Frame::FrameType type);
     void sendEncryptedSharingFrame(const sharing::nearby::Frame& frame);
-    QByteArray buildPayloadTransferFrame(const QByteArray& sharingFrameData, bool lastChunk, qint64 offset);
-    QByteArray buildOfflineFrame(const QByteArray& payloadTransferData);
     void encryptAndSendOfflineFrameBytes(const QByteArray& offlineFrameData);
 
     QTcpSocket* m_socket;
     State m_state = Disconnected;
     bool m_encryptionEnabled = false;
     int m_sendSeq = 1;
-    int m_recvSeq = 1;
     QuickShareCrypto m_crypto;
     QByteArray m_buffer;
 

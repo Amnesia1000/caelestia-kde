@@ -4,7 +4,6 @@
 #include <openssl/rand.h>
 
 #include <QDebug>
-#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QMimeDatabase>
@@ -241,44 +240,6 @@ void QuickShareConnection::sendEncryptedSharingFrame(const sharing::nearby::Fram
     out2.resize(offline2.ByteSizeLong());
     (void)offline2.SerializeToArray(out2.data(), static_cast<int>(out2.size()));
     encryptAndSendOfflineFrameBytes(out2);
-}
-
-QByteArray QuickShareConnection::buildPayloadTransferFrame(
-    const QByteArray& sharingFrameData, bool lastChunk, qint64 offset) {
-    location::nearby::connections::PayloadTransferFrame ptf;
-
-    auto* header = ptf.mutable_payload_header();
-    header->set_id(QRandomGenerator::global()->generate());
-    header->set_type(location::nearby::connections::PayloadTransferFrame::PayloadHeader::BYTES);
-    header->set_total_size(sharingFrameData.size());
-    header->set_is_sensitive(false);
-
-    ptf.set_packet_type(location::nearby::connections::PayloadTransferFrame::DATA);
-
-    auto* chunk = ptf.mutable_payload_chunk();
-    chunk->set_offset(offset);
-    chunk->set_flags(lastChunk ? 1 : 0);
-    if (!sharingFrameData.isEmpty()) {
-        chunk->set_body(sharingFrameData.constData(), sharingFrameData.size());
-    }
-
-    QByteArray out;
-    out.resize(ptf.ByteSizeLong());
-    (void)ptf.SerializeToArray(out.data(), static_cast<int>(out.size()));
-    return out;
-}
-
-QByteArray QuickShareConnection::buildOfflineFrame(const QByteArray& payloadTransferData) {
-    location::nearby::connections::OfflineFrame offlineFrame;
-    offlineFrame.set_version(location::nearby::connections::OfflineFrame::V1);
-    auto* v1 = offlineFrame.mutable_v1();
-    v1->set_type(location::nearby::connections::V1Frame::PAYLOAD_TRANSFER);
-    v1->mutable_payload_transfer()->ParseFromArray(payloadTransferData.constData(), payloadTransferData.size());
-
-    QByteArray out;
-    out.resize(offlineFrame.ByteSizeLong());
-    (void)offlineFrame.SerializeToArray(out.data(), static_cast<int>(out.size()));
-    return out;
 }
 
 void QuickShareConnection::encryptAndSendOfflineFrameBytes(const QByteArray& offlineFrameData) {
