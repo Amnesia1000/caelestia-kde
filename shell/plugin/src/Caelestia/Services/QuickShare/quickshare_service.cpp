@@ -140,8 +140,9 @@ void QuickShareService::sendFile(const QString& deviceId, const QString& filePat
                 connection->sendFile(filePath);
         });
 
-    connect(connection, &QuickShareConnection::transferProgress, this,
-        [this, deviceId](qint64 sent, qint64 total) { emit outgoingTransferProgress(deviceId, sent, total); });
+    connect(connection, &QuickShareConnection::transferProgress, this, [this, deviceId](qint64 sent, qint64 total) {
+        emit outgoingTransferProgress(deviceId, sent, total);
+    });
 
     connect(connection, &QuickShareConnection::transferFinished, this,
         [this, connection, deviceId, deviceName, filePath](bool success) {
@@ -193,8 +194,7 @@ void QuickShareService::appendHistoryEntry(
 void QuickShareService::removeHistoryEntry(const QString& filePath, qint64 timestamp) {
     const auto entry = std::find_if(m_transferHistory.begin(), m_transferHistory.end(), [&](const QVariant& value) {
         const QVariantMap map = value.toMap();
-        return map.value(u"filePath"_s).toString() == filePath
-            && map.value(u"timestamp"_s).toLongLong() == timestamp;
+        return map.value(u"filePath"_s).toString() == filePath && map.value(u"timestamp"_s).toLongLong() == timestamp;
     });
     if (entry == m_transferHistory.end())
         return;
@@ -241,8 +241,9 @@ void QuickShareService::onNewConnection() {
             emit incomingTransferRequested(deviceLabel(connection), fileName, fileSize);
         });
 
-    connect(connection, &QuickShareConnection::pinCodeReady, this,
-        [this](const QString& pinCode) { emit incomingTransferPinReady(pinCode); });
+    connect(connection, &QuickShareConnection::pinCodeReady, this, [this](const QString& pinCode) {
+        emit incomingTransferPinReady(pinCode);
+    });
 
     connect(connection, &QuickShareConnection::transferFinished, this, [this, connection](bool success) {
         if (m_pendingIncomingRequest == connection) {

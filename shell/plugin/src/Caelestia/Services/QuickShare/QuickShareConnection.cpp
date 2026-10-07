@@ -247,7 +247,7 @@ void QuickShareConnection::sendEncryptedSharingFrame(const sharing::nearby::Fram
         payloadId, PayloadTransferFrame::PayloadHeader::BYTES, frameData.size(), frameData.size(), true, {}, {});
 }
 
-void QuickShareConnection::sendPayloadChunk(qint64 payloadId, PayloadTransferFrame::PayloadHeader::Type type,
+void QuickShareConnection::sendPayloadChunk(qint64 payloadId, PayloadTransferFrame::PayloadHeader::PayloadType type,
     qint64 totalSize, qint64 offset, bool lastChunk, const QByteArray& body, const QString& fileName) {
     PayloadTransferFrame packet;
     auto* header = packet.mutable_payload_header();
@@ -563,8 +563,8 @@ void QuickShareConnection::sendFilePayload() {
     qint64 offset = 0;
     while (!file.atEnd()) {
         const QByteArray chunk = file.read(chunkSize);
-        sendPayloadChunk(m_outgoingFilePayloadId, PayloadTransferFrame::PayloadHeader::FILE, m_outgoingFileSize,
-            offset, false, chunk, fileName);
+        sendPayloadChunk(m_outgoingFilePayloadId, PayloadTransferFrame::PayloadHeader::FILE, m_outgoingFileSize, offset,
+            false, chunk, fileName);
         offset += chunk.size();
         emit transferProgress(offset, m_outgoingFileSize);
     }

@@ -76,8 +76,8 @@ private:
     void sendDisconnection();
     void sendFilePayload();
     void sendPayloadChunk(qint64 payloadId,
-        location::nearby::connections::PayloadTransferFrame::PayloadHeader::Type type, qint64 totalSize, qint64 offset,
-        bool lastChunk, const QByteArray& body, const QString& fileName = {});
+        location::nearby::connections::PayloadTransferFrame::PayloadHeader::PayloadType type, qint64 totalSize,
+        qint64 offset, bool lastChunk, const QByteArray& body, const QString& fileName = {});
     void sendEncryptedSharingFrame(sharing::nearby::V1Frame::FrameType type);
     void sendEncryptedSharingFrame(const sharing::nearby::Frame& frame);
     /// Length-prefixes a frame sent before the handshake encrypts anything.

@@ -457,14 +457,13 @@ QByteArray QuickShareCrypto::sealDeviceToDevice(int sequenceNumber, const QByteA
     QByteArray ciphertext(body.size() + EVP_CIPHER_block_size(EVP_aes_256_cbc()), '\0');
     int written = 0;
     int padding = 0;
-    const bool encrypted = EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr,
-                                 reinterpret_cast<const unsigned char*>(m_encodeKey.constData()),
-                                 reinterpret_cast<const unsigned char*>(iv.constData()))
-            == 1
-        && EVP_EncryptUpdate(ctx, reinterpret_cast<unsigned char*>(ciphertext.data()), &written,
-               reinterpret_cast<const unsigned char*>(body.constData()), static_cast<int>(body.size()))
-            == 1
-        && EVP_EncryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(ciphertext.data()) + written, &padding) == 1;
+    const bool encrypted =
+        EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr,
+            reinterpret_cast<const unsigned char*>(m_encodeKey.constData()),
+            reinterpret_cast<const unsigned char*>(iv.constData())) == 1 &&
+        EVP_EncryptUpdate(ctx, reinterpret_cast<unsigned char*>(ciphertext.data()), &written,
+            reinterpret_cast<const unsigned char*>(body.constData()), static_cast<int>(body.size())) == 1 &&
+        EVP_EncryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(ciphertext.data()) + written, &padding) == 1;
     EVP_CIPHER_CTX_free(ctx);
     if (!encrypted)
         return {};
@@ -525,8 +524,8 @@ QByteArray QuickShareCrypto::openDeviceToDevice(const QByteArray& secureMessage)
             reinterpret_cast<const unsigned char*>(headerAndBody.constData()),
             static_cast<size_t>(headerAndBody.size()), signature, &signatureLength))
         return {};
-    if (static_cast<int>(signatureLength) != message.signature().size()
-        || memcmp(signature, message.signature().data(), signatureLength) != 0) {
+    if (static_cast<int>(signatureLength) != message.signature().size() ||
+        memcmp(signature, message.signature().data(), signatureLength) != 0) {
         qWarning() << u"QuickShareCrypto: HMAC verification failed"_s;
         return {};
     }
@@ -544,14 +543,13 @@ QByteArray QuickShareCrypto::openDeviceToDevice(const QByteArray& secureMessage)
     QByteArray plaintext(ciphertext.size() + EVP_CIPHER_block_size(EVP_aes_256_cbc()), '\0');
     int written = 0;
     int padding = 0;
-    const bool decrypted = EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr,
-                                 reinterpret_cast<const unsigned char*>(m_decodeKey.constData()),
-                                 reinterpret_cast<const unsigned char*>(iv.constData()))
-            == 1
-        && EVP_DecryptUpdate(ctx, reinterpret_cast<unsigned char*>(plaintext.data()), &written,
-               reinterpret_cast<const unsigned char*>(ciphertext.constData()), static_cast<int>(ciphertext.size()))
-            == 1
-        && EVP_DecryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(plaintext.data()) + written, &padding) == 1;
+    const bool decrypted =
+        EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), nullptr,
+            reinterpret_cast<const unsigned char*>(m_decodeKey.constData()),
+            reinterpret_cast<const unsigned char*>(iv.constData())) == 1 &&
+        EVP_DecryptUpdate(ctx, reinterpret_cast<unsigned char*>(plaintext.data()), &written,
+            reinterpret_cast<const unsigned char*>(ciphertext.constData()), static_cast<int>(ciphertext.size())) == 1 &&
+        EVP_DecryptFinal_ex(ctx, reinterpret_cast<unsigned char*>(plaintext.data()) + written, &padding) == 1;
     EVP_CIPHER_CTX_free(ctx);
     if (!decrypted)
         return {};
