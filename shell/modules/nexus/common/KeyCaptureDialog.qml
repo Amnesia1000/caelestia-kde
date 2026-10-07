@@ -202,12 +202,12 @@ Popup {
                     } else if (event.key >= Qt.Key_F1 && event.key <= Qt.Key_F35) {
                         keyStr = "F" + (event.key - Qt.Key_F1 + 1)
                     } else {
-                        // Fallback (e.g. F-keys)
-                        // Note: QKeySequence string conversion isn't directly exposed to JS, 
-                        // so we handle common ones. Others might be obscure.
                         keyStr = String.fromCharCode(event.key)
                     }
-                    root.capturedKey = modifiers + keyStr
+                    let mods = modifiers
+                    if (mods.indexOf("Shift") >= 0 && keyStr.length === 1 && !/[A-Za-z0-9]/.test(keyStr))
+                        mods = mods.replace("Shift+", "")
+                    root.capturedKey = mods + keyStr
                 }
                 event.accepted = true
             }

@@ -344,7 +344,7 @@ for source_file in "$BUNDLE_DIR"/src/bin/*; do
     fi
 done
 
-for name in kcolorpicker qs-kwin-bridge.py caelestia-shortcuts caelestia-keyd-run ydotoold-wrapper caelestia-autostart.sh; do
+for name in kcolorpicker qs-kwin-bridge.py caelestia-shortcuts caelestia-keyd-run ydotoold-wrapper caelestia-autostart.sh caelestia-cliphist; do
     bin_target="$HOME/.local/bin/$name"
     if [[ -f "$bin_target" ]]; then
         rm -f "$bin_target"

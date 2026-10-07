@@ -674,13 +674,43 @@
   <context>
     <name>AiAssistant</name>
     <message>
-      <location filename="../modules/sidebar/AiAssistant.qml" line="+713"/>
-      <location line="+1280"/>
+      <location filename="../modules/sidebar/AiAssistant.qml" line="+212"/>
+      <source>Bypass</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Accept edits</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Auto</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Plan</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Default</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+490"/>
+      <location line="+1090"/>
       <source>Rate limited - retrying in %1s…</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+208"/>
+      <location line="-684"/>
+      <source>(stopped)</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+892"/>
       <source>Chat</source>
       <translation type="unfinished"/>
     </message>
@@ -710,22 +740,32 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+352"/>
-      <source>Thought Process</source>
+      <location line="+30"/>
+      <source>Permissions</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+184"/>
+      <location line="+59"/>
+      <source>Claude Code working directory</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+458"/>
       <source>Suggestions</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+123"/>
+      <location line="+138"/>
+      <source>Attach a file</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+74"/>
       <source>Ask assistant...</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+170"/>
+      <location line="+193"/>
       <location line="+105"/>
       <source>New Chat</source>
       <translation type="unfinished"/>
@@ -1683,7 +1723,7 @@
   <context>
     <name>Audio</name>
     <message>
-      <location filename="../modules/bar/popouts/Audio.qml" line="+81"/>
+      <location filename="../modules/bar/popouts/Audio.qml" line="+83"/>
       <source>Audio</source>
       <translation type="unfinished"/>
     </message>
@@ -2618,7 +2658,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+22"/>
+      <location line="+32"/>
       <source>RESET ALL</source>
       <translation type="unfinished"/>
     </message>
@@ -2628,77 +2668,77 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+14"/>
+      <location line="+46"/>
       <source>Scale</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+15"/>
       <source>Font</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+22"/>
       <source>Greeter</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Audio</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Battery</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Bluetooth</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Clock</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Dock</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>GitHub</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Lock status</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Network</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Notifications</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Peripheral battery</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Tray menu</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Wireless password</source>
       <translation type="unfinished"/>
     </message>
@@ -3385,12 +3425,12 @@
     </message>
     <message>
       <location line="+18"/>
-      <location line="+149"/>
+      <location line="+163"/>
       <source>Record</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-148"/>
+      <location line="-162"/>
       <location line="+9"/>
       <location line="+9"/>
       <location line="+9"/>
@@ -3437,12 +3477,12 @@
     </message>
     <message>
       <location line="+1"/>
-      <location line="+90"/>
+      <location line="+103"/>
       <source>Capture</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-80"/>
+      <location line="-93"/>
       <source>Capture fullscreen</source>
       <translation type="unfinished"/>
     </message>
@@ -3482,7 +3522,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+171"/>
+      <location line="+183"/>
       <source>Recording %1</source>
       <translation type="unfinished"/>
     </message>
@@ -3567,6 +3607,14 @@
     <message>
       <location line="+1"/>
       <source>Other</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>ChatMessage</name>
+    <message>
+      <location filename="../modules/sidebar/ai/ChatMessage.qml" line="+156"/>
+      <source>Thought Process</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -3762,7 +3810,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location filename="../modules/sidebar/Content.qml" line="+110"/>
+      <location filename="../modules/sidebar/Content.qml" line="+113"/>
       <source>Notifications</source>
       <translation type="unfinished"/>
     </message>
@@ -4283,12 +4331,12 @@
     </message>
     <message>
       <location line="-79"/>
-      <location line="+123"/>
+      <location line="+139"/>
       <source>Desktop media shapes</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-110"/>
+      <location line="-126"/>
       <source>Auto-hide media shapes</source>
       <translation type="unfinished"/>
     </message>
@@ -4299,12 +4347,12 @@
     </message>
     <message>
       <location line="+8"/>
-      <location line="+138"/>
+      <location line="+154"/>
       <source>Desktop lyrics</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-125"/>
+      <location line="-141"/>
       <source>Auto-hide lyrics</source>
       <translation type="unfinished"/>
     </message>
@@ -4345,41 +4393,43 @@
     </message>
     <message>
       <location line="+18"/>
-      <location line="+44"/>
+      <location line="+60"/>
       <location line="+37"/>
       <source>Scale</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-71"/>
-      <location line="+45"/>
-      <location line="+52"/>
+      <location line="-87"/>
+      <location line="+61"/>
+      <location line="+36"/>
       <source>Position</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-80"/>
+      <location line="-81"/>
+      <location line="+111"/>
+      <source>Horizontal offset</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-103"/>
+      <location line="+111"/>
+      <source>Vertical offset</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-102"/>
       <location line="+111"/>
       <source>Invert colors</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-47"/>
-      <source>Horizontal offset</source>
-      <translation type="unfinished"/>
-    </message>
-    <message>
-      <location line="+8"/>
-      <source>Vertical offset</source>
-      <translation type="unfinished"/>
-    </message>
-    <message>
-      <location line="+24"/>
+      <location line="-31"/>
       <source>Alignment</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+22"/>
+      <location line="+38"/>
       <source>Visualiser</source>
       <translation type="unfinished"/>
     </message>
@@ -6787,7 +6837,7 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+20"/>
+      <location line="+22"/>
       <source>Network</source>
       <translation type="unfinished"/>
     </message>
@@ -7244,7 +7294,7 @@ Now go touch grass</source>
     <name>NotifData</name>
     <message>
       <location filename="../services/NotifData.qml" line="+19"/>
-      <location line="+149"/>
+      <location line="+153"/>
       <source>now</source>
       <translation type="unfinished"/>
     </message>
@@ -8568,6 +8618,11 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+1"/>
+      <source>Visualiser Input</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Rich Presence</source>
       <translation type="unfinished"/>
     </message>
@@ -8889,9 +8944,48 @@ Now go touch grass</source>
     </message>
   </context>
   <context>
+    <name>PluginStore</name>
+    <message>
+      <location filename="../services/PluginStore.qml" line="+67"/>
+      <source>Plugin update available</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>1 plugin can be updated</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Plugin updates available</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>%1 plugins can be updated</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+153"/>
+      <source>Enter a valid git URL</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Cloning plugin...</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+27"/>
+      <location line="+5"/>
+      <source>Install failed</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>PluginsPage</name>
     <message>
-      <location filename="../modules/nexus/pages/PluginsPage.qml" line="+59"/>
+      <location filename="../modules/nexus/pages/PluginsPage.qml" line="+86"/>
       <source>Plugins</source>
       <translation type="unfinished"/>
     </message>
@@ -8907,12 +9001,12 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+34"/>
-      <location line="+333"/>
+      <location line="+371"/>
       <source>Installed</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-324"/>
+      <location line="-362"/>
       <source>Store</source>
       <translation type="unfinished"/>
     </message>
@@ -8927,33 +9021,44 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+68"/>
+      <location line="+73"/>
       <source>User Installed</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+101"/>
+      <location line="+106"/>
       <source>No plugins installed</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+38"/>
+      <location line="+8"/>
+      <source>Install from source</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Git URL</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+21"/>
+      <source>The repository root must contain metadata.json</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
+      <location line="+91"/>
+      <source>Install</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-52"/>
       <source>Loading store...</source>
       <translation type="unfinished"/>
     </message>
     <message>
       <location line="+9"/>
       <source>Available Plugins</source>
-      <translation type="unfinished"/>
-    </message>
-    <message>
-      <location line="+60"/>
-      <source>Update</source>
-      <translation type="unfinished"/>
-    </message>
-    <message>
-      <location line="+0"/>
-      <source>Install</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -9076,7 +9181,17 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+50"/>
+      <location line="+8"/>
+      <source>Toggles per page</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Entries shown on each page of the drawer</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+51"/>
       <source>Connectivity</source>
       <translation type="unfinished"/>
     </message>
@@ -9290,12 +9405,12 @@ Now go touch grass</source>
     <message>
       <location filename="../modules/nexus/pages/ServicesPage.qml" line="+17"/>
       <location line="+15"/>
-      <location line="+105"/>
+      <location line="+117"/>
       <source>Auto</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-117"/>
+      <location line="-129"/>
       <source>Local</source>
       <translation type="unfinished"/>
     </message>
@@ -9310,7 +9425,17 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+17"/>
+      <location line="+9"/>
+      <source>Output</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Input</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+16"/>
       <source>Services</source>
       <translation type="unfinished"/>
     </message>
@@ -9435,7 +9560,17 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+9"/>
+      <source>Visualiser input</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Audio the visualisers react to</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
       <source>GPU</source>
       <translation type="unfinished"/>
     </message>
@@ -9789,7 +9924,7 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+50"/>
+      <location line="+51"/>
       <source>Open nexus</source>
       <translation type="unfinished"/>
     </message>
@@ -9969,7 +10104,7 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+112"/>
+      <location line="+116"/>
       <source>Open dock entry 1</source>
       <translation type="unfinished"/>
     </message>
@@ -10885,8 +11020,16 @@ Now go touch grass</source>
   <context>
     <name>Toggles</name>
     <message>
-      <location filename="../modules/utilities/cards/Toggles.qml" line="+237"/>
+      <location filename="../modules/utilities/cards/Toggles.qml" line="+279"/>
       <source>Quick Toggles</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>ToolCard</name>
+    <message>
+      <location filename="../modules/sidebar/ai/ToolCard.qml" line="+169"/>
+      <source>+%1 earlier steps</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -11291,7 +11434,7 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+69"/>
+      <location line="+70"/>
       <location line="+78"/>
       <source>Checking…</source>
       <translation type="unfinished"/>
@@ -11868,7 +12011,7 @@ Now go touch grass</source>
   <context>
     <name>Wallpaper</name>
     <message>
-      <location filename="../modules/background/Wallpaper.qml" line="+108"/>
+      <location filename="../modules/background/Wallpaper.qml" line="+109"/>
       <source>Wallpaper missing?</source>
       <translation type="unfinished"/>
     </message>

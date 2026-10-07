@@ -184,17 +184,36 @@ Singleton {
         readonly property bool isAppleDisplay: root.appleDisplayPresent && modelData.model.startsWith("StudioDisplay")
         property real brightness: 1.0
         property real queuedBrightness: NaN
+        property bool verifying: false
 
-        readonly property Process initProc: Process {
+        readonly property Process readProc: Process {
             stdout: StdioCollector {
                 onStreamFinished: {
                     if (monitor.isAppleDisplay) {
                         const val = parseInt(text.trim());
                         monitor.brightness = val / 101;
-                    } else {
-                        const [, , , cur, max] = text.split(" ");
-                        monitor.brightness = parseInt(cur) / parseInt(max);
+                        return;
                     }
+
+                    const [, , , cur, max] = text.split(" ");
+                    const actual = parseInt(cur) / parseInt(max);
+
+                    if (!monitor.verifying) {
+                        monitor.brightness = actual;
+                        return;
+                    }
+
+                    monitor.verifying = false;
+                    const target = Math.round(monitor.brightness * 100);
+
+                    if (isNaN(actual) || Math.round(actual * 100) === target)
+                        return;
+
+                    monitor.writeBrightness(target / 100);
+                    monitor.brightness = target / 100;
+
+                    if (isDdc)
+                        timer.restart();
                 }
             }
         }
@@ -209,18 +228,8 @@ Singleton {
             }
         }
 
-        function setBrightness(value: real): void {
-            value = Math.max(0, Math.min(1, value));
+        function writeBrightness(value: real): void {
             const rounded = Math.round(value * 100);
-            if (Math.round(brightness * 100) === rounded)
-                return;
-
-            if (isDdc && timer.running) {
-                queuedBrightness = value;
-                return;
-            }
-
-            brightness = value;
 
             if (isAppleDisplay)
                 Quickshell.execDetached(["asdbctl", "set", rounded]);
@@ -228,6 +237,26 @@ Singleton {
                 Quickshell.execDetached(["ddcutil", "-b", busNum, "setvcp", "10", rounded]);
             else
                 BrightnessWatcher.setBrightness(modelData.name, value);
+        }
+
+        function setBrightness(value: real): void {
+            value = Math.max(0, Math.min(1, value));
+            const rounded = Math.round(value * 100);
+            if (Math.round(brightness * 100) === rounded) {
+                if (isDdc && !timer.running && !readProc.running) {
+                    verifying = true;
+                    readProc.running = true;
+                }
+                return;
+            }
+
+            if (isDdc && timer.running) {
+                queuedBrightness = value;
+                return;
+            }
+
+            brightness = value;
+            writeBrightness(value);
 
             if (isDdc)
                 timer.restart();
@@ -235,9 +264,9 @@ Singleton {
 
         function initBrightness(): void {
             if (isAppleDisplay)
-                initProc.command = ["asdbctl", "get"];
+                readProc.command = ["asdbctl", "get"];
             else if (isDdc)
-                initProc.command = ["ddcutil", "-b", busNum, "getvcp", "10", "--brief"];
+                readProc.command = ["ddcutil", "-b", busNum, "getvcp", "10", "--brief"];
             else {
                 const val = BrightnessWatcher.brightness(modelData.name);
                 if (val >= 0.0)
@@ -245,7 +274,7 @@ Singleton {
                 return;
             }
 
-            initProc.running = true;
+            readProc.running = true;
         }
 
         onBusNumChanged: initBrightness()

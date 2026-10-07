@@ -12,6 +12,7 @@ import Caelestia.Config
 import Caelestia.Services
 import qs.components
 import qs.services
+import qs.utils
 
 Item {
     id: root
@@ -286,6 +287,8 @@ Item {
                 monitor.setBrightness(monitor.brightness - GlobalConfig.services.brightnessIncrement);
         }
     }
+
+    Component.onCompleted: Logger.mark("bar-ready")
 
     clip: true
 
