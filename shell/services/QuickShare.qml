@@ -22,6 +22,10 @@ Singleton {
 
     /// The live incoming-transfer prompt, while one is pending. Null otherwise.
     property NotifData prompt: null
+    /// Whether `prompt` is still the notification Notifs is showing. The user can
+    /// dismiss the prompt from the notification centre at any point, which drops it
+    /// from Notifs.list, so the handle below is only safe to touch while this holds.
+    readonly property bool promptLive: root.prompt !== null && Notifs.list.includes(root.prompt) && !root.prompt.closed
     property string promptDeviceName: ""
     property string promptFileName: ""
     property real promptFileSize: 0
@@ -70,7 +74,7 @@ Singleton {
     }
 
     function clearPrompt(): void {
-        if (root.prompt)
+        if (root.promptLive)
             root.prompt.close();
         root.prompt = null;
         root.promptDeviceName = "";
@@ -114,7 +118,7 @@ Singleton {
         // to cover, so the same prompt is rewritten rather than a second one made.
         function onIncomingTransferPinReady(pinCode: string): void {
             root.promptPin = pinCode;
-            if (root.prompt)
+            if (root.promptLive)
                 root.prompt.body = root.promptBody();
         }
 
