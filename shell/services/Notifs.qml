@@ -56,6 +56,39 @@ Singleton {
     // Not used as a binding anywhere.
     function notClosed(): list<NotifData> { return list.filter(n => !n.closed) }
 
+    /// Raises a notification the shell authored itself: there is no D-Bus
+    /// notification behind it, and its actions run shell callbacks rather than
+    /// the sender's. Kept out of the on-disk history, since those callbacks
+    /// cannot survive a restart (see NotifData.transient).
+    function addCustomNotification(params: var): NotifData {
+        const comp = notifComp.createObject(root, {
+            popup: root.shouldShowPopup(),
+            transient: true,
+            image: "",
+            hints: ({}),
+            appName: params.appName ?? qsTr("Caelestia"),
+            summary: params.summary ?? "",
+            body: params.body ?? "",
+            appIcon: params.appIcon ?? "",
+            actions: params.actions ?? [],
+            resident: params.resident ?? true
+        });
+
+        root.openCount++;
+        if (comp.popup)
+            root.popupCount++;
+
+        const next = [comp, ...root.list];
+        const cap = root.notifCap;
+        if (next.length > cap) {
+            const evicted = next.splice(cap);
+            for (const old of evicted) old.close();
+        }
+        root.list = next;
+
+        return comp;
+    }
+
     function shouldShowPopup(): bool {
         if (props.dnd || [...Visibilities.screens.values()].some(v => v.sidebar))
             return false;
@@ -109,7 +142,7 @@ Singleton {
     }
 
     function serializeState(): string {
-        return JSON.stringify(root.notClosed().map(n => ({
+        return JSON.stringify(root.notClosed().filter(n => !n.transient).map(n => ({
                         time: n.time,
                         id: n.id,
                         summary: n.summary,

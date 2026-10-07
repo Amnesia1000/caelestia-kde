@@ -41,6 +41,9 @@ QtObject {
     property int urgency: NotificationUrgency.Normal
     property bool resident
     property bool hasActionIcons
+    // A notification the shell raised itself. Kept out of the on-disk history:
+    // its actions hold live callbacks that would not survive a restart.
+    property bool transient
     property list<var> actions
 
     readonly property bool hasFullscreen: Kwin.hasFullscreen()
