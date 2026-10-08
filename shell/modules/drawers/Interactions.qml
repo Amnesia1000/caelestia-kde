@@ -22,7 +22,6 @@ CustomMouseArea {
     // Overlay bar repeater + total top overlay thickness, to route hover
     // into top panels (the primary inBarArea never covers them).
     property var overlayBars: null
-    property real topPanelExtent: 0
     property var focusGrab: null
     property point dragStart
     property bool dashboardShortcutActive
@@ -293,16 +292,30 @@ CustomMouseArea {
                 visibilities.dashboard = false;
         }
 
-        if (root.topPanelActive && root.overlayBars && y < root.topPanelExtent) {
+        if (root.overlayBars) {
+            let routed = false;
+            // TEMP DIAGNOSTIC
+            let dbg = "DOCKDBG x=" + Math.round(x) + " y=" + Math.round(y);
             for (let i = 0; i < root.overlayBars.count; i++) {
                 const w = root.overlayBars.itemAt(i);
-                if (w && w.effPos === "top") {
-                    w.checkPopout(x);
+                if (w)
+                    dbg += " [i" + i + " " + w.effPos + " x=" + Math.round(w.x) + " y=" + Math.round(w.y) + " w=" + Math.round(w.width) + " h=" + Math.round(w.height) + " vis=" + w.visible + "]";
+            }
+            for (let i = 0; i < root.overlayBars.count; i++) {
+                const w = root.overlayBars.itemAt(i);
+                if (w && w.visible && x >= w.x && x < w.x + w.width && y >= w.y && y < w.y + w.height) {
+                    const horizontal = w.effPos === "top" || w.effPos === "bottom";
+                    w.checkPopout(horizontal ? x - w.x - w.padding : y - w.y - w.padding);
                     popoutHideTimer.stop();
+                    routed = true;
                     break;
                 }
             }
-        } else if (inBarArea(x, y)) {
+            // TEMP DIAGNOSTIC
+            console.log(dbg + " routed=" + routed);
+            if (routed) {
+                // Hover handled by the overlay panel above.
+            } else if (inBarArea(x, y)) {
             bar.checkPopout(isBarHorizontal ? x : y);
             popoutHideTimer.stop();
         } else {
@@ -312,6 +325,7 @@ CustomMouseArea {
             } else {
                 popoutHideTimer.stop();
             }
+        }
         }
 
         const isUtilitiesOnLeft = bar.position === "right";

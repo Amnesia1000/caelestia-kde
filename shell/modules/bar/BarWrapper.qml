@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
+import Caelestia.Blobs
 import Caelestia.Config
 import qs.components
 import qs.components.controls
@@ -31,6 +32,10 @@ Item {
     readonly property bool disabled: root.isOverlay ? false : Strings.testRegexList(Config.bar.excludedScreens, screen.name)
     // Separator offset for stacked overlay panels (passed from ContentWindow)
     property int sepOffset: -1
+    // Dock mode: floating centered segment rendered with the shared frame
+    // material, so it reads as frame rather than as a card on top of it.
+    property bool docked: false
+    property var frameGroup: null
     readonly property string position: root.effectivePosition
     readonly property real barScale: Math.max(0.6, !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0)
     readonly property int padding: Math.max(Tokens.padding.small, Config.border.thickness)
@@ -152,6 +157,21 @@ Item {
             barDef: root.barDef
         }
     }
+    // Dock segment: same frame material, merging into the edge it hangs
+    // from (square on the frame side, rounded on the outer side).
+    BlobRect {
+        anchors.fill: parent
+        visible: root.docked && root.isOverlay && root.frameGroup !== null
+        group: root.frameGroup
+        radius: Config.border.rounding
+        topLeftRadius: (root.position === "bottom" || root.position === "right") ? Config.border.rounding : 0
+        topRightRadius: (root.position === "bottom" || root.position === "left") ? Config.border.rounding : 0
+        bottomLeftRadius: (root.position === "top" || root.position === "right") ? Config.border.rounding : 0
+        bottomRightRadius: (root.position === "top" || root.position === "left") ? Config.border.rounding : 0
+        deformScale: (GlobalConfig.appearance.blurMask || !GlobalConfig.appearance.transparency.enabled) ? ((0.1 * Config.appearance.deformScale) / 10000) : 0
+        Config.screen: root.screen.name
+    }
+
     Loader {
         id: content
 

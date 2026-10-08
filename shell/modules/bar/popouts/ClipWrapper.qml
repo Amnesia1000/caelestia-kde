@@ -54,6 +54,12 @@ Item {
         if (isHorizontal) {
             if (bar.position === "bottom" && !content.fromTopPanel)
                 return parent.height - implicitHeight;
+            if (content.fromTopDock) {
+                // Below a floating dock card: dock height plus the islands
+                // gap, in parent coordinates.
+                const gap = GlobalConfig.appearance.islands ? Tokens.spacing.extraLarge : 0;
+                return bar.contentWidth + gap - parent.topMargin;
+            }
             return 0;
         }
 

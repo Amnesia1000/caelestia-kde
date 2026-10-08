@@ -43,12 +43,18 @@ StyledWindow {
     // are overlay bars with their own position/widgets/visibility that
     // dock to the edges without taking an exclusive zone.
     readonly property var overlayBarDefs: ((GlobalConfig.bar.bars ? GlobalConfig.bar.bars.values : null) ?? []).filter(b => b && b.enabled !== false && (!b.screens || b.screens.length === 0 || b.screens.includes(root.screen.name)))
+    // A dock (lengthPercent < 100) hangs from the edge as a frame-grade
+    // segment instead of widening the frame, so it never contributes to
+    // the cutout extents.
+    readonly property var frameBarDefs: overlayBarDefs.filter(b => ((b.lengthPercent ?? 100) >= 100))
+    // First visible dock per edge, if any (1 panel per edge max).
+    readonly property var topDockDef: overlayBarDefs.find(b => ((b.position || "bottom") === "top") && ((b.lengthPercent ?? 100) < 100) && (b.persistent !== false || visibilities.bar)) ?? null
     // Frame cutout widening where overlay bars sit, so the frame surface
     // itself becomes their background. Gated like overlay visibility.
-    readonly property int overlayLeftExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "left") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
-    readonly property int overlayRightExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "right") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
-    readonly property int overlayTopExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "top") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
-    readonly property int overlayBottomExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "bottom") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int overlayLeftExtent: frameBarDefs.filter(b => ((b.position || "bottom") === "left") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int overlayRightExtent: frameBarDefs.filter(b => ((b.position || "bottom") === "right") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int overlayTopExtent: frameBarDefs.filter(b => ((b.position || "bottom") === "top") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int overlayBottomExtent: frameBarDefs.filter(b => ((b.position || "bottom") === "bottom") && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
     readonly property var overlayExtents: ({
         left: overlayLeftExtent,
         right: overlayRightExtent,
@@ -202,6 +208,7 @@ StyledWindow {
         panels: panels
         win: root
         overlayExtents: root.overlayExtents
+        topDockDef: root.topDockDef
     }
     Region {
         id: fullRegion
@@ -549,7 +556,6 @@ StyledWindow {
         bar: bar
         topPanelActive: root.topPanelActive
         overlayBars: overlayBarRepeater
-        topPanelExtent: root.overlayTopExtent
         borderThickness: root.borderLayoutThickness
         fullscreen: root.hasFullscreen
         focusGrab: focusGrabState
@@ -748,6 +754,9 @@ StyledWindow {
                     return total - 1;
                 }
 
+                readonly property bool isDock: ((modelData.lengthPercent ?? 100) < 100)
+                readonly property real dockSpan: Math.max(10, Math.min(100, modelData.lengthPercent ?? 100)) / 100
+
                 screen: root.screen
                 visibilities: visibilities
                 popouts: panels.popouts
@@ -767,14 +776,18 @@ StyledWindow {
 
                 anchors.top: effPos === "top" ? parent.top : undefined
                 anchors.bottom: effPos === "bottom" ? parent.bottom : undefined
-                anchors.left: effPos === "left" || effPos === "top" || effPos === "bottom" ? parent.left : undefined
-                anchors.right: effPos === "right" || effPos === "top" || effPos === "bottom" ? parent.right : undefined
+                anchors.left: (effPos === "left" || (!isDock && (effPos === "top" || effPos === "bottom"))) ? parent.left : undefined
+                anchors.right: (effPos === "right" || (!isDock && (effPos === "top" || effPos === "bottom"))) ? parent.right : undefined
+                anchors.horizontalCenter: (isDock && (effPos === "top" || effPos === "bottom")) ? parent.horizontalCenter : undefined
+                anchors.verticalCenter: (isDock && (effPos === "left" || effPos === "right")) ? parent.verticalCenter : undefined
                 anchors.topMargin: effPos === "top" ? edgeOffset : 0
                 anchors.bottomMargin: effPos === "bottom" ? edgeOffset : 0
                 anchors.leftMargin: effPos === "left" ? edgeOffset : 0
                 anchors.rightMargin: effPos === "right" ? edgeOffset : 0
-                width: effPos === "left" || effPos === "right" ? implicitWidth : undefined
-                height: effPos === "top" || effPos === "bottom" ? implicitHeight : undefined
+                width: isDock ? (effPos === "left" || effPos === "right" ? implicitWidth : Math.round(parent.width * dockSpan)) : (effPos === "left" || effPos === "right" ? implicitWidth : undefined)
+                height: isDock ? (effPos === "top" || effPos === "bottom" ? implicitHeight : Math.round(parent.height * dockSpan)) : (effPos === "top" || effPos === "bottom" ? implicitHeight : undefined)
+                docked: isDock
+                frameGroup: blobGroup
             }
         }
         Connections {

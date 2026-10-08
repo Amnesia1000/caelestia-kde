@@ -88,13 +88,26 @@ PageBase {
         }
 
         ToggleRow {
-            last: true
             text: qsTr("Show on hover")
             subtext: qsTr("Reveal the panel when the pointer touches the edge")
             checked: root.panel ? (root.panel.showOnHover ?? true) : true
             onToggled: {
                 if (root.panel)
                     root.panel.showOnHover = checked;
+            }
+        }
+
+        StepperRow {
+            last: true
+            label: qsTr("Length")
+            subtext: qsTr("Panel width in percent; below 100 it floats as a dock")
+            value: root.panel ? (root.panel.lengthPercent ?? 100) : 100
+            from: 10
+            to: 100
+            stepSize: 5
+            onMoved: v => {
+                if (root.panel)
+                    root.panel.lengthPercent = Math.round(v);
             }
         }
 

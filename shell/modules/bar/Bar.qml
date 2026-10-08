@@ -94,8 +94,10 @@ Item {
 
     function checkPopout(pos: real): void {
         // Placement follows the hovered bar: a top overlay panel opens its
-        // popouts downward. The primary bar always clears the flag.
-        popouts.fromTopPanel = (root.barDef && ((root.barDef.position || "bottom") === "top")) ?? false;
+        // popouts downward. The primary bar always clears the flags.
+        const isTopOverlay = (root.barDef && ((root.barDef.position || "bottom") === "top")) ?? false;
+        popouts.fromTopPanel = isTopOverlay;
+        popouts.fromTopDock = isTopOverlay && ((root.barDef.lengthPercent ?? 100) < 100);
         if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
             return;
 

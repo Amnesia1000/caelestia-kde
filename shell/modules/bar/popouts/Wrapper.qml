@@ -33,6 +33,7 @@ Item {
     property alias currentName: popoutState.currentName
     property alias hasCurrent: popoutState.hasCurrent
     property alias fromTopPanel: popoutState.fromTopPanel
+    property alias fromTopDock: popoutState.fromTopDock
     property alias dockModel: popoutState.dockModel
     property alias tasksModel: popoutState.tasksModel
     property real currentCenter

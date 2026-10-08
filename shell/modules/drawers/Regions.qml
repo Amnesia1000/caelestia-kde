@@ -12,6 +12,7 @@ Region {
     required property Panels panels
     required property var win
     required property var overlayExtents
+    required property var topDockDef
     readonly property real borderThickness: Config.border.thickness
     readonly property real clampedThickness: Config.border.clampedThickness
     // Overlay extents widen the input area, floored at the screen edges:
@@ -77,11 +78,12 @@ Region {
     // Overlay panel bands need explicit input like drawers get: the root
     // region excludes everything and children add back what the shell
     // needs, so without this the panel area never receives pointer events.
+    // Top dock segments only cover their centered span.
     Region {
-        x: 0
+        x: root.topDockDef ? (root.win.width - root.win.width * Math.max(10, Math.min(100, root.topDockDef.lengthPercent ?? 100)) / 100) / 2 : 0
         y: 0
-        width: root.win.width
-        height: Math.max(0, root.overlayExtents.top)
+        width: root.topDockDef ? root.win.width * Math.max(10, Math.min(100, root.topDockDef.lengthPercent ?? 100)) / 100 : root.win.width
+        height: root.topDockDef ? root.bar.contentWidth : Math.max(0, root.overlayExtents.top)
         intersection: Intersection.Subtract
     }
     R {
