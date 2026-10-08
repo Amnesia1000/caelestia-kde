@@ -22,6 +22,7 @@ Item {
         return max;
     }
     property real offsetScale: shouldBeActive ? 0 : 1
+    property bool warmWanted: false
 
     onShouldBeActiveChanged: {
         if (shouldBeActive) {
@@ -38,6 +39,13 @@ Item {
     opacity: 1 - offsetScale
     Component.onCompleted: Qt.callLater(() => Apps)
 
+    Timer {
+        running: !root.warmWanted
+        interval: 1500
+
+        onTriggered: root.warmWanted = true
+    }
+
     Behavior on offsetScale {
         enabled: !visibilities.skipLauncherAnim
 
@@ -48,7 +56,7 @@ Item {
 
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
-        active: root.shouldBeActive || root.visible
+        active: root.shouldBeActive || root.visible || root.warmWanted
         sourceComponent: Component {
             Content {
                 visibilities: root.visibilities
