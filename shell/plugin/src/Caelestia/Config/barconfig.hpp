@@ -230,7 +230,7 @@ class BarDefinition : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, showOnHover, true)
     // 100 = full edge, less = centered dock occupying this % of the edge.
     CONFIG_PROPERTY(int, lengthPercent, 100)
-    // Empty inherits the global `entries`.
+    // Empty means an empty panel; only the primary bar inherits `entries`.
     CONFIG_PROPERTY(QVariantList, entries, QVariantList())
 };
 CONFIG_LIST_TYPE(BarDefinition, BarDefinitionList)
