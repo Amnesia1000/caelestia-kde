@@ -24,6 +24,7 @@ Item {
 
     MouseArea {
         anchors.fill: parent
+        acceptedButtons: Qt.LeftButton
         onClicked: {
             if (root.popouts.currentName === "notes") {
                 root.popouts.currentName = "";
