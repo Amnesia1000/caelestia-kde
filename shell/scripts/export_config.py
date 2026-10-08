@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Export shell configuration to YAML (shell.yaml next to shell.json)."""
+"""Export the shell's config files to YAML (shell.yaml beside them)."""
 
 import json
 import os
 import sys
+
+ROOTS = ("shell.json", "shell-tokens.json")
+GLOBAL_ONLY = ("keybinds.json", "cli.json")
 
 errors = []
 
@@ -12,11 +15,15 @@ def load_json(path, default):
     if not os.path.exists(path):
         return default
     try:
-        with open(path) as f:
+        with open(path, encoding="utf-8") as f:
             return json.load(f)
     except Exception as e:
         errors.append(f"{path}: {e}")
         return default
+
+
+_YAML_UNPRINTABLE = {c: f"\\x{c:02x}" for c in range(0x7F, 0xA0)}
+_YAML_UNPRINTABLE.update({0x2028: "\\u2028", 0x2029: "\\u2029"})
 
 
 def scalar(v):
@@ -26,10 +33,7 @@ def scalar(v):
         return "true" if v else "false"
     if isinstance(v, (int, float)):
         return str(v)
-    # All strings are quoted so a reload never coerces them
-    # ("1.0" stays a string, "007" keeps its zeros, "no" is not False).
-    t = str(v)
-    return '"' + t.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
+    return json.dumps(str(v), ensure_ascii=False).translate(_YAML_UNPRINTABLE)
 
 
 def dump(v, ind):
@@ -61,32 +65,43 @@ def dump(v, ind):
     return scalar(v)
 
 
+def write_atomic(path, text):
+    tmp = path + ".tmp"
+    try:
+        with open(tmp, "w", encoding="utf-8") as f:
+            f.write(text)
+        os.replace(tmp, path)
+    except OSError:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+        raise
+
+
 def main():
-    config_dir, state_dir, plugins_json = sys.argv[1:4]
+    config_dir, state_dir = sys.argv[1:3]
     out = {}
-    out["shell"] = load_json(os.path.join(config_dir, "shell.json"), {})
-    out["keybinds"] = load_json(os.path.join(config_dir, "keybinds.json"), {})
-    out["cli"] = load_json(os.path.join(config_dir, "cli.json"), {})
+    for file in ROOTS + GLOBAL_ONLY:
+        out[os.path.splitext(file)[0]] = load_json(os.path.join(config_dir, file), {})
     out["notes"] = load_json(os.path.join(state_dir, "notes_tab.json"), [])
+
     monitors = {}
     mon_dir = os.path.join(config_dir, "monitors")
     if os.path.isdir(mon_dir):
         for name in sorted(os.listdir(mon_dir)):
-            v = load_json(os.path.join(mon_dir, name, "shell.json"), None)
-            if v is not None:
-                monitors[name] = v
+            layers = {}
+            for file in ROOTS:
+                v = load_json(os.path.join(mon_dir, name, file), None)
+                if v is not None:
+                    layers[os.path.splitext(file)[0]] = v
+            if layers:
+                monitors[name] = layers
     out["monitors"] = monitors
-    try:
-        out["plugins"] = json.loads(plugins_json)
-    except Exception as e:
-        errors.append(f"plugins: {e}")
-        out["plugins"] = []
+
     if errors:
         for e in errors:
             print(f"export_config: {e}", file=sys.stderr)
         sys.exit(1)
-    with open(os.path.join(config_dir, "shell.yaml"), "w") as f:
-        f.write(dump(out, 0))
+    write_atomic(os.path.join(config_dir, "shell.yaml"), dump(out, 0))
     print("DONE")
 
 

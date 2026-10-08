@@ -6,7 +6,6 @@ import Caelestia
 import Caelestia.Config
 import qs.components
 import qs.services
-import qs.services.api
 import qs.utils
 import qs.modules.nexus
 import qs.modules.nexus.common
@@ -19,22 +18,6 @@ PageBase {
     property string quickshellVersion
     property string cliVersion
     property string exportStatus: qsTr("Save shell.json as YAML")
-
-    function exportYaml(): void {
-        const plugins = [];
-        for (let i = 0; i < CaelestiaApi.plugins.available.count; i++) {
-            const p = CaelestiaApi.plugins.available.get(i);
-            plugins.push({
-                id: p.id || p.name,
-                version: p.version || "",
-                enabled: p.enabled !== false,
-                source: p.source || ""
-            });
-        }
-        exportProc.pluginsJson = JSON.stringify(plugins);
-        root.exportStatus = qsTr("Exporting...");
-        exportProc.running = true;
-    }
 
     title: qsTr("About")
 
@@ -55,9 +38,7 @@ PageBase {
         Process {
             id: exportProc
 
-            property string pluginsJson: "[]"
-
-            command: ["python3", Quickshell.shellPath("scripts/export_config.py"), Paths.config, Paths.state, pluginsJson]
+            command: ["python3", Quickshell.shellPath("scripts/export_config.py"), Paths.config, Paths.state]
             onExited: code => {
                 root.exportStatus = code === 0 ? qsTr("Saved to shell.yaml") : qsTr("Export failed");
             }
@@ -207,7 +188,10 @@ PageBase {
             icon: "file_download"
             label: qsTr("Export configuration")
             status: root.exportStatus
-            onClicked: root.exportYaml()
+            onClicked: {
+                root.exportStatus = qsTr("Exporting...");
+                exportProc.running = true;
+            }
         }
 
         SectionHeader {
