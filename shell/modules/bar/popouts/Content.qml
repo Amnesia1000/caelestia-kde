@@ -103,6 +103,13 @@ Item {
         }
 
         Popout {
+            name: "performance"
+            sourceComponent: Performance {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             id: passwordPopout
 
             name: "wirelesspassword"
@@ -267,6 +274,15 @@ Item {
                 popouts: root.popouts
                 label: qsTr("GitHub settings")
                 subPageIdx: 13
+            }
+        }
+
+        Popout {
+            name: "weathercontext"
+            sourceComponent: BarComponentContext {
+                popouts: root.popouts
+                label: qsTr("Weather settings")
+                subPageIdx: 21
             }
         }
 
