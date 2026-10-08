@@ -493,13 +493,34 @@ ColumnLayout {
                     Layout.fillWidth: true
                     spacing: Tokens.spacing.extraSmall
 
-                    CheckBox {
+                    StyledRect {
+                        id: checkBox
+
                         Layout.alignment: Qt.AlignVCenter
-                        checked: modelData.checked ?? false
-                        onToggled: {
-                            const arr = (root.selectedNote.items || []).slice();
-                            arr[index] = Object.assign({}, arr[index], { checked: !modelData.checked });
-                            root.updateSelected("items", arr);
+                        implicitWidth: 24
+                        implicitHeight: 24
+
+                        radius: Tokens.rounding.medium
+                        color: "transparent"
+                        border.width: 2
+                        border.color: modelData.checked ?? false ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+
+                        MaterialIcon {
+                            anchors.centerIn: parent
+                            text: "check"
+                            fontStyle: Tokens.font.icon.builders.small.weight(Font.DemiBold).build()
+                            color: Colours.palette.m3primary
+                            scale: modelData.checked ? 1 : 0
+                        }
+
+                        CustomMouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                const arr = (root.selectedNote.items || []).slice();
+                                arr[index] = Object.assign({}, arr[index], { checked: !modelData.checked });
+                                root.updateSelected("items", arr);
+                            }
                         }
                     }
 
