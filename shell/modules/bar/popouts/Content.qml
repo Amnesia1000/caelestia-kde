@@ -170,6 +170,13 @@ Item {
         }
 
         Popout {
+            name: "notes"
+            sourceComponent: Notes {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             name: "weather"
             sourceComponent: Weather {
                 popouts: root.popouts
