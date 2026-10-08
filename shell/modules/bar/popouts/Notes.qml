@@ -26,6 +26,10 @@ ColumnLayout {
     property int selectedIndex: -1
     readonly property var selectedNote: root.selectedIndex >= 0 && root.selectedIndex < root.notes.length ? root.notes[root.selectedIndex] : null
 
+    // Managed media library: uploads are copied under notes/audio|images
+    // so notes survive the original files being moved or deleted.
+    readonly property string notesMediaDir: Paths.state + "/notes"
+
     function newNote(type: string): void {
         const note = {
             id: Date.now(),
@@ -35,6 +39,7 @@ ColumnLayout {
             items: [],
             audioPath: "",
             imagePath: "",
+            caption: "",
             updated: Date.now()
         };
         root.notes = [note, ...root.notes];
@@ -64,9 +69,52 @@ ColumnLayout {
         saveTimer.restart();
     }
 
+    function importFile(field: string, src: string, subdir: string): void {
+        if (!root.selectedNote || !src)
+            return;
+        let clean = src;
+        if (clean.startsWith("file://"))
+            clean = clean.substring(7);
+        const base = clean.split("/").pop();
+        if (!base)
+            return;
+        fileCopier.srcPath = clean;
+        fileCopier.destPath = root.notesMediaDir + "/" + subdir + "/" + root.selectedNote.id + "-" + base;
+        fileCopier.destField = field;
+        fileCopier.running = true;
+    }
+
     width: 560
     spacing: Tokens.spacing.small
-    Component.onCompleted: fileView.reload()
+    Component.onCompleted: {
+        fileView.reload();
+        dirMaker.running = true;
+    }
+
+
+    Process {
+        id: dirMaker
+
+        command: ["mkdir", "-p", root.notesMediaDir + "/audio", root.notesMediaDir + "/images"]
+    }
+
+    Process {
+        id: fileCopier
+
+        property string srcPath: ""
+        property string destPath: ""
+        property string destField: ""
+
+        command: ["cp", srcPath, destPath]
+        onExited: code => {
+            if (code === 0 && destField !== "")
+                root.updateSelected(destField, destPath);
+            srcPath = "";
+            destPath = "";
+            destField = "";
+        }
+    }
+
 
     FileView {
         id: fileView
@@ -542,7 +590,7 @@ ColumnLayout {
                         if (voiceRecorder.recorderState === MediaRecorder.RecordingState) {
                             voiceRecorder.stop();
                         } else if (root.selectedNote) {
-                            voiceRecorder.outputLocation = Qt.resolvedUrl(Paths.state + "/note-" + root.selectedNote.id + ".m4a");
+                            voiceRecorder.outputLocation = Qt.resolvedUrl(root.notesMediaDir + "/audio/note-" + root.selectedNote.id + ".m4a");
                             voiceRecorder.record();
                         }
                     }
@@ -558,7 +606,7 @@ ColumnLayout {
             StyledText {
                 Layout.fillWidth: true
                 elide: Text.ElideMiddle
-                text: root.selectedNote && root.selectedNote.audioPath ? root.selectedNote.audioPath : qsTr("No audio yet")
+                text: root.selectedNote && root.selectedNote.audioPath ? root.selectedNote.audioPath.split("/").pop() : qsTr("No audio yet")
                 font: Tokens.font.body.small
                 opacity: 0.7
                 color: Colours.palette.m3onSurfaceVariant
@@ -634,6 +682,14 @@ ColumnLayout {
                 opacity: 0.6
                 color: Colours.palette.m3onSurfaceVariant
             }
+
+            StyledTextField {
+                Layout.fillWidth: true
+                text: root.selectedNote && root.selectedNote.caption ? root.selectedNote.caption : ""
+                placeholderText: qsTr("Add a caption…")
+                font: Tokens.font.body.small
+                onEditingFinished: root.updateSelected("caption", text)
+            }
         }
 
         FileDialogComp.FileDialog {
@@ -642,7 +698,7 @@ ColumnLayout {
             title: qsTr("Select audio file")
             filterLabel: qsTr("Audio files")
             filters: ["mp3", "ogg", "wav", "flac", "m4a"]
-            onAccepted: path => root.updateSelected("audioPath", path)
+            onAccepted: path => root.importFile("audioPath", path, "audio")
         }
 
         FileDialogComp.FileDialog {
@@ -651,7 +707,7 @@ ColumnLayout {
             title: qsTr("Select image")
             filterLabel: qsTr("Image files")
             filters: Images.validImageExtensions
-            onAccepted: path => root.updateSelected("imagePath", path)
+            onAccepted: path => root.importFile("imagePath", path, "images")
         }
 
         StyledRect {
