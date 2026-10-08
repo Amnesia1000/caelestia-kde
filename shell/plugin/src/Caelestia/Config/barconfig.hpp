@@ -170,6 +170,9 @@ class BarMedia : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, inverted, false)
     CONFIG_PROPERTY(bool, showTitle, true)
     CONFIG_PROPERTY(bool, autoHide, false)
+    // Player names (MPRIS identity fragments) the widget follows, e.g.
+    // "Spotify", "YouTube Music". Empty follows the active player.
+    CONFIG_PROPERTY(QStringList, sources, QStringList({ u"Spotify"_s, u"Fastpotify"_s, u"YouTube Music"_s }))
 };
 
 class BarPerformance : public settings::ObjectNode {
