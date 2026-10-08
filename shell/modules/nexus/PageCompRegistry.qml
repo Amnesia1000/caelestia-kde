@@ -143,9 +143,6 @@ QtObject {
                 Component {
                     BarPanelEditor {}
                 }
-                Component {
-                    BarWeather {}
-                }
             }
         },
         Component {

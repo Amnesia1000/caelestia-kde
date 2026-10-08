@@ -24,11 +24,8 @@ StyledRect {
     readonly property bool isPlaying: player?.isPlaying ?? false
     readonly property bool available: player !== null
     readonly property bool showTitle: Config.bar.media.showTitle
-    // Text mode only while actually playing; paused, stopped or missing
-    // players fall back to the icon.
-    readonly property bool showText: root.showTitle && root.isPlaying
-    readonly property real contentWidth: root.showText ? contentLayout.implicitWidth : modeIcon.implicitWidth
-    readonly property real contentHeight: root.showText ? contentLayout.implicitHeight : modeIcon.implicitHeight
+    readonly property real contentWidth: root.showTitle ? contentLayout.implicitWidth : modeIcon.implicitWidth
+    readonly property real contentHeight: root.showTitle ? contentLayout.implicitHeight : modeIcon.implicitHeight
 
     // Stream-aware volume: MPRIS app volume first, then the matching
     // PipeWire stream, then the global sink. Driven by mouse scroll.
@@ -82,7 +79,7 @@ StyledRect {
         Item {
             id: textContainer
 
-            visible: root.showText
+            visible: root.showTitle
 
             Layout.alignment: Qt.AlignCenter
             Layout.row: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 1 : 0)
@@ -112,7 +109,7 @@ StyledRect {
             Layout.row: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 0 : 1)
             Layout.column: root.isHorizontal ? 1 : 0
 
-            visible: Config.bar.media.showVisualiser && root.showText
+            visible: Config.bar.media.showVisualiser && root.showTitle
             implicitWidth: root.isHorizontal ? (visible ? 23 : 0) : 20
             implicitHeight: root.isHorizontal ? 20 : (visible ? 23 : 0)
 
@@ -157,7 +154,7 @@ StyledRect {
         id: modeIcon
 
         anchors.centerIn: parent
-        visible: !root.showText
+        visible: !root.showTitle
         text: "graphic_eq"
         color: Colours.palette.m3onSurface
         fontStyle: Tokens.font.icon.builders.medium.build()

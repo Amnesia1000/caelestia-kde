@@ -98,7 +98,7 @@ Item {
         const isTopOverlay = (root.barDef && ((root.barDef.position || "bottom") === "top")) ?? false;
         popouts.fromTopPanel = isTopOverlay;
         popouts.fromTopDock = isTopOverlay && ((root.barDef.lengthPercent ?? 100) < 100);
-        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
+        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
             return;
 
         const ch = getLoaderAt(isHorizontal ? pos : width / 2, isHorizontal ? height / 2 : pos) as WrappedLoader;
@@ -212,39 +212,6 @@ Item {
                 const inside = isHorizontal ? (relPos >= 0 && relPos <= item.implicitWidth) : (relPos >= 0 && relPos <= item.implicitHeight);
                 if (inside) {
                     popouts.currentName = "github";
-                    popouts.currentCenter = isHorizontal ? item.mapToItem(null, item.implicitWidth / 2, 0).x : (item.mapToItem(null, 0, item.implicitHeight / 2).y ?? 0);
-                    popouts.hasCurrent = true;
-                } else {
-                    popouts.hasCurrent = false;
-                }
-            } else {
-                popouts.hasCurrent = false;
-            }
-        } else if (id === "notes") {
-            // Click-to-toggle entry: the component opens/closes its own
-            // popout, so hover leaves the popout state alone.
-        } else if (id === "weather") {
-            const item = ch.item as Item;
-            if (item) {
-                const relPos = pos - top;
-                const inside = isHorizontal ? (relPos >= 0 && relPos <= item.implicitWidth) : (relPos >= 0 && relPos <= item.implicitHeight);
-                if (inside) {
-                    popouts.currentName = "weather";
-                    popouts.currentCenter = isHorizontal ? item.mapToItem(null, item.implicitWidth / 2, 0).x : (item.mapToItem(null, 0, item.implicitHeight / 2).y ?? 0);
-                    popouts.hasCurrent = true;
-                } else {
-                    popouts.hasCurrent = false;
-                }
-            } else {
-                popouts.hasCurrent = false;
-            }
-        } else if (id === "performance") {
-            const item = ch.item as Item;
-            if (item) {
-                const relPos = pos - top;
-                const inside = isHorizontal ? (relPos >= 0 && relPos <= item.implicitWidth) : (relPos >= 0 && relPos <= item.implicitHeight);
-                if (inside) {
-                    popouts.currentName = "performance";
                     popouts.currentCenter = isHorizontal ? item.mapToItem(null, item.implicitWidth / 2, 0).x : (item.mapToItem(null, 0, item.implicitHeight / 2).y ?? 0);
                     popouts.hasCurrent = true;
                 } else {
@@ -484,30 +451,6 @@ Item {
                     sourceComponent: Greeter {
                         bar: root
                         monitor: Brightness.getMonitorForScreen(root.screen)
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "notes"
-                delegate: WrappedLoader {
-                    sourceComponent: Notes {
-                        popouts: root.popouts
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "weather"
-                delegate: WrappedLoader {
-                    sourceComponent: WeatherWidget {
-                        popouts: root.popouts
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "performance"
-                delegate: WrappedLoader {
-                    sourceComponent: PerformanceWidget {
-                        popouts: root.popouts
                     }
                 }
             }
