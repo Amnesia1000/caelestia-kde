@@ -140,6 +140,12 @@ QtObject {
                 Component {
                     BarMedia {}
                 }
+                Component {
+                    BarPanelEditor {}
+                }
+                Component {
+                    BarWeather {}
+                }
             }
         },
         Component {

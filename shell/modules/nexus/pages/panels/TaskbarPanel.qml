@@ -210,10 +210,15 @@ PageBase {
             }
 
             first: true
+            allowEdit: true
             values: GlobalConfig.bar.bars.values
             onItemMoved: (from, to) => GlobalConfig.bar.bars.move(from, to)
             onItemRemoved: index => GlobalConfig.bar.bars.remove(index)
             onItemToggled: (index, checked) => GlobalConfig.bar.bars.at(index).enabled = checked
+            onItemClicked: index => {
+                root.nState.editingPanelIndex = index;
+                root.nState.openSubPage(20);
+            }
         }
 
         DialogSelectButton {
