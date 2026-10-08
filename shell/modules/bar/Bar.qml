@@ -40,7 +40,6 @@ Item {
     readonly property real middleZoneSize: isHorizontal ? middleLayout.implicitWidth : middleLayout.implicitHeight
     readonly property real rightZoneSize: isHorizontal ? rightLayout.implicitWidth : rightLayout.implicitHeight
 
-    // Overlay entries: a non-empty custom list wins (entries can be
     // Overlay entries: each bar uses its own list (empty means empty).
     // Only the legacy primary bar (no barDef) uses the global list.
     readonly property var effEntries: (root.barDef ? root.barDef.entries : null) ?? (Config.bar.entries || [])
