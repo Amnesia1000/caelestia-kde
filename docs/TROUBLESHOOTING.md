@@ -16,6 +16,7 @@ This document catalogs known failure modes, error conditions, and edge cases dis
 6. [Network & Proxy Issues](#6-network--proxy-issues)
 7. [KDE & Plasma Specific Issues](#7-kde--plasma-specific-issues)
    1. [Installer Window Rules](#77-installer-window-rules)
+   2. [Quick Share Cannot Receive Files](#78-quick-share-cannot-receive-files)
 8. [Post-Install Issues](#8-post-install-issues)
 9. [Uninstall Issues](#9-uninstall-issues)
 10. [Update Issues](#10-update-issues)
@@ -613,6 +614,72 @@ windows created after the removal start clean.
 The installer always applies the rules; `APPLY_WINDOW_RULES=false` is an override
 for running the step by hand (`APPLY_WINDOW_RULES=false bash ./scripts/setup.sh`).
 `WINDOW_OPACITY` changes the percentage the opacity rule writes.
+
+### 7.8 Quick Share Cannot Receive Files
+
+Sending works and receiving does not: the other device is visible and asks to send,
+but no incoming-file notification appears and the transfer times out. Two things
+outside the shell have to be true for an incoming connection to arrive, and both fail
+silently from the shell's side — a connection that is never allowed looks exactly like
+a device that never tried.
+
+The first is the Avahi daemon. It carries the mDNS advertisement a nearby device
+resolves this machine through, so without it there is nothing to connect to. The
+second is the firewall. The transfer listener binds a fixed port so that a rule can be
+written for it ahead of time; the value lives in `quickshare_service.cpp`
+(`quicksharePort`) and is passed to the setup helper as `--port`. A listener on a
+random port could only be opened while the shell runs, which needs administrator
+rights on every start.
+
+`scripts/06-services.sh` does both during a source install. A package install leaves
+them to the shell, because a package must not enable a system daemon or open a port
+behind the user's back. There, the first time Quick Share is switched on the shell
+checks the system through
+`<qmlconfdir>/scripts/quickshare_setup.sh --status`, and if something is missing asks
+through `pkexec` to put it right. The same helper is behind **Set up system access** on
+the Quick Share settings page (Nexus → Services → Quick Share), which is the way back
+if the check was declined, if the firewall changed later, or if the report reads
+`SETUP=unknown` because the rule set cannot be read without root.
+
+To see what the machine reports:
+
+```bash
+bash ~/.config/quickshell/caelestia/scripts/quickshare_setup.sh --status --port 65000
+```
+
+The report is four lines. `AVAHI` is `active`, `inactive`, `absent` or `unknown`,
+`FIREWALL` names the manager in charge (`none`, `firewalld` or `ufw`), `PORT` is
+`allowed`, `blocked` or `unknown`, and `SETUP` is `ok`, `needed` or `unknown`. Only
+`needed` is acted on automatically; ufw reports `PORT=unknown` because reading its
+rule set needs root, and guessing there would raise a password prompt for nothing.
+
+To do it by hand, run the helper as root:
+
+```bash
+sudo bash ~/.config/quickshell/caelestia/scripts/quickshare_setup.sh --port 65000
+```
+
+It is idempotent: it enables and starts `avahi-daemon.service` (falling back to
+`avahi-daemon.socket`, which is what Debian uses) and adds the transfer port plus mDNS
+to whichever of firewalld or ufw is running. What it does not touch is a hand-rolled
+`nftables` or `iptables` rule set, which is invisible without root — those have to
+allow inbound TCP 65000 and UDP 5353 themselves. Equivalently, by manager:
+
+```bash
+systemctl enable --now avahi-daemon.service                       # the daemon
+
+firewall-cmd --permanent --add-port=65000/tcp                     # firewalld, with
+firewall-cmd --permanent --add-service=mdns                       # mDNS for discovery
+firewall-cmd --reload
+
+ufw allow 65000/tcp                                               # ufw
+ufw allow 5353/udp
+```
+
+Port 65000 rather than anything lower because it sits above Linux's default ephemeral
+range (32768–60999), so the listener never collides with the local port of an outgoing
+connection. If it is taken by something else, Quick Share reports that it could not
+listen and stays off.
 
 ---
 

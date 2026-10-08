@@ -25,6 +25,7 @@ class QuickShareService : public QObject {
     /// Whether this shell advertises itself. Only meaningful while enabled: it can
     /// be turned off to stay reachable without being discoverable.
     Q_PROPERTY(bool isVisible READ isVisible WRITE setVisible NOTIFY isVisibleChanged)
+    Q_PROPERTY(int listenPort READ listenPort CONSTANT)
     Q_PROPERTY(QVariantList nearbyDevices READ nearbyDevices NOTIFY nearbyDevicesChanged)
     Q_PROPERTY(QVariantList transferHistory READ transferHistory NOTIFY transferHistoryChanged)
 
@@ -37,6 +38,8 @@ public:
 
     bool isVisible() const;
     void setVisible(bool visible);
+
+    int listenPort() const;
 
     QVariantList nearbyDevices() const;
     /// Each entry is { direction: "sent" | "received", fileName, filePath, deviceName, timestamp }.

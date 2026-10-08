@@ -534,7 +534,7 @@ StyledRect {
                     roleValue: "quickShare"
                     delegate: Toggle {
                         icon: "near_me"
-                        checked: QuickShareService.isEnabled
+                        checked: QuickShareService.isEnabled || QuickShare.enabling
                         onClicked: QuickShare.toggle()
                     }
                 }

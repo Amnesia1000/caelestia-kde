@@ -33,6 +33,8 @@ QString deviceLabel(const QuickShareConnection* connection) {
 /// socket can reach the peer before it goes.
 constexpr int connectionLingerMs = 2000;
 
+constexpr quint16 quicksharePort = 65000;
+
 /// Lets a connection go once it has reported its transfer.
 void retire(QuickShareConnection* connection) {
     QTimer::singleShot(connectionLingerMs, connection, &QObject::deleteLater);
@@ -82,15 +84,20 @@ void QuickShareService::setEnabled(bool enabled) {
     }
 
     if (!m_discovery->startDiscovery()) {
-        emit errorOccurred(u"Avahi daemon is not running. Please start avahi-daemon to use Quick Share."_s);
+        emit errorOccurred(u"Avahi daemon is not running, so Quick Share cannot announce itself. "
+                           u"Settings -> Services -> Quick Share can start and enable it."_s);
+        return;
+    }
+
+    if (!m_server->isListening() && !m_server->listen(QHostAddress::Any, quicksharePort)) {
+        m_discovery->stopDiscovery();
+        emit errorOccurred(
+            u"Quick Share could not listen on port %1: %2"_s.arg(quicksharePort).arg(m_server->errorString()));
         return;
     }
 
     m_isEnabled = true;
     emit isEnabledChanged();
-
-    if (!m_server->isListening())
-        m_server->listen(QHostAddress::Any, 0); // Bind to any available port
 
     m_bleScanner->startScanning();
 
@@ -101,6 +108,10 @@ void QuickShareService::setEnabled(bool enabled) {
 
 bool QuickShareService::isVisible() const {
     return m_isVisible;
+}
+
+int QuickShareService::listenPort() const {
+    return quicksharePort;
 }
 
 void QuickShareService::setVisible(bool visible) {

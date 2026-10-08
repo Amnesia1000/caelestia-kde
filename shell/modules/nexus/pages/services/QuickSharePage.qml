@@ -27,8 +27,8 @@ PageBase {
             first: true
             text: qsTr("Enable Quick Share")
             subtext: QuickShareService.isEnabled ? qsTr("Listening for nearby devices") : qsTr("Disabled")
-            checked: QuickShareService.isEnabled
-            onToggled: QuickShareService.isEnabled = checked
+            checked: QuickShareService.isEnabled || QuickShare.enabling
+            onToggled: QuickShare.setEnabled(checked)
         }
 
         ToggleRow {
@@ -38,6 +38,21 @@ PageBase {
             enabled: QuickShareService.isEnabled
             checked: QuickShareService.isVisible
             onToggled: QuickShareService.isVisible = checked
+        }
+
+        SectionHeader {
+            text: qsTr("System access")
+        }
+
+        RowButton {
+            first: true
+            last: true
+            icon: "security"
+            text: QuickShare.systemSetupLabel
+            subtext: QuickShare.systemSetupSubtext
+            trailingIcon: "chevron_right"
+            disabled: QuickShare.systemSetupBusy
+            onClicked: QuickShare.runSystemSetup()
         }
 
         SectionHeader {
