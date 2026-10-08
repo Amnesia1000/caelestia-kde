@@ -350,6 +350,7 @@ Item {
                     } else {
                         Windows.isSwitching = false;
                         Kwin.clearHighlight();
+                        Wallpapers.stopPreview();
                     }
                 }
 

@@ -274,7 +274,7 @@ Popup {
             visible: root.conflict !== ""
             text: qsTr("Already used by %1").arg(root.conflictLabel)
             color: Colours.palette.m3error
-            font: Tokens.font.label.small
+            font: NexusStyle.secondaryFont
             elide: Text.ElideRight
         }
 

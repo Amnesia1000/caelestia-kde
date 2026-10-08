@@ -87,10 +87,11 @@ Singleton {
 
         command: ["ddcutil", "detect", "--brief"]
         stdout: StdioCollector {
-            onStreamFinished: root.ddcMonitors = text.trim().split("\n\n").filter(d => d.startsWith("Display ")).map(d => ({
-                        busNum: d.match(/I2C bus:[ ]*\/dev\/i2c-([0-9]+)/)[1],
-                        connector: d.match(/DRM connector:\s+(.*)/)[1].replace(/^card\d+-/, "")
-                    }))
+            onStreamFinished: root.ddcMonitors = text.trim().split("\n\n").filter(d => d.startsWith("Display ")).map(d => {
+                        const busNum = d.match(/I2C bus:[ ]*\/dev\/i2c-([0-9]+)/)?.[1];
+                        const connector = d.match(/DRM connector:\s+(.*)/)?.[1]?.replace(/^card\d+-/, "");
+                        return busNum && connector ? { busNum, connector } : null;
+                    }).filter(m => m)
         }
     }
 
@@ -182,6 +183,7 @@ Singleton {
         readonly property bool isDdc: ddcInfo !== null
         readonly property string busNum: ddcInfo?.busNum ?? ""
         readonly property bool isAppleDisplay: root.appleDisplayPresent && modelData.model.startsWith("StudioDisplay")
+        readonly property bool writesHardwareDirectly: isAppleDisplay || isDdc
         property real brightness: 1.0
         property real queuedBrightness: NaN
         property bool verifying: false
@@ -228,6 +230,11 @@ Singleton {
             }
         }
 
+        function syncKwinRecord(value: real): void {
+            if (writesHardwareDirectly && BrightnessWatcher.brightness(modelData.name) >= 0)
+                BrightnessWatcher.setBrightness(modelData.name, value);
+        }
+
         function writeBrightness(value: real): void {
             const rounded = Math.round(value * 100);
 
@@ -243,6 +250,8 @@ Singleton {
             value = Math.max(0, Math.min(1, value));
             const rounded = Math.round(value * 100);
             if (Math.round(brightness * 100) === rounded) {
+                syncKwinRecord(rounded / 100);
+
                 if (isDdc && !timer.running && !readProc.running) {
                     verifying = true;
                     readProc.running = true;
@@ -254,6 +263,8 @@ Singleton {
                 queuedBrightness = value;
                 return;
             }
+
+            syncKwinRecord(rounded / 100);
 
             brightness = value;
             writeBrightness(value);

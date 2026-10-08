@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Io
 import Caelestia
 import Caelestia.Config
@@ -16,6 +17,7 @@ PageBase {
 
     property string quickshellVersion
     property string cliVersion
+    property string exportStatus: qsTr("Save shell.json as YAML")
 
     title: qsTr("About")
 
@@ -30,6 +32,15 @@ PageBase {
             command: ["quickshell", "--version"]
             stdout: StdioCollector {
                 onStreamFinished: root.quickshellVersion = text.trim().split(" ")[1] ?? ""
+            }
+        }
+
+        Process {
+            id: exportProc
+
+            command: ["python3", Quickshell.shellPath("scripts/export_config.py"), Paths.config, Paths.state]
+            onExited: code => {
+                root.exportStatus = code === 0 ? qsTr("Saved to shell.yaml") : qsTr("Export failed");
             }
         }
 
@@ -166,11 +177,21 @@ PageBase {
 
         ToggleRow {
             first: true
-            last: true
             text: qsTr("Debug Mode")
             subtext: qsTr("Enable verbose debug logging for troubleshooting. Run 'caelestia shell -l' to view.")
             checked: GlobalConfig.general.debugLogs
             onClicked: GlobalConfig.general.debugLogs = !GlobalConfig.general.debugLogs
+        }
+
+        NavRow {
+            last: true
+            icon: "file_download"
+            label: qsTr("Export configuration")
+            status: root.exportStatus
+            onClicked: {
+                root.exportStatus = qsTr("Exporting...");
+                exportProc.running = true;
+            }
         }
 
         SectionHeader {

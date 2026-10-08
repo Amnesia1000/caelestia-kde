@@ -76,7 +76,7 @@ StyledSwitch {
                 visible: root.subtext
                 text: root.subtext
                 color: Colours.palette.m3onSurfaceVariant
-                font: Tokens.font.label.small
+                font: NexusStyle.secondaryFont
                 elide: Text.ElideRight
             }
         }

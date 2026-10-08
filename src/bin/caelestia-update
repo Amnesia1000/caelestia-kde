@@ -209,6 +209,7 @@ echo "installer/" >> .git/info/sparse-checkout
 echo "uninstall.sh" >> .git/info/sparse-checkout
 echo ".github/version.env" >> .git/info/sparse-checkout
 echo ".gitmodules" >> .git/info/sparse-checkout
+echo "assets/" >> .git/info/sparse-checkout
 
 # Safer fetch and reset instead of pull
 if [ -n "$TARGET_REF" ] && [ "${TARGET_KIND:-}" = "commit" ]; then
