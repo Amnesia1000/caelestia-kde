@@ -81,6 +81,13 @@ PageBase {
         }
 
         NavRow {
+            icon: "partly_cloudy_day"
+            label: qsTr("Weather")
+            status: qsTr("Widget units")
+            onClicked: root.nState.openSubPage(20)
+        }
+
+        NavRow {
             last: true
             icon: "update"
             label: qsTr("Updates")
