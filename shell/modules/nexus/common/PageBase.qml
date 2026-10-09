@@ -80,20 +80,17 @@ ColumnLayout {
 
         contentHeight: root.scrollable ? (root.contentChild?.implicitHeight ?? 0) : height
         contentItem.children: [root.contentChild]
-    }
 
-    // Global wheel event handler - captures wheel events over inner ListViews
-    // and forwards them to the main flickable for smooth scrolling anywhere
-    MouseArea {
-        anchors.fill: parent
-        hoverEnabled: false
-        z: 999
-        propagateComposedEvents: true
-        onWheel: wheel => {
-            if (root.scrollable && flickable.interactive &&
-                (flickable.contentHeight > flickable.height || flickable.contentWidth > flickable.width)) {
-                wheel.accepted = true
-                flickable.contentY += wheel.angleDelta.y / 120 * 40
+        // Forward wheel events from inner scrollables to this flickable
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: false
+            propagateComposedEvents: true
+            onWheel: wheel => {
+                if (flickable.interactive && (flickable.contentHeight > flickable.height || flickable.contentWidth > flickable.width)) {
+                    wheel.accepted = true
+                    flickable.contentY += wheel.angleDelta.y / 120 * 40
+                }
             }
         }
     }
