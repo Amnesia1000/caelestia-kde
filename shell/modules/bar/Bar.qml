@@ -220,10 +220,7 @@ Item {
             } else {
                 popouts.hasCurrent = false;
             }
-        } else if (id === "notes") {
-            // Click-to-toggle entry: the component opens and closes its own
-            // popout, so hovering must not touch the popout state.
-        } else if (id === "weather" || id === "performance") {
+        } else if (id === "notes" || id === "weather" || id === "performance") {
             const item = ch.item as Item;
             if (item) {
                 const relPos = pos - top;

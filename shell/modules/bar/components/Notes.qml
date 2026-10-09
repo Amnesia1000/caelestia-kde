@@ -26,10 +26,9 @@ Item {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton
         onClicked: {
-            if (root.popouts.currentName === "notes") {
-                root.popouts.currentName = "";
-                root.popouts.hasCurrent = false;
-            } else {
+            // The popout is opened by hover, so the click only makes sure it
+            // is there (it stays open, moving the pointer away closes it).
+            if (root.popouts.currentName !== "notes") {
                 root.popouts.currentName = "notes";
                 root.popouts.currentCenter = root.mapToItem(null, root.implicitWidth / 2, 0).x;
                 root.popouts.hasCurrent = true;
