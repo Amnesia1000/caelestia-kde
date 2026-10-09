@@ -278,6 +278,15 @@ Item {
         }
 
         Popout {
+            name: "mediacontext"
+            sourceComponent: BarComponentContext {
+                popouts: root.popouts
+                label: qsTr("Media settings")
+                subPageIdx: 19
+            }
+        }
+
+        Popout {
             name: "weathercontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
