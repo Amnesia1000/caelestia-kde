@@ -74,7 +74,8 @@ StyledRect {
                 type: IconButton.Tonal
                 isRound: true
                 icon: Recorder.running ? "pause" : "screen_record"
-                ToolTip { text: Recorder.running ? qsTr("Pause recording") : qsTr("Record region") }
+                ToolTip.text: Recorder.running ? qsTr("Pause recording") : qsTr("Record region")
+                ToolTip.visible: hovered
                 onClicked: {
                     if (Recorder.running) {
                         Recorder.togglePause();
@@ -88,7 +89,8 @@ StyledRect {
                 type: IconButton.Tonal
                 isRound: true
                 icon: "screenshot_region"
-                ToolTip { text: qsTr("Screenshot region") }
+                ToolTip.text: qsTr("Screenshot region")
+                ToolTip.visible: hovered
                 onClicked: {
                     Launch.exec(["qs", "-c", "caelestia", "ipc", "call", "region", "screenshot"]);
                 }
@@ -98,7 +100,8 @@ StyledRect {
                 type: IconButton.Tonal
                 isRound: true
                 icon: "photo_camera"
-                ToolTip { text: qsTr("Fullscreen screenshot") }
+                ToolTip.text: qsTr("Fullscreen screenshot")
+                ToolTip.visible: hovered
                 onClicked: {
                     const pad = n => String(n).padStart(2, "0");
                     const now = new Date();
@@ -111,7 +114,8 @@ StyledRect {
                 type: IconButton.Tonal
                 isRound: true
                 icon: "video_camera_back"
-                ToolTip { text: qsTr("Record screen") }
+                ToolTip.text: qsTr("Record screen")
+                ToolTip.visible: hovered
                 onClicked: {
                     Launch.exec(["spectacle", "-R", "s"]);
                 }
@@ -121,7 +125,8 @@ StyledRect {
                 type: IconButton.Tonal
                 isRound: true
                 icon: "animated_images"
-                ToolTip { text: qsTr("Record GIF") }
+                ToolTip.text: qsTr("Record GIF")
+                ToolTip.visible: hovered
                 onClicked: {
                     Recorder.startGif();
                 }
@@ -136,7 +141,8 @@ StyledRect {
                 type: IconButton.Tonal
                 isRound: true
                 icon: "animated_images"
-                ToolTip { text: qsTr("Open recordings folder") }
+                ToolTip.text: qsTr("Open recordings folder")
+                ToolTip.visible: hovered
                 onClicked: {
                     Qt.openUrlExternally(`file://${GlobalConfig.paths.recordingsDir}`);
                 }
@@ -146,7 +152,8 @@ StyledRect {
                 type: IconButton.Tonal
                 isRound: true
                 icon: "folder"
-                ToolTip { text: qsTr("Open screenshots folder") }
+                ToolTip.text: qsTr("Open screenshots folder")
+                ToolTip.visible: hovered
                 onClicked: {
                     Qt.openUrlExternally(`file://${GlobalConfig.paths.screenshotsDir}`);
                 }
@@ -156,7 +163,8 @@ StyledRect {
                 type: IconButton.Tonal
                 isRound: true
                 icon: "web"
-                ToolTip { text: qsTr("Open Spectacle") }
+                ToolTip.text: qsTr("Open Spectacle")
+                ToolTip.visible: hovered
                 onClicked: {
                     Launch.exec(["spectacle"]);
                 }
