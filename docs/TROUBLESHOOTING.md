@@ -626,10 +626,11 @@ a device that never tried.
 The first is the Avahi daemon. It carries the mDNS advertisement a nearby device
 resolves this machine through, so without it there is nothing to connect to. The
 second is the firewall. The transfer listener binds a fixed port so that a rule can be
-written for it ahead of time; the value lives in `quickshare_service.cpp`
-(`quicksharePort`) and is passed to the setup helper as `--port`. A listener on a
-random port could only be opened while the shell runs, which needs administrator
-rights on every start.
+written for it ahead of time; that port has one definition,
+`shell/scripts/quickshare-port`, which the plugin build bakes into the listener and the
+install step reads to open the same port on the firewall. It reaches the setup helper
+as `--port`. A listener on a random port could only be opened while the shell runs,
+which needs administrator rights on every start.
 
 `scripts/06-services.sh` does both during a source install. A package install leaves
 them to the shell, because a package must not enable a system daemon or open a port
@@ -639,7 +640,9 @@ checks the system through
 through `pkexec` to put it right. The same helper is behind **Set up system access** on
 the Quick Share settings page (Nexus → Services → Quick Share), which is the way back
 if the check was declined, if the firewall changed later, or if the report reads
-`SETUP=unknown` because the rule set cannot be read without root.
+`SETUP=unknown` because the rule set cannot be read without root. The row says what it
+knows: where the report cannot see the port, it reports that the port could not be
+checked again rather than claiming a success it cannot confirm.
 
 To see what the machine reports:
 

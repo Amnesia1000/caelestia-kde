@@ -47,6 +47,23 @@ if(NOT Protobuf_FOUND OR NOT OpenSSL_FOUND)
         "Install protobuf and openssl (Arch), protobuf-devel and openssl-devel (Fedora), "
         "or libprotobuf-dev, protobuf-compiler and libssl-dev (Debian), then configure again.")
 endif()
+
+# Quick Share's transfer port is one value with three readers: the listener this build
+# bakes it into, the setup helper the shell passes it to, and the install step, which
+# reads it to write the matching firewall rule. It lives in a file for the same reason
+# the M3Shapes revision does: three copies drift, one does not.
+set(_QUICKSHARE_PORT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/quickshare-port")
+if(NOT EXISTS "${_QUICKSHARE_PORT_FILE}")
+    message(FATAL_ERROR "Quick Share's transfer port is missing: ${_QUICKSHARE_PORT_FILE}")
+endif()
+file(STRINGS "${_QUICKSHARE_PORT_FILE}" QUICKSHARE_PORT LIMIT_COUNT 1)
+if(NOT QUICKSHARE_PORT MATCHES "^[0-9]+$")
+    message(FATAL_ERROR "Quick Share's transfer port must be a port number, not '${QUICKSHARE_PORT}'")
+endif()
+if(QUICKSHARE_PORT LESS 1 OR QUICKSHARE_PORT GREATER 65535)
+    message(FATAL_ERROR "Quick Share's transfer port must be between 1 and 65535, not ${QUICKSHARE_PORT}")
+endif()
+
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(Qalculate IMPORTED_TARGET libqalculate REQUIRED)
 pkg_check_modules(Pipewire IMPORTED_TARGET libpipewire-0.3 REQUIRED)

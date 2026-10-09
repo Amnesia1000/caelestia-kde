@@ -6,25 +6,35 @@ source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SETUP_SCRIPT="$REPO_ROOT/shell/scripts/quickshare_setup.sh"
+PORT_FILE="$REPO_ROOT/shell/scripts/quickshare-port"
 SERVICE_CPP="$REPO_ROOT/shell/plugin/src/Caelestia/Services/QuickShare/quickshare_service.cpp"
+PLUGIN_CMAKE="$REPO_ROOT/shell/plugin/CMakeLists.txt"
+QUICKSHARE_CMAKE="$REPO_ROOT/shell/plugin/src/Caelestia/Services/QuickShare/CMakeLists.txt"
 SERVICES_STEP="$REPO_ROOT/scripts/06-services.sh"
-QS_SERVICE_QML="$REPO_ROOT/shell/services/QuickShare.qml"
+QS_SETUP_QML="$REPO_ROOT/shell/services/QuickShareSetup.qml"
 
-PORT=65000
+if [[ ! -f "$PORT_FILE" ]]; then
+    printf '  cannot check the transfer port without %s\n' "$PORT_FILE" >&2
+    exit 1
+fi
 
-INSTALLER_PORT="$(sed -n 's/^QUICKSHARE_PORT=\([0-9]\{1,\}\)$/\1/p' "$SERVICES_STEP" | head -n1)"
+PORT="$(<"$PORT_FILE")"
 
-test_the_installer_opens_the_port_the_service_listens_on() {
-    local service
-    service="$(sed -n 's/.*quicksharePort = \([0-9]\{1,\}\).*/\1/p' "$SERVICE_CPP" | head -n1)"
+test_the_transfer_port_has_one_definition() {
+    [[ "$PORT" =~ ^[0-9]+$ ]] || fail "the transfer port manifest must hold one port number, not '$PORT'"
 
-    [[ -n "$service" ]] || fail "no quicksharePort constant found in quickshare_service.cpp"
-    [[ -n "$INSTALLER_PORT" ]] || fail "no QUICKSHARE_PORT found in scripts/06-services.sh"
-    assert_eq "$service" "$INSTALLER_PORT" "the installer must open the port the service listens on"
+    assert_contains "$(cat "$PLUGIN_CMAKE")" "scripts/quickshare-port" \
+        "the plugin build should read the port from the manifest"
+    assert_contains "$(cat "$QUICKSHARE_CMAKE")" 'CAELESTIA_QUICKSHARE_PORT=${QUICKSHARE_PORT}' \
+        "and bake it into the module that binds it"
+
+    local restated
+    restated="$(grep -n "$PORT" "$SERVICE_CPP" "$SERVICES_STEP" || true)"
+    assert_eq "" "$restated" "the service and the install step should read the manifest, not restate it"
 }
 
 test_the_setup_helper_is_told_the_port_the_service_owns() {
-    assert_contains "$(cat "$QS_SERVICE_QML")" 'String(QuickShareService.listenPort)' \
+    assert_contains "$(cat "$QS_SETUP_QML")" 'String(QuickShareService.listenPort)' \
         "the helper takes the port as an argument rather than keeping a copy of it"
 }
 
@@ -286,13 +296,13 @@ stub_bundle_reporting() {
 #!/bin/bash
 printf 'AVAHI=active\nFIREWALL=none\nPORT=allowed\nSETUP=$setup\n'
 EOS
+    cp "$PORT_FILE" "$dir/shell/scripts/quickshare-port"
     printf '%s\n' "$dir"
 }
 
 run_configure_quick_share() {
     local bundle="$1" packaged_status="$2" log="${3:-/dev/null}" sudo_status="${4:-0}"
     env BUNDLE_DIR="$bundle" CONFIGURE_LOG="$log" PACKAGED="$packaged_status" SUDO_STATUS="$sudo_status" \
-        QUICKSHARE_PORT="$INSTALLER_PORT" \
         bash -c 'install_is_packaged() { return "$PACKAGED"; }
 skip() { printf "SKIP %s\n" "$*"; }
 warn() { printf "WARN %s\n" "$*"; }
@@ -322,6 +332,31 @@ test_a_missing_helper_warns_without_stopping_the_install() {
     assert_not_contains "$out" "ESCALATE" "and nothing should be elevated for it"
 }
 
+test_a_bundle_without_the_transfer_port_warns_without_raising() {
+    local tmp dir out
+    tmp="$(new_tmpdir)"
+    dir="$tmp/bundle"
+    mkdir -p "$dir/shell/scripts"
+    stub_bin "$dir/shell/scripts" quickshare_setup.sh 'printf "SETUP=needed\n"'
+
+    out="$(run_configure_quick_share "$dir" 1 2>&1)"
+
+    assert_contains "$out" "transfer port is missing" "the step should say what it could not read"
+    assert_not_contains "$out" "ESCALATE" "and nothing should be elevated for it"
+}
+
+test_a_bundle_whose_transfer_port_is_not_a_number_warns_without_raising() {
+    local tmp dir out
+    tmp="$(new_tmpdir)"
+    dir="$(stub_bundle_reporting "$tmp/bundle" needed)"
+    printf 'not-a-port\n' > "$dir/shell/scripts/quickshare-port"
+
+    out="$(run_configure_quick_share "$dir" 1 2>&1)"
+
+    assert_contains "$out" "is not a port number" "a port the firewall cannot be asked for is worth saying"
+    assert_not_contains "$out" "ESCALATE" "and nothing should be elevated for it"
+}
+
 test_a_system_that_already_works_is_not_raised_for() {
     local tmp log out
     tmp="$(new_tmpdir)"
@@ -340,7 +375,7 @@ test_a_system_that_needs_setup_is_raised_for() {
 
     out="$(run_configure_quick_share "$(stub_bundle_reporting "$tmp/bundle" needed)" 1 "$log" 2>&1)"
 
-    assert_contains "$(cat "$log")" "quickshare_setup.sh --port $INSTALLER_PORT" \
+    assert_contains "$(cat "$log")" "quickshare_setup.sh --port $PORT" \
         "the elevated run has to carry the port the service listens on"
     assert_contains "$out" "Quick Share can receive" "and the step should report what it achieved"
 }

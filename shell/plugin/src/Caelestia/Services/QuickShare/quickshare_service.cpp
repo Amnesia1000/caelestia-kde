@@ -33,7 +33,12 @@ QString deviceLabel(const QuickShareConnection* connection) {
 /// socket can reach the peer before it goes.
 constexpr int connectionLingerMs = 2000;
 
-constexpr quint16 quicksharePort = 65000;
+/// The port the transfer listener binds. shell/scripts/quickshare-port is its one
+/// definition: CMake bakes it in here, the shell passes it to the setup helper when it
+/// opens the firewall, and the install step reads it to write that same rule. A
+/// listener on a random port could only be opened while the shell runs, which needs
+/// administrator rights on every start.
+constexpr quint16 quicksharePort = CAELESTIA_QUICKSHARE_PORT;
 
 /// Lets a connection go once it has reported its transfer.
 void retire(QuickShareConnection* connection) {
@@ -84,8 +89,10 @@ void QuickShareService::setEnabled(bool enabled) {
     }
 
     if (!m_discovery->startDiscovery()) {
-        emit errorOccurred(u"Avahi daemon is not running, so Quick Share cannot announce itself. "
-                           u"Settings -> Services -> Quick Share can start and enable it."_s);
+        // The condition only: where the user goes to fix it is the shell's to say, and
+        // it has a row for exactly this.
+        emit errorOccurred(u"The Avahi daemon is not running, so Quick Share cannot announce "
+                           u"itself to nearby devices."_s);
         return;
     }
 

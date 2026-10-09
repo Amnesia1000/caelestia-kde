@@ -147,12 +147,11 @@ else
 fi
 ok "ydotoold service configured."
 
-QUICKSHARE_PORT=65000
-
 configure_quick_share() {
     local bundle="${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
     local setup="$bundle/shell/scripts/quickshare_setup.sh"
-    local status
+    local port_file="$bundle/shell/scripts/quickshare-port"
+    local port status
 
     if install_is_packaged; then
         skip "Quick Share's system access is the shell's own prompt on a packaged install."
@@ -164,14 +163,28 @@ configure_quick_share() {
         return 0
     fi
 
-    status="$(bash "$setup" --status --port "$QUICKSHARE_PORT" 2>/dev/null || true)"
+    if [[ ! -f "$port_file" ]]; then
+        warn "Quick Share's transfer port is missing from $port_file; it may not be able to receive."
+        return 0
+    fi
+
+    # The port the service listens on, read from the file the plugin build bakes it in
+    # from: the rule below has to open the port the listener actually binds, and a second
+    # copy of the number here is what would let the two drift apart.
+    port="$(<"$port_file")"
+    if ! [[ "$port" =~ ^[0-9]+$ ]]; then
+        warn "Quick Share's transfer port in $port_file is not a port number; it may not be able to receive."
+        return 0
+    fi
+
+    status="$(bash "$setup" --status --port "$port" 2>/dev/null || true)"
     if [[ "$status" != *"SETUP=needed"* ]]; then
         skip "Quick Share already has the access it needs."
         return 0
     fi
 
-    if caelestia_sudo bash "$setup" --port "$QUICKSHARE_PORT"; then
-        ok "Quick Share can receive: Avahi is running and port $QUICKSHARE_PORT is open."
+    if caelestia_sudo bash "$setup" --port "$port"; then
+        ok "Quick Share can receive: Avahi is running and port $port is open."
     else
         warn "Quick Share setup did not finish; retry from Settings -> Services -> Quick Share."
     fi

@@ -41,3 +41,8 @@ qml_module(caelestia-quickshare
 # protobuf_generate_cpp writes the generated headers into this directory's build
 # directory, and the sources include them by bare name.
 target_include_directories(caelestia-quickshare PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+
+# The port the firewall rule is written for is the port bound here. QUICKSHARE_PORT is
+# read from shell/scripts/quickshare-port at the plugin root, so the service, the setup
+# helper the shell runs and the install step all take it from one place.
+target_compile_definitions(caelestia-quickshare PRIVATE CAELESTIA_QUICKSHARE_PORT=${QUICKSHARE_PORT})
