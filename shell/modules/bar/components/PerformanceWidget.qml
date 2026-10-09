@@ -47,6 +47,10 @@ StyledRect {
         id: pillLoader
 
         anchors.centerIn: parent
+        // Outside a layout the loader keeps zero size, so the pill needs to be
+        // sized from the component it loaded.
+        width: implicitWidth
+        height: implicitHeight
         sourceComponent: root.pillComponent
     }
 
