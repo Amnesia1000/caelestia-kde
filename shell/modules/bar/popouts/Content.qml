@@ -285,7 +285,6 @@ Item {
                 subPageIdx: 19
             }
         }
-
         Popout {
             name: "weathercontext"
             sourceComponent: BarComponentContext {
