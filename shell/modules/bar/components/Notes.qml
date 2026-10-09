@@ -9,8 +9,7 @@ import qs.services
 
 Item {
     id: root
-
-
+    
     required property var popouts
 
     implicitWidth: 32
