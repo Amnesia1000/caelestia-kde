@@ -27,9 +27,6 @@ PageBase {
         },
         "media": { icon: "graphic_eq", name: qsTr("Now playing") },
         "greeter": { icon: "waving_hand", name: qsTr("Greeter") },
-        "notes": { icon: "sticky_note_2", name: qsTr("Notes") },
-        "weather": { icon: "partly_cloudy_day", name: qsTr("Weather") },
-        "performance": { icon: "speed", name: qsTr("Performance") },
         "tray": { icon: "expand_more", name: qsTr("System tray") },
         "updateIndicator": { icon: "update", name: qsTr("Updates") },
         "clock": { icon: "schedule", name: qsTr("Clock") },
@@ -47,11 +44,6 @@ PageBase {
         "power": { icon: "power_settings_new", name: qsTr("Power menu") }
     }
     property bool isGlobalDragging: false
-    // Override mode for editing a single overlay panel instead of the
-    // global bar: entries source plus a write-back. Null keeps legacy
-    // behaviour (global entries) untouched.
-    property var entriesOverride: null
-    property var writeEntries: null
     property string globalDragCompId: ""
     property string globalDragSourceList: ""
     property string globalDragHoveredList: ""
@@ -336,7 +328,7 @@ PageBase {
     }
 
     function load(): void {
-        let entries = root.entriesOverride ?? Config.bar.entries;
+        let entries = Config.bar.entries;
         leftModel.clear();
         middleModel.clear();
         rightModel.clear();
@@ -375,9 +367,6 @@ PageBase {
             { id: "tray", enabled: true, zone: "right" },
             { id: "updateIndicator", enabled: true, zone: "right" },
             { id: "github", enabled: false, zone: "right" },
-            { id: "notes", enabled: false, zone: "right" },
-            { id: "weather", enabled: false, zone: "right" },
-            { id: "performance", enabled: false, zone: "right" },
             { id: "clock", enabled: true, zone: "right" },
             { id: "statusIcons", enabled: true, zone: "right" },
             { id: "kbLayoutIndicator", enabled: false, zone: "right" },
@@ -394,11 +383,6 @@ PageBase {
     }
 
     function resetToDefaults(): void {
-        if (root.entriesOverride !== null && root.writeEntries) {
-            root.writeEntries([]);
-            load();
-            return;
-        }
         const entries = defaultEntries();
         GlobalConfig.bar.entries = entries;
 
@@ -447,10 +431,7 @@ PageBase {
             }
         }
 
-        if (root.writeEntries)
-            root.writeEntries(newEntries);
-        else
-            GlobalConfig.bar.entries = newEntries;
+        GlobalConfig.bar.entries = newEntries;
     }
 
     title: qsTr("Toggle & rearrange")
@@ -528,7 +509,6 @@ PageBase {
                 }
 
                 ListView {
-                    interactive: false
                     id: leftList
 
                     anchors.fill: parent
@@ -584,7 +564,6 @@ PageBase {
                 }
 
                 ListView {
-                    interactive: false
                     id: middleList
 
                     anchors.fill: parent
@@ -640,7 +619,6 @@ PageBase {
                 }
 
                 ListView {
-                    interactive: false
                     id: rightList
 
                     anchors.fill: parent
@@ -734,7 +712,6 @@ PageBase {
                 }
 
                 ListView {
-                    interactive: false
                     id: libList
 
                     anchors.fill: parent
@@ -743,7 +720,6 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: libraryModel
                     clip: true
-                    interactive: false
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
