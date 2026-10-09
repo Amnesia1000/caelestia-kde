@@ -224,8 +224,13 @@ Singleton {
             interval: 500
             onTriggered: {
                 if (!isNaN(monitor.queuedBrightness)) {
-                    monitor.setBrightness(monitor.queuedBrightness);
+                    const pending = monitor.queuedBrightness;
                     monitor.queuedBrightness = NaN;
+                    monitor.brightness = pending;
+                    // writeBrightness() skips setBrightness(), so KWin's record is updated here too.
+                    monitor.syncKwinRecord(Math.round(pending * 100) / 100);
+                    monitor.writeBrightness(pending);
+                    monitor.timer.restart();
                 }
             }
         }
@@ -261,6 +266,7 @@ Singleton {
 
             if (isDdc && timer.running) {
                 queuedBrightness = value;
+                brightness = value;
                 return;
             }
 
