@@ -10,6 +10,7 @@ import qs.services
 Item {
     id: root
 
+    readonly property bool _dummy: true
     required property var popouts
 
     implicitWidth: 32
