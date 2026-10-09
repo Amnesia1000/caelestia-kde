@@ -99,7 +99,7 @@ Item {
         popouts.fromTopDock = isTopOverlay && ((root.barDef.lengthPercent ?? 100) < 100);
         // A context menu stays open while the pointer moves over the bar, so
         // the hover routing below must not take it over or close it.
-        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "mediacontext" || popouts.currentName === "performancecontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
+        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "mediacontext" || popouts.currentName === "performancecontext" || popouts.currentName === "shortcutscontext" || popouts.currentName === "screencapturecontext" || popouts.currentName === "keepawakecontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
             return;
 
         const ch = getLoaderAt(isHorizontal ? pos : width / 2, isHorizontal ? height / 2 : pos) as WrappedLoader;
@@ -221,7 +221,7 @@ Item {
             } else {
                 popouts.hasCurrent = false;
             }
-        } else if (id === "notes" || id === "weather" || id === "performance") {
+        } else if (id === "notes" || id === "weather" || id === "performance" || id === "shortcuts" || id === "screencapture" || id === "keepawake") {
             const item = ch.item as Item;
             if (item) {
                 const relPos = pos - top;
@@ -592,6 +592,30 @@ Item {
                 roleValue: "performance"
                 delegate: WrappedLoader {
                     sourceComponent: PerformanceWidget {
+                        popouts: root.popouts
+                    }
+                }
+            }
+            DelegateChoice {
+                roleValue: "shortcuts"
+                delegate: WrappedLoader {
+                    sourceComponent: ShortcutsWidget {
+                        popouts: root.popouts
+                    }
+                }
+            }
+            DelegateChoice {
+                roleValue: "screencapture"
+                delegate: WrappedLoader {
+                    sourceComponent: ScreenCaptureWidget {
+                        popouts: root.popouts
+                    }
+                }
+            }
+            DelegateChoice {
+                roleValue: "keepawake"
+                delegate: WrappedLoader {
+                    sourceComponent: KeepAwakeWidget {
                         popouts: root.popouts
                     }
                 }
