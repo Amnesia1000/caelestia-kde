@@ -294,13 +294,6 @@ CustomMouseArea {
 
         if (root.overlayBars) {
             let routed = false;
-            // TEMP DIAGNOSTIC
-            let dbg = "DOCKDBG x=" + Math.round(x) + " y=" + Math.round(y);
-            for (let i = 0; i < root.overlayBars.count; i++) {
-                const w = root.overlayBars.itemAt(i);
-                if (w)
-                    dbg += " [i" + i + " " + w.effPos + " x=" + Math.round(w.x) + " y=" + Math.round(w.y) + " w=" + Math.round(w.width) + " h=" + Math.round(w.height) + " vis=" + w.visible + "]";
-            }
             for (let i = 0; i < root.overlayBars.count; i++) {
                 const w = root.overlayBars.itemAt(i);
                 if (w && w.visible && x >= w.x && x < w.x + w.width && y >= w.y && y < w.y + w.height) {
@@ -311,8 +304,6 @@ CustomMouseArea {
                     break;
                 }
             }
-            // TEMP DIAGNOSTIC
-            console.log(dbg + " routed=" + routed);
             if (routed) {
                 // Hover handled by the overlay panel above.
             } else if (inBarArea(x, y)) {
