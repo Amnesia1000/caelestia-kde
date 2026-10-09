@@ -19,17 +19,17 @@ StyledRect {
     readonly property var pillComponent: {
         switch (root.pill) {
         case "cpu":
-            return PerfCpu;
+            return cpuPill;
         case "gpu":
-            return PerfGpu;
+            return gpuPill;
         case "memory":
-            return PerfMemory;
+            return memoryPill;
         case "storage":
-            return PerfStorage;
+            return storagePill;
         case "network":
-            return PerfNetwork;
+            return networkPill;
         case "battery":
-            return PerfBattery;
+            return batteryPill;
         default:
             return null;
         }
@@ -57,6 +57,43 @@ StyledRect {
         fontStyle: Tokens.font.icon.builders.medium.build()
 
         visible: root.pillComponent === null
+    }
+
+    // The Loader needs real components, not bare types.
+    Component {
+        id: cpuPill
+
+        PerfCpu {}
+    }
+
+    Component {
+        id: gpuPill
+
+        PerfGpu {}
+    }
+
+    Component {
+        id: memoryPill
+
+        PerfMemory {}
+    }
+
+    Component {
+        id: storagePill
+
+        PerfStorage {}
+    }
+
+    Component {
+        id: networkPill
+
+        PerfNetwork {}
+    }
+
+    Component {
+        id: batteryPill
+
+        PerfBattery {}
     }
 
     MouseArea {
