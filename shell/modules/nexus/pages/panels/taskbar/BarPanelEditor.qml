@@ -122,7 +122,6 @@ PageBase {
 
         SectionHeader {
             first: true
-            last: true
             text: qsTr("Components")
         }
 
