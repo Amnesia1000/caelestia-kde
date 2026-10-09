@@ -528,6 +528,7 @@ PageBase {
                 }
 
                 ListView {
+                    interactive: false
                     id: leftList
 
                     anchors.fill: parent
@@ -583,6 +584,7 @@ PageBase {
                 }
 
                 ListView {
+                    interactive: false
                     id: middleList
 
                     anchors.fill: parent
@@ -638,6 +640,7 @@ PageBase {
                 }
 
                 ListView {
+                    interactive: false
                     id: rightList
 
                     anchors.fill: parent
@@ -731,6 +734,7 @@ PageBase {
                 }
 
                 ListView {
+                    interactive: false
                     id: libList
 
                     anchors.fill: parent

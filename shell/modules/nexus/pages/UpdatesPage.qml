@@ -451,6 +451,7 @@ PageBase {
                     top: parent.top
                     margins: Tokens.padding.medium
                 }
+                interactive: false
 
                 height: Math.min(timeline.implicitHeight, timelineCard.maxListHeight)
                 contentWidth: width

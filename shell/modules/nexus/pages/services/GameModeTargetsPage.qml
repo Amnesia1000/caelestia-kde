@@ -144,6 +144,7 @@ PageBase {
             radius: Tokens.rounding.large
 
             ListView {
+                interactive: false
                 id: targetList
 
                 anchors.fill: parent
