@@ -75,6 +75,7 @@ QtObject {
                 { label: qsTr("Weather"), keywords: ["weather", "temperature", "units", "celsius", "fahrenheit", "city"], pagePath: "panels/taskbar/BarWeather.qml", subPageIdx: 20 },
                 { label: qsTr("Performance"), keywords: ["performance", "cpu", "gpu", "ram", "memory", "storage", "network", "battery", "pills", "stats"], pagePath: "panels/taskbar/BarPerformance.qml", subPageIdx: 21 },
                 { label: qsTr("Panel editor"), keywords: ["panel", "extra panel", "overlay", "edit panel", "rename", "move"], pagePath: "panels/taskbar/BarPanelEditor.qml", subPageIdx: 22 },
+                { label: qsTr("Activar y reorganizar"), keywords: ["components", "widgets", "toggle", "rearrange", "panel"], pagePath: "panels/taskbar/ActivateAndRearrange.qml", subPageIdx: 23 },
                 { label: qsTr("Per-element scaling offsets"), keywords: ["scale", "font scale", "preview"], pagePath: "panels/taskbar/BarPreviewScales.qml", subPageIdx: 14 },
                 { label: qsTr("Elements & Modules"), keywords: ["workspaces", "tray", "clock", "modules"], pagePath: "panels/taskbar/TaskbarElements.qml", subPageIdx: 15 },
                 { label: qsTr("Update indicator"), keywords: ["updates", "indicator"], pagePath: "panels/taskbar/BarUpdates.qml", subPageIdx: 17 },

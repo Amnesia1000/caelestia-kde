@@ -149,6 +149,9 @@ QtObject {
                 Component {
                     BarPanelEditor {}
                 }
+                Component {
+                    ActivateAndRearrange {}
+                }
             }
         },
         Component {

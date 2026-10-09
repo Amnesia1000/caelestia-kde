@@ -3,7 +3,6 @@ pragma ComponentBehavior: Bound
 import QtQuick.Layouts
 import Caelestia.Config
 import qs.modules.nexus.common
-import qs.modules.nexus.pages.panels.taskbar
 
 PageBase {
     id: root
@@ -115,26 +114,9 @@ PageBase {
         NavRow {
             last: true
             icon: "widgets"
-            label: qsTr("Components")
+            label: qsTr("Activar y reorganizar")
             status: qsTr("Toggle & rearrange")
-            onClicked: root.nState.openSubPage(6)
-        }
-
-        SectionHeader {
-            first: true
-            text: qsTr("Components")
-        }
-
-        BarComponents {
-            isSubPage: false
-            nState: root.nState
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            entriesOverride: root.panel ? root.panel.entries : null
-            writeEntries: entries => {
-                if (root.panel)
-                    root.panel.entries = entries;
-            }
+            onClicked: root.nState.openSubPage(23)
         }
     }
 }
