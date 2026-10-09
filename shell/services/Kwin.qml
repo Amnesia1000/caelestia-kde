@@ -25,11 +25,6 @@ Singleton {
     readonly property real swipeOffset: KWinWorkspaceState.swipeOffset
     readonly property var swipeOffsetByOutput: KWinWorkspaceState.swipeOffsetByOutput || ({})
     readonly property bool showingDesktop: KWinWorkspaceState.showingDesktop
-    // KWin keeps the windows still when the reserved area changes, and has no
-    // signal for it, so anything that moves a strut has to ask for a re-arrange.
-    function reservedAreaChanged() {
-        KWinWorkspaceState.reservedAreaChanged();
-    }
     readonly property var toplevels: ({ values: root.windowList })
     readonly property var activeToplevel: root.activeWindow
     readonly property var focusedWorkspace: ({ id: root.activeWsId, name: root.activeWsId.toString() })

@@ -27,19 +27,6 @@ Scope {
     // step of the drag would resize maximised windows on each frame. The default
     // comes from the bar, which has the screen's tokens.
     property real sidebarWidth
-    // The zone values the four windows below are actually reserving. Changes here
-    // mean KWin moved no window, so tiling scripts have to be told to re-arrange.
-    readonly property string reservedSignature: [topZone.exclusiveZone, rightZone.exclusiveZone,
-        bottomZone.exclusiveZone, leftZone.exclusiveZone].join()
-
-    Timer {
-        id: notifyTimer
-
-        interval: 100
-        onTriggered: Kwin.reservedAreaChanged()
-    }
-
-    onReservedSignatureChanged: notifyTimer.restart()
 
     Binding on sidebarWidth {
         value: Visibilities.sidebarWidthFor(root.bar.Tokens.sizes.sidebar.width)
@@ -48,8 +35,6 @@ Scope {
     }
 
     ExclusionZone {
-        id: leftZone
-
         anchors.left: true
         exclusiveZone: (root.bar.position === "left" ? root.bar.exclusiveZone + root.exclusiveExtents.left : Math.max(Config.border.thickness, root.exclusiveExtents.left))
             + (root.reserveSidebar && root.bar.position === "right" ? root.sidebarWidth : 0)
@@ -57,16 +42,12 @@ Scope {
     }
 
     ExclusionZone {
-        id: topZone
-
         anchors.top: true
         exclusiveZone: root.bar.position === "top" ? root.bar.exclusiveZone + root.exclusiveExtents.top : Math.max(Config.border.thickness, root.exclusiveExtents.top)
         Config.screen: root.screen.name
     }
 
     ExclusionZone {
-        id: rightZone
-
         anchors.right: true
         exclusiveZone: (root.bar.position === "right" ? root.bar.exclusiveZone + root.exclusiveExtents.right : Math.max(Config.border.thickness, root.exclusiveExtents.right))
             + (root.reserveSidebar && root.bar.position !== "right" ? root.sidebarWidth : 0)
@@ -74,8 +55,6 @@ Scope {
     }
 
     ExclusionZone {
-        id: bottomZone
-
         anchors.bottom: true
         exclusiveZone: root.bar.position === "bottom" ? root.bar.exclusiveZone + root.exclusiveExtents.bottom : Math.max(Config.border.thickness, root.exclusiveExtents.bottom)
         Config.screen: root.screen.name

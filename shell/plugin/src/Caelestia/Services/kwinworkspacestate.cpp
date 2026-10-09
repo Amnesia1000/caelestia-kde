@@ -393,13 +393,6 @@ void KWinWorkspaceState::switchTo(const QString& id, const QString& output) {
     }
 }
 
-void KWinWorkspaceState::reservedAreaChanged() {
-    QDBusMessage msg =
-        QDBusMessage::createMethodCall(QStringLiteral("org.kde.KWin"), QStringLiteral("/Caelestia/Workspaces"),
-            QStringLiteral("org.caelestia.Workspaces"), QStringLiteral("ReservedAreaChanged"));
-    QDBusConnection::sessionBus().call(msg, QDBus::NoBlock);
-}
-
 void KWinWorkspaceState::setDesktop(int desktopId) {
     switchTo(QString::number(desktopId));
 }
