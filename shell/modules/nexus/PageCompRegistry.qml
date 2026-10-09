@@ -143,6 +143,9 @@ QtObject {
                 Component {
                     BarWeather {}
                 }
+                Component {
+                    BarPerformance {}
+                }
             }
         },
         Component {

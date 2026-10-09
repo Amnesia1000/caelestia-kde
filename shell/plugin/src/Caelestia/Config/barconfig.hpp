@@ -179,6 +179,7 @@ class BarPerformance : public settings::ObjectNode {
     CONFIG_NODE(BarPerformance, settings::ObjectNode)
 
     CONFIG_PROPERTY(bool, showText, true)
+    CONFIG_PROPERTY(QString, pill, u"cpu"_s)
 };
 
 class BarPreviewScales : public settings::ObjectNode {
