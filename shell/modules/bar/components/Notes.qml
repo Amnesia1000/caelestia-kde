@@ -11,7 +11,7 @@ Item {
     id: root
 
     readonly property bool _dummy: true
-    required property var popouts
+    property var popouts: undefined
 
     implicitWidth: 32
     implicitHeight: 32
