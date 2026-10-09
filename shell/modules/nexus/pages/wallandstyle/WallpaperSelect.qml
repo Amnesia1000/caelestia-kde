@@ -131,7 +131,7 @@ PageBase {
     }
 
     ListView {
-        interactive: false
+    interactive: false
         interactive: false
         id: gridList
 

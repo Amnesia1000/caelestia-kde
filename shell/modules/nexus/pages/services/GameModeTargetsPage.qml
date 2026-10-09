@@ -144,7 +144,7 @@ PageBase {
             radius: Tokens.rounding.large
 
             ListView {
-                interactive: false
+    interactive: false
                 interactive: false
                 id: targetList
 

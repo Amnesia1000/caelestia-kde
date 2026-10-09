@@ -444,6 +444,7 @@ PageBase {
             implicitHeight: Math.min(timeline.implicitHeight, maxListHeight) + Tokens.padding.medium * 2
 
             Flickable {
+    interactive: false
                 id: timelineFlickable
                 anchors {
                     left: parent.left

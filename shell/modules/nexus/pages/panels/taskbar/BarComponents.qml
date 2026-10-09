@@ -528,6 +528,7 @@ PageBase {
                 }
 
                 ListView {
+    interactive: false
                     interactive: false
                     id: leftList
 
@@ -584,6 +585,7 @@ PageBase {
                 }
 
                 ListView {
+    interactive: false
                     interactive: false
                     id: middleList
 
@@ -640,6 +642,7 @@ PageBase {
                 }
 
                 ListView {
+    interactive: false
                     interactive: false
                     id: rightList
 
@@ -734,6 +737,7 @@ PageBase {
                 }
 
                 ListView {
+    interactive: false
                     interactive: false
                     id: libList
 
