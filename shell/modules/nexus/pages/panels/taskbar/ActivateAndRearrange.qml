@@ -75,7 +75,7 @@ ColumnLayout {
                     color: modelData.enabled ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
                 }
 
-                ToggleRow {
+                CheckBox {
                     checked: modelData.enabled
                     onToggled: root.toggleEnabled(index)
                 }
@@ -83,9 +83,6 @@ ColumnLayout {
                 IconButton {
                     icon: "drag_indicator"
                     type: IconButton.Text
-                    onPressed: {
-                        // Drag to reorder - handled by ListView move
-                    }
                 }
             }
 
@@ -99,9 +96,6 @@ ColumnLayout {
                 anchors.fill: parent
                 drag.target: parent
                 drag.axis: Drag.YAxis
-                onReleased: {
-                    // The move is handled by ListView.move in onMoved
-                }
             }
         }
 
