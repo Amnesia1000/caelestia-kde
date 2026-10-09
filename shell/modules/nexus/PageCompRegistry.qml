@@ -144,6 +144,9 @@ QtObject {
                     BarWeather {}
                 }
                 Component {
+                    BarPerformance {}
+                }
+                Component {
                     BarPanelEditor {}
                 }
             }

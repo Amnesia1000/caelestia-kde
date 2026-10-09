@@ -285,6 +285,15 @@ Item {
                 subPageIdx: 19
             }
         }
+
+        Popout {
+            name: "performancecontext"
+            sourceComponent: BarComponentContext {
+                popouts: root.popouts
+                label: qsTr("Performance settings")
+                subPageIdx: 21
+            }
+        }
         Popout {
             name: "weathercontext"
             sourceComponent: BarComponentContext {
