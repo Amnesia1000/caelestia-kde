@@ -30,6 +30,9 @@ QtObject {
     property string summary
     property string body
     property string appIcon
+    // A Material Symbols name to fall back on when there is no icon theme entry to
+    // resolve through appIcon, as is the case for shell-raised notifications.
+    property string materialIcon
     property string appName
     property string image
     // Body with markup stripped, for single-line previews (eliding raw markup cuts tags in half)
@@ -41,6 +44,9 @@ QtObject {
     property int urgency: NotificationUrgency.Normal
     property bool resident
     property bool hasActionIcons
+    // A notification the shell raised itself. Kept out of the on-disk history:
+    // its actions hold live callbacks that would not survive a restart.
+    property bool shellRaised
     property list<var> actions
 
     readonly property bool hasFullscreen: Kwin.hasFullscreen()

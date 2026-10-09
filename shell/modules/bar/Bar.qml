@@ -328,9 +328,9 @@ Item {
         } else if (Config.bar.scrollActions.brightness) {
             const monitor = Brightness.getMonitorForScreen(screen);
             if (angleDelta.y > 0)
-                monitor.setBrightness(monitor.brightness + GlobalConfig.services.brightnessIncrement);
+                monitor.stepBrightness(GlobalConfig.services.brightnessIncrement);
             else if (angleDelta.y < 0)
-                monitor.setBrightness(monitor.brightness - GlobalConfig.services.brightnessIncrement);
+                monitor.stepBrightness(-GlobalConfig.services.brightnessIncrement);
         }
     }
 

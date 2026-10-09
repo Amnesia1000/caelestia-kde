@@ -22,6 +22,7 @@ Item {
                 "02-krohnkite-setup"
                 "03-wallpaper-fill"
                 "04-stale-font-families"
+                "05-matugen"
             )
             
             for script_name in "\${TASKS[@]}"; do

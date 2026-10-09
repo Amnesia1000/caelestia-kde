@@ -36,6 +36,7 @@ ShellRoot {
     property var _gameModeInit: null
     property var _updateCheckerInit: null
     property var _autoSchemeInit: null
+    property var _quickShareInit: null
 
     settings.watchFiles: false
 
@@ -122,6 +123,7 @@ ShellRoot {
             root._gameModeInit = GameMode;
             root._updateCheckerInit = UpdateChecker;
             root._autoSchemeInit = AutoScheme;
+            root._quickShareInit = QuickShare;
         }
     }
 
