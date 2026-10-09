@@ -112,15 +112,17 @@ PageBase {
             }
         }
 
-        ActivateAndRearrange {
+        BarComponents {
+            isSubPage: false
+            title: qsTr("Components")
+            nState: root.nState
+            Layout.fillWidth: true
+            Layout.preferredHeight: 520
             entriesOverride: root.panel ? root.panel.entries : null
             writeEntries: entries => {
                 if (root.panel)
                     root.panel.entries = entries;
             }
-            nState: root.nState
-            Layout.fillWidth: true
-            Layout.fillHeight: true
         }
     }
 }
