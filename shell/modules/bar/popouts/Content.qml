@@ -285,6 +285,10 @@ Item {
                 subPageIdx: 19
             }
         }
+<<<<<<< HEAD
+=======
+
+>>>>>>> integration/multi-bar-widgets
         Popout {
             name: "performancecontext"
             sourceComponent: BarComponentContext {
@@ -299,6 +303,30 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Weather settings")
                 subPageIdx: 20
+            }
+        }
+        Popout {
+            name: "shortcutscontext"
+            sourceComponent: BarComponentContext {
+                popouts: root.popouts
+                label: qsTr("Shortcuts settings")
+                subPageIdx: 22
+            }
+        }
+        Popout {
+            name: "screencapturecontext"
+            sourceComponent: BarComponentContext {
+                popouts: root.popouts
+                label: qsTr("Screen Capture settings")
+                subPageIdx: 23
+            }
+        }
+        Popout {
+            name: "keepawakecontext"
+            sourceComponent: BarComponentContext {
+                popouts: root.popouts
+                label: qsTr("Keep Awake settings")
+                subPageIdx: 24
             }
         }
 

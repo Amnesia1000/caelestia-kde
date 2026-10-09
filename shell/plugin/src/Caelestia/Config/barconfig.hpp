@@ -182,6 +182,34 @@ class BarPerformance : public settings::ObjectNode {
     CONFIG_PROPERTY(QString, pill, u"cpu"_s)
 };
 
+class BarShortcuts : public settings::ObjectNode {
+    CONFIG_NODE(BarShortcuts, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showLabels, true)
+    CONFIG_PROPERTY(bool, showApps, true)
+    CONFIG_PROPERTY(bool, showSystem, true)
+    CONFIG_PROPERTY(int, buttonSize, 36)
+    CONFIG_PROPERTY(bool, showTooltips, true)
+};
+
+class BarScreenCapture : public settings::ObjectNode {
+    CONFIG_NODE(BarScreenCapture, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showShots, true)
+    CONFIG_PROPERTY(bool, showRecord, true)
+    CONFIG_PROPERTY(bool, showFolders, true)
+    CONFIG_PROPERTY(bool, showTooltips, true)
+    CONFIG_PROPERTY(bool, autoClose, false)
+};
+
+class BarKeepAwake : public settings::ObjectNode {
+    CONFIG_NODE(BarKeepAwake, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showActiveChip, true)
+    CONFIG_PROPERTY(bool, showTooltip, true)
+    CONFIG_PROPERTY(bool, autoHide, false)
+};
+
 class BarPreviewScales : public settings::ObjectNode {
     CONFIG_NODE(BarPreviewScales, settings::ObjectNode)
 
@@ -222,8 +250,29 @@ class BarPreviewFontScales : public settings::ObjectNode {
     CONFIG_PROPERTY(qreal, wirelessPassword, 0.0)
 };
 
+class BarDefinition : public settings::ObjectNode {
+    CONFIG_NODE(BarDefinition, settings::ObjectNode)
+
+    CONFIG_PROPERTY(QString, name, u"bar"_s)
+    CONFIG_PROPERTY(bool, enabled, true)
+    // Empty means every screen.
+    CONFIG_PROPERTY(QStringList, screens, QStringList())
+    CONFIG_PROPERTY(QString, position, u"bottom"_s)
+    CONFIG_PROPERTY(bool, persistent, true)
+    CONFIG_PROPERTY(bool, showOnHover, true)
+    // 100 = full edge, less = centered dock occupying this % of the edge.
+    CONFIG_PROPERTY(int, lengthPercent, 100)
+    // Empty means an empty panel; only the primary bar inherits `entries`.
+    CONFIG_PROPERTY(QVariantList, entries, QVariantList())
+};
+CONFIG_LIST_TYPE(BarDefinition, BarDefinitionList)
+
 class BarConfig : public settings::ObjectNode {
     CONFIG_NODE(BarConfig, settings::ObjectNode)
+
+    // When empty, a single bar is built from the legacy keys below.
+    // Global so all screens share the same extra panels list.
+    CONFIG_GLOBAL_LIST(BarDefinitionList, bars, DEFAULT_ARG({}))
 
     CONFIG_PROPERTY(qreal, scale, 1.0)
     CONFIG_PROPERTY(qreal, previewScale, 1.0)
@@ -268,6 +317,9 @@ class BarConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(BarGithub, github)
     CONFIG_SUBOBJECT(BarMedia, media)
     CONFIG_SUBOBJECT(BarPerformance, performance)
+    CONFIG_SUBOBJECT(BarShortcuts, shortcuts)
+    CONFIG_SUBOBJECT(BarScreenCapture, screencapture)
+    CONFIG_SUBOBJECT(BarKeepAwake, keepawake)
     CONFIG_PROPERTY(QVariantList, entries,
         DEFAULT_ARG({
             vmap({ { u"id"_s, u"logo"_s }, { u"enabled"_s, true }, { u"zone"_s, u"left"_s } }),

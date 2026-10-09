@@ -27,9 +27,6 @@ PageBase {
         },
         "media": { icon: "graphic_eq", name: qsTr("Now playing") },
         "greeter": { icon: "waving_hand", name: qsTr("Greeter") },
-        "notes": { icon: "sticky_note_2", name: qsTr("Notes") },
-        "weather": { icon: "partly_cloudy_day", name: qsTr("Weather") },
-        "performance": { icon: "speed", name: qsTr("Performance") },
         "tray": { icon: "expand_more", name: qsTr("System tray") },
         "updateIndicator": { icon: "update", name: qsTr("Updates") },
         "clock": { icon: "schedule", name: qsTr("Clock") },
@@ -44,7 +41,10 @@ PageBase {
         "perfBattery": { icon: "battery_full", name: qsTr("Battery"), available: UPower.displayDevice.isLaptopBattery, unavailableText: qsTr("Battery not detected") },
         "dock": { icon: "apps", name: qsTr("Dock") },
         "showDesktop": { icon: "keyboard_double_arrow_down", name: qsTr("Show Desktop") },
-        "power": { icon: "power_settings_new", name: qsTr("Power menu") }
+        "power": { icon: "power_settings_new", name: qsTr("Power menu") },
+        "shortcuts": { icon: "dashboard", name: qsTr("Shortcuts") },
+        "screencapture": { icon: "screenshot_region", name: qsTr("Screen Capture") },
+        "keepawake": { icon: "coffee", name: qsTr("Keep Awake") }
     }
     property bool isGlobalDragging: false
     property string globalDragCompId: ""
@@ -52,6 +52,8 @@ PageBase {
     property string globalDragHoveredList: ""
     readonly property real zonePadding: Tokens.padding.medium
     readonly property real emptyZoneHeight: 72
+    property var entriesOverride: null
+    property var writeEntries: null
     property Component panelDelegate: Component {
         Item {
             id: delegateWrapper
@@ -331,7 +333,7 @@ PageBase {
     }
 
     function load(): void {
-        let entries = Config.bar.entries;
+        let entries = root.entriesOverride ?? Config.bar.entries;
         leftModel.clear();
         middleModel.clear();
         rightModel.clear();
@@ -370,9 +372,6 @@ PageBase {
             { id: "tray", enabled: true, zone: "right" },
             { id: "updateIndicator", enabled: true, zone: "right" },
             { id: "github", enabled: false, zone: "right" },
-            { id: "notes", enabled: false, zone: "right" },
-            { id: "weather", enabled: false, zone: "right" },
-            { id: "performance", enabled: false, zone: "right" },
             { id: "clock", enabled: true, zone: "right" },
             { id: "statusIcons", enabled: true, zone: "right" },
             { id: "kbLayoutIndicator", enabled: false, zone: "right" },
@@ -437,7 +436,10 @@ PageBase {
             }
         }
 
-        GlobalConfig.bar.entries = newEntries;
+        if (root.writeEntries)
+            root.writeEntries(newEntries);
+        else
+            GlobalConfig.bar.entries = newEntries;
     }
 
     title: qsTr("Toggle & rearrange")
