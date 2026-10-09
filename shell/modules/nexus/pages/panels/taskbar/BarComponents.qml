@@ -49,6 +49,7 @@ PageBase {
     property string globalDragHoveredList: ""
     readonly property real zonePadding: Tokens.padding.medium
     readonly property real emptyZoneHeight: 72
+    property var writeEntries: null
     property Component panelDelegate: Component {
         Item {
             id: delegateWrapper
@@ -431,7 +432,10 @@ PageBase {
             }
         }
 
-        GlobalConfig.bar.entries = newEntries;
+        if (root.writeEntries)
+            root.writeEntries(newEntries);
+        else
+            GlobalConfig.bar.entries = newEntries;
     }
 
     title: qsTr("Toggle & rearrange")
