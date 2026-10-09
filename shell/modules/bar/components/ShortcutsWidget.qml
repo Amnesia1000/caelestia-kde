@@ -103,7 +103,7 @@ StyledRect {
                     { name: qsTr("Browser"), cmd: ["firefox"], icon: "web" },
                     { name: qsTr("Editor"), cmd: ["code"], icon: "code" },
                     { name: qsTr("Files"), cmd: ["nemo"], icon: "folder" },
-                }
+                ]
 
                 delegate: IconButton {
                     required property var modelData
