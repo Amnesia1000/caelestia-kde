@@ -7,6 +7,7 @@ import Caelestia.Config
 import qs.components.controls
 import qs.services
 import qs.utils
+import qs.modules.nexus
 import qs.modules.nexus.common
 
 PageBase {
@@ -217,7 +218,7 @@ PageBase {
             onItemToggled: (index, checked) => GlobalConfig.bar.bars.at(index).enabled = checked
             onItemClicked: index => {
                 root.nState.editingPanelIndex = index;
-                root.nState.openSubPage(20);
+                root.nState.openSubPage(PageDictionary.subPageIdxFor("panels/taskbar/BarPanelEditor.qml"));
             }
         }
 

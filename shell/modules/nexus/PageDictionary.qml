@@ -262,4 +262,19 @@ QtObject {
             ]
         }
     ]
+
+    // Sub page index of the first entry pointing at the given page, or -1 when
+    // no entry does. Callers that jump to a sub page should look it up instead
+    // of hardcoding the number: inserting a sub page anywhere in the registry
+    // shifts every index after it, which silently repoints shortcuts.
+    function subPageIdxFor(pagePath: string): int {
+        for (let i = 0; i < pages.length; i++) {
+            const settings = pages[i].settings || [];
+            for (let j = 0; j < settings.length; j++) {
+                if (settings[j].pagePath === pagePath)
+                    return settings[j].subPageIdx;
+            }
+        }
+        return -1;
+    }
 }
