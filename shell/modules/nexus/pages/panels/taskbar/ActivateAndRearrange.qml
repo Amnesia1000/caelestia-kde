@@ -1,5 +1,6 @@
 pragma ComponentBehavior: Bound
 
+import QtQuick
 import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
@@ -74,7 +75,7 @@ ColumnLayout {
                     color: modelData.enabled ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
                 }
 
-                ToggleButton {
+                ToggleRow {
                     checked: modelData.enabled
                     onToggled: root.toggleEnabled(index)
                 }
