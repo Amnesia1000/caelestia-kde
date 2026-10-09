@@ -22,7 +22,13 @@ Item {
     property var closingWindows: []
     property alias indicatorContainer: indicatorContainer
     readonly property real overviewBorderThickness: Math.min(width, height) * 0.15
-    readonly property real indicatorSpace: indicatorContainer.height + Tokens.padding.large * 2
+    // The indicator is laid out at a fixed pixel size, so it took a bigger
+    // share of the screen on smaller outputs, which pushed the wallpaper
+    // above it down and left a growing gap on bigger ones. Scale it with the
+    // screen instead, keeping the smallest supported output as reference so
+    // it never eats more than a small slice of the gap there.
+    readonly property real indicatorScale: Math.max(0.5, Math.min(3, height / 768))
+    readonly property real indicatorSpace: (indicatorContainer.height + Tokens.padding.large * 2) * indicatorScale
     readonly property real verticalOffset: indicatorSpace - overviewBorderThickness
     readonly property int activeWsId: {
         const perOutput = Kwin.activeByOutput[root.screen.name];
@@ -675,7 +681,11 @@ Item {
 
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin:Tokens.padding.large
+        anchors.bottomMargin: Tokens.padding.large
+        // Scaling from the bottom keeps the margin and the centred alignment
+        // while the reserved space above shrinks with the indicator.
+        transformOrigin: Item.Bottom
+        scale: root.indicatorScale
         implicitWidth: workspaceIndicator.implicitWidth + Tokens.padding.large * 2
         implicitHeight: workspaceIndicator.implicitHeight + Tokens.padding.medium * 2
         radius: Tokens.rounding.large
@@ -685,7 +695,9 @@ Item {
             id: workspaceIndicator
 
             anchors.centerIn: parent
-            maxWidth: Math.max(200, root.width - 100)
+            // The indicator is drawn scaled by indicatorScale, so the width
+            // left for it has to be measured in unscaled units.
+            maxWidth: Math.max(200, (root.width - 100) / root.indicatorScale)
             screenName: root.screen.name
             count: listView.count
             currentIndex: listView.currentIndex
