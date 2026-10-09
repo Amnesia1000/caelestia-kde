@@ -272,11 +272,10 @@ Singleton {
             value = Math.max(0, Math.min(1, value));
             const rounded = Math.round(value * 100);
 
-            if (dimming >= 0 && dimming < 1) {
-                BrightnessWatcher.setBrightness(modelData.name, value);
-                BrightnessWatcher.clearDimming(modelData.name);
+            // The KWin write below also asserts full dimming; mirror it now so the OSD does not
+            // keep showing the stale multiplier until KWin echoes the cleared value back.
+            if (dimming < 1)
                 dimming = 1;
-            }
 
             if (Math.round(brightness * 100) === rounded) {
                 syncKwinRecord(rounded / 100);

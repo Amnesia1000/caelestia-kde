@@ -125,13 +125,8 @@ BrightnessWatcher::BrightnessWatcher(QObject* parent)
 }
 
 qreal BrightnessWatcher::brightness(const QString& outputName) const {
-    if (m_devices.contains(outputName)) {
-        auto* dev = m_devices[outputName];
-        if (dev->hasBrightness()) {
-            return dev->brightness() / 10000.0;
-        }
-    }
-    return -1.0;
+    auto* dev = m_devices.value(outputName);
+    return dev && dev->hasBrightness() ? dev->brightness() / 10000.0 : -1.0;
 }
 
 void BrightnessWatcher::setBrightness(const QString& outputName, qreal value) {
@@ -161,45 +156,17 @@ void BrightnessWatcher::setBrightness(const QString& outputName, qreal value) {
 
     QtWayland::kde_output_configuration_v2 cfg(config);
     cfg.set_brightness(dev->object(), brightValue);
+    // Assert full dimming in the same configuration: asking for a brightness change is user
+    // activity, and a multiplier KWin left behind would otherwise swallow it while everything
+    // the shell can read still looks right (KDE bug 513809).
+    cfg.set_dimming(dev->object(), 10000);
     cfg.apply();
     cfg.destroy();
 }
 
 qreal BrightnessWatcher::dimming(const QString& outputName) const {
-    if (m_devices.contains(outputName)) {
-        auto* dev = m_devices[outputName];
-        if (dev->hasBrightness()) {
-            return dev->dimming() / 10000.0;
-        }
-    }
-    return -1.0;
-}
-
-void BrightnessWatcher::clearDimming(const QString& outputName) {
-    if (!m_management->isInitialized()) {
-        qCWarning(lcBrightnessWatcher) << "Cannot clear dimming: kde_output_management_v2 is not available.";
-        return;
-    }
-
-    if (!m_devices.contains(outputName)) {
-        qCWarning(lcBrightnessWatcher) << "Cannot clear dimming: unknown output" << outputName;
-        return;
-    }
-
-    auto* dev = m_devices[outputName];
-    if (!dev->hasBrightness()) {
-        qCWarning(lcBrightnessWatcher) << "Cannot clear dimming: output" << outputName << "does not support brightness";
-        return;
-    }
-
-    auto* config = m_management->create_configuration();
-    if (!config)
-        return;
-
-    QtWayland::kde_output_configuration_v2 cfg(config);
-    cfg.set_dimming(dev->object(), 10000);
-    cfg.apply();
-    cfg.destroy();
+    auto* dev = m_devices.value(outputName);
+    return dev && dev->hasBrightness() ? dev->dimming() / 10000.0 : -1.0;
 }
 
 void BrightnessWatcher::onDeviceAdded(KdeOutputDevice* device) {
