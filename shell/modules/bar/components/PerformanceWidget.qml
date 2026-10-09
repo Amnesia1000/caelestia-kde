@@ -1,24 +1,23 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Layouts
 import "performance"
 import Caelestia.Config
 import qs.components
 import qs.services
 
-// System stats entry: shows the stat pills picked in Nexus, the full data
-// lives in the popout. Falls back to a single icon when no pill is picked.
+// System stats entry: shows the stat pill picked in Nexus, the full data lives
+// in the popout. Falls back to a single icon when no pill is picked.
 StyledRect {
     id: root
 
     required property var popouts
 
     readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
-    readonly property var pills: (Config.bar.performance?.pills ?? []).map(p => String(p).trim().toLowerCase()).filter(p => p.length > 0)
+    readonly property string pill: String(Config.bar.performance?.pill ?? "").trim().toLowerCase()
 
-    function pillComponent(name: string) {
-        switch (name) {
+    readonly property var pillComponent: {
+        switch (root.pill) {
         case "cpu":
             return PerfCpu;
         case "gpu":
@@ -36,33 +35,19 @@ StyledRect {
         }
     }
 
-    implicitWidth: isHorizontal ? Math.max(Tokens.sizes.bar.innerWidth, layout.implicitWidth) : Tokens.sizes.bar.innerWidth
-    implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : Math.max(Tokens.sizes.bar.innerWidth, layout.implicitHeight)
+    implicitWidth: isHorizontal ? Math.max(Tokens.sizes.bar.innerWidth, pillLoader.implicitWidth) : Tokens.sizes.bar.innerWidth
+    implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : Math.max(Tokens.sizes.bar.innerWidth, pillLoader.implicitHeight)
 
     color: Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
     radius: Tokens.rounding.full
 
     visible: enabled
 
-    GridLayout {
-        id: layout
+    Loader {
+        id: pillLoader
 
         anchors.centerIn: parent
-        columns: root.isHorizontal ? -1 : 1
-        flow: root.isHorizontal ? GridLayout.LeftToRight : GridLayout.TopToBottom
-        columnSpacing: Tokens.spacing.medium
-        rowSpacing: Tokens.spacing.medium
-
-        Repeater {
-            model: root.pills
-
-            delegate: Loader {
-                required property string modelData
-
-                visible: sourceComponent !== null
-                sourceComponent: root.pillComponent(modelData)
-            }
-        }
+        sourceComponent: root.pillComponent
     }
 
     MaterialIcon {
@@ -71,7 +56,7 @@ StyledRect {
         color: Colours.palette.m3onSurface
         fontStyle: Tokens.font.icon.builders.medium.build()
 
-        visible: root.pills.length === 0
+        visible: root.pillComponent === null
     }
 
     MouseArea {

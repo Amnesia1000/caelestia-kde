@@ -1,7 +1,9 @@
 pragma ComponentBehavior: Bound
 
+import Quickshell
 import QtQuick.Layouts
 import Caelestia.Config
+import qs.components.controls
 import qs.modules.nexus.common
 
 PageBase {
@@ -9,6 +11,25 @@ PageBase {
 
     title: qsTr("Performance")
     isSubPage: true
+
+    readonly property list<MenuItem> pillItems: [MenuItem {
+        text: qsTr("CPU")
+    }, MenuItem {
+        text: qsTr("GPU")
+    }, MenuItem {
+        text: qsTr("Memory")
+    }, MenuItem {
+        text: qsTr("Storage")
+    }, MenuItem {
+        text: qsTr("Network")
+    }, MenuItem {
+        text: qsTr("Battery")
+    }, MenuItem {
+        text: qsTr("Icon only")
+    }]
+    readonly property list<string> pillValues: ["cpu", "gpu", "memory", "storage", "network", "battery", ""]
+    readonly property string pill: String(Config.bar.performance?.pill ?? "").trim().toLowerCase()
+    readonly property int pillIndex: Math.max(0, root.pillValues.indexOf(root.pill))
 
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -21,13 +42,14 @@ PageBase {
             text: qsTr("Widget")
         }
 
-        TextFieldRow {
+        SelectRow {
             first: true
-            label: qsTr("Pills")
-            subtext: qsTr("Stats shown in the bar, comma-separated: cpu, gpu, memory, storage, network, battery. Empty shows a single icon")
-            value: (Config.bar.performance.pills || []).join(", ")
-            onEditingFinished: value => {
-                GlobalConfig.bar.performance.pills = value.split(",").map(s => s.trim().toLowerCase()).filter(s => s.length > 0);
+            label: qsTr("Pill")
+            subtext: qsTr("Stat shown in the bar, the full data is in the popout")
+            menuItems: root.pillItems
+            active: root.pillItems[root.pillIndex]
+            onSelected: item => {
+                GlobalConfig.bar.performance.pill = root.pillValues[root.pillItems.indexOf(item)];
                 GlobalConfig.save();
             }
         }
