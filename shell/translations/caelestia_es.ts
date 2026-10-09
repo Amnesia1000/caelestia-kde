@@ -8559,17 +8559,17 @@ Now go touch grass</source>
     <message>
       <location line="+4"/>
       <source>Panels</source>
-      <translation>Paneles</translation>
+      <translation>Shell</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>Dashboard, taskbar, launcher, sidebar</source>
-      <translation>Panel, barra de tareas, lanzador y barra lateral</translation>
+      <translation>Dashboard, paneles, lanzador y panel lateral</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>Taskbar</source>
-      <translation>Barra de tareas</translation>
+      <translation>Paneles</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -9097,16 +9097,7 @@ Now go touch grass</source>
       <source>Providers</source>
       <translation>Proveedores</translation>
     </message>
-  
-        <message>
-            <source>Shell</source>
-            <translation>Shell</translation>
-        </message>
-        <message>
-            <source>Dashboard, panels, launcher, sidebar</source>
-            <translation>Dashboard, paneles, lanzador y panel lateral</translation>
-        </message>
-</context>
+  </context>
   <context>
     <name>PageRegistry</name>
     <message>
@@ -9120,7 +9111,7 @@ Now go touch grass</source>
     <message>
       <location filename="../modules/nexus/pages/PanelsPage.qml" line="+8"/>
       <source>Panels</source>
-      <translation>Paneles</translation>
+      <translation>Shell</translation>
     </message>
     <message>
       <location line="+11"/>
@@ -9149,7 +9140,7 @@ Now go touch grass</source>
     <message>
       <location line="-32"/>
       <source>Taskbar</source>
-      <translation>Barra de tareas</translation>
+      <translation>Paneles</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -9201,12 +9192,7 @@ Now go touch grass</source>
       <source>All desktops</source>
       <translation>Todos los escritorios</translation>
     </message>
-  
-        <message>
-            <source>Shell</source>
-            <translation>Shell</translation>
-        </message>
-</context>
+  </context>
   <context>
     <name>PasswordPill</name>
     <message>
@@ -10914,6 +10900,18 @@ Now go touch grass</source>
   <context>
     <name>TaskbarElements</name>
     <message>
+      <source>Elements &amp; Modules</source>
+      <translation>Elementos y módulos</translation>
+    </message>
+    <message>
+      <source>Performance</source>
+      <translation>Rendimiento</translation>
+    </message>
+    <message>
+      <source>Widget pill</source>
+      <translation>Píldora del widget</translation>
+    </message>
+    <message>
       <location filename="../modules/nexus/pages/panels/taskbar/TaskbarElements.qml" line="+12"/>
       <source>Taskbar Elements</source>
       <translation>Elementos de la barra de tareas</translation>
@@ -11013,20 +11011,7 @@ Now go touch grass</source>
       <source>Indicator visibility, automatic checks</source>
       <translation>Visibilidad del indicador y comprobaciones automáticas</translation>
     </message>
-  
-        <message>
-            <source>Elements &amp; Modules</source>
-            <translation>Elementos y módulos</translation>
-        </message>
-        <message>
-            <source>Performance</source>
-            <translation>Rendimiento</translation>
-        </message>
-        <message>
-            <source>Widget pill</source>
-            <translation>Píldora del widget</translation>
-        </message>
-</context>
+  </context>
   <context>
     <name>TaskbarPanel</name>
     <message>
@@ -11057,7 +11042,7 @@ Now go touch grass</source>
     <message>
       <location line="+24"/>
       <source>Taskbar</source>
-      <translation>Barra de tareas</translation>
+      <translation>Paneles</translation>
     </message>
     <message>
       <location line="+11"/>
@@ -11264,12 +11249,7 @@ Now go touch grass</source>
       <source>Scroll on the bottom half of the bar to adjust brightness</source>
       <translation>Desplázate sobre la mitad inferior de la barra para ajustar el brillo</translation>
     </message>
-  
-        <message>
-            <source>Panels</source>
-            <translation>Paneles</translation>
-        </message>
-</context>
+  </context>
   <context>
     <name>ToastEventsPage</name>
     <message>
@@ -13145,6 +13125,18 @@ Now go touch grass</source>
             <translation>Rendimiento</translation>
         </message>
         <message>
+            <source>Widget</source>
+            <translation>Widget</translation>
+        </message>
+        <message>
+            <source>Pill</source>
+            <translation>Píldora</translation>
+        </message>
+        <message>
+            <source>Stat shown in the bar, the full data is in the popout</source>
+            <translation>Estadística mostrada en la barra, los datos completos están en el popout</translation>
+        </message>
+        <message>
             <source>CPU</source>
             <translation>CPU</translation>
         </message>
@@ -13173,24 +13165,12 @@ Now go touch grass</source>
             <translation>Solo el ícono</translation>
         </message>
         <message>
-            <source>Widget</source>
-            <translation>Widget</translation>
-        </message>
-        <message>
-            <source>Pill</source>
-            <translation>Píldora</translation>
-        </message>
-        <message>
-            <source>Stat shown in the bar, the full data is in the popout</source>
-            <translation>Estadística que se muestra en la barra, los datos completos están en el popout</translation>
-        </message>
-        <message>
             <source>Show values</source>
             <translation>Mostrar valores</translation>
         </message>
         <message>
             <source>Show the value next to the icon in each pill</source>
-            <translation>Mostrar el valor junto al ícono de cada píldora</translation>
+            <translation>Mostrar el valor junto al ícono en cada píldora</translation>
         </message>
     </context>
 </TS>

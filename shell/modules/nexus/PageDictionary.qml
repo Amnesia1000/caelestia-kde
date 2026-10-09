@@ -47,13 +47,13 @@ QtObject {
             ]
         },
         {
-            label: qsTr("Shell"),
+            label: qsTr("Panels"),
             key: "panels",
             icon: "dock_to_bottom",
-            description: qsTr("Dashboard, panels, launcher, sidebar"),
+            description: qsTr("Dashboard, taskbar, launcher, sidebar"),
             category: "personalization",
             settings: [
-                { label: qsTr("Panels"), pagePath: "panels/TaskbarPanel.qml", keywords: ["per-monitor", "position", "screen"], subPageIdx: 2 },
+                { label: qsTr("Taskbar"), pagePath: "panels/TaskbarPanel.qml", keywords: ["per-monitor", "position", "screen"], subPageIdx: 2 },
                 { label: qsTr("Dashboard"), pagePath: "panels/DashboardPanel.qml", subPageIdx: 1 },
                 { label: qsTr("Launcher"), pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
                 { label: qsTr("App browser layout"), keywords: ["launcher", "layout", "simple", "compact", "categories", "favourites"], pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },

@@ -5,7 +5,7 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    title: qsTr("Shell")
+    title: qsTr("Panels")
 
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -22,7 +22,7 @@ PageBase {
         }
         NavRow {
             icon: "dock_to_bottom"
-            label: qsTr("Panels")
+            label: qsTr("Taskbar")
             status: Config.bar.persistent ? qsTr("Always visible") : Config.bar.showOnHover ? qsTr("Reveal on hover") : qsTr("Reveal on drag")
             onClicked: root.nState.openSubPage(2)
         }
