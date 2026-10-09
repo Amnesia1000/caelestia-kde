@@ -80,15 +80,24 @@ StyledRect {
                     { name: qsTr("Record"), action: "screenRecording", icon: "screen_record" },
                 ]
 
-                delegate: IconButton {
+                delegate: Item {
                     required property var modelData
 
-                    type: IconButton.Tonal
-                    isRound: true
-                    icon: modelData.icon
-                    ToolTip.text: modelData.name
-                    onClicked: {
-                        Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "drawers", "toggle", modelData.action]);
+                    width: 48
+                    height: 48
+
+                    IconButton {
+                        id: btn
+
+                        anchors.centerIn: parent
+                        type: IconButton.Tonal
+                        isRound: true
+                        icon: modelData.icon
+                        ToolTip.text: modelData.name
+                        ToolTip.visible: hovered
+                        onClicked: {
+                            Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "drawers", "toggle", modelData.action]);
+                        }
                     }
                 }
             }
@@ -106,14 +115,23 @@ StyledRect {
                     { name: qsTr("Files"), cmd: ["nemo"], icon: "folder" },
                 ]
 
-                delegate: IconButton {
+                delegate: Item {
                     required property var modelData
 
-                    type: IconButton.Tonal
-                    isRound: true
-                    icon: modelData.icon
-                    ToolTip.text: modelData.name
-                    onClicked: Launch.exec(modelData.cmd);
+                    width: 48
+                    height: 48
+
+                    IconButton {
+                        id: btn2
+
+                        anchors.centerIn: parent
+                        type: IconButton.Tonal
+                        isRound: true
+                        icon: modelData.icon
+                        ToolTip.text: modelData.name
+                        ToolTip.visible: hovered
+                        onClicked: Launch.exec(modelData.cmd);
+                    }
                 }
             }
         }
