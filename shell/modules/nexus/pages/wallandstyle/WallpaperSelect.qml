@@ -132,7 +132,6 @@ PageBase {
 
     ListView {
     interactive: false
-        interactive: false
         id: gridList
 
         anchors.horizontalCenter: parent.horizontalCenter

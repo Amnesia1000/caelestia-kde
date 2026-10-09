@@ -215,7 +215,6 @@ PageBase {
 
             ListView {
     interactive: false
-                interactive: false
                 id: targetList
 
                 anchors.fill: parent
@@ -368,7 +367,6 @@ PageBase {
 
             ListView {
     interactive: false
-                interactive: false
                 id: blacklistList
 
                 anchors.fill: parent

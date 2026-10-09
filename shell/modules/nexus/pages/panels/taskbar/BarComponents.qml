@@ -529,7 +529,6 @@ PageBase {
 
                 ListView {
     interactive: false
-                    interactive: false
                     id: leftList
 
                     anchors.fill: parent
@@ -586,7 +585,6 @@ PageBase {
 
                 ListView {
     interactive: false
-                    interactive: false
                     id: middleList
 
                     anchors.fill: parent
@@ -643,7 +641,6 @@ PageBase {
 
                 ListView {
     interactive: false
-                    interactive: false
                     id: rightList
 
                     anchors.fill: parent
@@ -738,7 +735,6 @@ PageBase {
 
                 ListView {
     interactive: false
-                    interactive: false
                     id: libList
 
                     anchors.fill: parent
@@ -747,7 +743,6 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: libraryModel
                     clip: true
-                    interactive: false
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
