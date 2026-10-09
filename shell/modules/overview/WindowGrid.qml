@@ -22,7 +22,8 @@ Item {
     property var closingWindows: []
     property alias indicatorContainer: indicatorContainer
     readonly property real overviewBorderThickness: Math.min(width, height) * 0.15
-    readonly property real indicatorSpace: indicatorContainer.height + Tokens.padding.large * 2
+    readonly property real indicatorScale: Math.max(0.5, Math.min(3, height / 768))
+    readonly property real indicatorSpace: (indicatorContainer.height + Tokens.padding.large * 2) * indicatorScale
     readonly property real verticalOffset: indicatorSpace - overviewBorderThickness
     readonly property int activeWsId: {
         const perOutput = Kwin.activeByOutput[root.screen.name];
@@ -675,7 +676,9 @@ Item {
 
         anchors.bottom: parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin:Tokens.padding.large
+        anchors.bottomMargin: Tokens.padding.large
+        transformOrigin: Item.Bottom
+        scale: root.indicatorScale
         implicitWidth: workspaceIndicator.implicitWidth + Tokens.padding.large * 2
         implicitHeight: workspaceIndicator.implicitHeight + Tokens.padding.medium * 2
         radius: Tokens.rounding.large
@@ -685,7 +688,7 @@ Item {
             id: workspaceIndicator
 
             anchors.centerIn: parent
-            maxWidth: Math.max(200, root.width - 100)
+            maxWidth: Math.max(200, (root.width - 100) / root.indicatorScale)
             screenName: root.screen.name
             count: listView.count
             currentIndex: listView.currentIndex
