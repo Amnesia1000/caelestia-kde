@@ -61,6 +61,19 @@ StyledWindow {
         top: overlayTopExtent,
         bottom: overlayBottomExtent
     })
+    // Exclusion extents. Same as the cutout extents, plus the docks: they
+    // hang from the edge without cutting the frame, but maximised windows
+    // still have to stop at their edge like they do at the primary bar's.
+    readonly property int dockLeftExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "left") && ((b.lengthPercent ?? 100) < 100) && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int dockRightExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "right") && ((b.lengthPercent ?? 100) < 100) && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int dockTopExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "top") && ((b.lengthPercent ?? 100) < 100) && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property int dockBottomExtent: overlayBarDefs.filter(b => ((b.position || "bottom") === "bottom") && ((b.lengthPercent ?? 100) < 100) && (b.persistent !== false || visibilities.bar)).length * bar.contentWidth
+    readonly property var exclusiveExtents: ({
+        left: overlayLeftExtent + dockLeftExtent,
+        right: overlayRightExtent + dockRightExtent,
+        top: overlayTopExtent + dockTopExtent,
+        bottom: overlayBottomExtent + dockBottomExtent
+    })
     // A top overlay panel replaces the dashboard/utilities drawers: while
     // one is enabled they stay closed and cannot be opened.
     readonly property bool topPanelActive: overlayBarDefs.some(b => ((b.position || "bottom") === "top"))
