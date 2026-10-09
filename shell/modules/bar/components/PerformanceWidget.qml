@@ -17,6 +17,25 @@ StyledRect {
     readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
     readonly property var pills: (Config.bar.performance?.pills ?? []).map(p => String(p).trim().toLowerCase()).filter(p => p.length > 0)
 
+    function pillComponent(name: string) {
+        switch (name) {
+        case "cpu":
+            return PerfCpu;
+        case "gpu":
+            return PerfGpu;
+        case "memory":
+            return PerfMemory;
+        case "storage":
+            return PerfStorage;
+        case "network":
+            return PerfNetwork;
+        case "battery":
+            return PerfBattery;
+        default:
+            return null;
+        }
+    }
+
     implicitWidth: isHorizontal ? Math.max(Tokens.sizes.bar.innerWidth, layout.implicitWidth) : Tokens.sizes.bar.innerWidth
     implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : Math.max(Tokens.sizes.bar.innerWidth, layout.implicitHeight)
 
@@ -37,29 +56,11 @@ StyledRect {
         Repeater {
             model: root.pills
 
-            delegate: DelegateChoice {
-                roleValue: "cpu"
-                delegate: PerfCpu {}
-            }
-            delegate: DelegateChoice {
-                roleValue: "gpu"
-                delegate: PerfGpu {}
-            }
-            delegate: DelegateChoice {
-                roleValue: "memory"
-                delegate: PerfMemory {}
-            }
-            delegate: DelegateChoice {
-                roleValue: "storage"
-                delegate: PerfStorage {}
-            }
-            delegate: DelegateChoice {
-                roleValue: "network"
-                delegate: PerfNetwork {}
-            }
-            delegate: DelegateChoice {
-                roleValue: "battery"
-                delegate: PerfBattery {}
+            delegate: Loader {
+                required property string modelData
+
+                visible: sourceComponent !== null
+                sourceComponent: root.pillComponent(modelData)
             }
         }
     }
