@@ -55,6 +55,18 @@ Loader {
             animate: true
         }
 
+        // A user reads an empty list as broken, and the other device's network is the
+        // one cause this side cannot see.
+        StyledText {
+            Layout.fillWidth: true
+            visible: QuickShareService.nearbyDevices.length === 0
+            text: qsTr("Nearby devices have to be on the same network, which for a phone means the same Wi-Fi")
+            color: Colours.palette.m3onSurfaceVariant
+            font: Tokens.font.body.small
+            wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+            animate: true
+        }
+
         StyledListView {
             id: deviceList
 

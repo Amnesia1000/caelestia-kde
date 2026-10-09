@@ -154,7 +154,7 @@ configure_quick_share() {
     local port status
 
     if install_is_packaged; then
-        skip "Quick Share's system access is the shell's own prompt on a packaged install."
+        skip "Quick Share's setup is the shell's own prompt on a packaged install."
         return 0
     fi
 

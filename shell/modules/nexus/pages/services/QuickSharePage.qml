@@ -34,7 +34,6 @@ PageBase {
         }
 
         ToggleRow {
-            last: true
             text: qsTr("Discoverable")
             subtext: qsTr("Advertise this machine so nearby devices can send to it")
             enabled: QuickShareService.isEnabled
@@ -42,15 +41,22 @@ PageBase {
             onToggled: QuickShareService.isVisible = checked
         }
 
+        InfoRow {
+            last: true
+            icon: "wifi"
+            label: qsTr("Same network")
+            subtext: qsTr("Nearby devices have to be on the same network, which for a phone means the same Wi-Fi")
+        }
+
         SectionHeader {
-            text: qsTr("System access")
+            text: qsTr("Setup")
         }
 
         RowButton {
             first: true
             last: true
             icon: "security"
-            text: qsTr("Set up system access")
+            text: qsTr("Quick Share setup")
             subtext: QuickShareSetup.status
             trailingIcon: "chevron_right"
             disabled: QuickShareSetup.busy

@@ -33,7 +33,7 @@ test_the_switch_is_asked_for_in_one_way() {
         "and it should be the one the gate lives behind"
 }
 
-test_the_system_access_flow_has_one_owner() {
+test_the_setup_flow_has_one_owner() {
     assert_file_exists "$SETUP"
 
     local borrowed

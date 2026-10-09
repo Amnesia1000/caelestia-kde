@@ -39,7 +39,7 @@ Singleton {
     readonly property bool enabled: QuickShareService.isEnabled || root.pendingEnable
     /// Whether an enable is waiting on the answer QuickShareSetup is collecting for it.
     property bool pendingEnable: false
-    /// Whether this session has already been told what its system access needs, so a
+    /// Whether this session has already been told what its setup needs, so a
     /// second enable neither repeats the prompt nor the warning.
     property bool raised: false
 

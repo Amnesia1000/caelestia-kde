@@ -617,6 +617,15 @@ for running the step by hand (`APPLY_WINDOW_RULES=false bash ./scripts/setup.sh`
 
 ### 7.8 Quick Share Cannot Receive Files
 
+Before anything else, both devices have to be on the same network. A nearby device
+finds this machine through an mDNS advertisement Avahi publishes on the local link and
+connects to the address it resolves, so a phone on mobile data, on another Wi-Fi
+network, or on the same SSID behind AP/client isolation never reaches it, and a VPN on
+this machine resolves the name to an address the other device cannot route. Nothing
+here can see the other device's network, so the shell cannot tell those apart from
+something broken on this machine — and discovery over Bluetooth survives the wrong
+network, which is why a device that cannot be reached still appears in the list.
+
 Sending works and receiving does not: the other device is visible and asks to send,
 but no incoming-file notification appears and the transfer times out. Two things
 outside the shell have to be true for an incoming connection to arrive, and both fail
@@ -637,7 +646,7 @@ them to the shell, because a package must not enable a system daemon or open a p
 behind the user's back. There, the first time Quick Share is switched on the shell
 checks the system through
 `<qmlconfdir>/scripts/quickshare_setup.sh --status`, and if something is missing asks
-through `pkexec` to put it right. The same helper is behind **Set up system access** on
+through `pkexec` to put it right. The same helper is behind **Quick Share setup** on
 the Quick Share settings page (Nexus → Services → Quick Share), which is the way back
 if the check was declined, if the firewall changed later, or if the report reads
 `SETUP=unknown` because the rule set cannot be read without root. The row says what it
