@@ -86,7 +86,7 @@ StyledRect {
                     type: IconButton.Tonal
                     isRound: true
                     icon: modelData.icon
-                    ToolTip.text: modelData.name
+                    ToolTip { text: modelData.name }
                     onClicked: {
                         Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "drawers", "toggle", modelData.action]);
                     }
@@ -112,7 +112,7 @@ StyledRect {
                     type: IconButton.Tonal
                     isRound: true
                     icon: modelData.icon
-                    ToolTip.text: modelData.name
+                    ToolTip { text: modelData.name }
                     onClicked: Launch.exec(modelData.cmd);
                 }
             }
