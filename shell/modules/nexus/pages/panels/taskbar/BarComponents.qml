@@ -70,12 +70,11 @@ PageBase {
                 if (ListView.view === leftList) return "left";
                 if (ListView.view === middleList) return "middle";
                 if (ListView.view === rightList) return "right";
-                if (GridView.view === libGrid) return "library";
                 return "library";
             }
             readonly property bool isDraggingThis: activeDragArea.drag.active
 
-            width: (ListView.view ? ListView.view.width : 0) + (GridView.view === libGrid ? GridView.view.width : 0)
+            width: ListView.view ? ListView.view.width : 0
             height: (root.isGlobalDragging && root.globalDragSourceList === sourceList && root.globalDragCompId === compId && root.globalDragHoveredList !== sourceList) ? 0 : 50
             visible: height > 0
             z: isDraggingThis ? 100 : 1
@@ -693,7 +692,7 @@ PageBase {
 
             StyledRect {
                 Layout.fillWidth: true
-                implicitHeight: Math.max(root.emptyZoneHeight, libGrid.contentHeight + root.zonePadding * 2)
+                implicitHeight: Math.max(root.emptyZoneHeight, libList.contentHeight + root.zonePadding * 2)
                 color: "transparent"
 
                 Text {
@@ -731,18 +730,18 @@ PageBase {
                     }
                 }
 
-                GridView {
-                    id: libGrid
+                ListView {
+                    id: libList
 
                     anchors.fill: parent
                     anchors.margins: Tokens.padding.medium
-                    cellWidth: (width - Tokens.spacing.small) / 2
-                    cellHeight: 50
+                    orientation: ListView.Vertical
+                    spacing: Tokens.spacing.small
                     model: libraryModel
                     clip: true
                     interactive: false
-                    move: Transition { Anim { properties: "x,y"; type: Anim.FastSpatial } }
-                    moveDisplaced: Transition { Anim { properties: "x,y"; type: Anim.FastSpatial } }
+                    move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
+                    moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
                 }
             }
