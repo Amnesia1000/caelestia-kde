@@ -91,7 +91,7 @@ PageBase {
         return name;
     }
 
-    title: qsTr("Taskbar")
+    title: qsTr("Panels")
     isSubPage: true
 
     ColumnLayout {

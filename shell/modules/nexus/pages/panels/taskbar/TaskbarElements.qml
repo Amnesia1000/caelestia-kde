@@ -9,7 +9,7 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    title: qsTr("Taskbar Elements")
+    title: qsTr("Elements & Modules")
     isSubPage: true
 
     ColumnLayout {
@@ -85,6 +85,13 @@ PageBase {
             label: qsTr("Weather")
             status: qsTr("Widget units")
             onClicked: root.nState.openSubPage(20)
+        }
+
+        NavRow {
+            icon: "speed"
+            label: qsTr("Performance")
+            status: qsTr("Widget pill")
+            onClicked: root.nState.openSubPage(21)
         }
 
         NavRow {

@@ -1,16 +1,13 @@
 pragma ComponentBehavior: Bound
 
-import Quickshell
 import QtQuick.Layouts
+import Quickshell
 import Caelestia.Config
 import qs.components.controls
 import qs.modules.nexus.common
 
 PageBase {
     id: root
-
-    title: qsTr("Performance")
-    isSubPage: true
 
     readonly property list<MenuItem> pillItems: [MenuItem {
         text: qsTr("CPU")
@@ -30,6 +27,9 @@ PageBase {
     readonly property list<string> pillValues: ["cpu", "gpu", "memory", "storage", "network", "battery", ""]
     readonly property string pill: String(Config.bar.performance?.pill ?? "").trim().toLowerCase()
     readonly property int pillIndex: Math.max(0, root.pillValues.indexOf(root.pill))
+
+    title: qsTr("Performance")
+    isSubPage: true
 
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter

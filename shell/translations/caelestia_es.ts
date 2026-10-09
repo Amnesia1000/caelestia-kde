@@ -3821,7 +3821,7 @@
     <message>
       <location filename="../modules/dashboard/Content.qml" line="+25"/>
       <source>Dashboard</source>
-      <translation>Panel</translation>
+      <translation>Dashboard</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -4222,7 +4222,7 @@
       <location line="+4"/>
       <location line="+65"/>
       <source>Dashboard</source>
-      <translation>Panel</translation>
+      <translation>Dashboard</translation>
     </message>
     <message>
       <location line="-54"/>
@@ -8574,7 +8574,7 @@ Now go touch grass</source>
     <message>
       <location line="+1"/>
       <source>Dashboard</source>
-      <translation>Panel</translation>
+      <translation>Dashboard</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -8589,7 +8589,7 @@ Now go touch grass</source>
     <message>
       <location line="+1"/>
       <source>Sidebar</source>
-      <translation>Barra lateral</translation>
+      <translation>Panel lateral</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -9097,7 +9097,16 @@ Now go touch grass</source>
       <source>Providers</source>
       <translation>Proveedores</translation>
     </message>
-  </context>
+  
+        <message>
+            <source>Shell</source>
+            <translation>Shell</translation>
+        </message>
+        <message>
+            <source>Dashboard, panels, launcher, sidebar</source>
+            <translation>Dashboard, paneles, lanzador y panel lateral</translation>
+        </message>
+</context>
   <context>
     <name>PageRegistry</name>
     <message>
@@ -9116,7 +9125,7 @@ Now go touch grass</source>
     <message>
       <location line="+11"/>
       <source>Dashboard</source>
-      <translation>Panel</translation>
+      <translation>Dashboard</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -9165,7 +9174,7 @@ Now go touch grass</source>
     <message>
       <location line="+6"/>
       <source>Sidebar</source>
-      <translation>Barra lateral</translation>
+      <translation>Panel lateral</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -9192,7 +9201,12 @@ Now go touch grass</source>
       <source>All desktops</source>
       <translation>Todos los escritorios</translation>
     </message>
-  </context>
+  
+        <message>
+            <source>Shell</source>
+            <translation>Shell</translation>
+        </message>
+</context>
   <context>
     <name>PasswordPill</name>
     <message>
@@ -10595,7 +10609,7 @@ Now go touch grass</source>
     <message>
       <location line="+4"/>
       <source>Sidebar</source>
-      <translation>Barra lateral</translation>
+      <translation>Panel lateral</translation>
     </message>
     <message>
       <location line="+11"/>
@@ -10999,7 +11013,20 @@ Now go touch grass</source>
       <source>Indicator visibility, automatic checks</source>
       <translation>Visibilidad del indicador y comprobaciones automáticas</translation>
     </message>
-  </context>
+  
+        <message>
+            <source>Elements &amp; Modules</source>
+            <translation>Elementos y módulos</translation>
+        </message>
+        <message>
+            <source>Performance</source>
+            <translation>Rendimiento</translation>
+        </message>
+        <message>
+            <source>Widget pill</source>
+            <translation>Píldora del widget</translation>
+        </message>
+</context>
   <context>
     <name>TaskbarPanel</name>
     <message>
@@ -11237,7 +11264,12 @@ Now go touch grass</source>
       <source>Scroll on the bottom half of the bar to adjust brightness</source>
       <translation>Desplázate sobre la mitad inferior de la barra para ajustar el brillo</translation>
     </message>
-  </context>
+  
+        <message>
+            <source>Panels</source>
+            <translation>Paneles</translation>
+        </message>
+</context>
   <context>
     <name>ToastEventsPage</name>
     <message>
@@ -13106,4 +13138,59 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
   </context>
+    <context>
+        <name>BarPerformance</name>
+        <message>
+            <source>Performance</source>
+            <translation>Rendimiento</translation>
+        </message>
+        <message>
+            <source>CPU</source>
+            <translation>CPU</translation>
+        </message>
+        <message>
+            <source>GPU</source>
+            <translation>GPU</translation>
+        </message>
+        <message>
+            <source>Memory</source>
+            <translation>Memoria</translation>
+        </message>
+        <message>
+            <source>Storage</source>
+            <translation>Almacenamiento</translation>
+        </message>
+        <message>
+            <source>Network</source>
+            <translation>Red</translation>
+        </message>
+        <message>
+            <source>Battery</source>
+            <translation>Batería</translation>
+        </message>
+        <message>
+            <source>Icon only</source>
+            <translation>Solo el ícono</translation>
+        </message>
+        <message>
+            <source>Widget</source>
+            <translation>Widget</translation>
+        </message>
+        <message>
+            <source>Pill</source>
+            <translation>Píldora</translation>
+        </message>
+        <message>
+            <source>Stat shown in the bar, the full data is in the popout</source>
+            <translation>Estadística que se muestra en la barra, los datos completos están en el popout</translation>
+        </message>
+        <message>
+            <source>Show values</source>
+            <translation>Mostrar valores</translation>
+        </message>
+        <message>
+            <source>Show the value next to the icon in each pill</source>
+            <translation>Mostrar el valor junto al ícono de cada píldora</translation>
+        </message>
+    </context>
 </TS>
