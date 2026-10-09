@@ -214,7 +214,8 @@ PageBase {
             radius: Tokens.rounding.large
 
             ListView {
-    interactive: false
+                interactive: false
+                interactive: false
                 id: targetList
 
                 anchors.fill: parent
@@ -366,7 +367,8 @@ PageBase {
             radius: Tokens.rounding.large
 
             ListView {
-    interactive: false
+                interactive: false
+                interactive: false
                 id: blacklistList
 
                 anchors.fill: parent

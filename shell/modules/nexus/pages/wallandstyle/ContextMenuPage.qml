@@ -411,7 +411,8 @@ PageBase {
                 }
 
                 ListView {
-    interactive: false
+                    interactive: false
+                    interactive: false
                     id: activeList
 
                     anchors.fill: parent
@@ -507,7 +508,8 @@ PageBase {
                 }
 
                 ListView {
-    interactive: false
+                    interactive: false
+                    interactive: false
                     id: libList
 
                     anchors.fill: parent
