@@ -7,6 +7,7 @@ import Quickshell
 import Quickshell.Bluetooth
 import Caelestia.Components
 import Caelestia.Config
+import Caelestia.Services.QuickShare
 import qs.components
 import qs.components.controls
 import qs.services
@@ -19,6 +20,8 @@ StyledRect {
 
     required property DrawerVisibilities visibilities
     required property BarPopouts.Wrapper popouts
+
+    readonly property real nonAnimHeight: implicitHeight
 
     readonly property var quickToggles: {
         const configToggles = Config.utilities.quickToggles || [];
@@ -107,6 +110,7 @@ StyledRect {
         case "hotspot": return "wifi_tethering";
         case "dnd": return "notifications_off";
         case "vpn": return "vpn_key";
+        case "quickShare": return "near_me";
         case "badapple": return "nutrition";
         default: return "toggle_on";
         }
@@ -524,6 +528,14 @@ StyledRect {
                         isToggle: VPN.status.state !== "needs-auth" && VPN.status.state !== "error"
                         inactiveOnColour: Colours.palette.m3onSurfaceVariant
                         onClicked: VPN.toggle()
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "quickShare"
+                    delegate: Toggle {
+                        icon: "near_me"
+                        checked: QuickShare.enabled
+                        onClicked: QuickShare.setEnabled(!QuickShare.enabled)
                     }
                 }
                 DelegateChoice {

@@ -14,6 +14,7 @@ PageBase {
         { id: "hotspot", label: qsTr("Hotspot") },
         { id: "bluetooth", label: qsTr("Bluetooth") },
         { id: "vpn", label: qsTr("VPN") },
+        { id: "quickShare", label: qsTr("Quick Share") },
     ]
     readonly property var toolToggles: [
         { id: "settings", label: qsTr("Settings") },
