@@ -49,6 +49,7 @@ PageBase {
     property string globalDragHoveredList: ""
     readonly property real zonePadding: Tokens.padding.medium
     readonly property real emptyZoneHeight: 72
+    property var entriesOverride: null
     property var writeEntries: null
     property Component panelDelegate: Component {
         Item {
@@ -329,7 +330,7 @@ PageBase {
     }
 
     function load(): void {
-        let entries = Config.bar.entries;
+        let entries = root.entriesOverride ?? Config.bar.entries;
         leftModel.clear();
         middleModel.clear();
         rightModel.clear();
