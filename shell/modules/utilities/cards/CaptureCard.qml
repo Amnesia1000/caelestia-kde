@@ -232,11 +232,24 @@ StyledRect {
             Layout.fillWidth: true
             spacing: Tokens.spacing.small
 
+            // Scroll over the switcher to flip Record/Capture, like the Quick Toggles card
+            WheelHandler {
+                acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                onWheel: event => {
+                    const d = event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x;
+                    if (d < 0)
+                        root.props.captureMode = "shot";
+                    else if (d > 0)
+                        root.props.captureMode = "record";
+                }
+            }
+
+            // No isToggle: the checked binding alone drives the colour, so clicking the
+            // already selected mode can't leave it looking deselected
             TextButton {
                 Layout.fillWidth: true
                 text: qsTr("Record")
                 type: TextButton.Tonal
-                isToggle: true
                 checked: !root.shotMode
                 onClicked: root.props.captureMode = "record"
             }
@@ -245,7 +258,6 @@ StyledRect {
                 Layout.fillWidth: true
                 text: qsTr("Capture")
                 type: TextButton.Tonal
-                isToggle: true
                 checked: root.shotMode
                 onClicked: root.props.captureMode = "shot"
             }

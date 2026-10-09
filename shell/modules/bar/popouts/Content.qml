@@ -125,6 +125,15 @@ Item {
         }
 
         Popout {
+            name: "osiconcontext"
+            sourceComponent: BarComponentContext {
+                popouts: root.popouts
+                label: qsTr("Launcher settings")
+                subPageIdx: 3
+            }
+        }
+
+        Popout {
             name: "statusiconscontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
@@ -149,6 +158,13 @@ Item {
         Popout {
             name: "github"
             sourceComponent: Github {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
+            name: "media"
+            sourceComponent: Media {
                 popouts: root.popouts
             }
         }

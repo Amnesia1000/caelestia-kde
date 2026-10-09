@@ -586,7 +586,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Automatic light and dark</source>
       <translation type="unfinished"/>
     </message>
@@ -596,7 +596,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Schedule</source>
       <translation type="unfinished"/>
     </message>
@@ -621,7 +621,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Dark mode hour</source>
       <translation type="unfinished"/>
     </message>
@@ -631,7 +631,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Theme mode</source>
       <translation type="unfinished"/>
     </message>
@@ -674,13 +674,43 @@
   <context>
     <name>AiAssistant</name>
     <message>
-      <location filename="../modules/sidebar/AiAssistant.qml" line="+701"/>
-      <location line="+1280"/>
+      <location filename="../modules/sidebar/AiAssistant.qml" line="+214"/>
+      <source>Bypass</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Accept edits</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Auto</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Plan</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Default</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+490"/>
+      <location line="+1037"/>
       <source>Rate limited - retrying in %1s…</source>
       <translation>Hinta rajoitettu - yrittää uudelleen %1s…</translation>
     </message>
     <message>
-      <location line="+208"/>
+      <location line="-685"/>
+      <source>(stopped)</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+893"/>
       <source>Chat</source>
       <translation type="unfinished"/>
     </message>
@@ -710,22 +740,32 @@
       <translation>Tili</translation>
     </message>
     <message>
-      <location line="+352"/>
-      <source>Thought Process</source>
-      <translation>Ajattu Prosessi</translation>
+      <location line="+30"/>
+      <source>Permissions</source>
+      <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+184"/>
+      <location line="+59"/>
+      <source>Claude Code working directory</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+456"/>
       <source>Suggestions</source>
       <translation>Ehdotukset</translation>
     </message>
     <message>
-      <location line="+123"/>
+      <location line="+138"/>
+      <source>Attach a file</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+74"/>
       <source>Ask assistant...</source>
       <translation>Kysy avustaja...</translation>
     </message>
     <message>
-      <location line="+170"/>
+      <location line="+193"/>
       <location line="+105"/>
       <source>New Chat</source>
       <translation>Uusi Keskustelu</translation>
@@ -1074,11 +1114,11 @@
     </message>
   </context>
   <context>
-    <name>AppBrowser</name>
+    <name>AppBrowserGrid</name>
     <message>
-      <location filename="../modules/launcher/AppBrowser.qml" line="+236"/>
+      <location filename="../modules/launcher/AppBrowserGrid.qml" line="+235"/>
       <source>No apps in this category</source>
-      <translation>Ei sovelluksia tässä kategoriassa</translation>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -1208,7 +1248,7 @@
   <context>
     <name>AppTile</name>
     <message>
-      <location filename="../modules/launcher/items/AppTile.qml" line="+143"/>
+      <location filename="../modules/launcher/items/AppTile.qml" line="+146"/>
       <source>Matched by a regex in favouriteApps - edit the config file to change</source>
       <translation>Täsmennetty regex favouriteAppsissa - muokkaa asetustiedostoa muuttaaksesi</translation>
     </message>
@@ -1235,6 +1275,12 @@
     <name>AppearancePage</name>
     <message>
       <location filename="../modules/nexus/pages/wallandstyle/AppearancePage.qml" line="+21"/>
+      <location line="+6"/>
+      <source>Follow system</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-5"/>
       <source>Google Sans Flex</source>
       <translation type="unfinished"/>
     </message>
@@ -1244,7 +1290,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+4"/>
+      <location line="+5"/>
       <source>CaskaydiaCove NF</source>
       <translation type="unfinished"/>
     </message>
@@ -1264,7 +1310,17 @@
       <translation>Käynnistä Tulkki Uudelleen</translation>
     </message>
     <message>
-      <location line="+20"/>
+      <location line="+14"/>
+      <source>Sure?</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Reset settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+38"/>
       <source>Font</source>
       <translation type="unfinished"/>
     </message>
@@ -1274,7 +1330,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+18"/>
+      <location line="+19"/>
       <source>Bezel mode (Pitch black)</source>
       <translation>Bezel-tila (Musta)</translation>
     </message>
@@ -1284,7 +1340,7 @@
       <translation>Tee kuori piki musta sekoittaa näytön kehys</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Islands</source>
       <translation>Saaret</translation>
     </message>
@@ -1294,7 +1350,7 @@
       <translation>Kaikki näkyy omana kelluvana widgettinä (erittäin kokeellinen)</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Border thickness</source>
       <translation>Reunan paksuus</translation>
     </message>
@@ -1304,7 +1360,7 @@
       <translation>Kuoren reunan paksuus pikseleinä. Aseta arvoksi 0 rajaton ulkoasu</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Corner radius scale</source>
       <translation>Kulman säteen skaala</translation>
     </message>
@@ -1314,7 +1370,7 @@
       <translation>Kertaa kuori&apos;s kulman pyöristys</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Transparency</source>
       <translation>Läpinäkyvyys</translation>
     </message>
@@ -1324,12 +1380,12 @@
       <translation>Ota läpinäkyvyys käyttöön kuoressa</translation>
     </message>
     <message>
-      <location line="+12"/>
+      <location line="+14"/>
       <source>Base opacity</source>
       <translation>Base läpinäkyvyys</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Layers opacity</source>
       <translation>Kerrosten läpinäkyvyys</translation>
     </message>
@@ -1339,7 +1395,7 @@
       <translation>Vaatii komentotulkin uudelleenkäynnistyksen</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Ambient color mode</source>
       <translation type="unfinished"/>
     </message>
@@ -1354,12 +1410,12 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+10"/>
       <source>Ambient glow opacity</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+22"/>
+      <location line="+23"/>
       <source>Background Blur</source>
       <translation>Taustan Sumennus</translation>
     </message>
@@ -1374,7 +1430,7 @@
       <translation>Ota himmeä lasinen efekti käyttöön hämärtämällä taustan</translation>
     </message>
     <message>
-      <location line="+22"/>
+      <location line="+23"/>
       <source>High Quality Blur Masks</source>
       <translation>Korkealaatuiset Sumennusmaskit</translation>
     </message>
@@ -1384,7 +1440,7 @@
       <translation>Poista tämä käytöstä käyttääksesi korkean suorituskyvyn reitti/KWin blur</translation>
     </message>
     <message>
-      <location line="+16"/>
+      <location line="+21"/>
       <source>Blur Corner Quality</source>
       <translation>Sumennuskulman Laatu</translation>
     </message>
@@ -1399,22 +1455,22 @@
       <translation>Skaalaus</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Font scale</source>
       <translation>Kirjasimen skaalaus</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Spacing scale</source>
       <translation>Väli asteikko</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Padding scale</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Animation speed scale</source>
       <translation>Animaation nopeuden mittakaava</translation>
     </message>
@@ -1424,17 +1480,17 @@
       <translation>Kulmat ja efektit</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Border rounding</source>
       <translation>Reunan pyöristys</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Border smoothing</source>
       <translation>Reunan tasoitus</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Blur deform</source>
       <translation>Sumennuksen epämuoto</translation>
     </message>
@@ -1673,7 +1729,7 @@
   <context>
     <name>Audio</name>
     <message>
-      <location filename="../modules/bar/popouts/Audio.qml" line="+81"/>
+      <location filename="../modules/bar/popouts/Audio.qml" line="+83"/>
       <source>Audio</source>
       <translation>Ääni</translation>
     </message>
@@ -1895,6 +1951,14 @@
     </message>
   </context>
   <context>
+    <name>AuthHandler</name>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/AuthHandler.qml" line="+26"/>
+      <source>%1 min left</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>BarClock</name>
     <message>
       <location filename="../modules/nexus/pages/panels/taskbar/BarClock.qml" line="+10"/>
@@ -1907,17 +1971,17 @@
       <translation>Tausta</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Show date</source>
       <translation>Näytä päivämäärä</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Show icon</source>
       <translation>Näytä kuvake</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Show seconds</source>
       <translation>Näytä sekuntia</translation>
     </message>
@@ -1927,7 +1991,7 @@
       <translation>Lisää sekunnin viiva kellon luo</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Calendar popout</source>
       <translation type="unfinished"/>
     </message>
@@ -1961,6 +2025,11 @@
     </message>
     <message>
       <location line="+2"/>
+      <source>Now playing</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Greeter</source>
       <translation type="unfinished"/>
     </message>
@@ -2163,7 +2232,7 @@
       <translation>Ota komponentti käyttöön</translation>
     </message>
     <message>
-      <location line="+31"/>
+      <location line="+58"/>
       <source>Icon size</source>
       <translation>Kuvakkeen koko</translation>
     </message>
@@ -2173,7 +2242,7 @@
       <translation>Sovelluksen kuvakkeiden koko telakalla</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Recolor icons</source>
       <translation>Reolor kuvakkeet</translation>
     </message>
@@ -2183,7 +2252,7 @@
       <translation>Palauta sovelluksen kuvakkeet käyttäen järjestelmän teemaa</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Show app badges</source>
       <translation type="unfinished"/>
     </message>
@@ -2193,7 +2262,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Filter by current desktop</source>
       <translation>Suodata nykyisen työpöydän mukaan</translation>
     </message>
@@ -2203,7 +2272,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Window grouping</source>
       <translation type="unfinished"/>
     </message>
@@ -2276,7 +2345,7 @@
       <translation>Renderoi kiinteä tausta GitHubin toimintawidgetin taakse</translation>
     </message>
     <message>
-      <location line="+31"/>
+      <location line="+32"/>
       <source>Personal Access Token</source>
       <translation>Henkilökohtainen Pääsymerkki</translation>
     </message>
@@ -2329,17 +2398,12 @@
       <translation>Ota komponentti käyttöön</translation>
     </message>
     <message>
-      <location line="+31"/>
-      <source>Compact</source>
-      <translation>Kompakti</translation>
-    </message>
-    <message>
-      <location line="+9"/>
+      <location line="+56"/>
       <source>Inverted</source>
       <translation>Käänteinen</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Show on hover</source>
       <translation>Näytä hiiren päällä</translation>
     </message>
@@ -2349,7 +2413,7 @@
       <translation>Näytä vain tervehdys leijuessa</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Popout on hover</source>
       <translation type="unfinished"/>
     </message>
@@ -2359,7 +2423,7 @@
       <translation>Näytä tervehdys ponnahdusikkuna, kun leijuu</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Animation Mechanism</source>
       <translation>Animaatio Mekanismi</translation>
     </message>
@@ -2385,33 +2449,33 @@
     </message>
     <message>
       <location line="+1"/>
-      <location line="+45"/>
-      <location line="+45"/>
-      <location line="+45"/>
+      <location line="+46"/>
+      <location line="+46"/>
+      <location line="+46"/>
       <source>Not set</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-129"/>
+      <location line="-132"/>
       <source>Select Morning Media</source>
       <translation>Valitse Aamu Media</translation>
     </message>
     <message>
       <location line="+1"/>
-      <location line="+45"/>
-      <location line="+45"/>
-      <location line="+45"/>
-      <location line="+188"/>
+      <location line="+46"/>
+      <location line="+46"/>
+      <location line="+46"/>
+      <location line="+191"/>
       <source>Multimedia files (Images, GIFs, Videos)</source>
       <translation>Multimedia tiedostot (kuvat, GIF, Videot)</translation>
     </message>
     <message>
-      <location line="-312"/>
+      <location line="-318"/>
       <source>Morning start time</source>
       <translation>Aamun aloitusaika</translation>
     </message>
     <message>
-      <location line="+14"/>
+      <location line="+15"/>
       <source>Morning Greeting Text</source>
       <translation>Aamu Tervehdys Teksti</translation>
     </message>
@@ -2436,7 +2500,7 @@
       <translation>Iltapäivän aloitusaika</translation>
     </message>
     <message>
-      <location line="+14"/>
+      <location line="+15"/>
       <source>Afternoon Greeting Text</source>
       <translation>Iltapäivällä Tervehdys Teksti</translation>
     </message>
@@ -2461,7 +2525,7 @@
       <translation>Ilta alkamisaika</translation>
     </message>
     <message>
-      <location line="+14"/>
+      <location line="+15"/>
       <source>Evening Greeting Text</source>
       <translation>Iltatervehdys Teksti</translation>
     </message>
@@ -2486,7 +2550,7 @@
       <translation>Yön alkamisaika</translation>
     </message>
     <message>
-      <location line="+15"/>
+      <location line="+16"/>
       <source>Night Greeting Text</source>
       <translation>Yö Tervehdys Teksti</translation>
     </message>
@@ -2511,7 +2575,7 @@
       <translation>%1 sekuntia</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Random shuffle</source>
       <translation>Satunnainen sekoitus</translation>
     </message>
@@ -2521,7 +2585,7 @@
       <translation>Valitse satunnainen media jaksottaisen sijasta</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Slideshow Greeting Text</source>
       <translation>Diaesitys Tervehdys Teksti</translation>
     </message>
@@ -2588,6 +2652,84 @@
     </message>
   </context>
   <context>
+    <name>BarMedia</name>
+    <message>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarMedia.qml" line="+10"/>
+      <source>Media</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Configuration</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Background</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Render a solid background behind the widget</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Show visualiser</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Display animated frequency bars next to the title</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Inverted text direction</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Rotate the title the opposite way when the bar is vertical</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Auto-hide</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Hide the widget when no media source is available</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Show title</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Show the track title in the bar, otherwise show an icon</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Widget</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Max title length</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Character count before the track title is cut off</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>BarPreviewScales</name>
     <message>
       <location filename="../modules/nexus/pages/panels/taskbar/BarPreviewScales.qml" line="+15"/>
@@ -2605,7 +2747,7 @@
       <translation>Muokkaa esikatseluasteikkoa ja kirjasinta jokaiselle ponnahdusikkunalle</translation>
     </message>
     <message>
-      <location line="+22"/>
+      <location line="+32"/>
       <source>RESET ALL</source>
       <translation>PALAUTA KAIKKI</translation>
     </message>
@@ -2615,79 +2757,84 @@
       <translation>Palauta kaikki arvoon 0</translation>
     </message>
     <message>
-      <location line="+14"/>
+      <location line="+46"/>
       <source>Scale</source>
       <translation>Skaalaa</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+15"/>
       <source>Font</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+22"/>
       <source>Greeter</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Audio</source>
       <translation>Ääni</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Battery</source>
       <translation>Akku</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Bluetooth</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Clock</source>
       <translation>Kello</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Dock</source>
       <translation>Telakka</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>GitHub</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Lock status</source>
       <translation>Lukituksen tila</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Network</source>
       <translation>Verkko</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Notifications</source>
       <translation>Ilmoitukset</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Peripheral battery</source>
       <translation>Perifeerinen akku</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Tray menu</source>
       <translation>Kaukalon valikko</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Wireless password</source>
       <translation>Langaton salasana</translation>
+    </message>
+    <message>
+      <location line="+14"/>
+      <source>Now playing</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -2783,7 +2930,7 @@
       <translation>Näytä Wi-Fi-kuvake verkkokuvakkeen vieressä</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Behavior</source>
       <translation>Käyttäytyminen</translation>
     </message>
@@ -2811,17 +2958,17 @@
       <translation>Tausta</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Recolor icons</source>
       <translation>Reolor kuvakkeet</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Compact</source>
       <translation>Kompakti</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Popout on hover</source>
       <translation type="unfinished"/>
     </message>
@@ -2849,7 +2996,7 @@
       <translation>Aina näkyvä kuvake tehtäväpalkissa, joka muuttuu, kun Caelestia päivitys on saatavilla</translation>
     </message>
     <message>
-      <location line="+15"/>
+      <location line="+29"/>
       <source>Enable update checking</source>
       <translation>Ota päivityksen tarkistus käyttöön</translation>
     </message>
@@ -2887,22 +3034,22 @@
       <translation>Näytettyjen työtilojen määrä</translation>
     </message>
     <message>
-      <location line="+21"/>
+      <location line="+22"/>
       <source>Active indicator</source>
       <translation>Aktiivinen indikaattori</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Active trail</source>
       <translation>Aktiivinen polku</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Occupied background</source>
       <translation>Ammattimainen tausta</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Indicator style</source>
       <translation>Indikaattorin tyyli</translation>
     </message>
@@ -2922,7 +3069,7 @@
       <translation>Näytä avattujen ikkunoiden kuvakkeet jokaisessa työtilassa</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Show unoccupied</source>
       <translation>Näytä käyttämättömät</translation>
     </message>
@@ -2932,17 +3079,17 @@
       <translation>Näytä epäaktiiviset ja tyhjät työtilat</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Windows on special workspaces</source>
       <translation>Ikkunat erityisillä työtiloilla</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Max window icons</source>
       <translation>Ikkunan kuvakkeiden enimmäismäärä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Per monitor</source>
       <translation type="unfinished"/>
     </message>
@@ -3189,7 +3336,7 @@
   <context>
     <name>Brightness</name>
     <message>
-      <location filename="../services/Brightness.qml" line="+113"/>
+      <location filename="../services/Brightness.qml" line="+114"/>
       <source>Increase brightness</source>
       <translation>Lisää kirkkautta</translation>
     </message>
@@ -3344,6 +3491,137 @@
     </message>
   </context>
   <context>
+    <name>CaptureCard</name>
+    <message>
+      <location filename="../modules/utilities/cards/CaptureCard.qml" line="+63"/>
+      <source>Screen Capture</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
+      <source>Capture, OCR and image search</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Paused</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Running...</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Ready</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+18"/>
+      <location line="+163"/>
+      <source>Record</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-162"/>
+      <location line="+9"/>
+      <location line="+9"/>
+      <location line="+9"/>
+      <location line="+10"/>
+      <source>Start</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-29"/>
+      <source>Record with Sound</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Record with Microphone</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Both Sound &amp; Microphone</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Record GIF</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <location line="+82"/>
+      <source>Use Spectacle</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-81"/>
+      <location line="+82"/>
+      <source>Spectacle</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-62"/>
+      <source>Capture region</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <location line="+103"/>
+      <source>Capture</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-93"/>
+      <source>Capture fullscreen</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Fullscreen</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+13"/>
+      <source>Capture active window</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Window</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+13"/>
+      <source>Recognize text</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Recognize</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Search image</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Search</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+183"/>
+      <source>Recording %1</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>Categories</name>
     <message>
       <location filename="../modules/launcher/services/Categories.qml" line="+12"/>
@@ -3427,6 +3705,14 @@
     </message>
   </context>
   <context>
+    <name>ChatMessage</name>
+    <message>
+      <location filename="../modules/sidebar/ai/ChatMessage.qml" line="+156"/>
+      <source>Thought Process</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>ClipItem</name>
     <message>
       <location filename="../modules/launcher/items/ClipItem.qml" line="+31"/>
@@ -3504,11 +3790,16 @@
     </message>
     <message>
       <location line="+9"/>
+      <source>Launcher settings</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
       <source>Status icons settings</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+89"/>
+      <location line="+96"/>
       <source>Workspaces settings</source>
       <translation type="unfinished"/>
     </message>
@@ -3613,7 +3904,7 @@
       <translation>Tyhjennä</translation>
     </message>
     <message>
-      <location filename="../modules/sidebar/Content.qml" line="+110"/>
+      <location filename="../modules/sidebar/Content.qml" line="+113"/>
       <source>Notifications</source>
       <translation>Ilmoitukset</translation>
     </message>
@@ -3646,7 +3937,7 @@
       <translation>Videot</translation>
     </message>
     <message>
-      <location line="+236"/>
+      <location line="+239"/>
       <source>cliphist not found</source>
       <translation>cliphistia ei löydy</translation>
     </message>
@@ -3702,7 +3993,27 @@
   <context>
     <name>ContextMenuPage</name>
     <message>
-      <location filename="../modules/nexus/pages/wallandstyle/ContextMenuPage.qml" line="+36"/>
+      <location filename="../modules/nexus/pages/wallandstyle/ContextMenuPage.qml" line="+195"/>
+      <source>Delete</source>
+      <translation>Poista</translation>
+    </message>
+    <message>
+      <location line="+20"/>
+      <source>Paste</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Add Widget</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Arrange Icons</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Desktop Icons</source>
       <translation>Työpöydän Kuvakkeet</translation>
     </message>
@@ -3728,7 +4039,7 @@
     </message>
     <message>
       <location line="+1"/>
-      <location line="+233"/>
+      <location line="+238"/>
       <source>Add Shortcut...</source>
       <translation>Lisää Pikakuvake...</translation>
     </message>
@@ -3772,16 +4083,26 @@
       <source>Empty</source>
       <translation>Tyhjä</translation>
     </message>
-    <message>
-      <location line="+191"/>
-      <source>Delete</source>
-      <translation>Poista</translation>
-    </message>
   </context>
   <context>
     <name>ContextMenuStore</name>
     <message>
-      <location filename="../services/ContextMenuStore.qml" line="+26"/>
+      <location filename="../services/ContextMenuStore.qml" line="+27"/>
+      <source>Paste</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Add Widget</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Arrange Icons</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Desktop Icons</source>
       <translation>Työpöydän Kuvakkeet</translation>
     </message>
@@ -3848,12 +4169,12 @@
     </message>
     <message>
       <location line="+5"/>
-      <location line="+84"/>
+      <location line="+86"/>
       <source>Pill</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-79"/>
+      <location line="-81"/>
       <source>Diamond</source>
       <translation>Timantti</translation>
     </message>
@@ -3899,12 +4220,12 @@
     </message>
     <message>
       <location line="+4"/>
-      <location line="+62"/>
+      <location line="+65"/>
       <source>Dashboard</source>
       <translation>Hallintapaneeli</translation>
     </message>
     <message>
-      <location line="-51"/>
+      <location line="-54"/>
       <source>General</source>
       <translation>Yleiset</translation>
     </message>
@@ -3914,7 +4235,7 @@
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Show on hover</source>
       <translation>Näytä hiiren päällä</translation>
     </message>
@@ -3924,7 +4245,7 @@
       <translation>Paljasta kun kohdistin saavuttaa näytön reunan</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Dashboard profile picture shape</source>
       <translation>Kojelaudan profiilin kuvan muoto</translation>
     </message>
@@ -3944,37 +4265,37 @@
       <translation>Näytä sekunnit kellon alapuolella hallintapaneelissa</translation>
     </message>
     <message>
-      <location line="+5"/>
+      <location line="+6"/>
       <source>Tabs</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Media</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Performance</source>
       <translation>Suorituskyky</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Weather</source>
       <translation>Sää</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Notes</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Terminal</source>
       <translation>Pääte</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Recolor media GIF</source>
       <translation>Reolor media GIF</translation>
     </message>
@@ -3984,7 +4305,7 @@
       <translation>Käytä järjestelmän teemojen värejä medialle GIF</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Use material shapes</source>
       <translation>Käytä materiaalimuotoja</translation>
     </message>
@@ -3994,7 +4315,7 @@
       <translation>Korvaa media GIF audio-reaktiivisilla materiaalimuodoilla</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Welcome splash</source>
       <translation>Tervetuloa splash</translation>
     </message>
@@ -4004,7 +4325,7 @@
       <translation>Näytä tervetuliaisviesti kojelaudalla</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Performance widgets</source>
       <translation>Suorituskyvyn widgetit</translation>
     </message>
@@ -4014,32 +4335,32 @@
       <translation>Akku</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>GPU</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>CPU</source>
       <translation>Suoritin</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Memory</source>
       <translation>Muisti</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Storage</source>
       <translation>Tallennustila</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Network</source>
       <translation>Verkko</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Behavior</source>
       <translation>Käyttäytyminen</translation>
     </message>
@@ -4054,7 +4375,7 @@
       <translation>Etäisyys näytön reunasta, joka avaa kojelaudan</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Hover trigger width</source>
       <translation type="unfinished"/>
     </message>
@@ -4064,7 +4385,7 @@
       <translation>Kuinka paljon ylhäältä reunalta avautuu kojelauta, kuten prosenttiosuus sen leveydestä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Drag threshold</source>
       <translation>Vedon kynnys</translation>
     </message>
@@ -4129,18 +4450,18 @@
     </message>
     <message>
       <location line="+20"/>
-      <location line="+87"/>
+      <location line="+95"/>
       <source>Desktop clock</source>
       <translation>Työpöydän kello</translation>
     </message>
     <message>
-      <location line="-79"/>
-      <location line="+123"/>
+      <location line="-86"/>
+      <location line="+150"/>
       <source>Desktop media shapes</source>
       <translation>Työpöydän median muodot</translation>
     </message>
     <message>
-      <location line="-110"/>
+      <location line="-136"/>
       <source>Auto-hide media shapes</source>
       <translation>Piilota median muodot automaattisesti</translation>
     </message>
@@ -4150,13 +4471,13 @@
       <translation>Piilota median muodot, kun ikkuna on auki</translation>
     </message>
     <message>
-      <location line="+8"/>
-      <location line="+138"/>
+      <location line="+9"/>
+      <location line="+164"/>
       <source>Desktop lyrics</source>
       <translation>Työpöydän sanoitukset</translation>
     </message>
     <message>
-      <location line="-125"/>
+      <location line="-150"/>
       <source>Auto-hide lyrics</source>
       <translation>Piilota sanoitukset automaattisesti</translation>
     </message>
@@ -4166,7 +4487,7 @@
       <translation>Piilota sanoitukset kun ikkuna on auki</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Background visualiser</source>
       <translation>Taustan visualisoija</translation>
     </message>
@@ -4176,7 +4497,7 @@
       <translation>Näytä musiikin visualisoija taustakuva (Saattaa kuluttaa enemmän tehoa)</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Auto-hide visualiser</source>
       <translation>Piilota visualisoija automaattisesti</translation>
     </message>
@@ -4186,7 +4507,7 @@
       <translation>Piilota visualisoija, kun ikkuna on kokoruututilassa</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Hide on all monitors</source>
       <translation>Piilota kaikilla näytöillä</translation>
     </message>
@@ -4196,32 +4517,44 @@
       <translation>Piilota myös kaikki muut näytöt, jos ikkuna poistaa käytöstä</translation>
     </message>
     <message>
-      <location line="+18"/>
-      <location line="+44"/>
-      <location line="+37"/>
+      <location line="+19"/>
+      <location line="+64"/>
+      <location line="+38"/>
       <source>Scale</source>
       <translation>Skaalaa</translation>
     </message>
     <message>
-      <location line="-71"/>
-      <location line="+45"/>
-      <location line="+36"/>
+      <location line="-91"/>
+      <location line="+65"/>
+      <location line="+37"/>
       <source>Position</source>
       <translation>Sijainti</translation>
     </message>
     <message>
-      <location line="-64"/>
-      <location line="+95"/>
+      <location line="-86"/>
+      <location line="+116"/>
+      <source>Horizontal offset</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-107"/>
+      <location line="+116"/>
+      <source>Vertical offset</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-106"/>
+      <location line="+116"/>
       <source>Invert colors</source>
       <translation>Käännä värit</translation>
     </message>
     <message>
-      <location line="-15"/>
+      <location line="-33"/>
       <source>Alignment</source>
       <translation>Tasaus</translation>
     </message>
     <message>
-      <location line="+22"/>
+      <location line="+41"/>
       <source>Visualiser</source>
       <translation>Visualisoija</translation>
     </message>
@@ -4231,7 +4564,7 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Rounding</source>
       <translation>Pyöristys</translation>
     </message>
@@ -4240,21 +4573,54 @@
       <source>Spacing</source>
       <translation>Väli</translation>
     </message>
+    <message>
+      <location line="+12"/>
+      <source>Size</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Column width multiplier, lower values leave more room in the middle</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>DesktopContextMenu</name>
+    <message>
+      <location filename="../modules/background/DesktopContextMenu.qml" line="+99"/>
+      <source>Hide Desktop Icons</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Show Desktop Icons</source>
+      <translation type="unfinished"/>
+    </message>
   </context>
   <context>
     <name>DesktopIconContextMenu</name>
     <message>
-      <location filename="../modules/background/DesktopIconContextMenu.qml" line="+75"/>
+      <location filename="../modules/background/DesktopIconContextMenu.qml" line="+69"/>
+      <source>Open %1 Items</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Open Group</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
       <source>Open</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+6"/>
       <source>Show in File Manager</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Unpin from dock</source>
       <translation type="unfinished"/>
     </message>
@@ -4264,33 +4630,112 @@
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+6"/>
       <source>Rename</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+6"/>
+      <source>Show as Icon</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Show as Large Folder</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+12"/>
+      <source>Change Folder...</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Open in File Manager</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Group Items</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Ungroup</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Remove from Group</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Copy</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Cut</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Move Contents to Trash</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
       <source>Move to Trash</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Remove Widgets</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Remove Widget</source>
       <translation type="unfinished"/>
     </message>
   </context>
   <context>
     <name>DesktopIcons</name>
     <message>
-      <location filename="../modules/background/DesktopIcons.qml" line="+157"/>
+      <location filename="../modules/background/DesktopIcons.qml" line="+579"/>
+      <location line="+3"/>
+      <source>Group</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+295"/>
+      <location line="+10"/>
+      <source>Rename failed</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-10"/>
+      <source>Could not save desktop entry</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+34"/>
+      <location line="+26"/>
+      <location line="+4"/>
       <source>File operation failed</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+1"/>
-      <source>kioclient could not complete the request</source>
+      <location line="+441"/>
+      <source>%1 could not complete the request</source>
       <translation type="unfinished"/>
     </message>
   </context>
   <context>
     <name>DesktopLyrics</name>
     <message>
-      <location filename="../modules/background/DesktopLyrics.qml" line="+285"/>
+      <location filename="../modules/background/DesktopLyrics.qml" line="+291"/>
       <source>Loading lyrics...</source>
       <translation>Ladataan sanoituksia...</translation>
     </message>
@@ -4298,7 +4743,27 @@
   <context>
     <name>DesktopPage</name>
     <message>
-      <location filename="../modules/nexus/pages/DesktopPage.qml" line="+13"/>
+      <location filename="../modules/nexus/pages/DesktopPage.qml" line="+17"/>
+      <source>Small</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Medium</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Large</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Huge</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
       <source>Desktop &amp; Tiling</source>
       <translation>Työpöytä Ja Lataus</translation>
     </message>
@@ -4344,6 +4809,26 @@
     </message>
     <message>
       <location line="+16"/>
+      <source>Desktop Icon Size</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Ctrl+scroll on the desktop also changes it</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Arrange Icons Automatically</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Keep desktop icons packed; dragging one reorders the rest</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
       <source>Magic Lamp Minimize</source>
       <translation>Magic Lamppu Pienennä</translation>
     </message>
@@ -4482,6 +4967,7 @@
     <name>DinoGame</name>
     <message>
       <location filename="../modules/sidebar/DinoGame.qml" line="+251"/>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/DinoGame.qml" line="+162"/>
       <source>All up to date!</source>
       <translation>Kaikki ajan tasalla!</translation>
     </message>
@@ -4495,6 +4981,61 @@ Click to restart</source>
       <location line="+10"/>
       <source>Y O U   W I N !
 Now go touch grass</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/DinoGame.qml" line="+8"/>
+      <source>Click or press Space to play</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+86"/>
+      <source>G A M E   O V E R</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Click to restart</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+15"/>
+      <source>Y O U   W I N !</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Now go touch grass</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>DiscordRPC</name>
+    <message>
+      <location filename="../services/DiscordRPC.qml" line="+218"/>
+      <location line="+74"/>
+      <location line="+51"/>
+      <source>Playing via Steam</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-85"/>
+      <source>Light Mode</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Dark Mode</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+12"/>
+      <source>Website</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>GitHub</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -4519,6 +5060,29 @@ Now go touch grass</source>
       <location line="+12"/>
       <source>End task</source>
       <translation>Lopeta tehtävä</translation>
+    </message>
+  </context>
+  <context>
+    <name>DropMenu</name>
+    <message>
+      <location filename="../modules/background/desktopicons/DropMenu.qml" line="+45"/>
+      <source>Move Here</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Copy Here</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Link Here</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Cancel</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -4728,6 +5292,44 @@ Now go touch grass</source>
       <location filename="../components/filedialog/FolderContents.qml" line="+63"/>
       <source>This folder is empty</source>
       <translation>Tämä kansio on tyhjä</translation>
+    </message>
+  </context>
+  <context>
+    <name>FolderWidget</name>
+    <message>
+      <location filename="../modules/background/desktopicons/widgets/FolderWidget.qml" line="+46"/>
+      <source>Choose a folder to show</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+170"/>
+      <source>Empty folder</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+31"/>
+      <source>Open</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Copy</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Cut</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Move to Trash</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>File operation failed</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -4956,6 +5558,20 @@ Now go touch grass</source>
     <message>
       <location line="+2"/>
       <source>Good Evening</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>GreetingPill</name>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/GreetingPill.qml" line="+9"/>
+      <source>Good day</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <location line="+36"/>
+      <source>User</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -5190,22 +5806,32 @@ Now go touch grass</source>
   <context>
     <name>KeyCaptureDialog</name>
     <message>
-      <location filename="../modules/nexus/common/KeyCaptureDialog.qml" line="+85"/>
+      <location filename="../modules/nexus/common/KeyCaptureDialog.qml" line="+156"/>
       <source>Record Keybind</source>
       <translation>Tallenna Näppäinbind</translation>
     </message>
     <message>
-      <location line="+68"/>
+      <location line="+69"/>
       <source>Press keys now...</source>
       <translation>Paina avaimia nyt...</translation>
     </message>
     <message>
-      <location line="+12"/>
+      <location line="+50"/>
+      <source>Already used by %1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+11"/>
       <source>Cancel</source>
       <translation>Peruuta</translation>
     </message>
     <message>
       <location line="+7"/>
+      <source>Replace</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
       <source>Confirm</source>
       <translation>Vahvista</translation>
     </message>
@@ -5470,7 +6096,7 @@ Now go touch grass</source>
   <context>
     <name>KrohnkitePreview</name>
     <message>
-      <location filename="../modules/nexus/pages/desktop/KrohnkitePreview.qml" line="+262"/>
+      <location filename="../modules/nexus/pages/desktop/KrohnkitePreview.qml" line="+263"/>
       <source>Layout Preview</source>
       <translation>Asettelun Esikatselu</translation>
     </message>
@@ -5483,7 +6109,7 @@ Now go touch grass</source>
   <context>
     <name>Kwin</name>
     <message>
-      <location filename="../services/Kwin.qml" line="+484"/>
+      <location filename="../services/Kwin.qml" line="+473"/>
       <source>Caps lock enabled</source>
       <translation>Caps lukitus käytössä</translation>
     </message>
@@ -5711,7 +6337,22 @@ Now go touch grass</source>
   <context>
     <name>LauncherPanel</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/LauncherPanel.qml" line="+15"/>
+      <location filename="../modules/nexus/pages/panels/LauncherPanel.qml" line="+20"/>
+      <source>Default</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Simple</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Compact</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
       <source>Launcher</source>
       <translation>Käynnistin</translation>
     </message>
@@ -5726,7 +6367,7 @@ Now go touch grass</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Use alternative logo</source>
       <translation>Käytä vaihtoehtoista logoa</translation>
     </message>
@@ -5736,7 +6377,7 @@ Now go touch grass</source>
       <translation>Käytä Caelestia logoa tai mukautettua kuvaa jakelusi&apos;s logon sijaan</translation>
     </message>
     <message>
-      <location line="+16"/>
+      <location line="+22"/>
       <source>Pick custom logo</source>
       <translation>Valitse oma logo</translation>
     </message>
@@ -5776,12 +6417,12 @@ Now go touch grass</source>
       <translation>Käytä muokattua logoasi korostamaasi materiaalia</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+13"/>
       <source>Logo size (%)</source>
       <translation>Logon koko (%)</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+16"/>
       <source>Show on hover</source>
       <translation>Näytä hiiren päällä</translation>
     </message>
@@ -5791,7 +6432,7 @@ Now go touch grass</source>
       <translation>Paljasta kun kohdistin saavuttaa näytön reunan</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Display</source>
       <translation>Näyttö</translation>
     </message>
@@ -5806,7 +6447,17 @@ Now go touch grass</source>
       <translation>Näytä luokiteltu sovellusruudukko käynnistimessä, kun hakukenttä on tyhjä</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
+      <source>App browser layout</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Default: a sidebar of categories next to the apps. Simple: full-width app grid with favourites on top. Compact: vertical list of apps like search results</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
       <source>Show power menu</source>
       <translation>Näytä tehovalikko</translation>
     </message>
@@ -5816,17 +6467,17 @@ Now go touch grass</source>
       <translation>Näytä pikaistunnon säätimet (sammutus, lepotila, uloskirjautuminen) alhaalla</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Max items shown</source>
       <translation>Enimmäismäärä näytetään</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Max wallpapers</source>
       <translation>Maksimi taustakuvat</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Hover trigger depth</source>
       <translation type="unfinished"/>
     </message>
@@ -5836,7 +6487,7 @@ Now go touch grass</source>
       <translation>Etäisyys näytön reunasta, joka avaa käynnistimen</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Hover trigger width</source>
       <translation type="unfinished"/>
     </message>
@@ -5846,7 +6497,7 @@ Now go touch grass</source>
       <translation>Kuinka suuri osa alareunasta avaa kantoraketin, kuten prosenttiosuus sen leveydestä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Drag threshold</source>
       <translation>Vedon kynnys</translation>
     </message>
@@ -5856,7 +6507,7 @@ Now go touch grass</source>
       <translation>Pikselit vedettiin ennen käynnistimen avaamista</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Clipboard</source>
       <translation>Leikepöytä</translation>
     </message>
@@ -5871,7 +6522,7 @@ Now go touch grass</source>
       <translation>Historiassa säilytettyjen kopioitavien esineiden määrä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Confirm clear</source>
       <translation>Vahvista tyhjennys</translation>
     </message>
@@ -5881,7 +6532,7 @@ Now go touch grass</source>
       <translation>Kysy ennen leikepöydän historian poistamista</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Behavior</source>
       <translation>Käyttäytyminen</translation>
     </message>
@@ -5896,7 +6547,7 @@ Now go touch grass</source>
       <translation>Siirry tuloksiin Ctrl+hjkl -sovelluksella</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Enable dangerous actions</source>
       <translation>Ota vaaralliset toiminnot käyttöön</translation>
     </message>
@@ -5906,7 +6557,7 @@ Now go touch grass</source>
       <translation>Salli toiminnot, jotka sulkevat tai kirjautuvat ulos</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Fuzzy search</source>
       <translation>Sumea haku</translation>
     </message>
@@ -5916,22 +6567,22 @@ Now go touch grass</source>
       <translation>Sovellukset</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Actions</source>
       <translation>Toiminnot</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Schemes</source>
       <translation>Järjestelmät</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Variants</source>
       <translation>Variantit</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Wallpapers</source>
       <translation>Taustakuvat</translation>
     </message>
@@ -5995,12 +6646,12 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+5"/>
-      <location line="+157"/>
+      <location line="+160"/>
       <source>Pentagon</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="-152"/>
+      <location line="-155"/>
       <source>Gem</source>
       <translation>Jalokivi</translation>
     </message>
@@ -6050,7 +6701,7 @@ Now go touch grass</source>
       <translation>Pidä lukitusnäytön taustakuva synkronoituna työpöydän taustakuvan kanssa</translation>
     </message>
     <message>
-      <location line="+16"/>
+      <location line="+17"/>
       <source>Lock screen wallpaper</source>
       <translation>Lukitusnäytön taustakuva</translation>
     </message>
@@ -6080,7 +6731,7 @@ Now go touch grass</source>
       <translation>Sumenna koko taustakuva, ei vain takana widgetit</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Authentication</source>
       <translation>Todennus</translation>
     </message>
@@ -6095,7 +6746,7 @@ Now go touch grass</source>
       <translation>Salli sormenjälkitunnistus lukitusnäytöllä</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Fingerprint attempts</source>
       <translation>Sormenjälkitunnistukset</translation>
     </message>
@@ -6130,7 +6781,7 @@ Now go touch grass</source>
       <translation>Kierrä profiilin kuvan muotoa jatkuvasti</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Lock on startup</source>
       <translation>Lukitse käynnistettäessä</translation>
     </message>
@@ -6140,7 +6791,7 @@ Now go touch grass</source>
       <translation>Lukitse istunto pian kirjautumisen jälkeen</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Hide notifications</source>
       <translation>Piilota ilmoitukset</translation>
     </message>
@@ -6150,7 +6801,7 @@ Now go touch grass</source>
       <translation>Piilota ilmoitusten esikatselut ennen lukituksen avaamista</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Recolor logo</source>
       <translation type="unfinished"/>
     </message>
@@ -6160,7 +6811,7 @@ Now go touch grass</source>
       <translation>Tint lukitusnäytön kuvat, jotka sopivat paletin</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Session icons</source>
       <translation>Istunnon kuvakkeet</translation>
     </message>
@@ -6175,7 +6826,7 @@ Now go touch grass</source>
       <translation>Näytä nukkumistoiminto lukitusnäytöllä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Hibernate</source>
       <translation type="unfinished"/>
     </message>
@@ -6185,7 +6836,7 @@ Now go touch grass</source>
       <translation>Näytä hibernate toiminto lukitusnäytöllä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Switch user</source>
       <translation>Vaihda käyttäjää</translation>
     </message>
@@ -6195,7 +6846,7 @@ Now go touch grass</source>
       <translation>Näytä kytkin käyttäjän toiminta lukitusnäytöllä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Log out</source>
       <translation>Kirjaudu ulos</translation>
     </message>
@@ -6205,7 +6856,7 @@ Now go touch grass</source>
       <translation>Näytä kirjautuminen ulos toiminto lukitusnäytöllä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Restart</source>
       <translation>Käynnistä Uudelleen</translation>
     </message>
@@ -6215,7 +6866,7 @@ Now go touch grass</source>
       <translation>Näytä uudelleenkäynnistys toiminto lukitusnäytöllä</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Shut down</source>
       <translation>Sammuta</translation>
     </message>
@@ -6223,6 +6874,29 @@ Now go touch grass</source>
       <location line="+1"/>
       <source>Show shut down action on the lock screen</source>
       <translation>Näytä suljettava toiminto lukitusnäytöllä</translation>
+    </message>
+  </context>
+  <context>
+    <name>LockScreenUi</name>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/LockScreenUi.qml" line="+113"/>
+      <source>Good morning</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Good afternoon</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Good evening</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Good night</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -6399,7 +7073,13 @@ Now go touch grass</source>
   <context>
     <name>Media</name>
     <message>
-      <location filename="../modules/dashboard/dash/Media.qml" line="+91"/>
+      <location filename="../modules/bar/components/Media.qml" line="+22"/>
+      <location filename="../modules/dashboard/Media.qml" line="+117"/>
+      <source>Nothing playing</source>
+      <translation>Ei soita</translation>
+    </message>
+    <message>
+      <location filename="../modules/dashboard/dash/Media.qml" line="+101"/>
       <source>No media</source>
       <translation>Ei mediaa</translation>
     </message>
@@ -6419,14 +7099,35 @@ Now go touch grass</source>
       <translation>Tuntematon esittäjä</translation>
     </message>
     <message>
-      <location filename="../modules/dashboard/Media.qml" line="+117"/>
-      <source>Nothing playing</source>
-      <translation>Ei soita</translation>
-    </message>
-    <message>
-      <location line="+5"/>
+      <location filename="../modules/dashboard/Media.qml" line="+5"/>
       <source>Play something for it to show up here!</source>
       <translation>Pelaa jotain jotta se näy täällä!</translation>
+    </message>
+  </context>
+  <context>
+    <name>MediaCard</name>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/MediaCard.qml" line="+72"/>
+      <source>Nothing playing</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Try playing some music!</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>MediaWidget</name>
+    <message>
+      <location filename="../modules/background/desktopicons/widgets/MediaWidget.qml" line="+31"/>
+      <source>Nothing playing</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+48"/>
+      <source>Unknown title</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -6478,7 +7179,7 @@ Now go touch grass</source>
       <translation>MAC osoite</translation>
     </message>
     <message>
-      <location line="+20"/>
+      <location line="+22"/>
       <source>Network</source>
       <translation>Verkko</translation>
     </message>
@@ -6880,6 +7581,14 @@ Now go touch grass</source>
     </message>
   </context>
   <context>
+    <name>NoteWidget</name>
+    <message>
+      <location filename="../modules/background/desktopicons/widgets/NoteWidget.qml" line="+49"/>
+      <source>Write something…</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>NotesTab</name>
     <message>
       <location filename="../modules/dashboard/NotesTab.qml" line="+22"/>
@@ -6935,7 +7644,7 @@ Now go touch grass</source>
     <name>NotifData</name>
     <message>
       <location filename="../services/NotifData.qml" line="+19"/>
-      <location line="+149"/>
+      <location line="+153"/>
       <source>now</source>
       <translation>nyt</translation>
     </message>
@@ -6949,6 +7658,8 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+0"/>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/NotifDock.qml" line="+68"/>
+      <location line="+56"/>
       <source>Notifications</source>
       <translation>Ilmoitukset</translation>
     </message>
@@ -6965,6 +7676,43 @@ Now go touch grass</source>
     <message>
       <location line="+0"/>
       <source>Classic dinosaur character</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/NotifDock.qml" line="-80"/>
+      <location line="+4"/>
+      <location line="+5"/>
+      <source>now</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-4"/>
+      <source>m</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>h</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>d</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+70"/>
+      <source>Unlock for Notifications</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source> notification</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source> notifications</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -7427,12 +8175,12 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+5"/>
-      <location line="+155"/>
+      <location line="+163"/>
       <source>GNOME Grid</source>
       <translation>Gnomen Ruudukko</translation>
     </message>
     <message>
-      <location line="-147"/>
+      <location line="-155"/>
       <source>Linear</source>
       <translation>Lineaarinen</translation>
     </message>
@@ -7483,12 +8231,12 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+5"/>
-      <location line="+131"/>
+      <location line="+141"/>
       <source>Back In</source>
       <translation>Takaisin Sisään</translation>
     </message>
     <message>
-      <location line="-126"/>
+      <location line="-136"/>
       <source>Back Out</source>
       <translation>Takaisin Ulos</translation>
     </message>
@@ -7513,7 +8261,7 @@ Now go touch grass</source>
       <translation>Ota yleiskatsaus käyttöön</translation>
     </message>
     <message>
-      <location line="+5"/>
+      <location line="+6"/>
       <source>Show on hover</source>
       <translation>Näytä hiiren päällä</translation>
     </message>
@@ -7523,7 +8271,7 @@ Now go touch grass</source>
       <translation>Avaa yleiskatsaus leimaamalla kulmaa vetämisen sijaan</translation>
     </message>
     <message>
-      <location line="+5"/>
+      <location line="+6"/>
       <source>Trigger area size</source>
       <translation>Kynnysalueen koko</translation>
     </message>
@@ -7533,7 +8281,7 @@ Now go touch grass</source>
       <translation>Kulman aktivointialueiden koko pikseleinä</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Drag threshold</source>
       <translation>Vedon kynnys</translation>
     </message>
@@ -7543,7 +8291,7 @@ Now go touch grass</source>
       <translation>Etäisyys vedä kulmasta avoimeen yleiskatsaukseen</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Corners</source>
       <translation>Kulmat</translation>
     </message>
@@ -7553,22 +8301,22 @@ Now go touch grass</source>
       <translation>Ylävasen kulma</translation>
     </message>
     <message>
-      <location line="+5"/>
+      <location line="+6"/>
       <source>Top-Right corner</source>
       <translation>Yläoikea kulma</translation>
     </message>
     <message>
-      <location line="+5"/>
+      <location line="+6"/>
       <source>Bottom-Left corner</source>
       <translation>Alavasen kulma</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Bottom-Right corner</source>
       <translation>Ala-oikea kulma</translation>
     </message>
     <message>
-      <location line="+5"/>
+      <location line="+6"/>
       <source>Behavior</source>
       <translation>Käyttäytyminen</translation>
     </message>
@@ -7593,7 +8341,7 @@ Now go touch grass</source>
       <translation>Älä sumenna taustakuvaa, kun avaat yleiskatsauksen</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Enable overview blur</source>
       <translation>Ota näkymän sumennus käyttöön</translation>
     </message>
@@ -7603,7 +8351,7 @@ Now go touch grass</source>
       <translation>Ota käyttöön QuickShell-pohjainen sumennusvaikutus yleiskuvan taustakuvalle</translation>
     </message>
     <message>
-      <location line="+5"/>
+      <location line="+6"/>
       <source>Animations</source>
       <translation>Animaatiot</translation>
     </message>
@@ -7628,7 +8376,7 @@ Now go touch grass</source>
       <translation>Peruskesto yleiskatsauksen avaamisessa/sulkemisessa millisekunteina</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Blob scale speed</source>
       <translation>Blob skaalaus nopeus</translation>
     </message>
@@ -7638,7 +8386,7 @@ Now go touch grass</source>
       <translation>Skaalaus nopeus modifier taustan blobs</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Wallpaper fade speed</source>
       <translation>Taustakuvan häivytys nopeus</translation>
     </message>
@@ -7648,7 +8396,7 @@ Now go touch grass</source>
       <translation>Häivytä nopeus muokkaus taustakuvan</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Grid fade speed</source>
       <translation>Ruudukon häivytyksen nopeus</translation>
     </message>
@@ -7661,7 +8409,7 @@ Now go touch grass</source>
   <context>
     <name>PageCompRegistry</name>
     <message>
-      <location filename="../modules/nexus/PageCompRegistry.qml" line="+328"/>
+      <location filename="../modules/nexus/PageCompRegistry.qml" line="+331"/>
       <source>Page under construction</source>
       <translation>Sivu rakenteilla</translation>
     </message>
@@ -7835,6 +8583,11 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+1"/>
+      <source>App browser layout</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Sidebar</source>
       <translation type="unfinished"/>
     </message>
@@ -7901,6 +8654,11 @@ Now go touch grass</source>
     <message>
       <location line="+1"/>
       <source>GitHub</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Media</source>
       <translation type="unfinished"/>
     </message>
     <message>
@@ -8215,6 +8973,11 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+1"/>
+      <source>Visualiser Input</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Rich Presence</source>
       <translation type="unfinished"/>
     </message>
@@ -8431,6 +9194,24 @@ Now go touch grass</source>
     </message>
   </context>
   <context>
+    <name>PasswordPill</name>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/PasswordPill.qml" line="+81"/>
+      <source>Loading...</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Please wait...</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Enter your password</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>PerfBattery</name>
     <message>
       <location filename="../modules/bar/components/performance/PerfBattery.qml" line="+12"/>
@@ -8464,7 +9245,7 @@ Now go touch grass</source>
   <context>
     <name>Players</name>
     <message>
-      <location filename="../services/Players.qml" line="+63"/>
+      <location filename="../services/Players.qml" line="+72"/>
       <source>Now Playing</source>
       <translation>Nyt Soi</translation>
     </message>
@@ -8493,6 +9274,16 @@ Now go touch grass</source>
       <source>Stop media playback</source>
       <translation>Lopeta median toisto</translation>
     </message>
+    <message>
+      <location line="+7"/>
+      <source>Invalid property</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>No active player</source>
+      <translation type="unfinished"/>
+    </message>
   </context>
   <context>
     <name>PluginSettingsPopup</name>
@@ -8508,9 +9299,48 @@ Now go touch grass</source>
     </message>
   </context>
   <context>
+    <name>PluginStore</name>
+    <message>
+      <location filename="../services/PluginStore.qml" line="+67"/>
+      <source>Plugin update available</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>1 plugin can be updated</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Plugin updates available</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>%1 plugins can be updated</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+153"/>
+      <source>Enter a valid git URL</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Cloning plugin...</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+27"/>
+      <location line="+5"/>
+      <source>Install failed</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>PluginsPage</name>
     <message>
-      <location filename="../modules/nexus/pages/PluginsPage.qml" line="+59"/>
+      <location filename="../modules/nexus/pages/PluginsPage.qml" line="+86"/>
       <source>Plugins</source>
       <translation>Liitännäiset</translation>
     </message>
@@ -8526,12 +9356,12 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+34"/>
-      <location line="+333"/>
+      <location line="+371"/>
       <source>Installed</source>
       <translation>Asennettu</translation>
     </message>
     <message>
-      <location line="-324"/>
+      <location line="-362"/>
       <source>Store</source>
       <translation>Kauppa</translation>
     </message>
@@ -8546,17 +9376,38 @@ Now go touch grass</source>
       <translation>Kuoren Liitännäiset</translation>
     </message>
     <message>
-      <location line="+68"/>
+      <location line="+73"/>
       <source>User Installed</source>
       <translation>Käyttäjä Asennettu</translation>
     </message>
     <message>
-      <location line="+101"/>
+      <location line="+106"/>
       <source>No plugins installed</source>
       <translation>Liitännäisiä ei ole asennettu</translation>
     </message>
     <message>
-      <location line="+38"/>
+      <location line="+8"/>
+      <source>Install from source</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Git URL</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+21"/>
+      <source>The repository root must contain metadata.json</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
+      <location line="+91"/>
+      <source>Install</source>
+      <translation>Asenna</translation>
+    </message>
+    <message>
+      <location line="-52"/>
       <source>Loading store...</source>
       <translation>Ladataan kauppaa...</translation>
     </message>
@@ -8565,21 +9416,11 @@ Now go touch grass</source>
       <source>Available Plugins</source>
       <translation>Saatavilla Olevat Liitännäiset</translation>
     </message>
-    <message>
-      <location line="+60"/>
-      <source>Update</source>
-      <translation>Päivitä</translation>
-    </message>
-    <message>
-      <location line="+0"/>
-      <source>Install</source>
-      <translation>Asenna</translation>
-    </message>
   </context>
   <context>
     <name>Power</name>
     <message>
-      <location filename="../modules/bar/components/Power.qml" line="+22"/>
+      <location filename="../modules/bar/components/Power.qml" line="+25"/>
       <source>Power and session menu</source>
       <translation>Virta ja istunto valikko</translation>
     </message>
@@ -8680,96 +9521,44 @@ Now go touch grass</source>
       <translation>Käynnistä Tulkki Uudelleen</translation>
     </message>
     <message>
-      <location line="+3"/>
+      <location line="+36"/>
       <source>Quick toggles</source>
       <translation type="unfinished"/>
     </message>
     <message>
       <location line="+11"/>
+      <source>Custom order</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Rearrange toggles with drag handles</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Toggles per page</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Entries shown on each page of the drawer</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+51"/>
       <source>Connectivity</source>
       <translation>Yhteys</translation>
     </message>
     <message>
-      <location line="+15"/>
+      <location line="+17"/>
       <source>Tools</source>
       <translation>Työkalut</translation>
     </message>
     <message>
-      <location line="+15"/>
+      <location line="+17"/>
       <source>System</source>
       <translation>Järjestelmä</translation>
-    </message>
-  </context>
-  <context>
-    <name>Record</name>
-    <message>
-      <location filename="../modules/utilities/cards/Record.qml" line="+61"/>
-      <source>Screen Recorder</source>
-      <translation>Näytön Tallennin</translation>
-    </message>
-    <message>
-      <location line="+7"/>
-      <source>Paused</source>
-      <translation>Keskeytetty</translation>
-    </message>
-    <message>
-      <location line="+0"/>
-      <source>Running...</source>
-      <translation>Käynnissä...</translation>
-    </message>
-    <message>
-      <location line="+0"/>
-      <source>Ready</source>
-      <translation>Valmis</translation>
-    </message>
-    <message>
-      <location line="+17"/>
-      <source>Record</source>
-      <translation>Nauhoita</translation>
-    </message>
-    <message>
-      <location line="+1"/>
-      <location line="+9"/>
-      <location line="+9"/>
-      <location line="+9"/>
-      <location line="+10"/>
-      <source>Start</source>
-      <translation>Aloita</translation>
-    </message>
-    <message>
-      <location line="-29"/>
-      <source>Record with Sound</source>
-      <translation>Nauhoita äänellä</translation>
-    </message>
-    <message>
-      <location line="+9"/>
-      <source>Record with Microphone</source>
-      <translation>Nauhoita mikrofonilla</translation>
-    </message>
-    <message>
-      <location line="+9"/>
-      <source>Both Sound &amp; Microphone</source>
-      <translation>Sekä Ääni Ja Mikrofoni</translation>
-    </message>
-    <message>
-      <location line="+10"/>
-      <source>Record GIF</source>
-      <translation>Tallenna GIF</translation>
-    </message>
-    <message>
-      <location line="+9"/>
-      <source>Use Spectacle</source>
-      <translation>Käytä Spectacle</translation>
-    </message>
-    <message>
-      <location line="+1"/>
-      <source>Spectacle</source>
-      <translation type="unfinished"/>
-    </message>
-    <message>
-      <location line="+124"/>
-      <source>Recording %1</source>
-      <translation>Tallennetaan %1</translation>
     </message>
   </context>
   <context>
@@ -8844,7 +9633,7 @@ Now go touch grass</source>
   <context>
     <name>RegionSelection</name>
     <message>
-      <location filename="../modules/screenshot/regionSelector/RegionSelection.qml" line="+543"/>
+      <location filename="../modules/screenshot/regionSelector/RegionSelection.qml" line="+544"/>
       <source>Full Screen Screenshot</source>
       <translation>Koko Näytön Kuvakaappaus</translation>
     </message>
@@ -8926,9 +9715,42 @@ Now go touch grass</source>
     </message>
   </context>
   <context>
+    <name>ScreenshotList</name>
+    <message>
+      <location filename="../modules/utilities/cards/ScreenshotList.qml" line="+46"/>
+      <source>Screenshots</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+57"/>
+      <source>Screenshot at %1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+42"/>
+      <source>Delete this screenshot?</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
+      <source>Cancel</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
+      <source>Delete</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+100"/>
+      <source>No screenshots found</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>SearchResults</name>
     <message>
-      <location filename="../modules/nexus/navpane/SearchResults.qml" line="+148"/>
+      <location filename="../modules/nexus/navpane/SearchResults.qml" line="+149"/>
       <source>in </source>
       <translation>sisään </translation>
     </message>
@@ -8938,12 +9760,12 @@ Now go touch grass</source>
     <message>
       <location filename="../modules/nexus/pages/ServicesPage.qml" line="+17"/>
       <location line="+15"/>
-      <location line="+105"/>
+      <location line="+117"/>
       <source>Auto</source>
       <translation>Automaattinen</translation>
     </message>
     <message>
-      <location line="-117"/>
+      <location line="-129"/>
       <source>Local</source>
       <translation type="unfinished"/>
     </message>
@@ -8958,7 +9780,17 @@ Now go touch grass</source>
       <translation>Ei Mitään</translation>
     </message>
     <message>
-      <location line="+17"/>
+      <location line="+9"/>
+      <source>Output</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Input</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+16"/>
       <source>Services</source>
       <translation>Palvelut</translation>
     </message>
@@ -9083,7 +9915,17 @@ Now go touch grass</source>
       <translation>Audiovisualisoijien palkkien määrä</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+9"/>
+      <source>Visualiser input</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Audio the visualisers react to</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
       <source>GPU</source>
       <translation type="unfinished"/>
     </message>
@@ -9096,6 +9938,39 @@ Now go touch grass</source>
       <location line="+0"/>
       <source>Override for GPU type</source>
       <translation>Ohita GPU tyyppi</translation>
+    </message>
+  </context>
+  <context>
+    <name>Session</name>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/Session.qml" line="+55"/>
+      <source>Sleep</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Hibernate</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Switch User</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Log Out</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Restart</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Shut Down</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -9404,12 +10279,12 @@ Now go touch grass</source>
       <translation>Vaihda telakan tuki</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+51"/>
       <source>Open nexus</source>
       <translation>Avaa nexus</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Toggle launcher, dashboard and osd</source>
       <translation>Valitse kantoraketti, dashboard ja osd</translation>
     </message>
@@ -9429,7 +10304,7 @@ Now go touch grass</source>
       <translation>Näytetäänkö kuvankaappauksen peitto</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Toggle Google Lens search</source>
       <translation>Vaihda Google Lens -hakua</translation>
     </message>
@@ -9583,11 +10458,101 @@ Now go touch grass</source>
       <source>Switch to workspace 10</source>
       <translation>Vaihda työtilaan 10</translation>
     </message>
+    <message>
+      <location line="+116"/>
+      <source>Open dock entry 1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open dock entry 2</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open dock entry 3</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open dock entry 4</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open dock entry 5</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open dock entry 6</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open dock entry 7</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open dock entry 8</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open dock entry 9</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
+      <source>Open new window of dock entry 1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open new window of dock entry 2</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open new window of dock entry 3</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open new window of dock entry 4</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open new window of dock entry 5</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open new window of dock entry 6</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open new window of dock entry 7</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open new window of dock entry 8</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Open new window of dock entry 9</source>
+      <translation type="unfinished"/>
+    </message>
   </context>
   <context>
     <name>ShowDesktop</name>
     <message>
-      <location filename="../modules/bar/components/ShowDesktop.qml" line="+20"/>
+      <location filename="../modules/bar/components/ShowDesktop.qml" line="+23"/>
       <source>Show desktop</source>
       <translation>Näytä työpöytä</translation>
     </message>
@@ -9643,7 +10608,7 @@ Now go touch grass</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Drag threshold</source>
       <translation>Vedon kynnys</translation>
     </message>
@@ -9653,7 +10618,7 @@ Now go touch grass</source>
       <translation>Pikselit vedettiin ennen sivupalkin avaamista</translation>
     </message>
     <message>
-      <location line="+12"/>
+      <location line="+13"/>
       <source>Grab width</source>
       <translation type="unfinished"/>
     </message>
@@ -9663,7 +10628,7 @@ Now go touch grass</source>
       <translation>Pikselit näytön reunasta varattu tarttumiseen sivupalkin</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Sidebar Tabs</source>
       <translation type="unfinished"/>
     </message>
@@ -9688,7 +10653,7 @@ Now go touch grass</source>
       <translation>Näytä uutiset välilehti sivupalkissa</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Show Caelestia Mode</source>
       <translation type="unfinished"/>
     </message>
@@ -9716,12 +10681,12 @@ Now go touch grass</source>
       <translation>Vaihda taustakuva automaattisesti ajastimella</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Slideshow interval</source>
       <translation>Diaesityksen aikaväli</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Random order</source>
       <translation>Satunnainen järjestys</translation>
     </message>
@@ -9823,6 +10788,33 @@ Now go touch grass</source>
     </message>
   </context>
   <context>
+    <name>SystemWidget</name>
+    <message>
+      <location filename="../modules/background/desktopicons/widgets/SystemWidget.qml" line="+66"/>
+      <location line="+36"/>
+      <source>CPU</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-30"/>
+      <location line="+40"/>
+      <source>GPU</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-35"/>
+      <location line="+45"/>
+      <source>Memory</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-40"/>
+      <location line="+50"/>
+      <source>Disk</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>TabSwitcherPanel</name>
     <message>
       <location filename="../modules/nexus/pages/panels/TabSwitcherPanel.qml" line="+31"/>
@@ -9845,7 +10837,7 @@ Now go touch grass</source>
       <translation>Käytä Caelestia&apos;-ikkunakytkintä Alt+Tab -ikkunaan</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Forward</source>
       <translation>Eteenpäin</translation>
     </message>
@@ -9870,7 +10862,7 @@ Now go touch grass</source>
       <translation>Näytä vain aktiiviseen virtuaalityöpöytään kuuluvat ikkunat</translation>
     </message>
     <message>
-      <location line="+14"/>
+      <location line="+15"/>
       <source>Preview window on desktop</source>
       <translation>Esikatsele ikkunaa työpöydällä</translation>
     </message>
@@ -9880,7 +10872,7 @@ Now go touch grass</source>
       <translation>Korosta ja näytä ikkuna itse työtilassa pyöräillessäsi Alt+- välilehteä</translation>
     </message>
     <message>
-      <location line="+13"/>
+      <location line="+14"/>
       <source>Display</source>
       <translation>Näyttö</translation>
     </message>
@@ -9895,7 +10887,7 @@ Now go touch grass</source>
       <translation>Sisällytä pienennetyt ikkunat ikkunakytkimeen</translation>
     </message>
     <message>
-      <location line="+14"/>
+      <location line="+15"/>
       <source>Show windows from all screens</source>
       <translation>Näytä ikkunat kaikista näytöistä</translation>
     </message>
@@ -9988,6 +10980,16 @@ Now go touch grass</source>
       <translation>Avustukset, token asetukset</translation>
     </message>
     <message>
+      <location line="+6"/>
+      <source>Now playing</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Media widget, visualiser, volume</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
       <location line="+7"/>
       <source>Updates</source>
       <translation>Päivitykset</translation>
@@ -10046,7 +11048,7 @@ Now go touch grass</source>
       <translation>Pidä palkki näkyvissä kaikkina aikoina</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Dodge windows</source>
       <translation>Dodge ikkunat</translation>
     </message>
@@ -10056,7 +11058,7 @@ Now go touch grass</source>
       <translation>Pysäytä palkki kun ikkuna peittää sen, ja anna ikkunoiden istua alla</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Dodge focused window only</source>
       <translation>Vain koodattu ikkuna</translation>
     </message>
@@ -10066,7 +11068,7 @@ Now go touch grass</source>
       <translation>Älä huomioi tausta-ikkunoita baarin yläpuolella ja väistele vain sitä, mitä käytät</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Position</source>
       <translation>Sijainti</translation>
     </message>
@@ -10086,7 +11088,7 @@ Now go touch grass</source>
       <translation>Palkki paljastetaan, kun kohdistin saavuttaa näytön reunan</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Drag threshold</source>
       <translation>Vedon kynnys</translation>
     </message>
@@ -10096,7 +11098,7 @@ Now go touch grass</source>
       <translation>Pikselit vedettiin ennen kuin baari paljastaa</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Per-monitor position</source>
       <translation>Näytön sijainti</translation>
     </message>
@@ -10126,7 +11128,7 @@ Now go touch grass</source>
       <translation>Mittavaa&apos;an tehtäväpalkin paksuus ja komponentin mitoitus</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Preview scale</source>
       <translation>Esikatsele skaalaa</translation>
     </message>
@@ -10136,7 +11138,7 @@ Now go touch grass</source>
       <translation>Mittakaavan tehtäväpalkin korostimen esikatselut</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Live window previews</source>
       <translation>Live window esikatselut</translation>
     </message>
@@ -10146,7 +11148,7 @@ Now go touch grass</source>
       <translation>Live-pikkukuvat leijuessa/yleiskatsauksessa/alt-välilehdessä. Poista käytöstä, jos näytön jakaminen tai kamera muissa sovelluksissa (esim. Vesktop) jäätyy</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Scale with bar size</source>
       <translation>Skaalaa palkin koon mukaan</translation>
     </message>
@@ -10156,7 +11158,7 @@ Now go touch grass</source>
       <translation>Kerrotaan esikatselun skaalaus palkin skaalauksella</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Font scaling offset</source>
       <translation>Kirjasimen skaalauksen siirtymä</translation>
     </message>
@@ -10166,7 +11168,7 @@ Now go touch grass</source>
       <translation>Muuta tekstin kokoa tehtäväpalkin ponnahdusikkunoiden läpi</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Per-element scaling offsets</source>
       <translation>Per-elementin skaalauksen siirtymät</translation>
     </message>
@@ -10216,7 +11218,7 @@ Now go touch grass</source>
       <translation>Vieritä työtilan osoittimen päälle työtilojen vaihtamiseksi</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Volume</source>
       <translation>Tilavuus</translation>
     </message>
@@ -10226,7 +11228,7 @@ Now go touch grass</source>
       <translation>Vieritä palkin yläpuolella olevaa osaa säätääksesi äänenvoimakkuutta</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Brightness</source>
       <translation>Kirkkaus</translation>
     </message>
@@ -10410,8 +11412,16 @@ Now go touch grass</source>
   <context>
     <name>Toggles</name>
     <message>
-      <location filename="../modules/utilities/cards/Toggles.qml" line="+102"/>
+      <location filename="../modules/utilities/cards/Toggles.qml" line="+279"/>
       <source>Quick Toggles</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>ToolCard</name>
+    <message>
+      <location filename="../modules/sidebar/ai/ToolCard.qml" line="+169"/>
+      <source>+%1 earlier steps</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -10816,7 +11826,7 @@ Now go touch grass</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+69"/>
+      <location line="+70"/>
       <location line="+78"/>
       <source>Checking…</source>
       <translation>Tarkistetaan…</translation>
@@ -11104,7 +12114,7 @@ Now go touch grass</source>
       <translation>Käytössä</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Show on hover</source>
       <translation>Näytä hiiren päällä</translation>
     </message>
@@ -11114,7 +12124,7 @@ Now go touch grass</source>
       <translation>Paljasta kun kohdistin saavuttaa näytön reunan</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+9"/>
       <source>Hover trigger depth</source>
       <translation type="unfinished"/>
     </message>
@@ -11124,7 +12134,7 @@ Now go touch grass</source>
       <translation>Etäisyys näytön reunasta, joka avaa nopeat kytkimet</translation>
     </message>
     <message>
-      <location line="+11"/>
+      <location line="+12"/>
       <source>Hover trigger width</source>
       <translation type="unfinished"/>
     </message>
@@ -11134,7 +12144,7 @@ Now go touch grass</source>
       <translation>Kuinka paljon tuo reuna avaa nopeat toggles, kuten prosenttiosuus niiden leveys</translation>
     </message>
     <message>
-      <location line="+12"/>
+      <location line="+13"/>
       <source>Drag threshold</source>
       <translation>Vedon kynnys</translation>
     </message>
@@ -11168,13 +12178,13 @@ Now go touch grass</source>
     </message>
     <message>
       <location line="+6"/>
-      <source>Screen Recorder</source>
-      <translation>Näytön Tallennin</translation>
+      <source>Screen Capture</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+1"/>
-      <source>Show the Screen Recorder card</source>
-      <translation>Näytä näytön tallennus kortti</translation>
+      <source>Show the screen capture card</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+6"/>
@@ -11210,7 +12220,29 @@ Now go touch grass</source>
       <translation>VPN-yhteyden katkaisu epäonnistui</translation>
     </message>
     <message>
-      <location line="+223"/>
+      <location line="+73"/>
+      <source>Login required</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Machine authorization required</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Tailscale may not be running</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+31"/>
+      <location line="+73"/>
+      <location line="+46"/>
+      <source>Authentication required</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-6"/>
       <source>VPN connected</source>
       <translation>VPN yhdistetty</translation>
     </message>
@@ -11270,29 +12302,102 @@ Now go touch grass</source>
       <translation>Keskeytä videon taustakuvat</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Enable video audio</source>
       <translation>Ota videon ääni käyttöön</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Pause video on fullscreen</source>
       <translation>Keskeytä video koko näytöllä</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Pause video on tiled windows</source>
       <translation>Keskeytä video laatoitetuista ikkunoista</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Pause video on all displays</source>
       <translation>Keskeytä video kaikissa näytöissä</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Mute video when media plays</source>
       <translation>Mykistä video, kun media soittaa</translation>
+    </message>
+  </context>
+  <context>
+    <name>ViewOptions</name>
+    <message>
+      <location filename="../modules/background/desktopicons/ViewOptions.qml" line="+78"/>
+      <source>Sort by</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Name</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Type</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Date modified</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Size</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+24"/>
+      <source>Arrange automatically</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Keep icons packed; dragging reorders them</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+18"/>
+      <source>Rounded icon corners</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+12"/>
+      <source>Icon size</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Small</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Medium</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Large</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Huge</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+15"/>
+      <source>Tip: Ctrl+scroll on the desktop also resizes icons</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -11306,7 +12411,7 @@ Now go touch grass</source>
   <context>
     <name>WallhavenTab</name>
     <message>
-      <location filename="../modules/dashboard/WallhavenTab.qml" line="+132"/>
+      <location filename="../modules/dashboard/WallhavenTab.qml" line="+136"/>
       <source>Wallhaven</source>
       <translation type="unfinished"/>
     </message>
@@ -11371,7 +12476,7 @@ Now go touch grass</source>
   <context>
     <name>Wallpaper</name>
     <message>
-      <location filename="../modules/background/Wallpaper.qml" line="+103"/>
+      <location filename="../modules/background/Wallpaper.qml" line="+109"/>
       <source>Wallpaper missing?</source>
       <translation>Taustakuva puuttuu?</translation>
     </message>
@@ -11613,7 +12718,7 @@ Now go touch grass</source>
       <translation>Tint taustakuva vastaamaan staattisia värimalleja</translation>
     </message>
     <message>
-      <location line="+18"/>
+      <location line="+19"/>
       <source>Recolor strength</source>
       <translation>Reolorin vahvuus</translation>
     </message>
@@ -11628,6 +12733,19 @@ Now go touch grass</source>
     <message>
       <location line="+29"/>
       <source>Couldn&apos;t fetch locations. Check your connection and try again.</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>WeatherCard</name>
+    <message>
+      <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/WeatherCard.qml" line="+105"/>
+      <source>Feels like %1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+14"/>
+      <source>High %1 • Low %2</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -11699,6 +12817,24 @@ Now go touch grass</source>
     </message>
   </context>
   <context>
+    <name>WelcomeText</name>
+    <message>
+      <location filename="../../src/sddm/themes/full/widgets/WelcomeText.qml" line="+13"/>
+      <source>Good night</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Good morning</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Good afternoon</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>WhatsNewWindow</name>
     <message>
       <location filename="../modules/whatsnew/WhatsNewWindow.qml" line="+110"/>
@@ -11714,6 +12850,57 @@ Now go touch grass</source>
     <message>
       <location line="+421"/>
       <source>Open in Settings</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>WidgetCatalog</name>
+    <message>
+      <location filename="../modules/background/desktopicons/WidgetCatalog.qml" line="+7"/>
+      <source>Clock &amp; Weather</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Media</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>System Monitor</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Calendar</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Note</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Folder View</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Large Folder</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>WidgetGallery</name>
+    <message>
+      <location filename="../modules/background/desktopicons/WidgetGallery.qml" line="+78"/>
+      <source>Add Widget</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+64"/>
+      <source>Drag a widget&apos;s corner to resize it; right-click for more</source>
       <translation type="unfinished"/>
     </message>
   </context>
@@ -11810,6 +12997,112 @@ Now go touch grass</source>
     <message>
       <location line="+0"/>
       <source>Failed to change profile picture to %1</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>caelestia::services::SessionManager</name>
+    <message>
+      <location filename="../plugin/src/Caelestia/Services/sessionmanager.cpp" line="+121"/>
+      <source>Hibernate failed</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Enable hibernation to use this feature.</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>caelestia::services::Weather</name>
+    <message>
+      <location filename="../plugin/src/Caelestia/Services/weather.cpp" line="+93"/>
+      <source>No weather</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+153"/>
+      <source>Clear</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Partly cloudy</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Overcast</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+3"/>
+      <source>Fog</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Drizzle</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+3"/>
+      <source>Freezing drizzle</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Light rain</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+3"/>
+      <source>Rain</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>Heavy rain</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Light snow</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+3"/>
+      <source>Snow</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Heavy snow</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Light snow showers</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Heavy snow showers</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Thunderstorm</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+3"/>
+      <source>Thunderstorm with hail</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Unknown</source>
       <translation type="unfinished"/>
     </message>
   </context>

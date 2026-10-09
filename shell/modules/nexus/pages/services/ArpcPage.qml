@@ -137,7 +137,7 @@ PageBase {
 
                     StyledText {
                         text: qsTr("Used to fetch game icons for Steam games")
-                        font: Tokens.font.label.small
+                        font: NexusStyle.secondaryFont
                         color: Colours.palette.m3onSurfaceVariant
                         elide: Text.ElideRight
                     }
@@ -299,7 +299,7 @@ PageBase {
                             Layout.preferredHeight: 24
 
                             placeholderText: qsTr("Custom label (optional) - use {class}, {title}")
-                            font: Tokens.font.label.small
+                            font: NexusStyle.secondaryFont
                             verticalAlignment: TextInput.AlignVCenter
 
                             property bool initializing: true

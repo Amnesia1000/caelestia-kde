@@ -178,7 +178,7 @@ StyledRect {
                         anchors.verticalCenterOffset: Centering.pixelAlign(parent.height, height)
 
                         sourceComponent: MaterialIcon {
-                            text: Icons.getNotifIcon(root.modelData.summary, root.modelData.urgency)
+                            text: root.modelData.materialIcon || Icons.getNotifIcon(root.modelData.summary, root.modelData.urgency)
                             color: root.modelData.urgency === NotificationUrgency.Critical ? Colours.palette.m3onError : root.modelData.urgency === NotificationUrgency.Low ? Colours.palette.m3onSurface : Colours.palette.m3onSecondaryContainer
                             fontStyle: Tokens.font.icon.medium
                         }
@@ -301,7 +301,7 @@ StyledRect {
             TextMetrics {
                 id: summaryMetrics
 
-                text: root.modelData.summary
+                text: root.modelData.summaryPlain
                 font: summary.font
                 elide: Text.ElideRight
                 elideWidth: expandBtn.x - time.width - timeSep.width - summary.x - root.Tokens.spacing.small * 3
@@ -391,7 +391,6 @@ StyledRect {
                 anchors.rightMargin: Tokens.spacing.small
 
                 animate: true
-                textFormat: root.bodyTextFormat
                 text: bodyPreviewMetrics.elidedText
                 color: Colours.palette.m3onSurfaceVariant
                 font: Tokens.font.body.small
@@ -408,7 +407,7 @@ StyledRect {
             TextMetrics {
                 id: bodyPreviewMetrics
 
-                text: root.modelData.body
+                text: root.modelData.bodyPlain
                 font: bodyPreview.font
                 elide: Text.ElideRight
                 elideWidth: bodyPreview.width

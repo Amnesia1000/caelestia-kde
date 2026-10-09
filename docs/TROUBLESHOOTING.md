@@ -16,6 +16,7 @@ This document catalogs known failure modes, error conditions, and edge cases dis
 6. [Network & Proxy Issues](#6-network--proxy-issues)
 7. [KDE & Plasma Specific Issues](#7-kde--plasma-specific-issues)
    1. [Installer Window Rules](#77-installer-window-rules)
+   2. [Quick Share Cannot Receive Files](#78-quick-share-cannot-receive-files)
 8. [Post-Install Issues](#8-post-install-issues)
 9. [Uninstall Issues](#9-uninstall-issues)
 10. [Update Issues](#10-update-issues)
@@ -52,6 +53,8 @@ The shell build (`08-build-shell.sh`) requires **Qt 6.9+** and several system li
 | KF6WindowSystem | KWindowSystem not found | `kwindowsystem` | `kf6-kwindowsystem-devel` |
 | KGlobalAccel | kglobalaccel not found | `kglobalaccel` | `kf6-kglobalaccel-devel` |
 | KPipeWire | pipewire integration | `kpipewire` | `kf6-kpipewire-devel` |
+| Protobuf | Quick Share: `find_package(Protobuf)` | `protobuf` | `protobuf-devel` |
+| OpenSSL | Quick Share: `find_package(OpenSSL)` | `openssl` | `openssl-devel` |
 
 #### Library Dependencies (pkg_check_modules)
 
@@ -301,6 +304,55 @@ qdbus6 org.kde.KWin /Caelestia/Workspaces org.freedesktop.DBus.Introspectable.In
 The last command prints the effect's interface once it is loaded again, and
 fails while it is not. `bash shell/scripts/check-workspace-tracker.sh` answers the
 same question with an exit status (3 means enabled but not loaded).
+
+---
+
+### 3.9 Copy/Paste Crashes Krita or Inkscape (cliphist.service)
+
+Krita crashes when a selection is copied and pasted inside the document, while
+pasting an image copied from another application works. Inkscape crashes on
+copy/paste of anything. Stopping the clipboard service stops the crashes:
+
+```bash
+systemctl --user stop cliphist.service   # the crash should go away with it
+systemctl --user start cliphist.service
+pgrep -a wl-clip-persist                 # confirms the helper below is running
+```
+
+The unit runs three helpers: two `wl-paste --watch cliphist store` watchers and
+`wl-clip-persist`. The watchers only read the clipboard, so they cannot disturb
+it. `wl-clip-persist` does: it reads **every** MIME type of a new selection into
+memory and then re-offers the clipboard itself, so the application that copied no
+longer owns the selection.
+
+Applications that put a process-private payload on the clipboard expect to read
+it back out of their own clipboard object. Krita serialises raw `KisNode*`
+pointers into `application/x-krita-node-internal-pointer` and hands the payload
+straight back to `dynamic_cast` on paste as long as the pid in it is its own
+(`KisMimeData::tryLoadInternalNodes`); Inkscape does the same for
+`image/x-inkscape-svg`. Once `wl-clip-persist` re-offers the payload, the
+pointers are stale and the paste dies in `__dynamic_cast`.
+
+The unit therefore passes `--all-mime-type-regex` to `wl-clip-persist`, which
+makes it leave alone any selection event that offers one of those private
+formats. `wl-clip-persist` handles an event only when **every** MIME type it
+offers matches the filter, so a selection carrying both a private format and,
+say, `text/plain` is skipped whole: the watchers still add it to the clipboard
+history, but it no longer survives the application it was copied from.
+Selections offering only public formats persist as before; the install keeps that
+list in `~/.local/bin/caelestia-cliphist`, next to the flag that reads it.
+
+On an install older than the fix, or if you run your own clipboard setup, pass
+the same flag yourself:
+
+```bash
+wl-clip-persist --clipboard regular \
+    --all-mime-type-regex '(?i)^(?!(?:application/x-krita-|image/x-inkscape-svg)).+'
+```
+
+Any other application that crashes when pasting its own content while the
+service runs belongs to the same class: report it so its format can be added to
+the filter.
 
 ---
 
@@ -563,6 +615,75 @@ The installer always applies the rules; `APPLY_WINDOW_RULES=false` is an overrid
 for running the step by hand (`APPLY_WINDOW_RULES=false bash ./scripts/setup.sh`).
 `WINDOW_OPACITY` changes the percentage the opacity rule writes.
 
+### 7.8 Quick Share Cannot Receive Files
+
+Sending works and receiving does not: the other device is visible and asks to send,
+but no incoming-file notification appears and the transfer times out. Two things
+outside the shell have to be true for an incoming connection to arrive, and both fail
+silently from the shell's side — a connection that is never allowed looks exactly like
+a device that never tried.
+
+The first is the Avahi daemon. It carries the mDNS advertisement a nearby device
+resolves this machine through, so without it there is nothing to connect to. The
+second is the firewall. The transfer listener binds a fixed port so that a rule can be
+written for it ahead of time; that port has one definition,
+`shell/scripts/quickshare-port`, which the plugin build bakes into the listener and the
+install step reads to open the same port on the firewall. It reaches the setup helper
+as `--port`. A listener on a random port could only be opened while the shell runs,
+which needs administrator rights on every start.
+
+`scripts/06-services.sh` does both during a source install. A package install leaves
+them to the shell, because a package must not enable a system daemon or open a port
+behind the user's back. There, the first time Quick Share is switched on the shell
+checks the system through
+`<qmlconfdir>/scripts/quickshare_setup.sh --status`, and if something is missing asks
+through `pkexec` to put it right. The same helper is behind **Set up system access** on
+the Quick Share settings page (Nexus → Services → Quick Share), which is the way back
+if the check was declined, if the firewall changed later, or if the report reads
+`SETUP=unknown` because the rule set cannot be read without root. The row says what it
+knows: where the report cannot see the port, it reports that the port could not be
+checked again rather than claiming a success it cannot confirm.
+
+To see what the machine reports:
+
+```bash
+bash ~/.config/quickshell/caelestia/scripts/quickshare_setup.sh --status --port 65000
+```
+
+The report is four lines. `AVAHI` is `active`, `inactive`, `absent` or `unknown`,
+`FIREWALL` names the manager in charge (`none`, `firewalld` or `ufw`), `PORT` is
+`allowed`, `blocked` or `unknown`, and `SETUP` is `ok`, `needed` or `unknown`. Only
+`needed` is acted on automatically; ufw reports `PORT=unknown` because reading its
+rule set needs root, and guessing there would raise a password prompt for nothing.
+
+To do it by hand, run the helper as root:
+
+```bash
+sudo bash ~/.config/quickshell/caelestia/scripts/quickshare_setup.sh --port 65000
+```
+
+It is idempotent: it enables and starts `avahi-daemon.service` (falling back to
+`avahi-daemon.socket`, which is what Debian uses) and adds the transfer port plus mDNS
+to whichever of firewalld or ufw is running. What it does not touch is a hand-rolled
+`nftables` or `iptables` rule set, which is invisible without root — those have to
+allow inbound TCP 65000 and UDP 5353 themselves. Equivalently, by manager:
+
+```bash
+systemctl enable --now avahi-daemon.service                       # the daemon
+
+firewall-cmd --permanent --add-port=65000/tcp                     # firewalld, with
+firewall-cmd --permanent --add-service=mdns                       # mDNS for discovery
+firewall-cmd --reload
+
+ufw allow 65000/tcp                                               # ufw
+ufw allow 5353/udp
+```
+
+Port 65000 rather than anything lower because it sits above Linux's default ephemeral
+range (32768–60999), so the listener never collides with the local port of an outgoing
+connection. If it is taken by something else, Quick Share reports that it could not
+listen and stays off.
+
 ---
 
 ## 8. Post-Install Issues
@@ -681,12 +802,20 @@ told apart from that release, so it is installed as the release its `version.env
 
 Settings > About > Uninstall Caelestia opens the uninstaller in a terminal, where it
 asks for confirmation of its own. The button finds the script by looking where a
-checkout is expected, in the order `src/bin/caelestia` uses:
+checkout is expected, in this order:
 
 1. `$CAELESTIA_DIR/uninstall.sh`
 2. `~/caelestia-kde/uninstall.sh`
-3. `~/.config/caelestia-update/repo/uninstall.sh`
-4. `~/.cache/caelestia-update-repo/uninstall.sh`
+3. `$(cat ~/.config/quickshell/caelestia/.checkout)/uninstall.sh`
+4. `~/.config/caelestia-update/repo/uninstall.sh`
+5. `~/.cache/caelestia-update-repo/uninstall.sh`
+
+The third is the checkout the running shell was installed from, recorded by the
+installer. It is what makes a clone that is not named `~/caelestia-kde` - a manual
+`git clone` anywhere else - still uninstallable from here; reinstall or update once
+for an install that predates that recording. It is tried after `~/caelestia-kde`
+because that is where an install's backups live, and the uninstaller restores from
+its own checkout's `backups/`.
 
 A packaged install has no script, so the row names the command that removes it instead
 (`sudo pacman -Rns caelestia-kde`, or the `dnf`/`apt-get` equivalent).
@@ -849,3 +978,4 @@ systemctl --user restart plasma-plasmashell
 | Installer compiles but flashes/exits | Check `/tmp/caelestia_installer_err.log` |
 | Recording not working | Verify `gpu-screen-recorder` is installed |
 | Screenshot not working | Verify `spectacle` is installed |
+| Krita/Inkscape crashes on copy/paste | `systemctl --user stop cliphist.service` stops the crash; update Caelestia so `wl-clip-persist` runs with the `--all-mime-type-regex` filter (see 3.9) |

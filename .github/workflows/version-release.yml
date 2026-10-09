@@ -184,7 +184,8 @@ jobs:
             qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-tools \
             kwindowsystem kguiaddons kglobalaccel kconfig networkmanager-qt pulseaudio-qt \
             libqalculate pipewire libpipewire aubio lm_sensors extra-cmake-modules \
-            fftw ncurses alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse
+            fftw ncurses alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse \
+            protobuf openssl avahi
 
       - name: Install Prebuilt CAVA SDK (Arch)
         run: |
@@ -235,6 +236,7 @@ jobs:
           cp -a stage/usr/etc/xdg/quickshell/caelestia dist/root/quickshell/
           ARTIFACT="dist/caelestia-kde-x86_64-qt${QT_ABI}.tar.gz"
           tar -C dist/root -czf "$ARTIFACT" bin lib quickshell
+          python3 .github/scripts/check_release_archive.py "$ARTIFACT" dist/root
           echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_ENV"
           CHECKSUM="${ARTIFACT}.sha256"
           sha256sum "$ARTIFACT" | sed "s|$(dirname "$ARTIFACT")/||" > "$CHECKSUM"

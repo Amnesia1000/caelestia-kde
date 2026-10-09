@@ -247,7 +247,7 @@ PageBase {
                         Layout.fillWidth: true
                         text: qsTr("Comma separated list of classes to not tile (e.g. quickshell,krunner)")
                         color: Colours.palette.m3onSurfaceVariant
-                        font: Tokens.font.label.small
+                        font: NexusStyle.secondaryFont
                         wrapMode: Text.Wrap
                     }
                 }

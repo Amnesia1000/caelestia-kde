@@ -137,6 +137,9 @@ QtObject {
                 Component {
                     TabSwitcherPanel {}
                 }
+                Component {
+                    BarMedia {}
+                }
             }
         },
         Component {
@@ -234,6 +237,9 @@ QtObject {
                 }
                 Component {
                     QuickTogglesPage {}
+                }
+                Component {
+                    QuickSharePage {}
                 }
             }
         },
