@@ -182,6 +182,34 @@ class BarPerformance : public settings::ObjectNode {
     CONFIG_PROPERTY(QString, pill, u"cpu"_s)
 };
 
+class BarShortcuts : public settings::ObjectNode {
+    CONFIG_NODE(BarShortcuts, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showLabels, true)
+    CONFIG_PROPERTY(bool, showApps, true)
+    CONFIG_PROPERTY(bool, showSystem, true)
+    CONFIG_PROPERTY(int, buttonSize, 36)
+    CONFIG_PROPERTY(bool, showTooltips, true)
+};
+
+class BarScreenCapture : public settings::ObjectNode {
+    CONFIG_NODE(BarScreenCapture, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showShots, true)
+    CONFIG_PROPERTY(bool, showRecord, true)
+    CONFIG_PROPERTY(bool, showFolders, true)
+    CONFIG_PROPERTY(bool, showTooltips, true)
+    CONFIG_PROPERTY(bool, autoClose, false)
+};
+
+class BarKeepAwake : public settings::ObjectNode {
+    CONFIG_NODE(BarKeepAwake, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showActiveChip, true)
+    CONFIG_PROPERTY(bool, showTooltip, true)
+    CONFIG_PROPERTY(bool, autoHide, false)
+};
+
 class BarPreviewScales : public settings::ObjectNode {
     CONFIG_NODE(BarPreviewScales, settings::ObjectNode)
 
@@ -289,6 +317,9 @@ class BarConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(BarGithub, github)
     CONFIG_SUBOBJECT(BarMedia, media)
     CONFIG_SUBOBJECT(BarPerformance, performance)
+    CONFIG_SUBOBJECT(BarShortcuts, shortcuts)
+    CONFIG_SUBOBJECT(BarScreenCapture, screencapture)
+    CONFIG_SUBOBJECT(BarKeepAwake, keepawake)
     CONFIG_PROPERTY(QVariantList, entries,
         DEFAULT_ARG({
             vmap({ { u"id"_s, u"logo"_s }, { u"enabled"_s, true }, { u"zone"_s, u"left"_s } }),
