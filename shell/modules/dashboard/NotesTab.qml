@@ -431,6 +431,7 @@ Item {
                     id: titleField
 
                     Layout.fillWidth: true
+                    Layout.preferredHeight: implicitHeight
                     type: StyledTextField.Filled
                     radius: Tokens.rounding.large
                     text: root.selectedNote ? root.selectedNote.title : ""
@@ -493,93 +494,104 @@ Item {
                 }
 
                 // List editor
-                ColumnLayout {
-                    id: listCol
+                Flickable {
+                    id: listFlick
 
                     Layout.fillWidth: true
-                    Layout.preferredHeight: listCol.visible ? -1 : 0
-                    spacing: Tokens.spacing.extraSmall
+                    Layout.fillHeight: listFlick.visible
+                    Layout.preferredHeight: listFlick.visible ? -1 : 0
+                    contentWidth: width
+                    contentHeight: listCol.implicitHeight
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
                     visible: root.selectedNote && root.selectedNote.type === "list"
 
-                    Repeater {
-                        model: root.selectedNote && root.selectedNote.items ? root.selectedNote.items : []
+                    ColumnLayout {
+                        id: listCol
 
-                        delegate: RowLayout {
-                            required property var modelData
-                            required property int index
+                        width: parent.width
+                        spacing: Tokens.spacing.extraSmall
 
-                            Layout.fillWidth: true
-                            spacing: Tokens.spacing.extraSmall
+                        Repeater {
+                            model: root.selectedNote && root.selectedNote.items ? root.selectedNote.items : []
 
-                            CheckBox {
-                                Layout.alignment: Qt.AlignVCenter
-                                checked: modelData.checked ?? false
-                                onToggled: {
-                                    const arr = (root.selectedNote.items || []).slice();
-                                    arr[index] = Object.assign({}, arr[index], { checked: !modelData.checked });
-                                    root.updateSelected("items", arr);
-                                }
-                            }
+                            delegate: RowLayout {
+                                required property var modelData
+                                required property int index
 
-                            Item {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: itemInput.implicitHeight
-                                Layout.alignment: Qt.AlignVCenter
-                                opacity: (modelData.checked ?? false) ? 0.6 : 1
+                                spacing: Tokens.spacing.extraSmall
 
-                                TextInput {
-                                    id: itemInput
+                                CheckBox {
+                                    Layout.alignment: Qt.AlignVCenter
+                                    checked: modelData.checked ?? false
+                                    onToggled: {
+                                        const arr = (root.selectedNote.items || []).slice();
+                                        arr[index] = Object.assign({}, arr[index], { checked: !modelData.checked });
+                                        root.updateSelected("items", arr);
+                                    }
+                                }
 
-                                    function commitItem(): void {
-                                        if (text !== (modelData.text ?? "")) {
-                                            const arr = (root.selectedNote.items || []).slice();
-                                            arr[index] = Object.assign({}, arr[index], { text: text });
-                                            root.updateSelected("items", arr);
+                                Item {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: itemInput.implicitHeight
+                                    Layout.alignment: Qt.AlignVCenter
+                                    opacity: (modelData.checked ?? false) ? 0.6 : 1
+
+                                    TextInput {
+                                        id: itemInput
+
+                                        function commitItem(): void {
+                                            if (text !== (modelData.text ?? "")) {
+                                                const arr = (root.selectedNote.items || []).slice();
+                                                arr[index] = Object.assign({}, arr[index], { text: text });
+                                                root.updateSelected("items", arr);
+                                            }
                                         }
+
+                                        anchors.fill: parent
+                                        text: modelData.text ?? ""
+                                        font: Tokens.font.body.medium
+                                        color: (modelData.checked ?? false) ? Colours.palette.m3onSurfaceVariant : Colours.palette.m3onSurface
+                                        selectByMouse: true
+                                        selectionColor: Qt.alpha(Colours.palette.m3primary, 0.4)
+                                        selectedTextColor: color
+                                        renderType: TextInput.NativeRendering
+
+                                        onAccepted: commitItem()
+                                        onEditingFinished: commitItem()
                                     }
 
-                                    anchors.fill: parent
-                                    text: modelData.text ?? ""
-                                    font: Tokens.font.body.medium
-                                    color: (modelData.checked ?? false) ? Colours.palette.m3onSurfaceVariant : Colours.palette.m3onSurface
-                                    selectByMouse: true
-                                    selectionColor: Qt.alpha(Colours.palette.m3primary, 0.4)
-                                    selectedTextColor: color
-                                    renderType: TextInput.NativeRendering
+                                    StyledText {
+                                        anchors.left: parent.left
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible: itemInput.text.length === 0
+                                        text: qsTr("List item")
+                                        font: itemInput.font
+                                        opacity: 0.5
+                                        color: Colours.palette.m3onSurfaceVariant
+                                    }
 
-                                    onAccepted: commitItem()
-                                    onEditingFinished: commitItem()
-                                }
-
-                                StyledText {
-                                    anchors.left: parent.left
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    visible: itemInput.text.length === 0
-                                    text: qsTr("List item")
-                                    font: itemInput.font
-                                    opacity: 0.5
-                                    color: Colours.palette.m3onSurfaceVariant
-                                }
-
-                                Rectangle {
-                                    anchors.left: parent.left
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: Math.min(itemInput.contentWidth, parent.width)
-                                    height: 1
-                                    visible: modelData.checked ?? false
-                                    color: Colours.palette.m3onSurfaceVariant
+                                    Rectangle {
+                                        anchors.left: parent.left
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: Math.min(itemInput.contentWidth, parent.width)
+                                        height: 1
+                                        visible: modelData.checked ?? false
+                                        color: Colours.palette.m3onSurfaceVariant
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    TextButton {
-                        text: qsTr("Add item")
-                        type: TextButton.Tonal
-                        onClicked: {
-                            const arr = ((root.selectedNote && root.selectedNote.items) || []).slice();
-                            arr.push({ text: "", checked: false });
-                            root.updateSelected("items", arr);
+                        TextButton {
+                            text: qsTr("Add item")
+                            type: TextButton.Tonal
+                            onClicked: {
+                                const arr = ((root.selectedNote && root.selectedNote.items) || []).slice();
+                                arr.push({ text: "", checked: false });
+                                root.updateSelected("items", arr);
+                            }
                         }
                     }
                 }
@@ -589,6 +601,7 @@ Item {
                     id: audioCol
 
                     Layout.fillWidth: true
+                    Layout.fillHeight: audioCol.visible
                     Layout.preferredHeight: audioCol.visible ? -1 : 0
                     spacing: Tokens.spacing.small
                     visible: root.selectedNote && root.selectedNote.type === "audio"
@@ -633,6 +646,10 @@ Item {
                         color: Colours.palette.m3onSurfaceVariant
                     }
 
+                    Item {
+                        Layout.fillHeight: true
+                    }
+
                     MediaPlayer {
                         id: audioPlayer
 
@@ -659,60 +676,71 @@ Item {
                 }
 
                 // Image editor
-                ColumnLayout {
-                    id: imageCol
+                Flickable {
+                    id: imageFlick
 
                     Layout.fillWidth: true
-                    Layout.preferredHeight: imageCol.visible ? -1 : 0
-                    spacing: Tokens.spacing.small
+                    Layout.fillHeight: imageFlick.visible
+                    Layout.preferredHeight: imageFlick.visible ? -1 : 0
+                    contentWidth: width
+                    contentHeight: imageCol.implicitHeight
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
                     visible: root.selectedNote && root.selectedNote.type === "image"
 
-                    RowLayout {
-                        Layout.fillWidth: true
+                    ColumnLayout {
+                        id: imageCol
+
+                        width: parent.width
                         spacing: Tokens.spacing.small
 
-                        TextButton {
-                            text: qsTr("Upload")
-                            type: TextButton.Tonal
-                            onClicked: imagePicker.open()
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: Tokens.spacing.small
+
+                            TextButton {
+                                text: qsTr("Upload")
+                                type: TextButton.Tonal
+                                onClicked: imagePicker.open()
+                            }
+
+                            StyledTextField {
+                                id: urlField
+
+                                Layout.fillWidth: true
+                                placeholderText: qsTr("Paste image URL…")
+                                onAccepted: {
+                                    root.updateSelected("imagePath", text);
+                                    urlField.clear();
+                                }
+                            }
+                        }
+
+                        FadeImage {
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 160
+                            visible: root.selectedNote && root.selectedNote.imagePath !== ""
+                            source: root.selectedNote ? root.selectedNote.imagePath : ""
+                            fillMode: Image.PreserveAspectCrop
+                        }
+
+                        StyledText {
+                            Layout.fillWidth: true
+                            visible: !(root.selectedNote && root.selectedNote.imagePath !== "")
+                            horizontalAlignment: Text.AlignHCenter
+                            text: qsTr("No image yet")
+                            font: Tokens.font.body.small
+                            opacity: 0.6
+                            color: Colours.palette.m3onSurfaceVariant
                         }
 
                         StyledTextField {
-                            id: urlField
-
                             Layout.fillWidth: true
-                            placeholderText: qsTr("Paste image URL…")
-                            onAccepted: {
-                                root.updateSelected("imagePath", text);
-                                urlField.clear();
-                            }
+                            text: root.selectedNote && root.selectedNote.caption ? root.selectedNote.caption : ""
+                            placeholderText: qsTr("Add a caption…")
+                            font: Tokens.font.body.small
+                            onEditingFinished: root.updateSelected("caption", text)
                         }
-                    }
-
-                    FadeImage {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 160
-                        visible: root.selectedNote && root.selectedNote.imagePath !== ""
-                        source: root.selectedNote ? root.selectedNote.imagePath : ""
-                        fillMode: Image.PreserveAspectCrop
-                    }
-
-                    StyledText {
-                        Layout.fillWidth: true
-                        visible: !(root.selectedNote && root.selectedNote.imagePath !== "")
-                        horizontalAlignment: Text.AlignHCenter
-                        text: qsTr("No image yet")
-                        font: Tokens.font.body.small
-                        opacity: 0.6
-                        color: Colours.palette.m3onSurfaceVariant
-                    }
-
-                    StyledTextField {
-                        Layout.fillWidth: true
-                        text: root.selectedNote && root.selectedNote.caption ? root.selectedNote.caption : ""
-                        placeholderText: qsTr("Add a caption…")
-                        font: Tokens.font.body.small
-                        onEditingFinished: root.updateSelected("caption", text)
                     }
                 }
 
@@ -733,7 +761,6 @@ Item {
                     filters: Images.validImageExtensions
                     onAccepted: path => root.importFile("imagePath", path, "images")
                 }
-
 
                 StyledRect {
                     Layout.alignment: Qt.AlignRight
