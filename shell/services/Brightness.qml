@@ -50,15 +50,11 @@ Singleton {
     }
 
     function increaseBrightness(): void {
-        const monitor = getMonitor("active");
-        if (monitor)
-            monitor.setBrightness(monitor.brightness + GlobalConfig.services.brightnessIncrement);
+        getMonitor("active")?.stepBrightness(GlobalConfig.services.brightnessIncrement);
     }
 
     function decreaseBrightness(): void {
-        const monitor = getMonitor("active");
-        if (monitor)
-            monitor.setBrightness(monitor.brightness - GlobalConfig.services.brightnessIncrement);
+        getMonitor("active")?.stepBrightness(-GlobalConfig.services.brightnessIncrement);
     }
 
     onMonitorsChanged: {
@@ -157,22 +153,23 @@ Singleton {
             if (!monitor)
                 return "Invalid monitor: " + query;
 
+            const current = monitor.effectiveBrightness;
             let targetBrightness;
             if (value.endsWith("%-")) {
                 const percent = parseFloat(value.slice(0, -2));
-                targetBrightness = monitor.brightness - (percent / 100);
+                targetBrightness = current - (percent / 100);
             } else if (value.startsWith("+") && value.endsWith("%")) {
                 const percent = parseFloat(value.slice(1, -1));
-                targetBrightness = monitor.brightness + (percent / 100);
+                targetBrightness = current + (percent / 100);
             } else if (value.endsWith("%")) {
                 const percent = parseFloat(value.slice(0, -1));
                 targetBrightness = percent / 100;
             } else if (value.startsWith("+")) {
                 const increment = parseFloat(value.slice(1));
-                targetBrightness = monitor.brightness + increment;
+                targetBrightness = current + increment;
             } else if (value.endsWith("-")) {
                 const decrement = parseFloat(value.slice(0, -1));
-                targetBrightness = monitor.brightness - decrement;
+                targetBrightness = current - decrement;
             } else if (value.includes("%") || value.includes("-") || value.includes("+")) {
                 return `Invalid brightness format: ${value}\nExpected: 0.1, +0.1, 0.1-, 10%, +10%, 10%-`;
             } else {
@@ -266,6 +263,11 @@ Singleton {
                 Quickshell.execDetached(["ddcutil", "-b", busNum, "setvcp", "10", rounded]);
             else
                 BrightnessWatcher.setBrightness(modelData.name, value);
+        }
+
+        // Steps are relative to what the screen renders, not to the value last commanded.
+        function stepBrightness(delta: real): void {
+            setBrightness(effectiveBrightness + delta);
         }
 
         function setBrightness(value: real): void {
