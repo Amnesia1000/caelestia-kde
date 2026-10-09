@@ -54,7 +54,6 @@ PageBase {
         }
 
         SectionHeader {
-            last: true
             text: qsTr("Widget")
         }
 
