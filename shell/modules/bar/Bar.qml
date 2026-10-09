@@ -93,19 +93,10 @@ Item {
     }
 
     function checkPopout(pos: real): void {
-<<<<<<< HEAD
-        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
-            return;
-=======
-        // Placement follows the hovered bar: a top overlay panel opens its
-        // popouts downward. The primary bar always clears the flags.
-        const isTopOverlay = (root.barDef && ((root.barDef.position || "bottom") === "top")) ?? false;
-        popouts.fromTopPanel = isTopOverlay;
-        popouts.fromTopDock = isTopOverlay && ((root.barDef.lengthPercent ?? 100) < 100);
         // A context menu stays open while the pointer moves over the bar, so
         // the hover routing below must not take it over or close it.
-        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "mediacontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))            return;
->>>>>>> 6a908cd8 (fix(bar): keep the media context menu open while hovering the bar)
+        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "mediacontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
+            return;
 
         const ch = getLoaderAt(isHorizontal ? pos : width / 2, isHorizontal ? height / 2 : pos) as WrappedLoader;
 
