@@ -82,6 +82,11 @@ void WorkspaceTrackerEffect::SendToOutput(const QString& uuid, const QString& ou
     }
 }
 
+void WorkspaceTrackerEffect::ReservedAreaChanged()
+{
+    KWin::effects->virtualScreenGeometryChanged();
+}
+
 void WorkspaceTrackerEffect::SetDesktop(const QString& output, int desktop)
 {
     if (desktop < 1) {

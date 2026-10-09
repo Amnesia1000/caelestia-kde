@@ -41,6 +41,17 @@ public Q_SLOTS:
      */
     void SendToOutput(const QString& uuid, const QString& output);
 
+    /**
+     * Tells listening scripts that the area reserved by struts changed.
+     *
+     * KWin applies new struts without moving the windows that are already mapped,
+     * and nothing in the compositor reports that change: neither Workspace nor
+     * EffectsHandler has a signal for it. Tiling scripts such as krohnkite only
+     * re-arrange their windows when they are told the screen geometry changed, so
+     * the shell asks for that notification whenever its reserved area changes.
+     */
+    void ReservedAreaChanged();
+
 private Q_SLOTS:
     void onDesktopChanging(KWin::VirtualDesktop* desktop, QPointF offset, KWin::EffectWindow* with, KWin::LogicalOutput* output);
     void onDesktopChangingCancelled();

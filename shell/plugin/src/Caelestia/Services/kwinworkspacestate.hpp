@@ -58,6 +58,15 @@ public:
     Q_INVOKABLE void previousDesktop();
     Q_INVOKABLE void setShowingDesktop(bool showing);
 
+    /**
+     * Asks KWin to report a screen geometry change, so that tiling scripts
+     * re-arrange their windows when the shell reserves or releases space.
+     *
+     * KWin moves no window when a strut changes and has no signal for it, so
+     * the shell has to ask for the notification the scripts listen to.
+     */
+    Q_INVOKABLE void reservedAreaChanged();
+
 signals:
     void activeIdChanged();
     void activeByOutputChanged();
