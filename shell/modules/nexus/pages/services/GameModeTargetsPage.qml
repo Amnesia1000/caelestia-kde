@@ -145,6 +145,7 @@ PageBase {
 
             ListView {
                 interactive: false
+                interactive: false
                 id: targetList
 
                 anchors.fill: parent
