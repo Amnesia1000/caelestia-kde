@@ -3495,33 +3495,33 @@
     <message>
       <location filename="../modules/utilities/cards/CaptureCard.qml" line="+63"/>
       <source>Screen Capture</source>
-      <translation type="unfinished"/>
+      <translation>Captura de pantalla</translation>
     </message>
     <message>
       <location line="+7"/>
       <source>Capture, OCR and image search</source>
-      <translation type="unfinished"/>
+      <translation>Captura, OCR y búsqueda de imágenes</translation>
     </message>
     <message>
       <location line="+0"/>
       <source>Paused</source>
-      <translation type="unfinished"/>
+      <translation>Pausado</translation>
     </message>
     <message>
       <location line="+0"/>
       <source>Running...</source>
-      <translation type="unfinished"/>
+      <translation>Grabando...</translation>
     </message>
     <message>
       <location line="+0"/>
       <source>Ready</source>
-      <translation type="unfinished"/>
+      <translation>Listo</translation>
     </message>
     <message>
       <location line="+18"/>
       <location line="+163"/>
       <source>Record</source>
-      <translation type="unfinished"/>
+      <translation>Grabar</translation>
     </message>
     <message>
       <location line="-162"/>
@@ -3530,95 +3530,95 @@
       <location line="+9"/>
       <location line="+10"/>
       <source>Start</source>
-      <translation type="unfinished"/>
+      <translation>Iniciar</translation>
     </message>
     <message>
       <location line="-29"/>
       <source>Record with Sound</source>
-      <translation type="unfinished"/>
+      <translation>Grabar con sonido</translation>
     </message>
     <message>
       <location line="+9"/>
       <source>Record with Microphone</source>
-      <translation type="unfinished"/>
+      <translation>Grabar con micrófono</translation>
     </message>
     <message>
       <location line="+9"/>
       <source>Both Sound &amp; Microphone</source>
-      <translation type="unfinished"/>
+      <translation>Sonido y micrófono</translation>
     </message>
     <message>
       <location line="+10"/>
       <source>Record GIF</source>
-      <translation type="unfinished"/>
+      <translation>Grabar GIF</translation>
     </message>
     <message>
       <location line="+9"/>
       <location line="+82"/>
       <source>Use Spectacle</source>
-      <translation type="unfinished"/>
+      <translation>Usar Spectacle</translation>
     </message>
     <message>
       <location line="-81"/>
       <location line="+82"/>
       <source>Spectacle</source>
-      <translation type="unfinished"/>
+      <translation>Spectacle</translation>
     </message>
     <message>
       <location line="-62"/>
       <source>Capture region</source>
-      <translation type="unfinished"/>
+      <translation>Capturar región</translation>
     </message>
     <message>
       <location line="+1"/>
       <location line="+103"/>
       <source>Capture</source>
-      <translation type="unfinished"/>
+      <translation>Capturar</translation>
     </message>
     <message>
       <location line="-93"/>
       <source>Capture fullscreen</source>
-      <translation type="unfinished"/>
+      <translation>Capturar pantalla completa</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Fullscreen</source>
-      <translation type="unfinished"/>
+      <translation>Pantalla completa</translation>
     </message>
     <message>
       <location line="+13"/>
       <source>Capture active window</source>
-      <translation type="unfinished"/>
+      <translation>Capturar ventana activa</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Window</source>
-      <translation type="unfinished"/>
+      <translation>Ventana</translation>
     </message>
     <message>
       <location line="+13"/>
       <source>Recognize text</source>
-      <translation type="unfinished"/>
+      <translation>Reconocer texto</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Recognize</source>
-      <translation type="unfinished"/>
+      <translation>Reconocer</translation>
     </message>
     <message>
       <location line="+10"/>
       <source>Search image</source>
-      <translation type="unfinished"/>
+      <translation>Buscar imagen</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Search</source>
-      <translation type="unfinished"/>
+      <translation>Buscar</translation>
     </message>
     <message>
       <location line="+183"/>
       <source>Recording %1</source>
-      <translation type="unfinished"/>
+      <translation>Grabando %1</translation>
     </message>
   </context>
   <context>
@@ -4000,17 +4000,17 @@
     <message>
       <location line="+20"/>
       <source>Paste</source>
-      <translation type="unfinished"/>
+      <translation>Pegar</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Add Widget</source>
-      <translation type="unfinished"/>
+      <translation>Agregar widget</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Arrange Icons</source>
-      <translation type="unfinished"/>
+      <translation>Ordenar iconos</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -4534,13 +4534,13 @@
       <location line="-86"/>
       <location line="+116"/>
       <source>Horizontal offset</source>
-      <translation type="unfinished"/>
+      <translation>Desplazamiento horizontal</translation>
     </message>
     <message>
       <location line="-107"/>
       <location line="+116"/>
       <source>Vertical offset</source>
-      <translation type="unfinished"/>
+      <translation>Desplazamiento vertical</translation>
     </message>
     <message>
       <location line="-106"/>
@@ -4576,12 +4576,12 @@
     <message>
       <location line="+12"/>
       <source>Size</source>
-      <translation type="unfinished"/>
+      <translation>Tamaño</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Column width multiplier, lower values leave more room in the middle</source>
-      <translation type="unfinished"/>
+      <translation>Multiplicador del ancho de las columnas; valores bajos dejan más espacio en el centro</translation>
     </message>
   </context>
   <context>
@@ -6339,17 +6339,17 @@ Now go touch grass</source>
     <message>
       <location filename="../modules/nexus/pages/panels/LauncherPanel.qml" line="+20"/>
       <source>Default</source>
-      <translation type="unfinished"/>
+      <translation>Predeterminado</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>Simple</source>
-      <translation type="unfinished"/>
+      <translation>Simple</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>Compact</source>
-      <translation type="unfinished"/>
+      <translation>Compacto</translation>
     </message>
     <message>
       <location line="+4"/>
@@ -6359,7 +6359,7 @@ Now go touch grass</source>
     <message>
       <location line="+11"/>
       <source>General</source>
-      <translation type="unfinished"/>
+      <translation>General</translation>
     </message>
     <message>
       <location line="+5"/>
@@ -6449,12 +6449,12 @@ Now go touch grass</source>
     <message>
       <location line="+7"/>
       <source>App browser layout</source>
-      <translation type="unfinished"/>
+      <translation>Diseño del explorador de aplicaciones</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Default: a sidebar of categories next to the apps. Simple: full-width app grid with favourites on top. Compact: vertical list of apps like search results</source>
-      <translation type="unfinished"/>
+      <translation>Predeterminado: un panel lateral de categorías junto a las aplicaciones. Simple: una cuadrícula de ancho completo con las favoritas arriba. Compacto: una lista vertical de aplicaciones como los resultados de búsqueda</translation>
     </message>
     <message>
       <location line="+7"/>
@@ -10575,22 +10575,22 @@ Now go touch grass</source>
     <message>
       <location filename="../modules/nexus/pages/panels/SidebarPanel.qml" line="+16"/>
       <source>Last used</source>
-      <translation type="unfinished"/>
+      <translation>Último uso</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Notifications</source>
-      <translation type="unfinished"/>
+      <translation>Notificaciones</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>AI Assistant</source>
-      <translation type="unfinished"/>
+      <translation>Asistente IA</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>News</source>
-      <translation type="unfinished"/>
+      <translation>Noticias</translation>
     </message>
     <message>
       <location line="+4"/>
@@ -10600,7 +10600,7 @@ Now go touch grass</source>
     <message>
       <location line="+11"/>
       <source>General</source>
-      <translation type="unfinished"/>
+      <translation>General</translation>
     </message>
     <message>
       <location line="+5"/>
@@ -10635,12 +10635,12 @@ Now go touch grass</source>
     <message>
       <location line="+5"/>
       <source>Open on</source>
-      <translation type="unfinished"/>
+      <translation>Abrir en</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Tab shown when the sidebar opens</source>
-      <translation type="unfinished"/>
+      <translation>Pestaña mostrada al abrir el panel lateral</translation>
     </message>
     <message>
       <location line="+13"/>
@@ -10904,6 +10904,14 @@ Now go touch grass</source>
       <translation>Elementos y módulos</translation>
     </message>
     <message>
+      <source>Weather</source>
+      <translation>Clima</translation>
+    </message>
+    <message>
+      <source>Widget units</source>
+      <translation>Unidades del widget</translation>
+    </message>
+    <message>
       <source>Performance</source>
       <translation>Rendimiento</translation>
     </message>
@@ -10974,7 +10982,7 @@ Now go touch grass</source>
     <message>
       <location line="+6"/>
       <source>Dock</source>
-      <translation type="unfinished"/>
+      <translation>Dock</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -10984,7 +10992,7 @@ Now go touch grass</source>
     <message>
       <location line="+6"/>
       <source>GitHub</source>
-      <translation type="unfinished"/>
+      <translation>GitHub</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -10994,12 +11002,12 @@ Now go touch grass</source>
     <message>
       <location line="+6"/>
       <source>Now playing</source>
-      <translation type="unfinished"/>
+      <translation>Reproduciendo ahora</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Media widget, visualiser, volume</source>
-      <translation type="unfinished"/>
+      <translation>Widget de multimedia, visualizador y volumen</translation>
     </message>
     <message>
       <location line="+7"/>
@@ -12191,12 +12199,12 @@ Now go touch grass</source>
     <message>
       <location line="+6"/>
       <source>Screen Capture</source>
-      <translation type="unfinished"/>
+      <translation>Captura de pantalla</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Show the screen capture card</source>
-      <translation type="unfinished"/>
+      <translation>Mostrar la tarjeta de captura de pantalla</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -12344,72 +12352,72 @@ Now go touch grass</source>
     <message>
       <location filename="../modules/background/desktopicons/ViewOptions.qml" line="+78"/>
       <source>Sort by</source>
-      <translation type="unfinished"/>
+      <translation>Ordenar por</translation>
     </message>
     <message>
       <location line="+10"/>
       <source>Name</source>
-      <translation type="unfinished"/>
+      <translation>Nombre</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Type</source>
-      <translation type="unfinished"/>
+      <translation>Tipo</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Date modified</source>
-      <translation type="unfinished"/>
+      <translation>Fecha de modificación</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Size</source>
-      <translation type="unfinished"/>
+      <translation>Tamaño</translation>
     </message>
     <message>
       <location line="+24"/>
       <source>Arrange automatically</source>
-      <translation type="unfinished"/>
+      <translation>Organizar automáticamente</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Keep icons packed; dragging reorders them</source>
-      <translation type="unfinished"/>
+      <translation>Mantiene los iconos juntos; arrastrarlos los reordena</translation>
     </message>
     <message>
       <location line="+18"/>
       <source>Rounded icon corners</source>
-      <translation type="unfinished"/>
+      <translation>Esquinas redondeadas en los iconos</translation>
     </message>
     <message>
       <location line="+12"/>
       <source>Icon size</source>
-      <translation type="unfinished"/>
+      <translation>Tamaño de los iconos</translation>
     </message>
     <message>
       <location line="+10"/>
       <source>Small</source>
-      <translation type="unfinished"/>
+      <translation>Pequeño</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Medium</source>
-      <translation type="unfinished"/>
+      <translation>Mediano</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Large</source>
-      <translation type="unfinished"/>
+      <translation>Grande</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Huge</source>
-      <translation type="unfinished"/>
+      <translation>Enorme</translation>
     </message>
     <message>
       <location line="+15"/>
       <source>Tip: Ctrl+scroll on the desktop also resizes icons</source>
-      <translation type="unfinished"/>
+      <translation>Sugerencia: Ctrl+rueda sobre el escritorio también cambia el tamaño de los iconos</translation>
     </message>
   </context>
   <context>
