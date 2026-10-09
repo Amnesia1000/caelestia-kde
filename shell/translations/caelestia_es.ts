@@ -337,12 +337,12 @@
     <message>
       <location line="+39"/>
       <source>Enter the password for &quot;%1&quot;.</source>
-      <translation>Introduce la contraseña de &quot;%1&quot;.</translation>
+      <translation>Ingresar la contraseña de "%1".</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Enter the details below to manually connect to a network.</source>
-      <translation>Introduce los datos siguientes para conectarte manualmente a una red.</translation>
+      <translation>Ingresar los datos siguientes para conectarse manualmente a una red.</translation>
     </message>
     <message>
       <location line="+13"/>
@@ -1020,7 +1020,7 @@
     <message>
       <location line="+0"/>
       <source>Tap to select</source>
-      <translation>Pulsa para seleccionar</translation>
+      <translation>Tocar para seleccionar</translation>
     </message>
     <message>
       <location line="+31"/>
@@ -1097,7 +1097,7 @@
     <message>
       <location line="+10"/>
       <source>2.4 GHz</source>
-      <translation>2,4 GHz</translation>
+      <translation>2.4 GHz</translation>
     </message>
   </context>
   <context>
@@ -1653,7 +1653,7 @@
     <message>
       <location line="+1"/>
       <source>Select an open window to add to ARPC</source>
-      <translation>Selecciona una ventana abierta para añadirla a ARPC</translation>
+      <translation>Seleccionar una ventana abierta para añadirla a ARPC</translation>
     </message>
     <message>
       <location line="+106"/>
@@ -1673,7 +1673,7 @@
     <message>
       <location line="+1"/>
       <source>Select an open Steam game to prevent it from broadcasting</source>
-      <translation>Selecciona un juego de Steam abierto para impedir que se difunda</translation>
+      <translation>Seleccionar un juego de Steam abierto para impedir que se difunda</translation>
     </message>
     <message>
       <location line="+60"/>
@@ -2623,7 +2623,7 @@
     <message>
       <location line="+1"/>
       <source>Select a folder containing images, GIFs, or videos</source>
-      <translation>Selecciona una carpeta que contenga imágenes, GIF o vídeos</translation>
+      <translation>Seleccionar una carpeta que contenga imágenes, GIF o vídeos</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -2643,7 +2643,7 @@
     <message>
       <location line="+1"/>
       <source>Select specific image, GIF, or video file to include</source>
-      <translation>Selecciona una imagen, GIF o archivo de vídeo específico para incluirlo</translation>
+      <translation>Seleccionar una imagen, GIF o archivo de vídeo específico para incluirlo</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -4976,19 +4976,19 @@
       <source>G A M E   O V E R
 Click to restart</source>
       <translation>F I N   D E L   J U E G O
-Hacé click para reiniciar</translation>
+Hacer click para reiniciar</translation>
     </message>
     <message>
       <location line="+10"/>
       <source>Y O U   W I N !
 Now go touch grass</source>
       <translation>¡G A N A S T E!
-Ahora salí a tocar el pasto</translation>
+Ahora salir a tocar el pasto</translation>
     </message>
     <message>
       <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/DinoGame.qml" line="+8"/>
       <source>Click or press Space to play</source>
-      <translation>Hacé click o presioná Espacio para jugar</translation>
+      <translation>Hacer click o presionar Espacio para jugar</translation>
     </message>
     <message>
       <location line="+86"/>
@@ -4998,7 +4998,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+6"/>
       <source>Click to restart</source>
-      <translation>Hacé click para reiniciar</translation>
+      <translation>Hacer click para reiniciar</translation>
     </message>
     <message>
       <location line="+15"/>
@@ -5008,7 +5008,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+6"/>
       <source>Now go touch grass</source>
-      <translation>Ahora salí a tocar el pasto</translation>
+      <translation>Ahora salir a tocar el pasto</translation>
     </message>
   </context>
   <context>
@@ -5115,7 +5115,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+3"/>
       <source>Hovering the clock now shows a mini calendar with a month grid, today highlighted, and month navigation. Click the title to jump back to today. Enable this feature in Settings -&gt; Panels -&gt; Taskbar -&gt; Clock.</source>
-      <translation>Al pasar el mouse sobre el reloj ahora se ve un mini calendario con la cuadrícula del mes, el día de hoy resaltado y navegación entre meses. Hacé click en el título para volver al día de hoy. Activá esta función en Configuración -&gt; Shell -&gt; Paneles -&gt; Elementos y módulos -&gt; Reloj.</translation>
+      <translation>Al pasar el mouse sobre el reloj ahora se ve un mini calendario con la cuadrícula del mes, el día de hoy resaltado y navegación entre meses. Hacer click en el título para volver al día de hoy. Activar esta función en Configuración -&gt; Shell -&gt; Paneles -&gt; Elementos y módulos -&gt; Reloj.</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -5125,7 +5125,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+3"/>
       <source>Right-clicking the status icons block in the bar now opens a context menu popout with a shortcut to the Status Icons configuration page, where you can reorder or toggle them.</source>
-      <translation>Al hacer click derecho en el bloque de iconos de estado de la barra se abre un menú contextual con un acceso directo a la página de configuración de los iconos de estado, donde podés reordenarlos o activarlos.</translation>
+      <translation>Al hacer click derecho en el bloque de iconos de estado de la barra se abre un menú contextual con un acceso directo a la página de configuración de los iconos de estado, donde se pueden reordenar o activar.</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -5135,7 +5135,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+3"/>
       <source>You can now manage multiple saved profiles (e.g. DHCP and static IP) for the same Wi-Fi network (SSID). The Saved Networks page lists one row per profile, allowing you to edit, autoconnect, or forget them individually.</source>
-      <translation>Ahora podés gestionar varios perfiles guardados (por ejemplo, DHCP e IP estática) para la misma red de Wi-Fi (SSID). La página de redes guardadas muestra una fila por perfil, para que puedas editarlos, conectar automáticamente u olvidarlos individualmente.</translation>
+      <translation>Ahora se pueden gestionar varios perfiles guardados (por ejemplo, DHCP e IP estática) para la misma red de Wi-Fi (SSID). La página de redes guardadas muestra una fila por perfil, para poder editarlos, conectar automáticamente u olvidarlos individualmente.</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -5145,7 +5145,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+3"/>
       <source>A manual light/dark mode selector has been added to the colors page, allowing you to override the automatic theme switching. Open Settings -&gt; Appearance -&gt; Colors -&gt; Advanced Settings to manually set the light/dark mode. Alternatively, you can open launcher -&gt; Type &gt; -&gt; Select light/dark mode.</source>
-      <translation>Se agregó un selector manual de modo claro/oscuro en la página de colores, para que puedas overriding el cambio automático de tema. Abrí Configuración -&gt; Apariencia -&gt; Colores -&gt; Configuración avanzada para fijar el modo manualmente. También podés abrir el lanzador -&gt; Escribiendo &gt; -&gt; y elegir el modo claro/oscuro.</translation>
+      <translation>Se agregó un selector manual de modo claro/oscuro en la página de colores para anular el cambio automático de tema. Abrir Configuración -&gt; Apariencia -&gt; Colores -&gt; Configuración avanzada permite fijar el modo manualmente. También se puede abrir el lanzador y elegir el modo claro/oscuro.</translation>
     </message>
   </context>
   <context>
@@ -5665,7 +5665,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="-14"/>
       <source>Give it a name and a password in Settings &gt; Network &gt; Hotspot</source>
-      <translation>Dale un nombre y una contraseña en Configuración &gt; Red &gt; Punto de acceso</translation>
+      <translation>Dar un nombre y una contraseña en Configuración &gt; Red &gt; Punto de acceso</translation>
     </message>
     <message>
       <location line="+14"/>
@@ -5745,7 +5745,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+1"/>
       <source>Enter a valid address in CIDR notation</source>
-      <translation>Introduce una dirección válida en notación CIDR</translation>
+      <translation>Ingresar una dirección válida en notación CIDR</translation>
     </message>
     <message>
       <location line="+9"/>
@@ -5755,7 +5755,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+2"/>
       <source>Enter a valid gateway address</source>
-      <translation>Introduce una dirección de puerta de enlace válida</translation>
+      <translation>Ingresar una dirección de puerta de enlace válida</translation>
     </message>
     <message>
       <location line="+11"/>
@@ -5770,7 +5770,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+1"/>
       <source>Enter valid DNS server addresses</source>
-      <translation>Introduce direcciones de servidores DNS válidas</translation>
+      <translation>Ingresar direcciones de servidores DNS válidas</translation>
     </message>
     <message>
       <location line="+45"/>
@@ -5815,7 +5815,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+69"/>
       <source>Press keys now...</source>
-      <translation>Pulsa las teclas ahora...</translation>
+      <translation>Presionar las teclas ahora...</translation>
     </message>
     <message>
       <location line="+50"/>
@@ -7116,7 +7116,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+9"/>
       <source>Try playing some music!</source>
-      <translation>¡Probá poner música!</translation>
+      <translation>¡Probar a poner música!</translation>
     </message>
   </context>
   <context>
@@ -7460,7 +7460,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+69"/>
       <source>Tap to select</source>
-      <translation>Pulsa para seleccionar</translation>
+      <translation>Tocar para seleccionar</translation>
     </message>
     <message>
       <location line="+2"/>
@@ -7587,7 +7587,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location filename="../modules/background/desktopicons/widgets/NoteWidget.qml" line="+49"/>
       <source>Write something…</source>
-      <translation>Escribí algo…</translation>
+      <translation>Escribir algo…</translation>
     </message>
   </context>
   <context>
@@ -7611,7 +7611,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+37"/>
       <source>No notes yet. Tap + to add one.</source>
-      <translation>Todavía no hay notas. Tocá + para agregar una.</translation>
+      <translation>Todavía no hay notas. Tocar + para agregar una.</translation>
     </message>
     <message>
       <location line="+73"/>
@@ -7621,7 +7621,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+45"/>
       <source>Start writing...</source>
-      <translation>Empezá a escribir...</translation>
+      <translation>Empezar a escribir...</translation>
     </message>
     <message>
       <location line="+20"/>
@@ -9210,7 +9210,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+0"/>
       <source>Enter your password</source>
-      <translation>Ingresá tu contraseña</translation>
+      <translation>Ingresar la contraseña</translation>
     </message>
   </context>
   <context>
@@ -9231,7 +9231,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+7"/>
       <source>Enable widgets in the dashboard settings</source>
-      <translation>Activa widgets en la configuración del panel</translation>
+      <translation>Activar widgets en la configuración del panel</translation>
     </message>
     <message>
       <location line="+32"/>
@@ -9325,7 +9325,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+153"/>
       <source>Enter a valid git URL</source>
-      <translation>Ingresá una URL de git válida</translation>
+      <translation>Ingresar una URL de git válida</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -11478,7 +11478,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+10"/>
       <source>Still looking for the uninstaller. Try again in a moment.</source>
-      <translation>Todavía se está buscando el desinstalador. Probá de nuevo en un momento.</translation>
+      <translation>Todavía se está buscando el desinstalador. Probar de nuevo en un momento.</translation>
     </message>
     <message>
       <location line="+2"/>
@@ -12925,7 +12925,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+64"/>
       <source>Drag a widget&apos;s corner to resize it; right-click for more</source>
-      <translation>Arrastrá una esquina del widget para cambiar su tamaño; hacé clic derecho para más opciones</translation>
+      <translation>Arrastrar una esquina del widget para cambiar su tamaño; hacer clic derecho para más opciones</translation>
     </message>
   </context>
   <context>
@@ -13034,7 +13034,7 @@ Ahora salí a tocar el pasto</translation>
     <message>
       <location line="+0"/>
       <source>Enable hibernation to use this feature.</source>
-      <translation>Activá la suspensión para usar esta función.</translation>
+      <translation>Activar la suspensión para usar esta función.</translation>
     </message>
   </context>
   <context>
