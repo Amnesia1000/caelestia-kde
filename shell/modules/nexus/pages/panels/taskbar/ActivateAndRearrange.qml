@@ -23,5 +23,6 @@ PageBase {
             if (root.panel)
                 root.panel.entries = entries;
         }
+        title: ""
     }
 }
