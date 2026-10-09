@@ -995,7 +995,6 @@ Item {
             isTyping = false;
             isThinking = false;
             inAgentLoop = false;
-            chatStore.persist();
             return;
         }
         proc.startedAt = Date.now();
@@ -1052,7 +1051,6 @@ Item {
 
     function onClaudeCodeUsage(proc, usage) {
         chatStore.update(proc.chatId, proc.msgId, { "usageText": usage });
-        chatStore.persist();
     }
 
     function onClaudeCodeCompleted(proc, reply) {
@@ -1066,7 +1064,6 @@ Item {
             "usageText": reply.usage,
             "isFinished": true
         });
-        chatStore.persist();
         proc.toolRunning = false;
         if (proc.chatId === currentChatId) {
             isTyping = false;
@@ -1377,7 +1374,6 @@ Item {
     function addAiMessage(message) {
         chatStore.append(currentChatId, { "text": message || "" });
         listView.positionViewAtEnd();
-        chatStore.persist();
     }
 
     function sendPrompt(promptText, isSystemToolResult = false, base64Image = null, toolName = "", isRetry = false) {
@@ -1397,7 +1393,6 @@ Item {
                 "attachments": attachmentPaths.join("\n")
             });
             listView.positionViewAtEnd();
-            chatStore.persist();
         }
 
         if (root.needsApiKey && root.getApiKey() === "") {
@@ -1606,7 +1601,6 @@ Item {
                     if (xhr.status === 200) {
                         root.rateLimitRetries = 0;
                         chatStore.update(reply.chatId, reply.msgId, { "isFinished": true });
-                        chatStore.persist();
                         
                         var enableTools = GlobalConfig.ai.enableCelestialMode;
                         var textToolCalls = enableTools ? AiToolCalls.parseTextToolCalls(rawAccumulatedContentText) : [];
@@ -1750,7 +1744,6 @@ Item {
                         isTyping = false;
                         isThinking = false;
                         inAgentLoop = false;
-                        chatStore.persist();
                     }
                 }
             }
@@ -2979,7 +2972,6 @@ Item {
                                              root.stopReply();
                                              if (root.activeReply)
                                                  chatStore.update(root.activeReply.chatId, root.activeReply.msgId, { "isFinished": true });
-                                             chatStore.persist();
                                          } else if (root.canSend) {
                                              root.sendPrompt(inputArea.text);
                                              inputArea.clear();

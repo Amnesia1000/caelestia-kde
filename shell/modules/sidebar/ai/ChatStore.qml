@@ -100,6 +100,7 @@ QtObject {
         // Until a title has been set, each message from the user asks again.
         if (m.isUser && !s.titleLocked && Sessions.isDefaultTitle(s.title))
             titleNeeded(chatId, Sessions.firstUserText(s));
+        persist();
         return m.msgId;
     }
 
@@ -114,12 +115,15 @@ QtObject {
             return;
         if (patch.isFinished)
             touch(s);
+        persist();
     }
 
     function remove(chatId: string, msgId: string): void {
         const s = session(chatId);
-        if (s)
+        if (s) {
             Sessions.editMessage(s, viewOf(chatId), "remove", msgId, null);
+            persist();
+        }
     }
 
     // Changes settings of a chat and stores them.
@@ -157,12 +161,19 @@ QtObject {
     // Removes chats and returns them with their positions, for restoreChats().
     function takeChats(ids: var): var {
         const taken = [];
-        for (let i = 0; i < sessions.length; i++)
-            if (ids.indexOf(sessions[i].id) !== -1)
+        for (let i = 0; i < sessions.length; i++) {
+            if (ids.indexOf(sessions[i].id) !== -1) {
+                const s = sessions[i];
+                for (let j = 0; j < s.messages.length; j++) {
+                    if (!s.messages[j].isFinished)
+                        Sessions.editMessage(s, viewOf(s.id), "update", s.messages[j].msgId, { "isFinished": true });
+                }
                 taken.push({
                     "index": i,
-                    "session": sessions[i]
+                    "session": s
                 });
+            }
+        }
         if (taken.length === 0)
             return taken;
         sessions = sessions.filter(s => ids.indexOf(s.id) === -1);
