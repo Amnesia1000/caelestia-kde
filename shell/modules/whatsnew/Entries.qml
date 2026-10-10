@@ -118,64 +118,57 @@ QtObject {
             "description": qsTr("Right-clicking specific bar items (such as the OS Icon, Power Button, and Show Desktop) now instantly opens their respective configuration pages in Nexus settings.")
         },
         {
-            "id": "launcher_drawer_prewarming",
-            "revision": 48,
-            "icon": "bolt",
-            "title": qsTr("Launcher Pre-warming"),
-            "description": qsTr("The launcher drawer is now pre-warmed in the background, eliminating open latency and preventing visual flicker when displaying the app grid.")
-        },
-        {
             "id": "app_browser_layouts",
-            "revision": 49,
+            "revision": 48,
             "icon": "apps",
             "title": qsTr("App Browser Layouts"),
             "description": qsTr("The launcher now supports multiple app browser layouts. Choose between the standard categorized Grid, a Simple list, or a Compact list view via configuration.")
         },
         {
             "id": "dashboard_hourly_weather",
-            "revision": 50,
+            "revision": 49,
             "icon": "partly_cloudy_day",
             "title": qsTr("Hourly Weather Forecast"),
             "description": qsTr("The Weather tab in the dashboard now includes an hourly forecast alongside the existing daily weather predictions.")
         },
         {
             "id": "claude_code_assistant",
-            "revision": 51,
+            "revision": 50,
             "icon": "smart_toy",
             "title": qsTr("Claude Code Assistant"),
             "description": qsTr("The AI assistant now integrates with Claude Code. Background subagents are fully supported with live streaming, and tool invocations are rendered inline where they were called. Code blocks feature syntax highlighting and copy buttons.")
         },
         {
             "id": "ai_chat_persistence",
-            "revision": 52,
+            "revision": 51,
             "icon": "history",
             "title": qsTr("AI Chat Persistence"),
             "description": qsTr("AI chats are now persistent. You can switch between active chats, and your Claude Code sessions and chat history are safely stored and managed across shell reloads.")
         },
         {
             "id": "pinned_sidebar",
-            "revision": 53,
+            "revision": 52,
             "icon": "vertical_split",
             "title": qsTr("Pinned Sidebar"),
             "description": qsTr("The sidebar can now be pinned to stay open, reserving screen workarea space so windows don't overlap it. You can resize it dynamically by dragging its edge.")
         },
         {
             "id": "unified_capture_card",
-            "revision": 54,
+            "revision": 53,
             "icon": "screenshot_monitor",
             "title": qsTr("Unified Capture Card"),
             "description": qsTr("Screen recording and screenshots are now combined into a single Capture Card in the utilities drawer. It provides quick access to fullscreen, active window, region snip, OCR, image search, and a history of saved captures.")
         },
         {
             "id": "dock_app_shortcuts",
-            "revision": 55,
+            "revision": 54,
             "icon": "keyboard",
             "title": qsTr("Dock App Shortcuts"),
             "description": qsTr("You can now use keyboard shortcuts (like Meta + 1 through 9) to quickly focus or launch your pinned applications from the dock. Requires setting up the shortcuts in the Shortcut Manager.")
         },
         {
             "id": "new_bar_components",
-            "revision": 56,
+            "revision": 55,
             "icon": "widgets",
             "title": qsTr("Bar Widgets"),
             "settingsPage": "panels",
@@ -184,14 +177,14 @@ QtObject {
         },
         {
             "id": "dashboard_notes_editors",
-            "revision": 57,
+            "revision": 56,
             "icon": "edit_document",
             "title": qsTr("Note Types & Editors"),
             "description": qsTr("The Dashboard Notes tab now supports dedicated editors for different note types, including Plain Text, Markdown, and Checklists, allowing for richer note-taking right from the dashboard.")
         },
         {
             "id": "desktop_widgets_folders",
-            "revision": 58,
+            "revision": 57,
             "icon": "widgets",
             "title": qsTr("Desktop Widgets & Large Folders"),
             "description": qsTr("You can now place interactive widgets and expandable large folders directly onto the desktop grid for quick access to tools and files."),
@@ -199,7 +192,7 @@ QtObject {
         },
         {
             "id": "quick_share",
-            "revision": 59,
+            "revision": 58,
             "icon": "share",
             "title": qsTr("Quick Share (Nearby Share)"),
             "settingsPage": "utilities",
