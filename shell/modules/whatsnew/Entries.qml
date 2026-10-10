@@ -69,106 +69,78 @@ QtObject {
             "description": qsTr("Added configurable fine X and Y position offsets for the desktop clock and desktop lyrics, allowing precise placement of elements on your wallpaper.")
         },
         {
-            "id": "desktop_background_menu",
-            "revision": 41,
-            "icon": "menu_open",
-            "title": qsTr("Desktop Context Menus"),
-            "description": qsTr("Multiple context menus have been added for Desktop, Icons, Folders & Widgets. You can also do a quick Middle-click action on desktop to toggle desktop icon visibility.")
-        },
-        {
-            "id": "plugin_manager_enhancements",
-            "revision": 42,
-            "icon": "extension",
-            "title": qsTr("Git Plugins & Updates"),
-            "description": qsTr("The Plugin Manager now supports installing plugins directly from Git URLs. It also checks for updates, displaying notification badges and allowing in-place updates.")
-        },
-        {
             "id": "wifi_hotspot",
-            "revision": 43,
+            "revision": 41,
             "icon": "wifi_tethering",
             "title": qsTr("Wi-Fi Hotspot"),
             "description": qsTr("A built-in Wi-Fi hotspot toggle switch has been added to the quick toggles and network popout, complete with auto-refresh state monitoring.")
         },
         {
             "id": "brightness_osd_dimming",
-            "revision": 44,
+            "revision": 42,
             "icon": "brightness_medium",
             "title": qsTr("Advanced Brightness Control"),
             "description": qsTr("The Brightness OSD now perfectly synchronizes with KWin state during slider drags, and supports reading and displaying software dimming multipliers.")
         },
         {
             "id": "audio_visualizer_enhancements",
-            "revision": 45,
+            "revision": 43,
             "icon": "equalizer",
             "title": qsTr("Audio Visualizer Enhancements"),
             "description": qsTr("The audio visualizer now allows you to choose the capture source (System Audio Output vs Microphone Input), and features configurable side widths and margin size scaling.")
         },
         {
             "id": "dock_ungrouped_windows",
-            "revision": 46,
+            "revision": 44,
             "icon": "grid_view",
             "title": qsTr("Ungrouped Dock Icons"),
             "description": qsTr("An option has been added to the Dock to display separate, ungrouped icon tiles for each individual window instance instead of grouping them by application.")
         },
         {
             "id": "bar_item_settings_links",
-            "revision": 47,
+            "revision": 45,
             "icon": "settings_applications",
             "title": qsTr("Bar Item Settings Links"),
             "description": qsTr("Right-clicking specific bar items (such as the OS Icon, Power Button, and Show Desktop) now instantly opens their respective configuration pages in Nexus settings.")
         },
         {
             "id": "app_browser_layouts",
-            "revision": 48,
+            "revision": 46,
             "icon": "apps",
             "title": qsTr("App Browser Layouts"),
             "description": qsTr("The launcher now supports multiple app browser layouts. Choose between the standard categorized Grid, a Simple list, or a Compact list view via configuration.")
         },
         {
             "id": "dashboard_hourly_weather",
-            "revision": 49,
+            "revision": 47,
             "icon": "partly_cloudy_day",
             "title": qsTr("Hourly Weather Forecast"),
             "description": qsTr("The Weather tab in the dashboard now includes an hourly forecast alongside the existing daily weather predictions.")
         },
         {
-            "id": "claude_code_assistant",
-            "revision": 50,
-            "icon": "smart_toy",
-            "title": qsTr("Claude Code Assistant"),
-            "description": qsTr("The AI assistant now integrates with Claude Code. Background subagents are fully supported with live streaming, and tool invocations are rendered inline where they were called. Code blocks feature syntax highlighting and copy buttons.")
-        },
-        {
-            "id": "ai_chat_persistence",
-            "revision": 51,
-            "icon": "history",
-            "title": qsTr("AI Chat Persistence"),
-            "description": qsTr("AI chats are now persistent. You can switch between active chats, and your Claude Code sessions and chat history are safely stored and managed across shell reloads.")
-        },
-        {
             "id": "pinned_sidebar",
-            "revision": 52,
+            "revision": 48,
             "icon": "vertical_split",
             "title": qsTr("Pinned Sidebar"),
             "description": qsTr("The sidebar can now be pinned to stay open, reserving screen workarea space so windows don't overlap it. You can resize it dynamically by dragging its edge.")
         },
         {
             "id": "unified_capture_card",
-            "revision": 53,
+            "revision": 49,
             "icon": "screenshot_monitor",
             "title": qsTr("Unified Capture Card"),
             "description": qsTr("Screen recording and screenshots are now combined into a single Capture Card in the utilities drawer. It provides quick access to fullscreen, active window, region snip, OCR, image search, and a history of saved captures.")
         },
         {
             "id": "dock_app_shortcuts",
-            "revision": 54,
+            "revision": 50,
             "icon": "keyboard",
             "title": qsTr("Dock App Shortcuts"),
             "description": qsTr("You can now use keyboard shortcuts (like Meta + 1 through 9) to quickly focus or launch your pinned applications from the dock. Requires setting up the shortcuts in the Shortcut Manager.")
         },
         {
             "id": "new_bar_components",
-            "revision": 55,
+            "revision": 51,
             "icon": "widgets",
             "title": qsTr("Bar Widgets"),
             "settingsPage": "panels",
@@ -177,14 +149,14 @@ QtObject {
         },
         {
             "id": "dashboard_notes_editors",
-            "revision": 56,
+            "revision": 52,
             "icon": "edit_document",
             "title": qsTr("Note Types & Editors"),
             "description": qsTr("The Dashboard Notes tab now supports dedicated editors for different note types, including Plain Text, Markdown, and Checklists, allowing for richer note-taking right from the dashboard.")
         },
         {
             "id": "desktop_widgets_folders",
-            "revision": 57,
+            "revision": 53,
             "icon": "widgets",
             "title": qsTr("Desktop Widgets & Large Folders"),
             "description": qsTr("You can now place interactive widgets and expandable large folders directly onto the desktop grid for quick access to tools and files."),
@@ -192,7 +164,7 @@ QtObject {
         },
         {
             "id": "quick_share",
-            "revision": 58,
+            "revision": 54,
             "icon": "share",
             "title": qsTr("Quick Share (Nearby Share)"),
             "settingsPage": "utilities",
