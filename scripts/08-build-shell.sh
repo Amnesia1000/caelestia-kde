@@ -604,9 +604,13 @@ install -m 644 "$BUNDLE_DIR/scripts/lib/update-state.sh" "$(install_lib_dir)/upd
 info "Installing the update-checker units..."
 install -m 644 "$BUNDLE_DIR/src/systemd/caelestia-update-checker.service" ~/.config/systemd/user/caelestia-update-checker.service
 install -m 644 "$BUNDLE_DIR/src/systemd/caelestia-update-checker.timer" ~/.config/systemd/user/caelestia-update-checker.timer
-systemctl --user daemon-reload
-systemctl --user enable --now caelestia-update-checker.timer
-ok "Update-checker timer enabled"
+if [[ -n "${XDG_RUNTIME_DIR:-}" ]]; then
+    systemctl --user daemon-reload || true
+    systemctl --user enable --now caelestia-update-checker.timer || true
+    ok "Update-checker timer enabled"
+else
+    info "Skipping update-checker timer setup (no XDG_RUNTIME_DIR)"
+fi
 
 DEST_DIR="$HOME/.config/quickshell/caelestia/assets/icons/yet-another-monochrome-icon-set"
 TMP_DIR="${DEST_DIR}.tmp"
