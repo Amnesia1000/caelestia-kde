@@ -260,9 +260,6 @@ Item {
         id: mprisSource
 
         function poll() {
-            // One call for all fields. The previous form launched python3, which then
-            // spawned one caelestia-shell-ipc client (a bash wrapper around the Qt
-            // quickshell binary) per field, so every poll cost ~9 process starts.
             connectSource(lockScreenUi.ipcBin + " call mpris status");
         }
 

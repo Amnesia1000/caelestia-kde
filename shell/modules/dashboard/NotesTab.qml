@@ -19,9 +19,6 @@ Item {
     property int selectedIndex: -1
     readonly property var selectedNote: root.selectedIndex >= 0 && root.selectedIndex < root.notes.length ? root.notes[root.selectedIndex] : null
 
-    // The dashboard latches every pane it has ever shown as active, so a pane keeps
-    // its `visible` even after the drawer closes. Animations here must therefore be
-    // gated on the drawer being open, or they keep the pane rendering forever.
     property bool dashboardOpen: true
 
     // Managed media library: uploads are copied under notes/audio|images
@@ -802,9 +799,6 @@ Item {
                     opacity: 0.4
 
                     SequentialAnimation on scale {
-                        // Bounded: an infinite pulse keeps this pane rendering for as long
-                        // as the empty state is on screen, which is exactly the "icon
-                        // animating forever" case. Pulse a few times to draw the eye, then rest.
                         loops: 3
                         running: root.selectedNote === null && root.dashboardOpen
 

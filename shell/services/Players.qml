@@ -148,10 +148,6 @@ Singleton {
             return active ? active[prop] ?? qsTr("Invalid property") : qsTr("No active player");
         }
 
-        // Bulk query for out-of-process clients such as the lockscreen, so that one
-        // call replaces one call per field. Also keeps the fallback strings of
-        // getActive() out of the payload: fields that feed a URL are otherwise given
-        // the text "No active player", which a caller can only render as a dead Image.
         function status(): string {
             const active = root.active;
             if (!active)
