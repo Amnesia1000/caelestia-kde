@@ -16,6 +16,37 @@ StyledRect {
     required property real usage
     required property real temperature
 
+    // `usage` is an unsmoothed per-tick sample (Cpu re-emits on any change > 0.0001),
+    // and on a loaded machine it swings well past the band boundaries either side of
+    // them. Binding `shape` straight to it therefore restarts a full morph animation
+    // almost every tick, so only adopt a new band once the value has stayed in it.
+    property int usageBand: 0
+
+    function bandFor(usage: real): int {
+        const thresholds = [0.4, 0.8];
+        let band = 0;
+        while (band < thresholds.length && usage >= thresholds[band])
+            ++band;
+        return band;
+    }
+
+    onUsageChanged: {
+        if (isNaN(root.usage))
+            return;
+        if (bandFor(root.usage) === root.usageBand) {
+            usageBandTimer.stop();
+            return;
+        }
+        usageBandTimer.restart();
+    }
+
+    Timer {
+        id: usageBandTimer
+
+        interval: 2500
+        onTriggered: root.usageBand = root.bandFor(root.usage)
+    }
+
     color: Colours.tPalette.m3surfaceContainer
     radius: Tokens.rounding.extraLarge
 
@@ -115,13 +146,7 @@ StyledRect {
 
         implicitSize: Tokens.sizes.dashboard.perfUsageShapeSize
         color: Colours.palette.m3secondaryContainer
-        shape: {
-            if (root.usage >= 0.8)
-                return MaterialShape.SoftBurst;
-            if (root.usage >= 0.4)
-                return MaterialShape.Sunny;
-            return MaterialShape.Cookie4Sided;
-        }
+        shape: [MaterialShape.Cookie4Sided, MaterialShape.Sunny, MaterialShape.SoftBurst][root.usageBand]
 
         Behavior on color {
             CAnim {}
