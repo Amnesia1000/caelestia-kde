@@ -206,7 +206,9 @@ Item {
             Component {
                 id: notesComponent
 
-                NotesTab {}
+                NotesTab {
+                    dashboardOpen: root.visibilities.dashboard
+                }
             }
             
             Component {

@@ -19,6 +19,11 @@ Item {
     property int selectedIndex: -1
     readonly property var selectedNote: root.selectedIndex >= 0 && root.selectedIndex < root.notes.length ? root.notes[root.selectedIndex] : null
 
+    // The dashboard latches every pane it has ever shown as active, so a pane keeps
+    // its `visible` even after the drawer closes. Animations here must therefore be
+    // gated on the drawer being open, or they keep the pane rendering forever.
+    property bool dashboardOpen: true
+
     // Managed media library: uploads are copied under notes/audio|images
     // so notes survive the original files being moved or deleted.
     readonly property string notesMediaDir: Paths.state + "/notes"
@@ -798,7 +803,7 @@ Item {
 
                     SequentialAnimation on scale {
                         loops: Animation.Infinite
-                        running: root.selectedNote === null
+                        running: root.selectedNote === null && root.dashboardOpen
 
                         NumberAnimation {
                             to: 1.06
