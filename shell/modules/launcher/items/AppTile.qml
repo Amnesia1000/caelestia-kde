@@ -21,11 +21,16 @@ Item {
     readonly property bool isFavourite: root.modelData && Strings.testRegexList(GlobalConfig.launcher.favouriteApps, root.modelData.id)
     readonly property bool favouriteByRegex: root.modelData && !((GlobalConfig.launcher.favouriteApps ?? []).includes(root.modelData.id)) && root.isFavourite
     readonly property bool simple: Config.launcher.browseLayout === LauncherBrowseLayout.Simple
-    readonly property bool hovered: tileArea.containsMouse && nameMetrics.advanceWidth > name.width
-    readonly property bool flipped: root.hovered && Config.launcher.nameOverflow === LauncherNameOverflow.Flip
-    readonly property bool shrunk: root.hovered && Config.launcher.nameOverflow === LauncherNameOverflow.Shrink
-    readonly property bool tooltipShown: Config.launcher.nameOverflow === LauncherNameOverflow.Flip ? fullName.truncated : name.truncated
-    readonly property int nameLines: nameMetrics.height > 0 ? Math.max(1, Math.floor((root.implicitHeight - Tokens.spacing.small) / nameMetrics.height)) : 1
+    readonly property int nameMode: Config.launcher.nameOverflow
+
+    // Measured rather than read back off the label: the label's own truncation depends on the
+    // line count these drive, so reading it would be circular.
+    readonly property bool nameOverflows: nameMetrics.advanceWidth > name.width
+    readonly property bool hovered: tileArea.containsMouse && !favArea.containsMouse && root.nameOverflows
+    readonly property bool flipped: root.hovered && root.nameMode === LauncherNameOverflow.Flip
+    readonly property bool shrunk: root.hovered && root.nameMode === LauncherNameOverflow.Shrink
+    readonly property bool labelTruncated: root.flipped ? (flipFace.item?.truncated ?? false) : name.truncated
+    readonly property int maxNameLines: nameMetrics.height > 0 ? Math.max(1, Math.floor((root.implicitHeight - Tokens.spacing.small) / nameMetrics.height)) : 1
     readonly property int baseIconSize: Math.round(root.implicitWidth * 0.42)
 
     implicitWidth: Tokens.sizes.launcher.browseTileWidth
@@ -70,7 +75,7 @@ Item {
             }
         }
 
-        ToolTip.visible: tileArea.containsMouse && !favArea.containsMouse && root.tooltipShown
+        ToolTip.visible: tileArea.containsMouse && !favArea.containsMouse && root.labelTruncated
         ToolTip.text: root.modelData?.name ?? ""
     }
 
@@ -80,24 +85,25 @@ Item {
         anchors.fill: parent
         clip: true
 
+        // Two stacked pages: the icon with its one-line label, then the full name a flip reveals.
         Item {
-            id: frontFace
+            id: track
 
             width: page.width
-            height: page.height
-            y: root.flipped ? -height : 0
+            height: page.height * 2
+            y: root.flipped ? -page.height : 0
 
             Behavior on y {
-                NumberAnimation {
-                    duration: Tokens.anim.durations.expressiveFastSpatial
-                    easing.type: Easing.OutBack
+                Anim {
+                    type: Anim.FastSpatial
                 }
             }
 
             Column {
                 id: content
 
-                anchors.centerIn: parent
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: (page.height - height) / 2
                 spacing: Tokens.spacing.extraSmall
 
                 Item {
@@ -109,9 +115,8 @@ Item {
                     implicitHeight: root.shrunk ? Math.round(root.baseIconSize / 2) : root.baseIconSize
 
                     Behavior on implicitHeight {
-                        NumberAnimation {
-                            duration: Tokens.anim.durations.expressiveFastSpatial
-                            easing.type: Easing.OutBack
+                        Anim {
+                            type: Anim.FastSpatial
                         }
                     }
 
@@ -135,109 +140,104 @@ Item {
                     implicitHeight: name.implicitHeight
 
                     Behavior on implicitHeight {
-                        NumberAnimation {
-                            duration: Tokens.anim.durations.expressiveFastSpatial
-                            easing.type: Easing.OutBack
+                        Anim {
+                            type: Anim.FastSpatial
                         }
                     }
 
-                    StyledText {
+                    NameLabel {
                         id: name
 
-                        text: root.modelData?.name ?? ""
-                        color: root.selected ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
-                        font: root.simple ? Tokens.font.label.builders.medium.size(9).build() : Tokens.font.label.large
-                        elide: Text.ElideRight
-                        wrapMode: Text.Wrap
-                        maximumLineCount: root.shrunk ? 2 : 1
-                        width: root.implicitWidth - Tokens.padding.medium * 2
-                        horizontalAlignment: Text.AlignHCenter
+                        maxLines: root.shrunk ? 2 : 1
                     }
                 }
             }
 
-            MaterialIcon {
-                id: favIcon
+            Loader {
+                id: flipFace
 
-                anchors.top: parent.top
-                anchors.right: parent.right
-                anchors.topMargin: Tokens.spacing.extraSmall
-                anchors.rightMargin: Tokens.spacing.extraSmall
-
-                width: 22
-                height: 22
-                fontStyle: Tokens.font.icon.small
-
-                opacity: ((root.simple ? tileArea.containsMouse : root.isFavourite) || favArea.containsMouse) ? 1 : 0
-                text: root.isFavourite ? "favorite" : "favorite_border"
-                fill: root.isFavourite ? 1 : 0
-                color: root.favouriteByRegex ? Colours.palette.m3outline : (root.isFavourite ? Colours.palette.m3primary : (favArea.containsMouse ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant))
-
-                Behavior on color {
-                    CAnim {}
-                }
-
-                Behavior on opacity {
-                    Anim {
-                        type: Anim.StandardSmall
+                active: root.nameMode === LauncherNameOverflow.Flip
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: page.height + (page.height - height) / 2
+                sourceComponent: Component {
+                    NameLabel {
+                        maxLines: root.maxNameLines
                     }
-                }
-
-                StateLayer {
-                    id: favArea
-
-                    anchors.fill: undefined
-                    anchors.centerIn: parent
-                    implicitWidth: 26
-                    implicitHeight: 26
-                    radius: Tokens.rounding.full
-                    disabled: root.flipped
-                    cursorShape: root.favouriteByRegex ? Qt.ArrowCursor : Qt.PointingHandCursor
-
-                    onClicked: {
-                        if (root.favouriteByRegex)
-                            return;
-                        const appId = root.modelData?.id;
-                        if (!appId)
-                            return;
-                        const favApps = GlobalConfig.launcher.favouriteApps ? [...GlobalConfig.launcher.favouriteApps] : [];
-                        if (Strings.testRegexList(favApps, appId)) {
-                            const idx = favApps.indexOf(appId);
-                            if (idx !== -1)
-                                favApps.splice(idx, 1);
-                        } else {
-                            favApps.push(appId);
-                        }
-                        GlobalConfig.launcher.favouriteApps = favApps;
-                        root.browser.refresh();
-                    }
-
-                    ToolTip.visible: favArea.containsMouse && root.favouriteByRegex
-                    ToolTip.text: qsTr("Matched by a regex in favouriteApps - edit the config file to change")
                 }
             }
         }
+    }
 
-        StyledText {
-            id: fullName
+    MaterialIcon {
+        id: favIcon
 
-            anchors.horizontalCenter: parent.horizontalCenter
-            width: root.implicitWidth - Tokens.padding.medium * 2
-            text: root.modelData?.name ?? ""
-            color: root.selected ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
-            font: name.font
-            elide: Text.ElideRight
-            wrapMode: Text.Wrap
-            maximumLineCount: root.nameLines
-            horizontalAlignment: Text.AlignHCenter
-            y: root.flipped ? (page.height - height) / 2 : page.height
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.topMargin: Tokens.spacing.extraSmall
+        anchors.rightMargin: Tokens.spacing.extraSmall
 
-            Behavior on y {
-                NumberAnimation {
-                    duration: Tokens.anim.durations.expressiveFastSpatial
-                    easing.type: Easing.OutBack
-                }
+        width: 22
+        height: 22
+        fontStyle: Tokens.font.icon.small
+
+        opacity: ((root.simple ? tileArea.containsMouse : root.isFavourite) || favArea.containsMouse) ? 1 : 0
+        text: root.isFavourite ? "favorite" : "favorite_border"
+        fill: root.isFavourite ? 1 : 0
+        color: root.favouriteByRegex ? Colours.palette.m3outline : (root.isFavourite ? Colours.palette.m3primary : (favArea.containsMouse ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant))
+
+        Behavior on color {
+            CAnim {}
+        }
+
+        Behavior on opacity {
+            Anim {
+                type: Anim.StandardSmall
             }
         }
+
+        StateLayer {
+            id: favArea
+
+            anchors.fill: undefined
+            anchors.centerIn: parent
+            implicitWidth: 26
+            implicitHeight: 26
+            radius: Tokens.rounding.full
+            cursorShape: root.favouriteByRegex ? Qt.ArrowCursor : Qt.PointingHandCursor
+
+            onClicked: {
+                if (root.favouriteByRegex)
+                    return;
+                const appId = root.modelData?.id;
+                if (!appId)
+                    return;
+                const favApps = GlobalConfig.launcher.favouriteApps ? [...GlobalConfig.launcher.favouriteApps] : [];
+                if (Strings.testRegexList(favApps, appId)) {
+                    const idx = favApps.indexOf(appId);
+                    if (idx !== -1)
+                        favApps.splice(idx, 1);
+                } else {
+                    favApps.push(appId);
+                }
+                GlobalConfig.launcher.favouriteApps = favApps;
+                root.browser.refresh();
+            }
+
+            ToolTip.visible: favArea.containsMouse && root.favouriteByRegex
+            ToolTip.text: qsTr("Matched by a regex in favouriteApps - edit the config file to change")
+        }
+    }
+
+    component NameLabel: StyledText {
+        required property int maxLines
+
+        text: root.modelData?.name ?? ""
+        color: root.selected ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
+        font: root.simple ? Tokens.font.label.builders.medium.size(9).build() : Tokens.font.label.large
+        elide: Text.ElideRight
+        wrapMode: Text.Wrap
+        maximumLineCount: maxLines
+        width: root.implicitWidth - Tokens.padding.medium * 2
+        horizontalAlignment: Text.AlignHCenter
     }
 }
