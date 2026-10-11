@@ -162,6 +162,8 @@ Item {
                         sourceComponent: modelData.component
 
                         Component.onCompleted: active = Qt.binding(() => {
+                            if (!root.visibilities.dashboard)
+                                return false;
                             if (active) return true;
                             if (index === view.currentIndex)
                                 return true;
