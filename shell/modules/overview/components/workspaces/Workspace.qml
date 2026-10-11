@@ -206,6 +206,7 @@ StyledRect {
     }
     GridLayout {
         id: gridLayout
+
         readonly property int count: repeater.count
         readonly property int effectiveCount: {
             if (windowDropArea.hovering === null) return count;
@@ -280,7 +281,6 @@ StyledRect {
                 scale: closing ? 0.0 : (dragHandler.active && dropTargetScale > 0 ? dropTargetScale : 1.0)
                 opacity: closing ? 0.0 : 1.0
                 visible: !(windowDropArea.hovering !== null && !dragHandler.active && windowDropArea.hovering.clientAddress === iconDelegate.clientAddress)
-                
 
                 Drag.active: dragHandler.active
                 Drag.source: iconDelegate
@@ -326,7 +326,6 @@ StyledRect {
                 Behavior on height { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
                 Behavior on x { enabled: !dragHandler.active; NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
                 Behavior on y { enabled: !dragHandler.active; NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-
 
                 DragHandler {
                     id: dragHandler
@@ -383,6 +382,7 @@ StyledRect {
         }
         StyledRect {
             id: dropPlaceholder
+
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.rowSpan: (gridLayout.effectiveCount >= 3 && gridLayout.effectiveCount % 2 !== 0 && repeater.count === 0) ? 2 : 1
@@ -391,7 +391,7 @@ StyledRect {
             border.width: 2
             radius: Tokens.rounding.small
             visible: windowDropArea.hovering !== null
-            
+
             Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
             Behavior on height { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
         }
