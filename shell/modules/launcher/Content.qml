@@ -362,6 +362,14 @@ Item {
             }
 
             Connections {
+                function onClosed(): void {
+                    search.text = "";
+                }
+
+                target: root.panels.launcher
+            }
+
+            Connections {
                 function onModifierReleased(): void {
                     if (Windows.isSwitching && root.visibilities.launcher && search.text.startsWith(`${GlobalConfig.launcher.actionPrefix}windows `)) {
                         const switcherKey = (typeof KeybindsModel !== "undefined" && KeybindsModel.getKey("windowSwitcher")) || "Alt+Tab";
