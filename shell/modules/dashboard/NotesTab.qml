@@ -802,7 +802,10 @@ Item {
                     opacity: 0.4
 
                     SequentialAnimation on scale {
-                        loops: Animation.Infinite
+                        // Bounded: an infinite pulse keeps this pane rendering for as long
+                        // as the empty state is on screen, which is exactly the "icon
+                        // animating forever" case. Pulse a few times to draw the eye, then rest.
+                        loops: 3
                         running: root.selectedNote === null && root.dashboardOpen
 
                         NumberAnimation {
