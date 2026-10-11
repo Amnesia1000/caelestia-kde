@@ -64,7 +64,7 @@ PageBase {
 
                     StyledText {
                         text: qsTr("Add a custom class or regex pattern")
-                        font: Tokens.font.label.small
+                        font: NexusStyle.secondaryFont
                         color: Colours.palette.m3onSurfaceVariant
                         elide: Text.ElideRight
                     }

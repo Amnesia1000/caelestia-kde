@@ -29,8 +29,8 @@ PageBase {
         }
 
         ToggleRow {
-            text: qsTr("Screen Recorder")
-            subtext: qsTr("Show the Screen Recorder card")
+            text: qsTr("Screen Capture")
+            subtext: qsTr("Show the screen capture card")
             checked: Config.utilities.showScreenRecorder
             onToggled: GlobalConfig.utilities.showScreenRecorder = checked
         }
@@ -40,6 +40,13 @@ PageBase {
             subtext: qsTr("Show the Record GIF option in the recorder menu")
             checked: Config.utilities.showGifRecorder
             onToggled: GlobalConfig.utilities.showGifRecorder = checked
+        }
+
+        ToggleRow {
+            text: qsTr("Quick Share")
+            subtext: qsTr("Show the Quick Share card while it is enabled")
+            checked: Config.utilities.showQuickShare
+            onToggled: GlobalConfig.utilities.showQuickShare = checked
         }
 
         ToggleRow {

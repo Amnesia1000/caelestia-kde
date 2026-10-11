@@ -15,6 +15,8 @@ Singleton {
     readonly property MprisPlayer active: props.manualActive ?? list.find(p => getIdentity(p) === GlobalConfig.services.defaultPlayer) ?? list[0] ?? null
     property alias manualActive: props.manualActive
 
+    readonly property list<string> appVolumePlayers: ["Spotify", "Fastpotify", "YouTube Music"]
+
     property string lastNowPlayingKey: ""
 
     function getIdentity(player: MprisPlayer): string {
@@ -22,6 +24,13 @@ Singleton {
             return "";
         const alias = GlobalConfig.services.playerAliases.values.find(a => a.from === player.identity);
         return alias?.to ?? player.identity;
+    }
+
+    function supportsAppVolume(player: MprisPlayer): bool {
+        if (!player)
+            return false;
+        const identity = root.getIdentity(player).toLowerCase();
+        return root.appVolumePlayers.some(n => identity.includes(n.toLowerCase()));
     }
 
     function getArtUrl(player: MprisPlayer): string {
@@ -136,7 +145,7 @@ Singleton {
     IpcHandler {
         function getActive(prop: string): string {
             const active = root.active;
-            return active ? active[prop] ?? "Invalid property" : "No active player";
+            return active ? active[prop] ?? qsTr("Invalid property") : qsTr("No active player");
         }
 
         function list(): string {

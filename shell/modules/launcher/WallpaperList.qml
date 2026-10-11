@@ -133,6 +133,7 @@ PathView {
 
         interval: 100
         onTriggered: {
+            if (!root.visibilities.launcher) return;
             if (root.currentItem)
                 Wallpapers.preview((root.currentItem as WallpaperItem).modelData.path);
         }

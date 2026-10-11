@@ -30,6 +30,20 @@ PageBase {
             text: qsTr("Show update indicator")
             subtext: qsTr("Always-visible icon in the taskbar that changes when a Caelestia update is available")
             checked: root.indicatorEnabled
+            // Custom reset: enabled state lives in bar.entries, default is true
+            reset: ({
+                customGet: () => root.indicatorEnabled,
+                customDef: true,
+                customSet: v => {
+                    const entries = GlobalConfig.bar.entries ? [...GlobalConfig.bar.entries] : [];
+                    const idx = entries.findIndex(e => e.id === "updateIndicator");
+                    if (idx >= 0)
+                        entries[idx] = { id: "updateIndicator", enabled: v, zone: entries[idx].zone || "right" };
+                    else
+                        entries.push({ id: "updateIndicator", enabled: v, zone: "right" });
+                    GlobalConfig.bar.entries = entries;
+                }
+            })
             onToggled: {
                 const entries = GlobalConfig.bar.entries ? [...GlobalConfig.bar.entries] : [];
                 const idx = entries.findIndex(e => e.id === "updateIndicator");
@@ -45,6 +59,7 @@ PageBase {
             last: true
             text: qsTr("Enable update checking")
             subtext: qsTr("Enables the update indicator and periodic checks (every 30 minutes)")
+            reset: ({ node: GlobalConfig.general, setting: "checkUpdates" })
             checked: GlobalConfig.general.checkUpdates
             onToggled: GlobalConfig.general.checkUpdates = checked
         }

@@ -137,6 +137,9 @@ QtObject {
                 Component {
                     TabSwitcherPanel {}
                 }
+                Component {
+                    BarMedia {}
+                }
             }
         },
         Component {
@@ -161,6 +164,9 @@ QtObject {
                 }
                 Component {
                     SavedNetworksPage {}
+                }
+                Component {
+                    HotspotPage {}
                 }
             }
         },
@@ -231,6 +237,9 @@ QtObject {
                 }
                 Component {
                     QuickTogglesPage {}
+                }
+                Component {
+                    QuickSharePage {}
                 }
             }
         },

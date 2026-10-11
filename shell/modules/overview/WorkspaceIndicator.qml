@@ -16,8 +16,10 @@ Item {
     property int currentIndex: 0
     readonly property int activeWsId: currentIndex + 1
     property int maxWidth: 1000
-    readonly property real requiredWidth: (count + 1) * 200 + count * Tokens.spacing.small
-    readonly property real scaleFactor: requiredWidth > maxWidth ? maxWidth / requiredWidth : 1.0
+    property real baseScale: 1.0
+    readonly property real unscaledWidth: (count + 1) * 200 + count * Tokens.spacing.small
+    readonly property real scaleFactor: (unscaledWidth * baseScale) > maxWidth ? maxWidth / unscaledWidth : baseScale
+    readonly property real requiredWidth: unscaledWidth * scaleFactor
     property real swipeOffset: Kwin.swipeOffsetByOutput?.[screenName] ?? Kwin.swipeOffset
     property bool isSwiping: false
     property var closingWindows: []

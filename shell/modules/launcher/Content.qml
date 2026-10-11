@@ -342,14 +342,14 @@ Item {
             Connections {
                 function onLauncherChanged(): void {
                     if (root.visibilities.launcher) {
-                        if (Visibilities.launcherInitialSearch) {
-                            search.text = Visibilities.launcherInitialSearch;
-                            Visibilities.launcherInitialSearch = "";
-                        }
+                        // Every open decides the field: the requested prefix, or the app grid.
+                        search.text = Visibilities.launcherInitialSearch;
+                        Visibilities.launcherInitialSearch = "";
                         search.forceActiveFocus();
                     } else {
                         Windows.isSwitching = false;
                         Kwin.clearHighlight();
+                        Wallpapers.stopPreview();
                     }
                 }
 

@@ -46,12 +46,16 @@ Variants {
             height: 0
         }
         TapHandler {
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
             onTapped: (eventPoint, button) => {
                 if (desktopIcons.renameActive)
-                    desktopIcons.renamingDelegate?.cancelRename();
-                if (button === Qt.RightButton && Config.background.wallpaperEnabled && !desktopIcons.iconAt(eventPoint.position.x, eventPoint.position.y)) {
+                    desktopIcons.renamingDelegate?.commitRename();
+                const onEmptyDesktop = Config.background.wallpaperEnabled && !desktopIcons.iconAt(eventPoint.position.x, eventPoint.position.y);
+                if (button === Qt.RightButton && onEmptyDesktop) {
                     ContextMenuStore.openDesktopContextMenu(eventPoint.position.x, eventPoint.position.y, win.modelData.name);
+                } else if (button === Qt.MiddleButton && onEmptyDesktop) {
+                    // Middle click on empty desktop shows or hides the icons.
+                    ContextMenuStore.toggleIcons(win.modelData.name);
                 } else if (button === Qt.LeftButton) {
                     if (true) {
                         Kwin.setActiveOutputName(win.screen.name);
@@ -86,6 +90,7 @@ Variants {
             id: desktopIcons
 
             screenData: win.modelData
+            wallpaper: behindClock
             z: 3
         }
         Loader {
@@ -467,6 +472,6 @@ Variants {
         }
         WlrLayershell.exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Bottom
-        WlrLayershell.keyboardFocus: desktopIcons.renameActive ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: desktopIcons.renameActive ? WlrKeyboardFocus.Exclusive : desktopIcons.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     }
 }

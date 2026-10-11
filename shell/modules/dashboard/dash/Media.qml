@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Effects
+import Quickshell.Services.Mpris
 import Caelestia.Components
 import Caelestia.Config
 import Caelestia.Services
@@ -20,6 +21,15 @@ Item {
     }
 
     readonly property real arcCoverGap: Tokens.spacing.extraSmall
+
+    // Lets embedders (e.g. the bar popout) show extra controls in the
+    // built-in row. Defaults to false, so the dashboard renders exactly
+    // as before.
+    property bool extraButtons: false
+
+    // Lets embedders hide the gif block to compact the player.
+    // Defaults to true, so the dashboard renders exactly as before.
+    property bool showGif: true
 
     anchors.top: parent.top
     anchors.bottom: parent.bottom
@@ -132,8 +142,23 @@ Item {
         anchors.right: parent.right
         anchors.topMargin: Tokens.spacing.medium
         anchors.margins: Tokens.padding.large
+        anchors.leftMargin: root.extraButtons ? Tokens.padding.small : Tokens.padding.large
+        anchors.rightMargin: root.extraButtons ? Tokens.padding.small : Tokens.padding.large
 
         spacing: Tokens.spacing.extraSmall
+
+        IconButton {
+            visible: root.extraButtons
+            type: IconButton.Tonal
+            icon: "shuffle"
+            isRound: true
+            shapeMorph: true
+            checked: Players.active?.shuffle ?? false
+            font: Tokens.font.icon.small
+            disabled: !Players.active?.shuffleSupported
+            onClicked: Players.active.shuffle = !Players.active?.shuffle
+            implicitWidth: Math.round(implicitHeight * 0.9)
+        }
 
         IconButton {
             type: IconButton.Tonal
@@ -162,11 +187,33 @@ Item {
             disabled: !Players.active?.canGoNext
             onClicked: Players.active?.next()
         }
+
+        IconButton {
+            visible: root.extraButtons
+            type: IconButton.Tonal
+            icon: Players.active?.loopState === MprisLoopState.Track ? "repeat_one" : "repeat"
+            isRound: true
+            shapeMorph: true
+            checked: Players.active?.loopState === MprisLoopState.Track || Players.active?.loopState === MprisLoopState.Playlist
+            font: Tokens.font.icon.small
+            disabled: !Players.active?.loopSupported
+            onClicked: {
+                const state = Players.active.loopState;
+                if (state === MprisLoopState.None)
+                    Players.active.loopState = MprisLoopState.Track;
+                else if (state === MprisLoopState.Track)
+                    Players.active.loopState = MprisLoopState.Playlist;
+                else
+                    Players.active.loopState = MprisLoopState.None;
+            }
+            implicitWidth: Math.round(implicitHeight * 0.9)
+        }
     }
 
     Item {
         id: bongocat
 
+        visible: root.showGif
         anchors.top: controls.bottom
         anchors.bottom: parent.bottom
         anchors.left: parent.left
