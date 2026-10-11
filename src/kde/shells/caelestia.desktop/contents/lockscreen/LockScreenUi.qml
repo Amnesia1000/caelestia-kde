@@ -260,7 +260,10 @@ Item {
         id: mprisSource
 
         function poll() {
-            connectSource("PATH=\"${CAELESTIA_BIN_DIR:-$HOME/.local/bin}:$PATH\" python3 -c 'import json, subprocess, os; ipc = \"caelestia-shell-ipc\"; get = lambda p: subprocess.run([ipc, \"call\", \"mpris\", \"getActive\", p], capture_output=True, text=True).stdout.strip(); t, a, u, s = get(\"trackTitle\"), get(\"trackArtist\"), get(\"trackArtUrl\"), get(\"playbackState\"); t = \"\" if t == \"No active player\" else t; print(json.dumps({\"title\": t, \"artist\": a, \"artUrl\": u, \"status\": \"Playing\" if s == \"1\" else \"Paused\"}))'");
+            // One call for all fields. The previous form launched python3, which then
+            // spawned one caelestia-shell-ipc client (a bash wrapper around the Qt
+            // quickshell binary) per field, so every poll cost ~9 process starts.
+            connectSource(lockScreenUi.ipcBin + " call mpris status");
         }
 
         engine: "executable"
