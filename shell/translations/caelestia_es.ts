@@ -12034,8 +12034,8 @@ PIN: %1</source>
     </message>
     <message>
       <location line="+1"/>
-      <source>Scroll on the top half of the bar to adjust volume</source>
-      <translation>Desplázate sobre la mitad superior de la barra para ajustar el volumen</translation>
+      <source>Scroll on the left half of a horizontal bar (top half if vertical) to adjust volume</source>
+      <translation>Desplázate sobre la mitad izquierda de una barra horizontal (mitad superior si es vertical) para ajustar el volumen</translation>
     </message>
     <message>
       <location line="+8"/>
@@ -12044,8 +12044,8 @@ PIN: %1</source>
     </message>
     <message>
       <location line="+1"/>
-      <source>Scroll on the bottom half of the bar to adjust brightness</source>
-      <translation>Desplázate sobre la mitad inferior de la barra para ajustar el brillo</translation>
+      <source>Scroll on the right half of a horizontal bar (bottom half if vertical) to adjust brightness</source>
+      <translation>Desplázate sobre la mitad derecha de una barra horizontal (mitad inferior si es vertical) para ajustar el brillo</translation>
     </message>
   </context>
   <context>
