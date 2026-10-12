@@ -63,7 +63,7 @@ class DesktopLyrics : public settings::ObjectNode {
     CONFIG_NODE(DesktopLyrics, settings::ObjectNode)
 
     CONFIG_PROPERTY(bool, autoHide, true)
-    CONFIG_PROPERTY(int, alignment, 1)
+    CONFIG_PROPERTY(int, alignment, 0)
     CONFIG_PROPERTY(bool, invertColors, false)
     CONFIG_SUBOBJECT(DesktopLyricsBackground, background)
     CONFIG_SUBOBJECT(DesktopLyricsShadow, shadow)
