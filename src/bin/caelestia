@@ -275,6 +275,8 @@ EOF
         10-autostart.sh
     )
 
+    export CAELESTIA_FRESH_INSTALL="${CAELESTIA_FRESH_INSTALL:-1}"
+
     echo "Deploying the user's half of a packaged Caelestia install"
     echo "  steps: $SCRIPTS_DIR"
     echo

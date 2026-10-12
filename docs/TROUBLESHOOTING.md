@@ -413,9 +413,10 @@ Some KDE versions (6.1 vs 6.2) may use slightly different config keys.
 
 ### 5.3 Wrong Number of Virtual Desktops
 
-The installer configures exactly **5 desktops**. If you had a different count before:
-- Re-run `scripts/09-system-tweaks.sh` to re-apply
-- The uninstaller resets desktop count to `1`
+The installer configures **5 desktops** when it runs, and only then: a system update never touches the count. A count you chose yourself — anything other than KWin's default of `1` — is left alone even on an install.
+
+- To apply the 5 desktops again, set the count back to `1` (or remove `Number` from the `[Desktops]` group) and run the installer: `bash scripts/setup.sh`, or `caelestia install` on a packaged install
+- The uninstaller resets the desktop count to `1`
 
 ### 5.4 Keyboard Shortcut Conflicts
 
