@@ -14130,5 +14130,21 @@ PIN: %1</source>
         <source>Show the value next to the icon in each pill</source>
         <translation>Mostrar el valor junto al ícono en cada píldora</translation>
     </message>
+    <message>
+        <source>Pill style</source>
+        <translation>Estilo de píldora</translation>
+    </message>
+    <message>
+        <source>Classic keeps the current pills, compact is smaller with rounded corners</source>
+        <translation>La clásica mantiene las píldoras actuales, la compacta es más chica con bordes redondeados</translation>
+    </message>
+    <message>
+        <source>Classic</source>
+        <translation>Clásica</translation>
+    </message>
+    <message>
+        <source>Compact</source>
+        <translation>Compacta</translation>
+    </message>
 </context>
 </TS>

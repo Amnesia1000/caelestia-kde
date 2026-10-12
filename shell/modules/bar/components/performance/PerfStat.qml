@@ -17,6 +17,10 @@ StyledRect {
     property real widthFactor: 2.35
     property string maxText: "100"
     property bool showText: typeof Config.bar.performance !== "undefined" && Config.bar.performance.showText !== undefined ? Config.bar.performance.showText : true
+    // "classic" keeps the current full pills, "compact" is smaller with
+    // rounded corners so it sits in line with the other bar icons.
+    property string pillStyle: typeof Config.bar.performance !== "undefined" && Config.bar.performance.pillStyle !== undefined ? Config.bar.performance.pillStyle : "classic"
+    property bool compact: root.pillStyle === "compact"
     // Optional: set when hosted directly in the bar; the PerformanceWidget
     // pills leave it unset and use the widget's own context menu instead.
     property var popouts
@@ -30,17 +34,18 @@ StyledRect {
     readonly property int iconSize: Math.round(effectiveThickness * 0.42)
     readonly property int textSize: Math.round(effectiveThickness * 0.32)
     readonly property real progress: isNaN(value) ? 0 : Math.max(0, Math.min(1, value))
-    readonly property int hPadding: Tokens.padding.medium
+    readonly property int hPadding: root.compact ? Tokens.padding.small : Tokens.padding.medium
     readonly property int vPadding: Tokens.padding.extraSmall
     readonly property int trackThickness: Math.max(4, Math.round(Tokens.padding.extraSmall * 0.8))
     readonly property int trackInset: Tokens.padding.medium
+    readonly property real effWidthFactor: root.compact ? 1.6 : root.widthFactor
 
     color: Colours.tPalette.m3surfaceContainerHigh
-    radius: Tokens.rounding.full
+    radius: root.compact ? Tokens.rounding.medium : Tokens.rounding.full
     clip: true
 
-    implicitWidth: isHorizontal ? Math.max(contentRow.implicitWidth + hPadding * 2, Math.round(barThickness * widthFactor)) : barThickness
-    implicitHeight: isHorizontal ? barThickness : Math.max(verticalCol.implicitHeight + vPadding * 2, Math.round(barThickness * widthFactor))
+    implicitWidth: isHorizontal ? Math.max(contentRow.implicitWidth + hPadding * 2, Math.round(barThickness * effWidthFactor)) : barThickness
+    implicitHeight: isHorizontal ? barThickness : Math.max(verticalCol.implicitHeight + vPadding * 2, Math.round(barThickness * effWidthFactor))
 
     StyledText {
         id: dummyText
