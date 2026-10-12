@@ -170,12 +170,38 @@ class BarMedia : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, inverted, false)
     CONFIG_PROPERTY(bool, showTitle, true)
     CONFIG_PROPERTY(bool, autoHide, false)
+    // Player names (MPRIS identity fragments) the widget follows, e.g.
+    // "Spotify", "YouTube Music". Empty follows the active player.
+    CONFIG_PROPERTY(QStringList, sources, QStringList({ u"Spotify"_s, u"Fastpotify"_s, u"YouTube Music"_s }))
 };
 
 class BarPerformance : public settings::ObjectNode {
     CONFIG_NODE(BarPerformance, settings::ObjectNode)
 
     CONFIG_PROPERTY(bool, showText, true)
+    CONFIG_PROPERTY(QString, pill, u"cpu"_s)
+};
+
+class BarShortcuts : public settings::ObjectNode {
+    CONFIG_NODE(BarShortcuts, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showApps, true)
+    CONFIG_PROPERTY(bool, showSystem, true)
+};
+
+class BarScreenCapture : public settings::ObjectNode {
+    CONFIG_NODE(BarScreenCapture, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showShots, true)
+    CONFIG_PROPERTY(bool, showRecord, true)
+    CONFIG_PROPERTY(bool, showFolders, true)
+};
+
+class BarKeepAwake : public settings::ObjectNode {
+    CONFIG_NODE(BarKeepAwake, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showActiveChip, true)
+    CONFIG_PROPERTY(bool, autoHide, false)
 };
 
 class BarPreviewScales : public settings::ObjectNode {
@@ -264,6 +290,9 @@ class BarConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(BarGithub, github)
     CONFIG_SUBOBJECT(BarMedia, media)
     CONFIG_SUBOBJECT(BarPerformance, performance)
+    CONFIG_SUBOBJECT(BarShortcuts, shortcuts)
+    CONFIG_SUBOBJECT(BarScreenCapture, screencapture)
+    CONFIG_SUBOBJECT(BarKeepAwake, keepawake)
     CONFIG_PROPERTY(QVariantList, entries,
         DEFAULT_ARG({
             vmap({ { u"id"_s, u"logo"_s }, { u"enabled"_s, true }, { u"zone"_s, u"left"_s } }),
