@@ -36,18 +36,18 @@ StyledRect {
         usageBandTimer.restart();
     }
 
+    color: Colours.tPalette.m3surfaceContainer
+    radius: Tokens.rounding.extraLarge
+
+    implicitWidth: Tokens.sizes.dashboard.perfHeroCardWidth
+    implicitHeight: Math.max(tempProg.implicitHeight + detailsRow.implicitHeight + Tokens.spacing.large, usageShape.implicitHeight + usageLabel.implicitHeight) + Tokens.padding.large * 2
+
     Timer {
         id: usageBandTimer
 
         interval: 2500
         onTriggered: root.usageBand = root.bandFor(root.usage)
     }
-
-    color: Colours.tPalette.m3surfaceContainer
-    radius: Tokens.rounding.extraLarge
-
-    implicitWidth: Tokens.sizes.dashboard.perfHeroCardWidth
-    implicitHeight: Math.max(tempProg.implicitHeight + detailsRow.implicitHeight + Tokens.spacing.large, usageShape.implicitHeight + usageLabel.implicitHeight) + Tokens.padding.large * 2
 
     CircularProgress {
         id: tempProg
