@@ -26,6 +26,7 @@ PageBase {
             last: true
             text: qsTr("Show active indicator")
             subtext: qsTr("Show a chip with the activation time when Keep Awake is on")
+            reset: ({ node: GlobalConfig.bar.keepawake, setting: "showActiveChip" })
             checked: Config.bar.keepawake.showActiveChip
             onToggled: {
                 GlobalConfig.bar.keepawake.showActiveChip = checked;
@@ -42,6 +43,7 @@ PageBase {
             last: true
             text: qsTr("Auto-hide when inactive")
             subtext: qsTr("Hide the widget when Keep Awake is off")
+            reset: ({ node: GlobalConfig.bar.keepawake, setting: "autoHide" })
             checked: Config.bar.keepawake.autoHide
             onToggled: {
                 GlobalConfig.bar.keepawake.autoHide = checked;

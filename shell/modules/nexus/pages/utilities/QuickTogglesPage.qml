@@ -78,6 +78,14 @@ PageBase {
             first: true
             text: qsTr("Custom order")
             subtext: qsTr("Rearrange toggles with drag handles")
+            // Custom reset: the row reads a local property, default is off
+            reset: ({
+                customGet: () => Config.utilities.quickTogglesCustomOrder ?? false,
+                customSet: v => {
+                    GlobalConfig.utilities.quickTogglesCustomOrder = v;
+                },
+                customDef: false
+            })
             checked: root.customOrder
             onToggled: {
                 GlobalConfig.utilities.quickTogglesCustomOrder = checked;
@@ -87,6 +95,7 @@ PageBase {
         StepperRow {
             label: qsTr("Toggles per page")
             subtext: qsTr("Entries shown on each page of the drawer")
+            reset: ({ node: GlobalConfig.utilities, setting: "quickTogglesPerPage" })
             value: Config.utilities.quickTogglesPerPage ?? 6
             from: 2
             to: 12

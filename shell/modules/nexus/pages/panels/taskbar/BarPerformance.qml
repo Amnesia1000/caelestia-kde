@@ -58,6 +58,7 @@ PageBase {
             last: true
             text: qsTr("Show values")
             subtext: qsTr("Show the value next to the icon in each pill")
+            reset: ({ node: GlobalConfig.bar.performance, setting: "showText" })
             checked: Config.bar.performance.showText
             onToggled: {
                 GlobalConfig.bar.performance.showText = checked;

@@ -25,6 +25,7 @@ PageBase {
             first: true
             text: qsTr("Show screenshot buttons")
             subtext: qsTr("Show region/window/screen capture buttons")
+            reset: ({ node: GlobalConfig.bar.screencapture, setting: "showShots" })
             checked: Config.bar.screencapture.showShots
             onToggled: {
                 GlobalConfig.bar.screencapture.showShots = checked;
@@ -35,6 +36,7 @@ PageBase {
         ToggleRow {
             text: qsTr("Show recording buttons")
             subtext: qsTr("Show region/screen recording buttons")
+            reset: ({ node: GlobalConfig.bar.screencapture, setting: "showRecord" })
             checked: Config.bar.screencapture.showRecord
             onToggled: {
                 GlobalConfig.bar.screencapture.showRecord = checked;
@@ -46,6 +48,7 @@ PageBase {
             last: true
             text: qsTr("Show folder shortcuts")
             subtext: qsTr("Show buttons to open screenshots/recordings folders")
+            reset: ({ node: GlobalConfig.bar.screencapture, setting: "showFolders" })
             checked: Config.bar.screencapture.showFolders
             onToggled: {
                 GlobalConfig.bar.screencapture.showFolders = checked;

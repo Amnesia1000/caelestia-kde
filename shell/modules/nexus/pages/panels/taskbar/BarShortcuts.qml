@@ -25,6 +25,7 @@ PageBase {
             first: true
             text: qsTr("Show apps")
             subtext: qsTr("Show quick-launch app buttons in the widget")
+            reset: ({ node: GlobalConfig.bar.shortcuts, setting: "showApps" })
             checked: Config.bar.shortcuts.showApps
             onToggled: {
                 GlobalConfig.bar.shortcuts.showApps = checked;
@@ -36,6 +37,7 @@ PageBase {
             last: true
             text: qsTr("Show system")
             subtext: qsTr("Show system shortcuts (Nexus, Overview, etc.)")
+            reset: ({ node: GlobalConfig.bar.shortcuts, setting: "showSystem" })
             checked: Config.bar.shortcuts.showSystem
             onToggled: {
                 GlobalConfig.bar.shortcuts.showSystem = checked;
