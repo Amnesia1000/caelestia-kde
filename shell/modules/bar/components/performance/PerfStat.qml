@@ -17,6 +17,9 @@ StyledRect {
     property real widthFactor: 2.35
     property string maxText: "100"
     property bool showText: typeof Config.bar.performance !== "undefined" && Config.bar.performance.showText !== undefined ? Config.bar.performance.showText : true
+    // Optional: set when hosted directly in the bar; the PerformanceWidget
+    // pills leave it unset and use the widget's own context menu instead.
+    property var popouts
 
     readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
     readonly property real rawScale: !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0
@@ -143,6 +146,20 @@ StyledRect {
             color: root.textColor
             font: Tokens.font.body.builders.small.size(root.textSize).weight(Font.DemiBold).build()
             visible: root.showText
+        }
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.RightButton
+        cursorShape: Qt.PointingHandCursor
+        onClicked: mouse => {
+            if (!root.popouts)
+                return;
+            root.popouts.currentName = "performancecontext";
+            root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
+            root.popouts.hasCurrent = true;
+            mouse.accepted = true;
         }
     }
 }

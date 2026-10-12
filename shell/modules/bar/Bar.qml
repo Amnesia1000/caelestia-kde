@@ -95,7 +95,7 @@ Item {
     function checkPopout(pos: real): void {
         // A context menu stays open while the pointer moves over the bar, so
         // the hover routing below must not take it over or close it.
-        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "mediacontext" || popouts.currentName === "performancecontext" || popouts.currentName === "shortcutscontext" || popouts.currentName === "screencapturecontext" || popouts.currentName === "keepawakecontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext"))
+        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "mediacontext" || popouts.currentName === "performancecontext" || popouts.currentName === "shortcutscontext" || popouts.currentName === "screencapturecontext" || popouts.currentName === "keepawakecontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext" || popouts.currentName === "elementscontext"))
             return;
 
         const ch = getLoaderAt(isHorizontal ? pos : width / 2, isHorizontal ? height / 2 : pos) as WrappedLoader;
@@ -478,7 +478,9 @@ Item {
                 roleValue: "kbLayoutIndicator"
                 delegate: WrappedLoader {
                     visible: enabled && (Kwin.kbLayout || "").length > 0
-                    sourceComponent: KbLayoutIndicator {}
+                    sourceComponent: KbLayoutIndicator {
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {
@@ -498,41 +500,53 @@ Item {
                 roleValue: "perfCpu"
                 delegate: WrappedLoader {
                     visible: enabled && Cpu.name.length > 0
-                    sourceComponent: PerfCpu {}
+                    sourceComponent: PerfCpu {
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {
                 roleValue: "perfMemory"
                 delegate: WrappedLoader {
                     visible: enabled && Memory.total > 1
-                    sourceComponent: PerfMemory {}
+                    sourceComponent: PerfMemory {
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {
                 roleValue: "perfStorage"
                 delegate: WrappedLoader {
                     visible: enabled && Storage.disks.length > 0
-                    sourceComponent: PerfStorage {}
+                    sourceComponent: PerfStorage {
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {
                 roleValue: "perfNetwork"
                 delegate: WrappedLoader {
-                    sourceComponent: PerfNetwork {}
+                    sourceComponent: PerfNetwork {
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {
                 roleValue: "perfGpu"
                 delegate: WrappedLoader {
                     visible: enabled && Gpu.type !== Gpu.None
-                    sourceComponent: PerfGpu {}
+                    sourceComponent: PerfGpu {
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {
                 roleValue: "perfBattery"
                 delegate: WrappedLoader {
                     visible: enabled && UPower.displayDevice.isLaptopBattery
-                    sourceComponent: PerfBattery {}
+                    sourceComponent: PerfBattery {
+                        popouts: root.popouts
+                    }
                 }
             }
             DelegateChoice {

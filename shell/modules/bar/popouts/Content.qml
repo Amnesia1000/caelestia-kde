@@ -360,6 +360,15 @@ Item {
             }
         }
 
+        Popout {
+            name: "elementscontext"
+            sourceComponent: BarComponentContext {
+                popouts: root.popouts
+                label: qsTr("Elements & Modules")
+                subPageIdx: 15
+            }
+        }
+
         Repeater {
             model: ScriptModel {
                 values: SystemTray.items.values.filter(i => i.hasMenu && i.status !== Status.Passive && !GlobalConfig.bar.tray.hiddenIcons.includes(i.id))
