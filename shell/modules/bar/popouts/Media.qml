@@ -18,9 +18,18 @@ ColumnLayout {
     property real fontScale: 1.0
     property bool _isSidebarOpen: false
 
-    readonly property MprisPlayer player: Players.active
+    readonly property MprisPlayer player: Players.sourcePlayer(Config.bar.media.sources)
     readonly property string sourceName: Players.getIdentity(root.player)
     readonly property real miniWidth: 228
+
+    // Same scroll volume as the bar icon: MPRIS app volume, matching
+    // PipeWire stream, global sink when nothing is playing.
+    readonly property var playerStream: Players.playerStream(root.player, Audio)
+    readonly property real currentVolume: Players.playerVolume(root.player, root.playerStream, Audio)
+
+    function setVolumeLevel(v: real): void {
+        Players.setPlayerVolume(root.player, root.playerStream, Audio, v);
+    }
 
     width: root.miniWidth + Tokens.padding.large * 2
     spacing: Tokens.spacing.small
@@ -48,6 +57,16 @@ ColumnLayout {
             width: root.miniWidth
             extraButtons: true
             showGif: false
+        }
+    }
+
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => {
+            if (event.angleDelta.y > 0)
+                root.setVolumeLevel(root.currentVolume + 0.05);
+            else if (event.angleDelta.y < 0)
+                root.setVolumeLevel(root.currentVolume - 0.05);
         }
     }
 }

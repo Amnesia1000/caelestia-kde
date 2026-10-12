@@ -33,6 +33,93 @@ Singleton {
         return root.appVolumePlayers.some(n => identity.includes(n.toLowerCase()));
     }
 
+    // First player whose identity matches one of the given source names
+    // (empty list follows the active player), or null when none matches.
+    function sourcePlayer(names: var): MprisPlayer {
+        const sources = names || [];
+        if (sources.length === 0)
+            return root.active;
+        const list = root.list || [];
+        for (let i = 0; i < list.length; i++) {
+            const identity = root.getIdentity(list[i]).toLowerCase();
+            for (let j = 0; j < sources.length; j++) {
+                if (identity.includes(String(sources[j]).toLowerCase()))
+                    return list[i];
+            }
+        }
+        return null;
+    }
+
+    // A display name cut into comparable tokens: lowercased, ".desktop" and
+    // "-desktop" tails dropped, split on anything that is not a letter or digit.
+    function nameTokens(name: var): var {
+        return String(name ?? "").toLowerCase().replace(/\.desktop$/g, "").replace(/-desktop$/g, "").split(/[^a-z0-9]+/).filter(t => t.length > 0);
+    }
+
+    // Process id from a Chromium-family MPRIS bus name
+    // (chromium.instance<PID>), or "" when the entry carries none.
+    function instancePid(entry: var): string {
+        const m = String(entry ?? "").match(/\.instance(\d+)$/);
+        return m ? m[1] : "";
+    }
+
+    // Whether a PipeWire stream belongs to an MPRIS player. Compares the
+    // stream name, process binary and app name against the player identity
+    // and entry by shared tokens or substring either way, and additionally
+    // matches the Chromium-family case by process id: branded forks report
+    // one name over MPRIS and another over PipeWire, so names alone never
+    // meet while the pid is the same on both sides.
+    function streamMatches(player: var, streamName: var, binary: var, appName: var, processId: var): bool {
+        if (!player)
+            return false;
+        const identity = String(player.identity ?? "").toLowerCase();
+        const entry = String(player.entry ?? "").toLowerCase();
+        if (!identity && !entry)
+            return false;
+        const pid = instancePid(entry);
+        if (pid && String(processId ?? "") === pid)
+            return true;
+        const playerTokens = [...nameTokens(identity), ...nameTokens(entry)];
+        const streamTokens = [...nameTokens(streamName), ...nameTokens(binary), ...nameTokens(appName)];
+        if (playerTokens.some(t => streamTokens.includes(t)))
+            return true;
+        const playerNames = [identity, entry].filter(n => n);
+        const streamNames = [String(streamName ?? "").toLowerCase(), String(binary ?? "").toLowerCase(), String(appName ?? "").toLowerCase()].filter(n => n);
+        return streamNames.some(sn => playerNames.some(pn => sn.includes(pn) || pn.includes(sn)));
+    }
+
+    // The PipeWire stream belonging to a player, or null when none matches.
+    // The audio service is passed in so both the bar widget and its popout
+    // share this lookup instead of duplicating it.
+    function playerStream(player: var, audio: var): var {
+        const streams = audio?.streams ?? [];
+        return streams.find(s => {
+            const props = s.properties ?? {};
+            return root.streamMatches(player, audio.getStreamName(s), (props["application.process.binary"] ?? "").toString(), (props["app.name"] ?? "").toString(), (props["application.process.id"] ?? "").toString());
+        }) || null;
+    }
+
+    // Effective volume for scroll control: MPRIS app volume first, then the
+    // matching PipeWire stream, then the global sink.
+    function playerVolume(player: var, stream: var, audio: var): real {
+        if (root.supportsAppVolume(player) && player?.volume !== undefined && player?.volume !== null)
+            return player.volume;
+        if (stream)
+            return audio.getStreamVolume(stream);
+        return audio.volume;
+    }
+
+    function setPlayerVolume(player: var, stream: var, audio: var, v: real): void {
+        const clamped = Math.max(0, Math.min(1, v));
+        if (root.supportsAppVolume(player) && player && player.volume !== undefined) {
+            player.volume = clamped;
+        } else if (stream) {
+            audio.setStreamVolume(stream, clamped);
+        } else {
+            audio.setVolume(clamped);
+        }
+    }
+
     function getArtUrl(player: MprisPlayer): string {
         if (!player)
             return "";
@@ -146,19 +233,6 @@ Singleton {
         function getActive(prop: string): string {
             const active = root.active;
             return active ? active[prop] ?? qsTr("Invalid property") : qsTr("No active player");
-        }
-
-        function status(): string {
-            const active = root.active;
-            if (!active)
-                return JSON.stringify({ title: "", artist: "", artUrl: "", status: "Stopped" });
-
-            return JSON.stringify({
-                title: active.trackTitle ?? "",
-                artist: active.trackArtist ?? "",
-                artUrl: root.getArtUrl(active),
-                status: active.isPlaying ? "Playing" : "Paused"
-            });
         }
 
         function list(): string {
