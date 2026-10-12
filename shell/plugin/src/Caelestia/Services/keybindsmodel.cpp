@@ -253,7 +253,7 @@ void KeybindsModel::onShortcutUnregistered(GlobalShortcut* sc) {
 
 QString KeybindsModel::keybindsPath() const {
     return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
-        QStringLiteral("/caelestia/keybinds.json");
+           QStringLiteral("/caelestia/keybinds.json");
 }
 
 void KeybindsModel::saveKeybinds() {

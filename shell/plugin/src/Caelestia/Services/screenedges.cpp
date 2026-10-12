@@ -23,7 +23,7 @@ constexpr auto kwinService = "org.kde.KWin";
 
 QString stolenEdgesPath() {
     return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
-        QStringLiteral("/caelestia/stolen-screen-edges.json");
+           QStringLiteral("/caelestia/stolen-screen-edges.json");
 }
 
 /// The [ElectricBorders] key that names a corner, or empty if not a corner.
