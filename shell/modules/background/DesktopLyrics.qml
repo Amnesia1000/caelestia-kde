@@ -2,13 +2,11 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Effects
-import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Caelestia.Config
 import Caelestia.Services
 import qs.components
-import qs.components.controls
 import qs.components.effects
 import qs.services
 
@@ -37,6 +35,7 @@ Item {
     readonly property bool windowHidesLyrics: Kwin.windowHidesDesktopWidgets(root.screen ? root.screen.name : "", Config.background.visualiser.hideOnAllMonitors)
     readonly property bool allWindowsFloating: !windowHidesLyrics
     readonly property bool shouldHide: autoHide && windowHidesLyrics
+    readonly property bool isPlaying: Players.active?.isPlaying ?? false
 
     readonly property bool hasLyrics: Lyrics.hasLyrics
     property int currentLyricIndex: -1
@@ -111,7 +110,7 @@ Item {
     width: frame ? frame.width : implicitWidth
     height: frame ? frame.height : implicitHeight
 
-    opacity: ((root.hasLyrics || Lyrics.loading) && !root.shouldHide) ? 1 : 0
+    opacity: (root.isPlaying && root.hasLyrics && !root.shouldHide) ? 1 : 0
     visible: opacity > 0
 
     Behavior on opacity {
@@ -258,51 +257,6 @@ Item {
             layer.enabled: root.blurEnabled
         }
 
-        Loader {
-            id: loadingIndicator
-
-            anchors.centerIn: parent
-            asynchronous: true
-            active: opacity > 0
-            opacity: Lyrics.loading && !root.hasLyrics ? 1 : 0
-
-            sourceComponent: ColumnLayout {
-                spacing: Tokens.spacing.large * root.lyricsScale
-
-                StyledRect {
-                    Layout.alignment: Qt.AlignHCenter
-                    implicitWidth: shape.implicitSize + Tokens.padding.medium * 2 * root.lyricsScale
-                    implicitHeight: shape.implicitSize + Tokens.padding.medium * 2 * root.lyricsScale
-                    color: Colours.palette.m3primaryContainer
-                    radius: Tokens.rounding.full
-
-                    LoadingIndicator {
-                        id: shape
-
-                        anchors.centerIn: parent
-                        implicitSize: Math.round(Tokens.sizes.dashboard.mediaSectionWidth / 5 * root.lyricsScale)
-                        containsIcon: true
-                        color: Colours.palette.m3primary
-                    }
-                }
-
-                StyledText {
-                    text: qsTr("Loading lyrics...")
-                    color: root.safeSecondary
-                    font.pointSize: Tokens.font.title.medium.pointSize * root.lyricsScale
-                    font.family: Tokens.font.title.medium.family
-                    font.weight: Tokens.font.title.medium.weight
-                }
-            }
-
-            Behavior on opacity {
-                Anim {
-                    type: Anim.DefaultEffects
-                }
-            }
-        }
-
-        // --- NEW INNER CONTAINER FOR FADE MASK ---
         Item {
             id: fadeContainer
 
