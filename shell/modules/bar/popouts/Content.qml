@@ -59,6 +59,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Greeter settings")
                 subPageIdx: 8
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -122,6 +124,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Clock settings")
                 subPageIdx: 11
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -131,6 +135,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Launcher settings")
                 subPageIdx: 3
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -140,6 +146,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Status icons settings")
                 subPageIdx: 10
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -280,6 +288,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Workspaces settings")
                 subPageIdx: 7
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -289,6 +299,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Tray settings")
                 subPageIdx: 9
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -298,6 +310,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("GitHub settings")
                 subPageIdx: 13
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -307,6 +321,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Media settings")
                 subPageIdx: 19
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -316,6 +332,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Performance settings")
                 subPageIdx: 21
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
         Popout {
@@ -324,6 +342,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Weather settings")
                 subPageIdx: 20
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
         Popout {
@@ -332,6 +352,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Shortcuts settings")
                 subPageIdx: 22
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
         Popout {
@@ -340,6 +362,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Screen Capture settings")
                 subPageIdx: 23
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
         Popout {
@@ -348,6 +372,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Keep Awake settings")
                 subPageIdx: 24
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
@@ -357,6 +383,8 @@ Item {
                 popouts: root.popouts
                 label: qsTr("Dock settings")
                 subPageIdx: 12
+                secondLabel: qsTr("Elements & Modules")
+                secondSubPageIdx: 15
             }
         }
 
