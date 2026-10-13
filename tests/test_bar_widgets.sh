@@ -76,14 +76,11 @@ test_the_editor_labels_every_registered_widget() {
 }
 
 test_resetting_the_layout_asks_the_schema_for_its_defaults() {
-    local editor
-    editor="$(cat "$EDITOR")"
-
-    assert_contains "$editor" 'BarWidgets.resetToDefaults(GlobalConfig.bar)' \
+    assert_file_contains "$EDITOR" 'BarWidgets.resetToDefaults(GlobalConfig.bar)' \
         "the reset button has to go back to the schema's own defaults"
-    assert_not_contains "$editor" '{ id: "dock", enabled: true, zone: "middle" }' \
+    assert_file_not_contains "$EDITOR" '{ id: "dock", enabled: true, zone: "middle" }' \
         "and must not grow another copy of the default layout - that copy is how resetting lost media"
-    assert_contains "$editor" 'BarWidgets.zoneFor(Config.bar, id)' \
+    assert_file_contains "$EDITOR" 'BarWidgets.zoneFor(Config.bar, id)' \
         "a widget dragged out of the bar keeps the zone it had, or it comes back on the left"
 }
 
@@ -97,7 +94,7 @@ test_nothing_else_writes_the_entry_list_by_hand() {
         "$REPO_ROOT/shell/modules/nexus/pages/panels/taskbar/BarDock.qml" \
         "$REPO_ROOT/shell/modules/nexus/pages/panels/taskbar/BarGreeter.qml" \
         "$REPO_ROOT/shell/modules/nexus/pages/panels/taskbar/BarUpdates.qml"; do
-        assert_not_contains "$(cat "$file")" 'bar.entries =' \
+        assert_file_not_contains "$file" 'bar.entries =' \
             "toggling a widget is BarWidgets' job, not a settings page's ($(basename "$file"))"
     done
 }
