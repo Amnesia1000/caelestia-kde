@@ -213,9 +213,14 @@ Singleton {
     /// leaves what is on screen alone rather than replacing it with a palette nobody produced.
     function loadPreview(data: string): void {
         const scheme = parseScheme(data);
-        if (!scheme)
-            return;
+        if (scheme)
+            applyPreview(scheme);
+    }
 
+    /// Show a scheme as the preview palette — the one place that turns the preview on. `colours` is
+    /// what the palette becomes; the rest are the descriptors it is reported under, so a caller
+    /// holding only a palette passes the variant and mode in effect.
+    function applyPreview(scheme: var): void {
         root.previewScheme = (scheme.name || "").trim();
         root.previewFlavour = (scheme.flavour || "").trim();
         root.previewVariant = (scheme.variant || "").trim();
@@ -262,14 +267,8 @@ Singleton {
     }
 
     function previewNamed(name: string, flavour: string, colours: var, light: bool): void {
-        if (!colours)
-            return;
-        root.previewScheme = name;
-        root.previewFlavour = flavour;
-        root.previewVariant = root.variant;
-        root.previewLight = light;
-        applyColours(root.preview, colours);
-        root.showPreview = true;
+        if (colours)
+            applyPreview({ name, flavour, variant: root.variant, mode: light ? "light" : "dark", colours });
     }
 
     function clearPreview(): void {

@@ -16,8 +16,8 @@ Searcher {
     readonly property string currentNamePath: `${Paths.state}/wallpaper/path.txt`
     readonly property string fallback: Quickshell.shellPath("assets/wallpaper.webp")
 
-    property bool showPreview: false
-    readonly property string current: showPreview ? previewPath : actualCurrent
+    readonly property bool previewing: previewPath !== ""
+    readonly property string current: previewing ? previewPath : actualCurrent
     property string previewPath
     property string actualCurrent
     property var videoThumbs: ({})
@@ -109,7 +109,7 @@ Searcher {
 
     function setWallpaper(path: string): void {
         // The preview covers the applied scheme until the scheme this change produces has landed.
-        if (showPreview && path !== actualCurrent)
+        if (previewing && path !== actualCurrent)
             previewColoursState.hold();
         actualCurrent = path;
         if (Images.isVideo(path)) {
@@ -144,7 +144,6 @@ Searcher {
 
     function preview(path: string): void {
         previewPath = path;
-        showPreview = true;
         previewColourOf(path);
     }
 
@@ -157,7 +156,7 @@ Searcher {
     }
 
     function stopPreview(): void {
-        showPreview = false;
+        previewPath = "";
         previewColoursState.stop();
     }
 
@@ -214,7 +213,7 @@ Searcher {
                 Quickshell.execDetached(["sh", "-c", script, "--", out, path, root.currentNamePath]);
                 syncPlasmaWallpaper(out);
             }
-            if (path === root.previewPath && root.showPreview)
+            if (path === root.previewPath && root.previewing)
                 root.previewColourOf(path);
         }
         const pending = root.videoThumbsPending;
@@ -283,7 +282,5 @@ Searcher {
 
     PreviewColours {
         id: previewColoursState
-
-        extraArgs: Colours.smartArg
     }
 }

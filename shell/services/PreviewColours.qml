@@ -15,8 +15,6 @@ import qs.services
 Item {
     id: root
 
-    property list<string> extraArgs: []
-
     readonly property bool active: wanted !== ""
 
     property bool held
@@ -66,7 +64,7 @@ Item {
     Process {
         id: proc
 
-        command: ["caelestia", "wallpaper", "-p", root.running, ...root.extraArgs]
+        command: ["caelestia", "wallpaper", "-p", root.running, ...Colours.smartArg]
         stdout: StdioCollector {
             onStreamFinished: {
                 // Nothing wants a preview any more and no chosen scheme is waiting on one.
