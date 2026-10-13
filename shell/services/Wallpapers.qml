@@ -20,7 +20,6 @@ Searcher {
     readonly property string current: showPreview ? previewPath : actualCurrent
     property string previewPath
     property string actualCurrent
-    property alias previewColours: previewColoursState
     property var videoThumbs: ({})
     property var videoThumbsPending: ({})
 
@@ -109,6 +108,9 @@ Searcher {
     }
 
     function setWallpaper(path: string): void {
+        // The preview covers the applied scheme until the scheme this change produces has landed.
+        if (showPreview && path !== actualCurrent)
+            previewColoursState.hold();
         actualCurrent = path;
         if (Images.isVideo(path)) {
             const thumb = thumbFor(path);
@@ -143,14 +145,14 @@ Searcher {
     function preview(path: string): void {
         previewPath = path;
         showPreview = true;
-
-        if (Colours.scheme === "dynamic")
-            previewColourOf(path);
+        previewColourOf(path);
     }
 
     // matugen cannot read a video, so a video is previewed through its first frame. While the
     // frame is not ready the video stays highlighted and the preview runs once it is.
     function previewColourOf(path: string): void {
+        if (Colours.scheme !== "dynamic")
+            return;
         previewColoursState.show(thumbFor(path));
     }
 
@@ -212,7 +214,7 @@ Searcher {
                 Quickshell.execDetached(["sh", "-c", script, "--", out, path, root.currentNamePath]);
                 syncPlasmaWallpaper(out);
             }
-            if (path === root.previewPath && root.showPreview && Colours.scheme === "dynamic")
+            if (path === root.previewPath && root.showPreview)
                 root.previewColourOf(path);
         }
         const pending = root.videoThumbsPending;

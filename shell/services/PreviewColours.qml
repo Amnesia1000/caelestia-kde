@@ -4,25 +4,26 @@ import qs.services
 
 // The colour preview of the wallpaper picker. It owns the matugen process and decides when its
 // result may cover the applied scheme:
-//   show(source)  preview an image; a call made while a preview runs reruns it for the latest source
+//   show(source)  preview an image; a call made while a preview runs reruns it for the latest source.
+//                 An empty source is a no-op, so a source that is not previewable yet leaves whatever
+//                 is on screen alone until the caller can name one (see onVideoThumb)
 //   hold()        keep the preview on screen until release(), while the chosen scheme loads
-//   release()     the chosen scheme has landed; a stop() that waited for it takes effect
+//   release()     the chosen scheme has landed; the preview ends unless the picker wants it again
 //   stop()        the preview is over; a result that arrives later is dropped
 Item {
     id: root
 
     property list<string> extraArgs: []
 
-    property bool active
+    readonly property bool active: wanted !== ""
+
     property bool held
-    property bool clearOnRelease
     property string wanted
     property string running
 
     function show(source: string): void {
         if (source === "")
             return;
-        active = true;
         wanted = source;
         if (!proc.running)
             start();
@@ -33,28 +34,29 @@ Item {
     }
 
     function release(): void {
+        if (!held)
+            return;
         held = false;
-        if (clearOnRelease)
-            clear();
+        settle();
     }
 
     function stop(): void {
-        active = false;
         wanted = "";
-        if (held)
-            clearOnRelease = true;
-        else
-            clear();
+        settle();
+    }
+
+    // The preview covers the applied scheme only while something still wants it: the picker's
+    // highlight, or a chosen scheme that has not landed yet.
+    function settle(): void {
+        if (!active && !held)
+            Colours.clearPreview();
     }
 
     function start(): void {
+        if (!active)
+            return;
         running = wanted;
         proc.running = true;
-    }
-
-    function clear(): void {
-        clearOnRelease = false;
-        Colours.showPreview = false;
     }
 
     Process {

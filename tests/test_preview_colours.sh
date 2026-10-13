@@ -16,8 +16,8 @@ test_the_preview_state_lives_in_one_component() {
     assert_contains "$PC_SRC" 'function stop(): void' "stop must be part of the interface"
     assert_not_contains "$WALL_SRC" 'previewColourLock' "the lock flag must stay inside the component"
     assert_not_contains "$WALL_SRC" 'pendingPreviewClear' "the deferred clear must stay inside the component"
-    assert_not_contains "$WALL_SRC" 'previewColoursStale' "the stale flag must stay inside the component"
     assert_not_contains "$WALL_SRC" 'getPreviewColoursProc' "the matugen process must be owned by the component"
+    assert_not_contains "$WALL_SRC" 'property alias previewColours' "the component must not be re-exported"
 }
 
 test_only_the_component_shows_the_preview_scheme() {
@@ -32,14 +32,16 @@ test_a_result_is_shown_only_when_it_loaded_and_is_still_wanted() {
     assert_contains "$PC_SRC" 'if (Colours.load(text, true))' "a scheme that did not parse must not be shown"
 }
 
-test_a_stop_during_a_hold_waits_for_the_release() {
-    assert_contains "$PC_SRC" 'clearOnRelease = true' "stop must defer while held"
-    assert_contains "$PC_SRC" 'if (clearOnRelease)' "release must apply the deferred stop"
+test_the_preview_ends_only_while_nothing_wants_it() {
+    assert_not_contains "$PC_SRC" 'clearOnRelease' "a stop must not leave a deferred clear behind"
+    assert_contains "$PC_SRC" 'if (!active && !held)' "the preview is cleared only while nothing wants it"
 }
 
-test_the_launcher_and_the_wallpaper_file_drive_the_hold() {
-    assert_contains "$LAUNCHER_SRC" 'Wallpapers.previewColours.hold()' "choosing a wallpaper holds the preview"
+test_the_wallpaper_change_drives_the_hold() {
+    assert_contains "$WALL_SRC" 'previewColoursState.hold()' "setting a wallpaper holds the preview"
     assert_contains "$WALL_SRC" 'previewColoursState.release()' "a loaded wallpaper releases the hold"
+    assert_not_contains "$LAUNCHER_SRC" 'previewColours' "the launcher must not drive the preview state"
+    assert_not_contains "$LAUNCHER_SRC" 'hold()' "the launcher must not hold the preview state"
 }
 
 run_tests
