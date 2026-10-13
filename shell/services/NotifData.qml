@@ -33,8 +33,9 @@ QtObject {
     property string materialIcon
     property string appName
     property string image
-    readonly property string bodyPlain: body.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").trim()
-    readonly property string summaryPlain: summary.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim()
+    readonly property string bodyPlain: notif.cleanPreview(body)
+    readonly property string bodyStyled: notif.cleanBody(body)
+    readonly property string summaryPlain: summary.replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*\/?>/gi, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim()
     property var hints
     property real expireTimeout: GlobalConfig.notifs.defaultExpireTimeout
     property int urgency: NotificationUrgency.Normal
@@ -162,6 +163,42 @@ QtObject {
         }
 
         target: notif.notification
+    }
+
+    function cleanPreview(raw: string): string {
+        if (!raw)
+            return "";
+
+        return raw.replace(/(?:<|&lt;)\s*\/?\s*br\s*\/?\s*(?:>|&gt;)\s*\n?|\r?\n/gi, " ")
+            .replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)\b[^>]*\/?>/gi, " ")
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+            .replace(/[*`~]/g, "")
+            .replace(/&quot;/g, '"')
+            .replace(/&apos;|&#39;/g, "'")
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&amp;/g, "&")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+
+    function cleanBody(raw: string): string {
+        if (!raw)
+            return "";
+
+        return raw.replace(/(?:<|&lt;)\s*\/?\s*br\s*\/?\s*(?:>|&gt;)\s*\n?|\r?\n/gi, "<br>")
+            .replace(/<\/?(?:div|span|p)\b[^>]*>/gi, "")
+            .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+            .replace(/(^|[\s(])\*([^*\n]+)\*(?=[\s).,!?]|$)/g, "$1<b>$2</b>")
+            .replace(/`([^`]+)`/g, "<code>$1</code>")
+            .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>')
+            .replace(/(^|[\s(])(https?:\/\/[^\s<)]+?)([.,;:!?]?)(?=[\s)]|$)/g, '$1<a href="$2">$2</a>$3')
+            .replace(/<(?!\/?(?:b|i|u|s|a|code|br)\b)/gi, "&lt;")
+            .replace(/&quot;/g, '"')
+            .replace(/&apos;|&#39;/g, "'")
+            .replace(/(?:<br\s*\/?>\s*){3,}/gi, "<br><br>")
+            .replace(/^(?:\s*<br\s*\/?>\s*)+|(?:\s*<br\s*\/?>\s*)+$/gi, "")
+            .trim();
     }
 
     function updateTimeStr(): void {

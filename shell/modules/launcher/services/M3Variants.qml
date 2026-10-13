@@ -83,8 +83,7 @@ Searcher {
 
         stdout: StdioCollector {
             onStreamFinished: {
-                Colours.load(text, true);
-                Colours.showPreview = true;
+                Colours.loadPreview(text);
             }
         }
     }
