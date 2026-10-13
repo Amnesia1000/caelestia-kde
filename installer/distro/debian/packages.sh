@@ -78,6 +78,8 @@ CORE_PACKAGES=(
     ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
     libqalculate-dev qalc libvulkan-dev libsecret-1-dev ksshaskpass libx11-dev
     libsecret-tools
+
+    libprotobuf-dev protobuf-compiler libssl-dev avahi-daemon
 )
 
 SHELL_PACKAGES=(

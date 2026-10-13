@@ -16,6 +16,7 @@ This document catalogs known failure modes, error conditions, and edge cases dis
 6. [Network & Proxy Issues](#6-network--proxy-issues)
 7. [KDE & Plasma Specific Issues](#7-kde--plasma-specific-issues)
    1. [Installer Window Rules](#77-installer-window-rules)
+   2. [Quick Share Cannot Receive Files](#78-quick-share-cannot-receive-files)
 8. [Post-Install Issues](#8-post-install-issues)
 9. [Uninstall Issues](#9-uninstall-issues)
 10. [Update Issues](#10-update-issues)
@@ -52,6 +53,8 @@ The shell build (`08-build-shell.sh`) requires **Qt 6.9+** and several system li
 | KF6WindowSystem | KWindowSystem not found | `kwindowsystem` | `kf6-kwindowsystem-devel` |
 | KGlobalAccel | kglobalaccel not found | `kglobalaccel` | `kf6-kglobalaccel-devel` |
 | KPipeWire | pipewire integration | `kpipewire` | `kf6-kpipewire-devel` |
+| Protobuf | Quick Share: `find_package(Protobuf)` | `protobuf` | `protobuf-devel` |
+| OpenSSL | Quick Share: `find_package(OpenSSL)` | `openssl` | `openssl-devel` |
 
 #### Library Dependencies (pkg_check_modules)
 
@@ -410,9 +413,10 @@ Some KDE versions (6.1 vs 6.2) may use slightly different config keys.
 
 ### 5.3 Wrong Number of Virtual Desktops
 
-The installer configures exactly **5 desktops**. If you had a different count before:
-- Re-run `scripts/09-system-tweaks.sh` to re-apply
-- The uninstaller resets desktop count to `1`
+The installer configures **5 desktops** when it runs, and only then: a system update never touches the count. A count you chose yourself — anything other than KWin's default of `1` — is left alone even on an install.
+
+- To apply the 5 desktops again, set the count back to `1` (or remove `Number` from the `[Desktops]` group) and run the installer: `bash scripts/setup.sh`, or `caelestia install` on a packaged install
+- The uninstaller resets the desktop count to `1`
 
 ### 5.4 Keyboard Shortcut Conflicts
 
@@ -556,6 +560,53 @@ sudo /usr/share/sddm/themes/caelestia/scripts/sync.sh   # SDDM
 Both greeters read their configuration when they start, so a change is visible at
 the next logout rather than immediately.
 
+**After switching display managers:**
+
+The step above picks its branch when it runs, so switching the machine over leaves
+the greeter it is no longer using configured. Which manager the machine boots is read
+from `/etc/systemd/system/display-manager.service` first, so the two units still being
+enabled does not send it down the wrong branch. Switch the services over, re-run the
+step, and reboot:
+
+```bash
+sudo systemctl disable plasmalogin.service    # the manager being switched away from
+sudo systemctl enable sddm.service
+caelestia login-screen                        # configure the manager that boots now
+```
+
+`caelestia login-screen` runs the same step the installer runs, for the display
+manager the machine boots. It installs the theme in the variant that is already
+there, so an install made with `SDDM_THEME_VARIANT=mini` stays on mini.
+
+**The login screen hangs, or the greeter crash-loops:**
+
+SDDM 0.21 and newer run the greeter binary the theme asks for: `QtVersion=6` in the
+theme's `metadata.desktop` runs `sddm-greeter-qt6`, and any other value - the key
+being absent included - runs the Qt 5 greeter. Arch and CachyOS build that greeter
+into the `sddm` package with `qt5-declarative` only an optional dependency, so it
+dies on `libQt5Quick.so.5: cannot open shared object file` with exit code 127, and
+SDDM respawns it instead of drawing a login screen. Caelestia's theme is Qt 6, and
+the installer selects it only after checking that the greeter it asks for exists;
+when that check fails the theme is installed but left unselected, and the output
+names the greeter that is missing.
+
+```bash
+# What the theme asks for, and whether that greeter is installed
+grep -rn '^QtVersion' /usr/share/sddm/themes/*/metadata.desktop
+command -v sddm-greeter-qt6
+
+# What the greeter last said (the theme it was told to load, and why it stopped)
+journalctl -b -u sddm --no-pager | tail -n 40
+```
+
+A machine that is already stuck on the crashing greeter comes back from a TTY
+(`Ctrl+Alt+F3`) or by booting with `systemd.unit=multi-user.target`. Stop SDDM, make
+the theme and the greeter agree, then start it again. A theme that asks for Qt 6 needs
+`sddm-greeter-qt6`, which an SDDM older than 0.21 does not have: upgrade it, or select
+a theme that matches the greeter in `[Theme] Current`. Installing `qt5-declarative` is
+the other way out on Arch and CachyOS: it makes the Qt 5 greeter work for the Qt 5
+themes that ask for it, which is what that optional dependency is for.
+
 ### 7.7 Installer Window Rules
 
 The installer writes three groups into `~/.config/kwinrulesrc`. `caelestia-opacity`
@@ -611,6 +662,84 @@ windows created after the removal start clean.
 The installer always applies the rules; `APPLY_WINDOW_RULES=false` is an override
 for running the step by hand (`APPLY_WINDOW_RULES=false bash ./scripts/setup.sh`).
 `WINDOW_OPACITY` changes the percentage the opacity rule writes.
+
+### 7.8 Quick Share Cannot Receive Files
+
+Before anything else, both devices have to be on the same network. A nearby device
+finds this machine through an mDNS advertisement Avahi publishes on the local link and
+connects to the address it resolves, so a phone on mobile data, on another Wi-Fi
+network, or on the same SSID behind AP/client isolation never reaches it, and a VPN on
+this machine resolves the name to an address the other device cannot route. Nothing
+here can see the other device's network, so the shell cannot tell those apart from
+something broken on this machine — and discovery over Bluetooth survives the wrong
+network, which is why a device that cannot be reached still appears in the list.
+
+Sending works and receiving does not: the other device is visible and asks to send,
+but no incoming-file notification appears and the transfer times out. Two things
+outside the shell have to be true for an incoming connection to arrive, and both fail
+silently from the shell's side — a connection that is never allowed looks exactly like
+a device that never tried.
+
+The first is the Avahi daemon. It carries the mDNS advertisement a nearby device
+resolves this machine through, so without it there is nothing to connect to. The
+second is the firewall. The transfer listener binds a fixed port so that a rule can be
+written for it ahead of time; that port has one definition,
+`shell/scripts/quickshare-port`, which the plugin build bakes into the listener and the
+install step reads to open the same port on the firewall. It reaches the setup helper
+as `--port`. A listener on a random port could only be opened while the shell runs,
+which needs administrator rights on every start.
+
+`scripts/06-services.sh` does both during a source install. A package install leaves
+them to the shell, because a package must not enable a system daemon or open a port
+behind the user's back. There, the first time Quick Share is switched on the shell
+checks the system through
+`<qmlconfdir>/scripts/quickshare_setup.sh --status`, and if something is missing asks
+through `pkexec` to put it right. The same helper is behind **Quick Share setup** on
+the Quick Share settings page (Nexus → Services → Quick Share), which is the way back
+if the check was declined, if the firewall changed later, or if the report reads
+`SETUP=unknown` because the rule set cannot be read without root. The row says what it
+knows: where the report cannot see the port, it reports that the port could not be
+checked again rather than claiming a success it cannot confirm.
+
+To see what the machine reports:
+
+```bash
+bash ~/.config/quickshell/caelestia/scripts/quickshare_setup.sh --status --port 65000
+```
+
+The report is four lines. `AVAHI` is `active`, `inactive`, `absent` or `unknown`,
+`FIREWALL` names the manager in charge (`none`, `firewalld` or `ufw`), `PORT` is
+`allowed`, `blocked` or `unknown`, and `SETUP` is `ok`, `needed` or `unknown`. Only
+`needed` is acted on automatically; ufw reports `PORT=unknown` because reading its
+rule set needs root, and guessing there would raise a password prompt for nothing.
+
+To do it by hand, run the helper as root:
+
+```bash
+sudo bash ~/.config/quickshell/caelestia/scripts/quickshare_setup.sh --port 65000
+```
+
+It is idempotent: it enables and starts `avahi-daemon.service` (falling back to
+`avahi-daemon.socket`, which is what Debian uses) and adds the transfer port plus mDNS
+to whichever of firewalld or ufw is running. What it does not touch is a hand-rolled
+`nftables` or `iptables` rule set, which is invisible without root — those have to
+allow inbound TCP 65000 and UDP 5353 themselves. Equivalently, by manager:
+
+```bash
+systemctl enable --now avahi-daemon.service                       # the daemon
+
+firewall-cmd --permanent --add-port=65000/tcp                     # firewalld, with
+firewall-cmd --permanent --add-service=mdns                       # mDNS for discovery
+firewall-cmd --reload
+
+ufw allow 65000/tcp                                               # ufw
+ufw allow 5353/udp
+```
+
+Port 65000 rather than anything lower because it sits above Linux's default ephemeral
+range (32768–60999), so the listener never collides with the local port of an outgoing
+connection. If it is taken by something else, Quick Share reports that it could not
+listen and stays off.
 
 ---
 

@@ -208,7 +208,7 @@ PageBase {
                             Layout.fillWidth: true
                             text: vpn.connected ? qsTr("Connected") : qsTr("Available")
                             color: Colours.palette.m3onSurfaceVariant
-                            font: Tokens.font.label.small
+                            font: NexusStyle.secondaryFont
                             elide: Text.ElideRight
                             animate: true
                         }
@@ -374,7 +374,7 @@ PageBase {
                                     return Colours.palette.m3secondary;
                                 }
                             }
-                            font: Tokens.font.label.small
+                            font: NexusStyle.secondaryFont
                             elide: Text.ElideRight
                             animate: true
                         }
@@ -407,7 +407,7 @@ PageBase {
                                     Layout.alignment: Qt.AlignRight
                                     text: qsTr("Interface")
                                     color: Colours.palette.m3onSurfaceVariant
-                                    font: Tokens.font.label.small
+                                    font: NexusStyle.secondaryFont
                                     elide: Text.ElideRight
                                     horizontalAlignment: Text.AlignRight
                                 }
@@ -416,7 +416,7 @@ PageBase {
                                     Layout.alignment: Qt.AlignRight
                                     text: provider.modelData.interface
                                     color: Colours.palette.m3onSurfaceVariant
-                                    font: Tokens.font.label.small
+                                    font: NexusStyle.secondaryFont
                                     elide: Text.ElideRight
                                     horizontalAlignment: Text.AlignRight
                                 }
@@ -429,7 +429,7 @@ PageBase {
                                     Layout.alignment: Qt.AlignRight
                                     text: qsTr("Current Ping")
                                     color: Colours.palette.m3onSurfaceVariant
-                                    font: Tokens.font.label.small
+                                    font: NexusStyle.secondaryFont
                                     elide: Text.ElideRight
                                     horizontalAlignment: Text.AlignRight
                                 }
@@ -449,7 +449,7 @@ PageBase {
                                     StyledText {
                                         text: qsTr("%1 ms").arg(VPN.pingMs)
                                         color: Colours.palette.m3onSurfaceVariant
-                                        font: Tokens.font.label.small
+                                        font: NexusStyle.secondaryFont
                                         elide: Text.ElideRight
                                         horizontalAlignment: Text.AlignRight
                                     }

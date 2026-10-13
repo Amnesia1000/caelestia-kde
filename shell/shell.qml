@@ -37,6 +37,7 @@ ShellRoot {
     property var _streamMonitorInit: null
     property var _updateCheckerInit: null
     property var _autoSchemeInit: null
+    property var _quickShareInit: null
 
     settings.watchFiles: false
 
@@ -124,6 +125,7 @@ ShellRoot {
             root._streamMonitorInit = StreamMonitor;
             root._updateCheckerInit = UpdateChecker;
             root._autoSchemeInit = AutoScheme;
+            root._quickShareInit = QuickShare;
         }
     }
 

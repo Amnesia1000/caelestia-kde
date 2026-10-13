@@ -50,15 +50,11 @@ Singleton {
     }
 
     function increaseBrightness(): void {
-        const monitor = getMonitor("active");
-        if (monitor)
-            monitor.setBrightness(monitor.brightness + GlobalConfig.services.brightnessIncrement);
+        getMonitor("active")?.stepBrightness(GlobalConfig.services.brightnessIncrement);
     }
 
     function decreaseBrightness(): void {
-        const monitor = getMonitor("active");
-        if (monitor)
-            monitor.setBrightness(monitor.brightness - GlobalConfig.services.brightnessIncrement);
+        getMonitor("active")?.stepBrightness(-GlobalConfig.services.brightnessIncrement);
     }
 
     onMonitorsChanged: {
@@ -87,10 +83,11 @@ Singleton {
 
         command: ["ddcutil", "detect", "--brief"]
         stdout: StdioCollector {
-            onStreamFinished: root.ddcMonitors = text.trim().split("\n\n").filter(d => d.startsWith("Display ")).map(d => ({
-                        busNum: d.match(/I2C bus:[ ]*\/dev\/i2c-([0-9]+)/)[1],
-                        connector: d.match(/DRM connector:\s+(.*)/)[1].replace(/^card\d+-/, "")
-                    }))
+            onStreamFinished: root.ddcMonitors = text.trim().split("\n\n").filter(d => d.startsWith("Display ")).map(d => {
+                        const busNum = d.match(/I2C bus:[ ]*\/dev\/i2c-([0-9]+)/)?.[1];
+                        const connector = d.match(/DRM connector:\s+(.*)/)?.[1]?.replace(/^card\d+-/, "");
+                        return busNum && connector ? { busNum, connector } : null;
+                    }).filter(m => m)
         }
     }
 
@@ -102,6 +99,13 @@ Singleton {
             const monitor = root.getMonitor(outputName);
             if (monitor && monitor.brightness !== value) {
                 monitor.brightness = value;
+            }
+        }
+
+        function onDimmingChanged(outputName: string, value: real): void {
+            const monitor = root.getMonitor(outputName);
+            if (monitor && monitor.dimming !== value) {
+                monitor.dimming = value;
             }
         }
     }
@@ -131,6 +135,14 @@ Singleton {
             return root.getMonitor(query)?.brightness ?? -1;
         }
 
+        function getDimming(): real {
+            return getDimmingFor("active");
+        }
+
+        function getDimmingFor(query: string): real {
+            return root.getMonitor(query)?.dimming ?? -1;
+        }
+
         function set(value: string): string {
             return setFor("active", value);
         }
@@ -141,22 +153,23 @@ Singleton {
             if (!monitor)
                 return "Invalid monitor: " + query;
 
+            const current = monitor.effectiveBrightness;
             let targetBrightness;
             if (value.endsWith("%-")) {
                 const percent = parseFloat(value.slice(0, -2));
-                targetBrightness = monitor.brightness - (percent / 100);
+                targetBrightness = current - (percent / 100);
             } else if (value.startsWith("+") && value.endsWith("%")) {
                 const percent = parseFloat(value.slice(1, -1));
-                targetBrightness = monitor.brightness + (percent / 100);
+                targetBrightness = current + (percent / 100);
             } else if (value.endsWith("%")) {
                 const percent = parseFloat(value.slice(0, -1));
                 targetBrightness = percent / 100;
             } else if (value.startsWith("+")) {
                 const increment = parseFloat(value.slice(1));
-                targetBrightness = monitor.brightness + increment;
+                targetBrightness = current + increment;
             } else if (value.endsWith("-")) {
                 const decrement = parseFloat(value.slice(0, -1));
-                targetBrightness = monitor.brightness - decrement;
+                targetBrightness = current - decrement;
             } else if (value.includes("%") || value.includes("-") || value.includes("+")) {
                 return `Invalid brightness format: ${value}\nExpected: 0.1, +0.1, 0.1-, 10%, +10%, 10%-`;
             } else {
@@ -182,7 +195,10 @@ Singleton {
         readonly property bool isDdc: ddcInfo !== null
         readonly property string busNum: ddcInfo?.busNum ?? ""
         readonly property bool isAppleDisplay: root.appleDisplayPresent && modelData.model.startsWith("StudioDisplay")
+        readonly property bool writesHardwareDirectly: isAppleDisplay || isDdc
         property real brightness: 1.0
+        property real dimming: 1.0
+        readonly property real effectiveBrightness: brightness * dimming
         property real queuedBrightness: NaN
         property bool verifying: false
 
@@ -222,10 +238,20 @@ Singleton {
             interval: 500
             onTriggered: {
                 if (!isNaN(monitor.queuedBrightness)) {
-                    monitor.setBrightness(monitor.queuedBrightness);
+                    const pending = monitor.queuedBrightness;
                     monitor.queuedBrightness = NaN;
+                    monitor.brightness = pending;
+                    // writeBrightness() skips setBrightness(), so KWin's record is updated here too.
+                    monitor.syncKwinRecord(Math.round(pending * 100) / 100);
+                    monitor.writeBrightness(pending);
+                    monitor.timer.restart();
                 }
             }
+        }
+
+        function syncKwinRecord(value: real): void {
+            if (writesHardwareDirectly && BrightnessWatcher.brightness(modelData.name) >= 0)
+                BrightnessWatcher.setBrightness(modelData.name, value);
         }
 
         function writeBrightness(value: real): void {
@@ -239,10 +265,23 @@ Singleton {
                 BrightnessWatcher.setBrightness(modelData.name, value);
         }
 
+        // Steps are relative to what the screen renders, not to the value last commanded.
+        function stepBrightness(delta: real): void {
+            setBrightness(effectiveBrightness + delta);
+        }
+
         function setBrightness(value: real): void {
             value = Math.max(0, Math.min(1, value));
             const rounded = Math.round(value * 100);
+
+            // The KWin write below also asserts full dimming; mirror it now so the OSD does not
+            // keep showing the stale multiplier until KWin echoes the cleared value back.
+            if (dimming < 1)
+                dimming = 1;
+
             if (Math.round(brightness * 100) === rounded) {
+                syncKwinRecord(rounded / 100);
+
                 if (isDdc && !timer.running && !readProc.running) {
                     verifying = true;
                     readProc.running = true;
@@ -252,8 +291,11 @@ Singleton {
 
             if (isDdc && timer.running) {
                 queuedBrightness = value;
+                brightness = value;
                 return;
             }
+
+            syncKwinRecord(rounded / 100);
 
             brightness = value;
             writeBrightness(value);
@@ -263,6 +305,10 @@ Singleton {
         }
 
         function initBrightness(): void {
+            const dim = BrightnessWatcher.dimming(modelData.name);
+            if (dim >= 0.0)
+                monitor.dimming = dim;
+
             if (isAppleDisplay)
                 readProc.command = ["asdbctl", "get"];
             else if (isDdc)

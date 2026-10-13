@@ -156,6 +156,7 @@ StyledListView {
 
         interval: 100
         onTriggered: {
+            if (!root.visibilities.launcher) return;
             if (!root.currentItem || !root.currentItem.modelData) return;
             if (root.state === "scheme") {
                 const schemeData = root.currentItem.modelData;

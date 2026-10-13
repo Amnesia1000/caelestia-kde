@@ -74,6 +74,13 @@ PageBase {
         }
 
         NavRow {
+            icon: "graphic_eq"
+            label: qsTr("Now playing")
+            status: qsTr("Media widget, visualiser, volume")
+            onClicked: root.nState.openSubPage(19)
+        }
+
+        NavRow {
             last: true
             icon: "update"
             label: qsTr("Updates")

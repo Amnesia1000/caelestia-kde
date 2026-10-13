@@ -215,6 +215,21 @@ Item {
             } else {
                 popouts.hasCurrent = false;
             }
+        } else if (id === "media") {
+            const item = ch.item as Item;
+            if (item) {
+                const relPos = pos - top;
+                const inside = isHorizontal ? (relPos >= 0 && relPos <= item.implicitWidth) : (relPos >= 0 && relPos <= item.implicitHeight);
+                if (inside) {
+                    popouts.currentName = "media";
+                    popouts.currentCenter = isHorizontal ? item.mapToItem(null, item.implicitWidth / 2, 0).x : (item.mapToItem(null, 0, item.implicitHeight / 2).y ?? 0);
+                    popouts.hasCurrent = true;
+                } else {
+                    popouts.hasCurrent = false;
+                }
+            } else {
+                popouts.hasCurrent = false;
+            }
         } else if (id === "updateIndicator") {
             const item = ch.item as Item;
             if (item) {
@@ -282,9 +297,9 @@ Item {
         } else if (Config.bar.scrollActions.brightness) {
             const monitor = Brightness.getMonitorForScreen(screen);
             if (angleDelta.y > 0)
-                monitor.setBrightness(monitor.brightness + GlobalConfig.services.brightnessIncrement);
+                monitor.stepBrightness(GlobalConfig.services.brightnessIncrement);
             else if (angleDelta.y < 0)
-                monitor.setBrightness(monitor.brightness - GlobalConfig.services.brightnessIncrement);
+                monitor.stepBrightness(-GlobalConfig.services.brightnessIncrement);
         }
     }
 
@@ -508,6 +523,14 @@ Item {
                 delegate: WrappedLoader {
                     visible: enabled && GithubStore.available
                     sourceComponent: GithubActivity {
+                        popouts: root.popouts
+                    }
+                }
+            }
+            DelegateChoice {
+                roleValue: "media"
+                delegate: WrappedLoader {
+                    sourceComponent: Media {
                         popouts: root.popouts
                     }
                 }

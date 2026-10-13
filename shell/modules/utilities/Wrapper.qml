@@ -19,6 +19,10 @@ Item {
     readonly property PersistentProperties props: PersistentProperties {
         property bool recordingListExpanded: false
         property bool screenshotListExpanded: false
+        property bool quickShareListExpanded: false
+        property bool quickShareDeviceSelectorOpen: false
+        property string quickShareConfirmDeletePath: ""
+        property real quickShareConfirmDeleteTimestamp: 0
         property string captureMode
         property string recordingConfirmDelete
         property string recordingMode

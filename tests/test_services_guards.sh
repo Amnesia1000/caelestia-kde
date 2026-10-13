@@ -27,11 +27,6 @@ test_a_corrupt_notification_file_does_not_kill_persistence() {
         "valid but non-array JSON must also degrade to a fresh list"
 }
 
-test_monitor_names_skip_the_injected_values_bucket() {
-    assert_contains "$SERVICES/Kwin.qml" 'if (key !== "values")' \
-        "the monitors cache carries a synthetic values key that is not a monitor"
-}
-
 test_vpn_registration_runs_once_per_auth_wall() {
     assert_contains "$SERVICES/VPN.qml" 'property bool registerSent: false' \
         "needs-auth must be a transition, not a per-poll event"

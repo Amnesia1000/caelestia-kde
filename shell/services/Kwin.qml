@@ -44,7 +44,7 @@ Singleton {
     readonly property var monitors: {
         const screens = [...Quickshell.screens];
         const screenNames = screens.map(s => s.name);
-        const cachedNames = Object.keys(root._monitorCache).filter(key => key !== "values");
+        const cachedNames = Object.keys(root._monitorCache);
         const topologyChanged = cachedNames.length !== screenNames.length
             || cachedNames.some(name => !screenNames.includes(name));
 
@@ -64,14 +64,7 @@ Singleton {
             root._monitorCache[screens[i].name].focused = i === 0;
         }
 
-        const cache = root._monitorCache;
-        const vals = Object.values(cache).filter(v => typeof v === "object" && v !== null);
-        cache.values = vals;
-        cache.values.find   = pred => Array.prototype.find.call(vals, pred);
-        cache.values.filter = pred => Array.prototype.filter.call(vals, pred);
-        cache.values.some   = pred => Array.prototype.some.call(vals, pred);
-        cache.values.every  = pred => Array.prototype.every.call(vals, pred);
-        return cache;
+        return Object.values(root._monitorCache);
     }
     readonly property var focusedMonitor: {
         let _ = root.monitors;
@@ -442,17 +435,13 @@ Singleton {
     }
 
     function monitorNames(): list<string> {
-        const names = [];
-        for (const key in root.monitors)
-            if (key !== "values")
-                names.push(root.monitors[key].name);
-        return names;
+        return root.monitors.map(m => m.name);
     }
 
     function monitorFor(screen: ShellScreen): var {
         let cached = root._monitorCache[screen.name];
         if (!cached) {
-            cached = root.createMonitorMock(screen.name, Object.keys(root._monitorCache).filter(k => k !== "values").length);
+            cached = root.createMonitorMock(screen.name, Object.keys(root._monitorCache).length);
             root._monitorCache[screen.name] = cached;
         }
         return cached;
