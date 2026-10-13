@@ -116,6 +116,17 @@ PageBase {
             onToggled: GlobalConfig.notifs.openExpanded = checked
         }
 
+        ToggleRow {
+            text: qsTr("Do not disturb while sharing")
+            subtext: qsTr("Mute notifications while the screen is being shared or recorded")
+            checked: GlobalConfig.utilities.toasts.dndWhileStreaming
+            reset: ({
+                node: GlobalConfig.utilities.toasts,
+                setting: "dndWhileStreaming"
+            })
+            onToggled: GlobalConfig.utilities.toasts.dndWhileStreaming = checked
+        }
+
         StepperRow {
             label: qsTr("Default timeout")
             subtext: qsTr("Seconds before a notification dismisses")
