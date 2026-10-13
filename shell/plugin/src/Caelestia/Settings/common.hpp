@@ -12,7 +12,6 @@ Q_DECLARE_LOGGING_CATEGORY(lcSettings)
 
 class Node;
 
-// The JSON shape an option is decoded from, used to build mismatch diagnostics
 enum class ExpectedType {
     Bool = 0,
     Int,

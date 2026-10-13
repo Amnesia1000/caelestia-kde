@@ -75,7 +75,6 @@ PageBase {
             text: qsTr("Use alternative logo")
             subtext: qsTr("Use the Caelestia logo or a custom image instead of your distribution's logo")
             checked: GlobalConfig.general.logo !== ""
-            // Custom reset: default is the distro logo (empty path)
             reset: ({
                 customGet: () => GlobalConfig.general.logo !== "",
                 customDef: false,
@@ -138,7 +137,6 @@ PageBase {
             text: qsTr("Tint custom logo")
             subtext: qsTr("Apply the Material You accent color to your custom logo")
             checked: SysInfo.recolourCustomLogo
-            // Custom reset: Qt Settings property, not a config node
             reset: ({
                 customGet: () => SysInfo.recolourCustomLogo,
                 customDef: false,
@@ -151,7 +149,6 @@ PageBase {
             visible: GlobalConfig.general.logo !== "" && GlobalConfig.general.logo !== "caelestia"
             label: qsTr("Logo size (%)")
             value: SysInfo.customLogoSize
-            // Custom reset: Qt Settings property, not a config node
             reset: ({
                 customGet: () => SysInfo.customLogoSize,
                 customDef: 100,

@@ -5,10 +5,6 @@ import QtQuick.Effects
 import qs.components.effects
 import qs.services
 
-// The icon of a FileEntry, tinted when Material You icons are on and falling
-// back to the system theme when the bundled set has no match. Optionally
-// clipped to a rounded square: full-bleed square icons get rounded corners
-// while shaped icons on a transparent background are left as they are.
 Item {
     id: root
 
@@ -51,7 +47,6 @@ Item {
         }
     }
 
-    // Tinted icons are glyphs, so only full-colour icons get the corners.
     Loader {
         id: clip
 

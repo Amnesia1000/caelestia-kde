@@ -13,6 +13,7 @@ import qs.components.containers
 import qs.components.controls
 import qs.services
 import qs.utils
+import qs.modules.bar
 import qs.modules.nexus
 import qs.modules.nexus.common
 
@@ -116,15 +117,10 @@ PageBase {
         }
     }
 
-    // The configured terminal is a bare command and may not be installed - the
-    // default is foot, which a KDE box often does not have - so resolve it once
-    // and fall back to konsole, KDE's own terminal, instead of launching nothing.
     readonly property list<string> terminalCommand: root.configuredTerminalAvailable ? GlobalConfig.general.apps.terminal : ["konsole"]
 
     property bool configuredTerminalAvailable: true
 
-    // Launch the updater in the user's terminal. The page only reports state now;
-    // the updater owns its own output, progress and escalation prompts.
     function launchUpdater(): void {
         if (UpdateChecker.checkingUpdates)
             return;
@@ -349,39 +345,8 @@ PageBase {
             visible: !root.branchDataLoading
             text: qsTr("Show Update Indicator")
             subtext: qsTr("Show a notification icon in the taskbar when updates are available")
-            checked: {
-                const entries = GlobalConfig.bar.entries;
-                for (let i = 0; i < entries.length; i++) {
-                    if (entries[i].id === "updateIndicator") return entries[i].enabled;
-                }
-                return false;
-            }
-            onToggled: {
-                let entries = GlobalConfig.bar.entries;
-                let found = false;
-                for (let i = 0; i < entries.length; i++) {
-                    if (entries[i].id === "updateIndicator") {
-                        let entry = Object.assign({}, entries[i]);
-                        entry.enabled = checked;
-                        entries[i] = entry;
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found && checked) {
-                    let insertIdx = entries.length;
-                    for (let i = 0; i < entries.length; i++) {
-                        if (entries[i].id === "github" || entries[i].id === "clock") {
-                            insertIdx = i;
-                            break;
-                        } else if (entries[i].id === "tray") {
-                            insertIdx = i + 1;
-                        }
-                    }
-                    entries.splice(insertIdx, 0, { id: "updateIndicator", enabled: true, zone: "right" });
-                }
-                GlobalConfig.bar.entries = entries;
-            }
+            checked: BarWidgets.isEnabled(GlobalConfig.bar, "updateIndicator")
+            onToggled: BarWidgets.setEnabled(GlobalConfig.bar, "updateIndicator", checked)
         }
 
         NavRow {
@@ -494,7 +459,6 @@ PageBase {
         Process {
             id: terminalCheck
 
-            // Only the first word is the program; the rest are its own arguments.
             command: ["bash", "-c", "command -v \"$1\" >/dev/null 2>&1", "--", GlobalConfig.general.apps.terminal[0] || ""]
             running: true
             onExited: code => root.configuredTerminalAvailable = code === 0

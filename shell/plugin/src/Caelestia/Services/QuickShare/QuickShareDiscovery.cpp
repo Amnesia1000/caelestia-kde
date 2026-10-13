@@ -41,11 +41,8 @@ bool QuickShareDiscovery::startDiscovery() {
         return false;
     }
 
-    QDBusReply<QDBusObjectPath> browserPath = avahiServer.call(u"ServiceBrowserNew"_s,
-        -1, // AVAHI_IF_UNSPEC
-        -1, // AVAHI_PROTO_UNSPEC
-        u"_FC9F5ED42C8A._tcp"_s, u"local"_s,
-        (uint)0); // flags
+    QDBusReply<QDBusObjectPath> browserPath =
+        avahiServer.call(u"ServiceBrowserNew"_s, -1, -1, u"_FC9F5ED42C8A._tcp"_s, u"local"_s, (uint)0);
 
     if (!browserPath.isValid()) {
         qWarning() << u"QuickShareDiscovery: Failed to create ServiceBrowser:"_s << browserPath.error().message();
@@ -100,23 +97,19 @@ bool QuickShareDiscovery::advertise(const QString& deviceName, int port) {
         u"org.freedesktop.Avahi.EntryGroup"_s, QDBusConnection::systemBus(), this);
 
     QByteArray serviceId;
-    serviceId.append(static_cast<char>(0x23)); // pcp
+    serviceId.append(static_cast<char>(0x23));
     for (int i = 0; i < 4; i++)
         serviceId.append(static_cast<char>(QRandomGenerator::global()->generate()));
-    serviceId.append(static_cast<char>(0xFC)); // service_id
+    serviceId.append(static_cast<char>(0xFC));
     serviceId.append(static_cast<char>(0x9F));
     serviceId.append(static_cast<char>(0x5E));
-    serviceId.append(static_cast<char>(0x00)); // unknown bytes
+    serviceId.append(static_cast<char>(0x00));
     serviceId.append(static_cast<char>(0x00));
     const QString serviceName = endpointinfo::toBase64Url(serviceId);
 
-    QDBusMessage reply = m_entryGroup->call(u"AddService"_s,
-        -1,      // AVAHI_IF_UNSPEC
-        -1,      // AVAHI_PROTO_UNSPEC
-        (uint)0, // flags
-        serviceName, u"_FC9F5ED42C8A._tcp"_s, u"local"_s,
-        u""_s, // host
-        QVariant::fromValue<quint16>(port), QVariant::fromValue(endpointinfo::txtRecord(deviceName)));
+    QDBusMessage reply =
+        m_entryGroup->call(u"AddService"_s, -1, -1, (uint)0, serviceName, u"_FC9F5ED42C8A._tcp"_s, u"local"_s, u""_s,
+            QVariant::fromValue<quint16>(port), QVariant::fromValue(endpointinfo::txtRecord(deviceName)));
 
     if (reply.type() == QDBusMessage::ErrorMessage) {
         qWarning() << u"QuickShareDiscovery: AddService failed:"_s << reply.errorMessage();
@@ -150,7 +143,7 @@ void QuickShareDiscovery::stopAdvertising() {
 
 void QuickShareDiscovery::triggerTemporaryAdvertising(const QString& deviceName, int port) {
     if (m_isAdvertising && !m_isTempAdvertising) {
-        return; // Already permanently advertising
+        return;
     }
 
     if (!m_isAdvertising) {
@@ -160,7 +153,7 @@ void QuickShareDiscovery::triggerTemporaryAdvertising(const QString& deviceName,
     }
 
     if (m_isAdvertising && m_isTempAdvertising) {
-        m_tempAdvertiseTimer->start(30000); // 30 seconds
+        m_tempAdvertiseTimer->start(30000);
     }
 }
 
@@ -192,7 +185,7 @@ void QuickShareDiscovery::onServiceResolved(const QDBusMessage& msg) {
     if (args.size() >= 10) {
         QuickShareDevice device;
         device.id = args[2].toString();
-        device.name = device.id; // fallback
+        device.name = device.id;
 
         QList<QByteArray> txtRecords;
         if (args[9].userType() == qMetaTypeId<QDBusArgument>()) {
@@ -210,7 +203,6 @@ void QuickShareDiscovery::onServiceResolved(const QDBusMessage& msg) {
 
         device.address = args[7].toString();
 
-        // args[8] is quint16 port
         if (args[8].userType() == QMetaType::UShort) {
             device.port = args[8].value<quint16>();
         } else {

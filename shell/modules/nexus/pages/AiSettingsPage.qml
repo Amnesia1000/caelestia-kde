@@ -126,10 +126,6 @@ PageBase {
         keyStoreProc.running = true;
     }
 
-    // Apply the result of the write that just finished. keyringKeys is not
-    // touched until secret-tool has actually succeeded, so a missing binary, a
-    // locked keyring or a rejected store can no longer leave the field showing a
-    // key that was never persisted (#652).
     function finishKeyStore(code, detail) {
         const p = root.pendingProvider;
         const key = root.pendingKey;
@@ -364,9 +360,6 @@ PageBase {
                 onStreamFinished: root.lastKeyStoreError = (text || "").trim()
             }
 
-            // Qt.callLater so the stderr collector's handler gets a chance to run
-            // first. Reading lastKeyStoreError straight from here can race the
-            // stream and lose the reason secret-tool gave.
             onExited: code => Qt.callLater(() => root.finishKeyStore(code, root.lastKeyStoreError))
         }
 
@@ -404,9 +397,6 @@ PageBase {
         Process {
             id: installProc
 
-            // Downloaded to a file and then run, rather than piped into bash: a transfer
-            // that stops halfway would otherwise execute whatever arrived, and nothing
-            // would be left behind to look at.
             command: ["sh", "-c", `
 f="$(mktemp)"
 if curl -fsSL --connect-timeout 10 --max-time 60 https://claude.ai/install.sh -o "$f"; then

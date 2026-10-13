@@ -155,7 +155,6 @@ void KeybindsModel::resetKey(const QString& name) {
     if (defaultKey.isEmpty()) {
         return;
     }
-    // Like Replace: take the default back, clearing it from whoever holds it.
     for (GlobalShortcut* sc : GlobalShortcut::allShortcuts()) {
         if (sc->name() == name) {
             continue;

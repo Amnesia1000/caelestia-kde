@@ -38,8 +38,6 @@ MouseArea {
     property real maxHeight: 320
     readonly property alias backgroundItem: menu
     property bool transparentBackground: false
-    // Unfold sideways from the anchor with a short, non-overshooting curve
-    // instead of dropping down.
     property bool revealHorizontal: false
     readonly property int firstVisibleIndex: {
         const model = dynamicModel ?? [];
@@ -59,7 +57,6 @@ MouseArea {
     signal itemSelected(item: MenuItem)
     signal rightClickedAt(real x, real y)
 
-    // Plays the opening animation again, e.g. after the menu moved while open.
     function replayReveal(): void {
         if (!revealHorizontal || !expanded)
             return;
@@ -83,7 +80,7 @@ MouseArea {
     parent: {
         let node = root.attachTo;
         let interactionsNode = null;
-        
+
         while (node && node.parent) {
             if (node.utilitiesShortcutActive !== undefined) {
                 interactionsNode = node;
@@ -200,8 +197,6 @@ MouseArea {
         }
 
         StyledRect {
-            // Sideways, the content stays pinned to the edge the menu grows
-            // from and trails it by a few pixels while the panel unfolds.
             x: {
                 if (!root.revealHorizontal)
                     return 0;
@@ -217,7 +212,7 @@ MouseArea {
                 yScale: root.revealHorizontal ? 1 : menu.animScale
                 origin.y: root.thisSideY === Menu.Bottom ? menu.implicitHeight : 0
             }
-            
+
             radius: parent.radius
             color: root.transparentBackground
                 ? Qt.alpha(Colours.palette.m3surfaceContainerLow, 0)
@@ -263,7 +258,6 @@ MouseArea {
                         Layout.fillWidth: true
                         implicitWidth: menuOptionRow.implicitWidth + Tokens.padding.medium * 2
                         implicitHeight: visible ? menuOptionRow.implicitHeight + Tokens.padding.medium * 2 : 0
-
 
                         radius: active ? Tokens.rounding.medium : Tokens.rounding.extraSmall
                         topLeftRadius: index === root.firstVisibleIndex ? Tokens.rounding.medium : radius

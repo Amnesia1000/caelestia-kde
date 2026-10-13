@@ -141,8 +141,6 @@ QQuickItem* AnimatedRepeater::itemAt(int index) const {
     return m_items.value(index);
 }
 
-// --- QQuickItem Overrides ---
-
 void AnimatedRepeater::componentComplete() {
     QQuickItem::componentComplete();
     m_componentComplete = true;
@@ -179,8 +177,6 @@ int AnimatedRepeater::modelCount() const {
     return 0;
 }
 
-// Delegate properties for a row, in the order they must be applied: every model
-// role, then index, then a modelData fallback for models with no such role.
 AnimatedRepeater::PropertyList AnimatedRepeater::itemProperties(int index) const {
     PropertyList props;
 
@@ -237,8 +233,6 @@ QQuickItem* AnimatedRepeater::createItem(int index, bool adding) {
     if (!m_delegate)
         return nullptr;
 
-    // Use the delegate component's creation context for beginCreate
-    // so bound components (pragma ComponentBehavior: Bound) are accepted.
     auto* compContext = m_delegate->creationContext();
     if (!compContext)
         compContext = qmlContext(this);

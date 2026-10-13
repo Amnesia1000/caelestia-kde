@@ -7,7 +7,6 @@ import qs.components
 import qs.components.controls
 import qs.services
 
-// Now playing from the active MPRIS player, with transport controls.
 Item {
     id: root
 
@@ -109,7 +108,6 @@ Item {
                     }
                 }
 
-                // Click or drag along the bar to seek.
                 MouseArea {
                     function seek(x: real): void {
                         if (root.player?.length > 0)

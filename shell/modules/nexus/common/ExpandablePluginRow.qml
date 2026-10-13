@@ -20,10 +20,8 @@ StyledRect {
     property string authorNameText: ""
     property string iconText: "extension"
     property string iconImageUrl: ""
-    // Update indicator
     property bool isUpdateAvailable: false
     property string updateVersionText: ""
-    // true while this plugin is being installed (spinner state)
     property bool updateBusy: false
 
     default property Component actionComponent
@@ -39,7 +37,6 @@ StyledRect {
         return lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mkv");
     }
 
-    // Helper for transparent images (png, svg, gif)
     function isTransparentMedia(url) {
         if (!url) return false;
         let lower = url.toString().toLowerCase();
@@ -47,7 +44,7 @@ StyledRect {
     }
 
     implicitHeight: contentColumn.implicitHeight + Tokens.padding.large * 2
-    
+
     radius: Tokens.rounding.large
     color: Colours.layer(Colours.palette.m3surfaceContainerHigh, root.isExpanded ? 3 : 1)
 
@@ -91,7 +88,7 @@ StyledRect {
                 Layout.preferredWidth: 48
                 radius: Tokens.rounding.full
                 color: Colours.palette.m3secondaryContainer
-                
+
                 AnimatedImage {
                     id: pluginIconImage
 
@@ -100,7 +97,7 @@ StyledRect {
                     visible: root.iconImageUrl !== ""
                     fillMode: Image.PreserveAspectCrop
                     playing: true
-                    
+
                     opacity: status === Image.Ready ? 1 : 0
 
                     Behavior on opacity { Anim { type: Anim.DefaultEffects } }
@@ -124,24 +121,24 @@ StyledRect {
                 RowLayout {
                     Layout.fillWidth: true
                     spacing: Tokens.spacing.extraSmall
-                    
+
                     StyledText {
                         text: root.titleText
                         font: Tokens.font.body.medium
                         color: Colours.palette.m3onSurface
                         elide: Text.ElideRight
                     }
-                    
+
                     RowLayout {
                         spacing: Tokens.spacing.medium
-                        
+
                         StyledRect {
                             color: Qt.lighter(Colours.palette.m3surfaceVariant, 1.5)
                             radius: Tokens.rounding.small
                             implicitWidth: versionBadge.implicitWidth + Tokens.padding.small * 2
                             implicitHeight: versionBadge.implicitHeight + Tokens.padding.extraSmall
                             Layout.alignment: Qt.AlignVCenter
-                            
+
                             StyledText {
                                 id: versionBadge
 
@@ -152,7 +149,6 @@ StyledRect {
                             }
                         }
 
-                        // Option 1: opacity pulse
                         StyledRect {
                             id: updateBadgeA
 
@@ -216,7 +212,6 @@ StyledRect {
                                 }
                             }
 
-                            // Clicking the badge updates the plugin in place
                             MouseArea {
                                 anchors.fill: parent
                                 enabled: root.isUpdateAvailable && !root.updateBusy
@@ -262,7 +257,7 @@ StyledRect {
 
             spacing: Tokens.spacing.large
             visible: root.isExpanded
-            
+
             Item {
                 id: mediaItem
                 Layout.fillWidth: true
@@ -329,7 +324,7 @@ StyledRect {
                     audioOutput: aOut
                     source: root.isVideo(root.mediaUrl) ? root.mediaUrl : ""
                     loops: MediaPlayer.Infinite
-                    
+
                     onSourceChanged: {
                         if (root.isVideo(root.mediaUrl) && root.isExpanded) play()
                         else pause()

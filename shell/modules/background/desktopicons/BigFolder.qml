@@ -5,9 +5,6 @@ import Caelestia.Config
 import qs.components
 import qs.services
 
-// A group shown as a large folder: a grid of its app icons, each opening with
-// one click. When they do not all fit, the last slot previews the rest and
-// opens the full group. Names show when hovering, since the icons have none.
 Item {
     id: root
 
@@ -17,15 +14,9 @@ Item {
     readonly property string groupId: frame.itemId
     readonly property var entries: controller.groupEntries(groupId)
 
-    // Icons are sized for a 3x3 folder and keep that size: a bigger folder
-    // fits more of them instead of drawing them larger.
     readonly property size reference: areaFor(3, 3)
     readonly property real slot: Math.min(reference.width, reference.height) / 3
-    // Whole pixels throughout: icons drawn at fractional sizes or positions
-    // get resampled and come out blurry.
     readonly property int iconSize: Math.round(slot * 0.82)
-    // Laid out for the size the folder is heading to, not the animated one,
-    // so the icons move once while the card grows around them.
     readonly property size target: areaFor(frame.span.w, frame.span.h)
     readonly property int columns: Math.max(1, Math.floor(target.width / slot))
     readonly property int rows: Math.max(1, Math.floor(target.height / slot))
@@ -37,7 +28,6 @@ Item {
     readonly property real offsetY: (target.height - rows * slot) / 2
     property Item hoveredSlot: null
 
-    // Room the content gets at a given size in cells, matching BigItem's margins.
     function areaFor(w: int, h: int): size {
         const inset = Tokens.padding.small * 2;
         return Qt.size(w * controller.cellWidth - frame.sideGap * 2 - inset, h * controller.cellHeight - frame.topGap - frame.labelHeight - inset);
@@ -74,8 +64,6 @@ Item {
     onEntriesChanged: syncMembers()
     Component.onCompleted: syncMembers()
 
-    // One delegate per member that lives as long as the member does, so a
-    // resize only moves icons around instead of rebuilding them.
     ListModel {
         id: members
     }
@@ -172,7 +160,6 @@ Item {
                         root.controller.beginMemberDrag(root.groupId, slotItem.name, icon, pressPos.x - icon.x, pressPos.y - icon.y);
                     }
                 }
-                // Large folders act like a launcher: one click opens.
                 onClicked: mouse => {
                     if (dragSent || !slotItem.modelData)
                         return;
@@ -187,7 +174,6 @@ Item {
         }
     }
 
-    // The rest of the group in miniature; opens the whole group.
     Item {
         x: root.slotX(Math.max(0, root.capacity - 1))
         y: root.slotY(Math.max(0, root.capacity - 1))
@@ -222,7 +208,6 @@ Item {
                 }
             }
 
-            // A fixed four slots so the previews are not rebuilt on resize.
             Repeater {
                 model: 4
 
@@ -250,7 +235,6 @@ Item {
         }
     }
 
-    // Name of the hovered app.
     StyledRect {
         id: bubble
 

@@ -41,8 +41,6 @@ QtObject {
         ClipboardManager.copyPinned(pinId);
     }
 
-    /// Pinned entries carry a negative id so they never collide with a cliphist
-    /// one, and so existing code that keys on `id` keeps working.
     function toPinnedEntry(pin: var): var {
         return {
             id: -pin.pinId,

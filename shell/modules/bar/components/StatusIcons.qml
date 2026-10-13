@@ -48,9 +48,6 @@ StyledRect {
         return root.popoutNames[id] ?? id;
     }
 
-    // Which icons are shown, and in what order, is the `bar.statusIcons` list, so
-    // that the settings page can add, remove and reorder them. Everything below is
-    // the other half of the question: whether an icon has anything to say now.
     function entryActive(id: string): bool {
         switch (id) {
         case "lockStatus":

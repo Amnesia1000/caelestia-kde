@@ -260,10 +260,6 @@ PageBase {
             }
         }
 
-
-
-
-
         Process {
             id: schemeListProc
 

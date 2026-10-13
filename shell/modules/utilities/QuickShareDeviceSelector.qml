@@ -28,7 +28,6 @@ Loader {
     opacity: root.props.quickShareDeviceSelectorOpen ? 1 : 0
     active: opacity > 0
 
-    // The beacon only has to be up while the selector is open.
     onActiveChanged: {
         if (active)
             QuickShareService.startBleWakeupBroadcast();
@@ -55,8 +54,6 @@ Loader {
             animate: true
         }
 
-        // A user reads an empty list as broken, and the other device's network is the
-        // one cause this side cannot see.
         StyledText {
             Layout.fillWidth: true
             visible: QuickShareService.nearbyDevices.length === 0

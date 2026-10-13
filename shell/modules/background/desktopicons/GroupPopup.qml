@@ -7,8 +7,6 @@ import qs.components.controls
 import qs.components.effects
 import qs.services
 
-// The panel an open group shows its members in. Sits next to the group's
-// icon; members can be opened, selected, reordered and dragged back out.
 Item {
     id: root
 
@@ -16,7 +14,6 @@ Item {
     property rect anchorRect
 
     readonly property bool open: controller.openGroupId !== ""
-    // Stays on the last group while the panel animates closed.
     property string shownId: ""
     readonly property var group: DesktopLayout.groups[shownId] ?? null
     readonly property var members: (group?.members ?? []).filter(m => !!controller.files[m])
@@ -109,7 +106,6 @@ Item {
         id: membersModel
     }
 
-    // Clicking outside closes the group.
     MouseArea {
         anchors.fill: parent
         enabled: root.open
@@ -152,7 +148,6 @@ Item {
             Anim {}
         }
 
-        // Swallow clicks on the panel background so they do not close it.
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.LeftButton | Qt.RightButton

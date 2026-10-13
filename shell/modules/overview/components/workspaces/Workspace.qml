@@ -171,7 +171,6 @@ StyledRect {
     DropArea {
         id: windowDropArea
 
-        // Remembered because onExited carries no drag argument.
         property var hovering: null
 
         function clearHover(): void {
@@ -183,7 +182,6 @@ StyledRect {
 
         anchors.fill: parent
         onEntered: drag => {
-            //console.log("DROP AREA ENTERED:", drag.source ? drag.source.clientAddress : "null");
             if (!drag.source || drag.source.clientAddress === undefined)
                 return;
             if (!("dropTargetScale" in drag.source))
@@ -335,7 +333,7 @@ StyledRect {
                             let tl = iconDelegate;
                             while (tl.parent) tl = tl.parent;
                             iconDelegate.topLevel = tl;
-                            
+
                             if (tl) {
                                 const p = iconDelegate.mapToItem(tl, 0, 0);
                                 iconDelegate.dragStartX = p.x;
@@ -363,7 +361,7 @@ StyledRect {
                         if (root.active) {
                             if (modelData.address) {
                                 Kwin.focusWindow(modelData.address);
-                                
+
                                 let p = parent;
                                 while (p) {
                                     if (p.requestClose) {

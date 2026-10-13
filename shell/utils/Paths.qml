@@ -16,9 +16,9 @@ Singleton {
     readonly property string state: `${Quickshell.env("XDG_STATE_HOME") || `${home}/.local/state`}/caelestia`
     readonly property string cache: `${Quickshell.env("XDG_CACHE_HOME") || `${home}/.cache`}/caelestia`
     readonly property string config: `${Quickshell.env("XDG_CONFIG_HOME") || `${home}/.config`}/caelestia`
-    
+
     readonly property string runtimeDir: Quickshell.env("XDG_RUNTIME_DIR") || `/tmp/caelestia-${Quickshell.env("USER")}`
-    
+
     function runtimeTemp(name: string): string {
         return `${runtimeDir}/caelestia-${name}`;
     }
@@ -33,9 +33,6 @@ Singleton {
 
     readonly property string libdir: Quickshell.env("CAELESTIA_LIB_DIR") || "/usr/lib/caelestia"
 
-    // Where the caelestia commands are installed: /usr/bin when a package owns
-    // them, ~/.local/bin for a source install. Both autostart scripts export
-    // CAELESTIA_BIN_DIR, and the fallback covers a shell started by hand.
     readonly property string binDir: Quickshell.env("CAELESTIA_BIN_DIR") || `${home}/.local/bin`
 
     function bin(name: string): string {

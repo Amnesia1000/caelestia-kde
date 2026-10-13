@@ -44,7 +44,6 @@ PageBase {
 
     readonly property list<string> gpuValues: ["", "NVIDIA", "GENERIC", "None"]
 
-    // Visualiser capture source (there must be one for each value of the VisualiserInput enum)
     readonly property list<MenuItem> visualiserInputItems: [
         MenuItem {
             text: qsTr("Output")

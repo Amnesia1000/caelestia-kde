@@ -8,8 +8,6 @@ import qs.components.controls
 import qs.services
 import qs.modules.nexus.common
 
-// Live preview pane: a scaled-down screen rectangle showing how windows will be
-// arranged under the current Krohnkite layout and gap settings.
 Item {
     id: root
 
@@ -401,16 +399,6 @@ Item {
                     }
                 }
             }
-
-
-            //     StyledText {
-            //         id: badgeLabel
-            //         anchors.centerIn: parent
-            //         text: root.layout
-            //         font: Tokens.font.label.small
-            //         color: Colours.palette.m3onSurface
-            //     }
-            // }
         }
     }
 }

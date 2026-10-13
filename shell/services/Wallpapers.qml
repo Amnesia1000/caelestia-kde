@@ -108,7 +108,6 @@ Searcher {
     }
 
     function setWallpaper(path: string): void {
-        // The preview covers the applied scheme until the scheme this change produces has landed.
         if (previewing && path !== actualCurrent)
             previewColoursState.hold();
         actualCurrent = path;
@@ -147,8 +146,6 @@ Searcher {
         previewColourOf(path);
     }
 
-    // matugen cannot read a video, so a video is previewed through its first frame. While the
-    // frame is not ready the video stays highlighted and the preview runs once it is.
     function previewColourOf(path: string): void {
         if (Colours.scheme !== "dynamic")
             return;

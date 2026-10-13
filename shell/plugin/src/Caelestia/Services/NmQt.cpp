@@ -89,8 +89,6 @@ NetworkManager::WirelessSecuritySetting::KeyMgmt personalKeyMgmtFor(const Networ
     return KeyMgmt::WpaNone;
 }
 
-/// The SSID a connection holds, as the raw bytes NetworkManager stores it as.
-/// Empty for every connection type that is not wireless.
 QByteArray ssidOf(const NetworkManager::Connection::Ptr& conn) {
     if (!conn || !conn->settings())
         return {};
@@ -121,8 +119,6 @@ QList<NetworkManager::Connection::Ptr> connectionsForSsid(const QString& ssid) {
     return matches;
 }
 
-/// Resolve one exact saved profile. Matching the connection id or the SSID as
-/// well would land on whichever duplicate NetworkManager enumerates first.
 NetworkManager::Connection::Ptr findConnectionByUuid(const QString& uuid) {
     if (uuid.isEmpty())
         return {};
@@ -331,7 +327,6 @@ void NmQt::connectToNetwork(const QString& ssid, const QString& password, const 
     }
 
     if (existingConn && !password.isEmpty()) {
-        // Update the saved profile's PSK in place instead of duplicating it.
         const auto securitySetting = existingConn->settings()
                                          ->setting(NetworkManager::Setting::SettingType::WirelessSecurity)
                                          .dynamicCast<NetworkManager::WirelessSecuritySetting>();
@@ -1124,7 +1119,7 @@ void NmQt::onConnectionsChanged() {
 }
 
 void NmQt::onDeviceStateChanged(NetworkManager::Device::State newState, NetworkManager::Device::State oldState,
-    NetworkManager::Device::StateChangeReason /*reason*/) {
+    NetworkManager::Device::StateChangeReason) {
     Q_UNUSED(oldState)
     const bool wasConnecting = (oldState == NetworkManager::Device::State::NeedAuth ||
                                 oldState == NetworkManager::Device::State::ConfiguringHardware ||
@@ -1156,18 +1151,18 @@ void NmQt::onDeviceStateChanged(NetworkManager::Device::State newState, NetworkM
     emit isConnectedChanged();
 }
 
-void NmQt::onScanFinished(const QDateTime& /*dateTime*/) {
+void NmQt::onScanFinished(const QDateTime&) {
     m_scanWatchdog->stop();
     m_scanning = false;
     emit scanningChanged();
     refreshNetworks();
 }
 
-void NmQt::onAccessPointAppeared(const QString& /*apPath*/) {
+void NmQt::onAccessPointAppeared(const QString&) {
     refreshNetworks();
 }
 
-void NmQt::onAccessPointDisappeared(const QString& /*apPath*/) {
+void NmQt::onAccessPointDisappeared(const QString&) {
     refreshNetworks();
 }
 

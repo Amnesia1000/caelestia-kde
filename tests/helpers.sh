@@ -72,6 +72,39 @@ assert_not_contains() {
     fi
 }
 
+assert_file_contains() {
+    local path="$1" needle="$2" message="${3:-substring not found}"
+    if [[ ! -f "$path" ]]; then
+        fail "$message (no such file: $path)"
+        return 0
+    fi
+    if ! grep -qF -- "$needle" "$path"; then
+        fail "$message ($(basename "$path") does not contain $(printf '%q' "$needle"))"
+    fi
+}
+
+assert_file_not_contains() {
+    local path="$1" needle="$2" message="${3:-unexpected substring found}"
+    if [[ ! -f "$path" ]]; then
+        fail "$message (no such file: $path)"
+        return 0
+    fi
+    if grep -qF -- "$needle" "$path"; then
+        fail "$message ($(basename "$path") still contains $(printf '%q' "$needle"))"
+    fi
+}
+
+assert_file_matches() {
+    local path="$1" pattern="$2" message="${3:-no line matches}"
+    if [[ ! -f "$path" ]]; then
+        fail "$message (no such file: $path)"
+        return 0
+    fi
+    if ! grep -qE -- "$pattern" "$path"; then
+        fail "$message ($(basename "$path") has no line matching $(printf '%q' "$pattern"))"
+    fi
+}
+
 new_tmpdir() {
     local dir
     dir="$(mktemp -d "${TMPDIR:-/tmp}/caelestia-test.XXXXXX")"
@@ -97,9 +130,6 @@ calls_to() {
     awk -v want="$name" '$1 == want { sub(/^[^ ]+ /, ""); print }' "$log"
 }
 
-# Prints a function's body out of a script, so a test can drive the real implementation
-# rather than a copy of it. The body ends at the first closing brace at column zero, which
-# is how the scripts in this repository close their functions.
 extract_function() {
     local file="$1" name="$2"
     awk -v name="$name" '
@@ -109,9 +139,6 @@ extract_function() {
     ' "$file"
 }
 
-# Runs its command with PATH holding only $1, so the command can only reach the
-# stubs that are in there. $2 is the lrelease fallback path the toolchain tests set,
-# and is unused by callers that do not care.
 with_path() {
     local dir="$1" fallback="$2"
     shift 2

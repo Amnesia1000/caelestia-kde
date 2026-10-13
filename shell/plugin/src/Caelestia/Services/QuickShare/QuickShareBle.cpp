@@ -13,7 +13,6 @@ namespace caelestia::services {
 
 namespace {
 
-/// Pulls the first object path carrying `interface` out of an ObjectManager reply.
 QString findAdapterPath(const QDBusMessage& reply, const QString& interface) {
     if (reply.arguments().isEmpty())
         return {};
@@ -30,10 +29,6 @@ QString findAdapterPath(const QDBusMessage& reply, const QString& interface) {
 }
 
 } // namespace
-
-// --------------------------------------------------------------------------------
-// QuickShareBleAdvertisementAdaptor
-// --------------------------------------------------------------------------------
 
 QuickShareBleAdvertisementAdaptor::QuickShareBleAdvertisementAdaptor(QObject* parent)
     : QDBusAbstractAdaptor(parent) {}
@@ -58,10 +53,6 @@ QVariantMap QuickShareBleAdvertisementAdaptor::serviceData() const {
 void QuickShareBleAdvertisementAdaptor::Release() {
     qDebug() << u"QuickShareBleAdvertisement released by BlueZ"_s;
 }
-
-// --------------------------------------------------------------------------------
-// QuickShareBleAdvertiser
-// --------------------------------------------------------------------------------
 
 QuickShareBleAdvertiser::QuickShareBleAdvertiser(QObject* parent)
     : QObject(parent)
@@ -93,7 +84,7 @@ void QuickShareBleAdvertiser::stopAdvertising() {
     QDBusMessage msg = QDBusMessage::createMethodCall(
         u"org.bluez"_s, m_adapterPath, u"org.bluez.LEAdvertisingManager1"_s, u"UnregisterAdvertisement"_s);
     msg << QVariant::fromValue(QDBusObjectPath(m_objectPath));
-    QDBusConnection::systemBus().call(msg); // sync call is fine here for cleanup
+    QDBusConnection::systemBus().call(msg);
     m_isAdvertising = false;
 }
 
@@ -113,7 +104,7 @@ void QuickShareBleAdvertiser::onGetManagedObjectsFinished(const QDBusMessage& re
     QDBusMessage msg = QDBusMessage::createMethodCall(
         u"org.bluez"_s, m_adapterPath, u"org.bluez.LEAdvertisingManager1"_s, u"RegisterAdvertisement"_s);
     msg << QVariant::fromValue(QDBusObjectPath(m_objectPath));
-    msg << QVariantMap(); // empty dict
+    msg << QVariantMap();
 
     QDBusConnection::systemBus().callWithCallback(msg, this, SLOT(onRegisterAdvertisementFinished(QDBusMessage)));
 }
@@ -126,10 +117,6 @@ void QuickShareBleAdvertiser::onRegisterAdvertisementFinished(const QDBusMessage
         m_isAdvertising = true;
     }
 }
-
-// --------------------------------------------------------------------------------
-// QuickShareBleScanner
-// --------------------------------------------------------------------------------
 
 QuickShareBleScanner::QuickShareBleScanner(QObject* parent)
     : QObject(parent)
@@ -227,7 +214,6 @@ void QuickShareBleScanner::checkDeviceProperties(const QVariantMap& props) {
         QMap<QString, QVariant> serviceData;
         arg >> serviceData;
 
-        // Sometimes QDBusArgument converts to QMap<QString, QByteArray> or QVariant
         if (serviceData.contains(u"0000fe2c-0000-1000-8000-00805f9b34fb"_s)) {
             QByteArray data;
             QVariant val = serviceData.value(u"0000fe2c-0000-1000-8000-00805f9b34fb"_s);

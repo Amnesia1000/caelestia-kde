@@ -48,8 +48,6 @@ public:
 private:
     CONFIG_GLOBAL_PROPERTY(QString, gpuType, QString())
     CONFIG_GLOBAL_PROPERTY(int, visualiserBars, 60)
-    // What the audio visualisers (and the beat tracker sharing their capture
-    // stream) react to: the default output's monitor, or the default input.
     CONFIG_GLOBAL_ENUM_PROPERTY(VisualiserInput, visualiserInput, VisualiserInput::Output)
     CONFIG_GLOBAL_PROPERTY(qreal, audioIncrement, 0.1)
     CONFIG_GLOBAL_PROPERTY(qreal, brightnessIncrement, 0.1)
@@ -61,8 +59,6 @@ private:
 
     CONFIG_GLOBAL_PROPERTY(bool, autoSchemeEnabled, false)
     CONFIG_GLOBAL_PROPERTY(QString, autoSchemeMode, u"solar"_s)
-    // "HH:MM", local time. Also used as the fallback when solar times cannot be
-    // computed (no location set, or polar day/night).
     CONFIG_GLOBAL_PROPERTY(QString, autoSchemeLightTime, u"07:00"_s)
     CONFIG_GLOBAL_PROPERTY(QString, autoSchemeDarkTime, u"19:00"_s)
     CONFIG_GLOBAL_PROPERTY(QString, defaultPlayer, u"Spotify"_s)

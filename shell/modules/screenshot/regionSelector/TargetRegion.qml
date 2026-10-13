@@ -52,7 +52,7 @@ Rectangle {
             topMargin: root.textPadding
             leftMargin: root.textPadding
         }
-        
+
         active: root.showLabel
         sourceComponent: Rectangle {
             property real verticalPadding: 5

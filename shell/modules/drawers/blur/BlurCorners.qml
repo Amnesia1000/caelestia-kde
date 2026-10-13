@@ -30,9 +30,6 @@ Region {
 
     property real rBR: Math.min(rBottom, rRight)
 
-
-
-
     property real tlX: 0
 
     property real tlY: 0

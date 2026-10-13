@@ -9,7 +9,6 @@ import qs.utils
 Singleton {
     id: root
 
-
     readonly property var retiredStatusKeys: [
         { id: "lockStatus", key: "showLockStatus" },
         { id: "microphone", key: "showMicrophone" },
@@ -29,8 +28,6 @@ Singleton {
         })
     readonly property string orderFilePath: `${Paths.config}/status_icons_order.txt`
 
-    // The order the file asked for, as the list spells the ids, without anything the
-    // list has no entry for.
     function retiredOrder(order: string): var {
         const ids = [];
         for (const name of order.split(",")) {
@@ -153,9 +150,6 @@ Singleton {
     Process {
         id: orderReader
 
-        // `cat` rather than a declarative read so that the answer arrives either way:
-        // what the status icons need to know is not only what the file says but that it
-        // is not there at all.
         command: ["cat", root.orderFilePath]
 
         stdout: StdioCollector {

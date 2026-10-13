@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
 import qs.services
+import qs.modules.bar
 import qs.modules.nexus
 
 ColumnLayout {
@@ -16,8 +17,6 @@ ColumnLayout {
     property real fontScale: 1.0
     property bool _isSidebarOpen: false
 
-    // Index of the Nexus "Updates" page, resolved by page key so this menu
-    // can't drift out of sync if the page registry is reordered.
     readonly property int updatesPageIdx: {
         const idx = PageRegistry.indexForKey("updates");
         return idx >= 0 ? idx : 0;
@@ -49,22 +48,14 @@ ColumnLayout {
     }
 
     function hideIndicator(): void {
-        const entries = GlobalConfig.bar.entries ? [...GlobalConfig.bar.entries] : [];
-        const idx = entries.findIndex(e => e.id === "updateIndicator");
-        if (idx >= 0)
-            entries[idx] = { id: "updateIndicator", enabled: false, zone: entries[idx].zone || "right" };
-        else
-            entries.push({ id: "updateIndicator", enabled: false, zone: "right" });
-        GlobalConfig.bar.entries = entries;
+        BarWidgets.setEnabled(GlobalConfig.bar, "updateIndicator", false);
         root.popouts.hasCurrent = false;
     }
 
-    // Joins the sidebar like the other panel-sized popouts while it is open.
     width: Math.max(300 * scaleOffset, _isSidebarOpen ? (Visibilities.sidebarWidthFor(Tokens.sizes.sidebar.width) * scaleOffset) - Tokens.padding.extraLargeIncreased : 0)
     implicitWidth: width
     spacing: Tokens.spacing.small * scaleOffset
 
-    // Status card: state icon + summary + last/next check timings.
     StyledRect {
         Layout.fillWidth: true
         implicitHeight: statusLayout.implicitHeight + Tokens.padding.medium * 2 * root.scaleOffset

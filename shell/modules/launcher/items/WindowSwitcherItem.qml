@@ -24,8 +24,6 @@ Item {
         root.list.visibilities.launcher = false;
     }
 
-    // Unlike clicked(), stays in the switcher rather than closing the launcher —
-    // the point is closing several windows in a row without re-opening it each time.
     function closeWindow(): void {
         Windows.closeWindow(root.modelData.address);
     }
@@ -156,4 +154,3 @@ Item {
         Anim { type: Anim.FastSpatial }
     }
 }
-

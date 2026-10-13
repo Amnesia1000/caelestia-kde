@@ -30,7 +30,7 @@ PageBase {
         }
         return n;
     }
-    property int currentTab: 0 // 0 = Installed, 1 = Store
+    property int currentTab: 0
     property string storeBranch: "main"
 
     function resolveIconUrl(iconString, basePath, isStorePlugin) {
@@ -38,16 +38,16 @@ PageBase {
         let s = iconString.toLowerCase();
         let isImg = s.endsWith(".png") || s.endsWith(".jpg") || s.endsWith(".jpeg") || s.endsWith(".gif") || s.endsWith(".svg");
         if (!isImg) return "";
-        
+
         if (iconString.indexOf("http://") === 0 || iconString.indexOf("https://") === 0 || iconString.indexOf("file://") === 0) return iconString;
         if (iconString.indexOf("/") === 0) return "file://" + iconString;
-        
+
         if (isStorePlugin) {
             return "https://raw.githubusercontent.com/ladybug-me/caelestia-kde-plugins/" + root.storeBranch + "/" + basePath + "/" + iconString;
         }
         return "file://" + basePath + "/" + iconString;
     }
-    
+
     function resolveIconText(iconString) {
         if (!iconString || iconString === "default") return "extension";
         let s = iconString.toLowerCase();
@@ -56,7 +56,6 @@ PageBase {
         return iconString;
     }
 
-    // Version of an installed plugin in the store, "" when the store has no entry for it.
     function storeVersionFor(pluginId) {
         const n = PluginStore.storePlugins.count;
         for (let i = 0; i < n; i++) {
@@ -67,7 +66,6 @@ PageBase {
         return "";
     }
 
-    // True when the store ships a newer version than the installed one.
     function isUpdateAvailableFor(pluginId, installedVersion) {
         const storeVersion = root.storeVersionFor(pluginId);
         if (!storeVersion || !installedVersion)
@@ -241,7 +239,7 @@ PageBase {
                                     PluginLoader.setPluginEnabled(bundledDelegate.id || bundledDelegate.name, !bundledDelegate.enabled);
                                 }
                             }
-                            
+
                             IconButton {
                                 icon: "settings"
                                 type: IconButton.Tonal
@@ -499,7 +497,6 @@ PageBase {
 
                     actionComponent: Component {
                         TextButton {
-                            // Installed plugins stay greyed out; only installable ones keep the filled colour
                             text: storeDelegate.isInstalled ? qsTr("Installed") : qsTr("Install")
                             disabled: storeDelegate.isInstalled || PluginStore.installing
                             onClicked: {

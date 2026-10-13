@@ -35,7 +35,6 @@ Singleton {
     readonly property Transparency transparency: Transparency {}
     readonly property alias wallLuminance: analyser.luminance
 
-    /// The scheme in effect has been replaced, so a preview may no longer cover the applied palette.
     signal schemeApplied
 
     function updatePaletteManager(): void {
@@ -178,8 +177,6 @@ Singleton {
         return harmonizeWith(designColor, root.palette.m3primary);
     }
 
-    /// Apply the scheme the engine produced. This is the scheme in effect, so it replaces a
-    /// preview: `schemeApplied` tells whoever is showing one that it may no longer cover it.
     function load(data: string): void {
         const scheme = parseScheme(data);
         if (!scheme) {
@@ -194,9 +191,6 @@ Singleton {
 
         root.showPreview = false;
 
-        // Absent, null, and a value the range does not take all mean the same thing here:
-        // what is in effect is the palette the engine produced. 0 is a real setting (a grey
-        // palette), so this cannot lean on falsiness either.
         const intensity = Number(scheme.intensity ?? NaN);
         root.intensity = Number.isFinite(intensity) ? Math.min(root.maxIntensity, Math.max(0, intensity)) : 1.0;
 
@@ -208,18 +202,12 @@ Singleton {
         root.schemeApplied();
     }
 
-    /// Cover the applied palette with a scheme shown as a preview. A preview is only worth showing
-    /// if it parsed: a process that printed nothing, or printed something that is not a scheme,
-    /// leaves what is on screen alone rather than replacing it with a palette nobody produced.
     function loadPreview(data: string): void {
         const scheme = parseScheme(data);
         if (scheme)
             applyPreview(scheme);
     }
 
-    /// Show a scheme as the preview palette — the one place that turns the preview on. `colours` is
-    /// what the palette becomes; the rest are the descriptors it is reported under, so a caller
-    /// holding only a palette passes the variant and mode in effect.
     function applyPreview(scheme: var): void {
         root.previewScheme = (scheme.name || "").trim();
         root.previewFlavour = (scheme.flavour || "").trim();
@@ -231,7 +219,6 @@ Singleton {
         root.showPreview = true;
     }
 
-    /// A scheme as the engine writes it, or null if the data is not one.
     function parseScheme(data: string): var {
         const raw = (data || "").trim();
         if (raw === "")
@@ -256,8 +243,6 @@ Singleton {
             schemeRetryTimer.start();
     }
 
-    /// Fold a scheme's `colours` into a palette. A file leaves the leading `#` off and names a
-    /// terminal role plainly, so the role a palette holds is not the key the file uses.
     function applyColours(palette: M3Palette, colours: var): void {
         for (const [role, colour] of Object.entries(colours)) {
             const propName = role.startsWith("term") ? role : `m3${role}`;
@@ -288,7 +273,6 @@ Singleton {
     }
 
     function reloadHyprRules(): void {
-        // Layer rules are Hyprland-only; KWin handles blur via effects.
                     return;
 
         let rule, trEnabled;
@@ -326,8 +310,6 @@ Singleton {
 
         target: Kwin
     }
-
-
 
     FileView {
         id: schemeFile
@@ -408,8 +390,6 @@ Singleton {
     onLightChanged: Qt.callLater(updatePaletteManager)
 
     onShowPreviewChanged: Qt.callLater(updatePaletteManager)
-
-
 
     Timer {
         id: cooldownTimer

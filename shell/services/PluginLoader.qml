@@ -42,8 +42,6 @@ Item {
     function loadPlugin(meta) {
         let id = meta.id || meta.name;
         if (pluginInstances[id]) return;
-        // Other types (a kwineffect that ships a settings front-end) opt in
-        // through the manifest's `ui` field.
         let ui = meta.ui || (meta.type === "quickshell" ? "main.qml" : "");
         if (!ui) return;
 
@@ -83,8 +81,6 @@ Item {
     }
 
     function setPluginEnabled(name, enable) {
-        // Must slice() to create a new array instance, otherwise assigning it back
-        // to pluginSettings.disabledPlugins won't trigger the QML change signal or save it.
         let disabled = (pluginSettings.disabledPlugins || []).slice();
         let index = disabled.indexOf(name);
         if (enable && index > -1) {
@@ -145,7 +141,6 @@ Item {
         updateEnabledCount();
         pluginsReloaded();
     }
-
 
     function readMetadata(pluginInfo) {
         let metaPath = pluginInfo.path + "/metadata.json";
@@ -306,8 +301,6 @@ Item {
                     }
 
                     console.log("addPluginToAvailable: adding", meta.id, "to available list. mediaurl:", meta.mediaurl);
-                    // Updating an already listed plugin replaces the stale entry instead of
-                    // duplicating it, so the row reflects the fresh version right away.
                     let replacedKey = meta.id || meta.name;
                     for (let j = 0; j < pluginLoader.discovered.length; j++) {
                         if ((pluginLoader.discovered[j].id || pluginLoader.discovered[j].name) === replacedKey) {
