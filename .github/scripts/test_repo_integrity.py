@@ -290,12 +290,10 @@ class ShellSurfaceTests(unittest.TestCase):
         page = (
             ROOT / "shell" / "modules" / "nexus" / "pages" / "panels" / "taskbar" / "BarComponents.qml"
         ).read_text(encoding="utf-8")
-        mirrored = re.search(r'\{ id: "github", enabled: (\w+)', page)
-        self.assertIsNotNone(mirrored, "the Nexus defaults must still list a github entry")
-        self.assertEqual(
-            mirrored.group(1),
-            "false",
-            "the Nexus defaults must match the compiled default, or resetting re-enables it",
+        self.assertIn(
+            "BarWidgets.resetToDefaults(GlobalConfig.bar)",
+            page,
+            "the editor must reset from the compiled defaults rather than from a copy of them",
         )
 
     def test_settings_search_waits_for_a_pause_in_typing(self) -> None:
