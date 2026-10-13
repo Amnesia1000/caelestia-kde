@@ -20,10 +20,7 @@ Item {
     readonly property Popout currentPopout: content.children.find(c => c.shouldBeActive) ?? null
     readonly property Item current: currentPopout?.item ?? null
 
-    readonly property var trayItemsToIndices: SystemTray.items.values.filter(i => i.status !== Status.Passive && !GlobalConfig.bar.tray.hiddenIcons.includes(i.id)).reduce((acc, item, i) => {
-        acc[item.id] = i;
-        return acc;
-    }, {})
+    readonly property var trayItemsToIndices: QsServices.TrayRegistry.trayIndexById
 
     readonly property real contentMargin: Tokens.padding.large * (currentPopout?.item?.scaleOffset ?? 1.0)
     readonly property real availableWidth: Math.max(0, ((QsWindow.window as QsWindow)?.screen?.width ?? 0) - contentMargin * 2 - Tokens.padding.extraLargeIncreased * (currentPopout?.item?.scaleOffset ?? 1.0))
