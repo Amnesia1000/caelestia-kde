@@ -426,10 +426,10 @@ StyledRect {
             rowSpacing: Tokens.spacing.medium / 2
 
             MaterialIcon {
-                visible: !Bluetooth.defaultAdapter?.enabled || !Bluetooth.devices.values.some(d => d.state !== BluetoothDeviceState.Disconnected)
+                visible: !Bluetooth.defaultAdapter?.enabled || !Bluetooth.devices.values.some(d => d.state !== BluetoothDeviceState.Disconnected) // qmllint disable unresolved-type
                 animate: true
                 text: {
-                    if (!Bluetooth.defaultAdapter?.enabled)
+                    if (!Bluetooth.defaultAdapter?.enabled) // qmllint disable unresolved-type
                         return "bluetooth_disabled";
                     return "bluetooth";
                 }
@@ -438,7 +438,7 @@ StyledRect {
 
             Repeater {
                 model: ScriptModel {
-                    values: Bluetooth.devices.values.filter(d => d.state !== BluetoothDeviceState.Disconnected)
+                    values: Bluetooth.devices.values.filter(d => d.state !== BluetoothDeviceState.Disconnected) // qmllint disable unresolved-type
                 }
 
                 MaterialIcon {
@@ -452,7 +452,7 @@ StyledRect {
                     fill: 1
 
                     SequentialAnimation on opacity {
-                        running: device.modelData?.state !== BluetoothDeviceState.Connected
+                        running: device.modelData?.state !== BluetoothDeviceState.Connected // qmllint disable unresolved-type
                         alwaysRunToEnd: true
                         loops: Animation.Infinite
 
@@ -510,7 +510,7 @@ StyledRect {
 
             Repeater {
                 model: ScriptModel {
-                    values: UPower.devices.values.filter(d => !d.isLaptopBattery && d.type !== UPowerDeviceType.LinePower && d.isPresent && !peripheralColumn.excluded.some(e => e === d.model || e === d.nativePath))
+                    values: UPower.devices.values.filter(d => !d.isLaptopBattery && d.type !== UPowerDeviceType.LinePower && d.isPresent && !peripheralColumn.excluded.some(e => e === d.model || e === d.nativePath)) // qmllint disable unresolved-type
                 }
 
                 MaterialIcon {

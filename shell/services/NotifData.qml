@@ -57,7 +57,9 @@ QtObject {
     readonly property LazyLoader dummyImageLoader: LazyLoader {
         active: false
 
+        // qmllint disable uncreatable-type
         PanelWindow {
+            // qmllint enable uncreatable-type
             implicitWidth: TokenConfig.sizes.notifs.image
             implicitHeight: TokenConfig.sizes.notifs.image
             color: "transparent"
@@ -146,7 +148,9 @@ QtObject {
         }
 
         function onActionsChanged(): void {
+            // qmllint disable unresolved-type
             notif.actions = notif.notification.actions.map(a => ({
+                        // qmllint enable unresolved-type
                         identifier: a.identifier,
                         text: a.text,
                         invoke: () => a.invoke()
@@ -232,7 +236,9 @@ QtObject {
         urgency = notification.urgency;
         resident = notification.resident;
         hasActionIcons = notification.hasActionIcons;
+        // qmllint disable unresolved-type
         actions = notification.actions.map(a => ({
+                    // qmllint enable unresolved-type
                     identifier: a.identifier,
                     text: a.text,
                     invoke: () => a.invoke()

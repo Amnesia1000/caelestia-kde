@@ -470,7 +470,7 @@ fi
         id: gitProcess
 
         command: []
-        onExited: _code => {
+        onExited: _code => { // qmllint disable signal-handler-parameters
             root.checkingUpdates = false;
             root.lastCheckMs = Date.now();
         }
@@ -700,7 +700,7 @@ fi
                 }
             }
         }
-        onExited: _code => {
+        onExited: _code => { // qmllint disable signal-handler-parameters
             root.loadingMoreCommits = false;
         }
     }

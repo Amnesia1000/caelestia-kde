@@ -102,11 +102,13 @@ MouseArea {
         anchors.fill: parent
         opacity: root.stateOpacity
         color: Colours.palette.m3onSurface
+        // qmllint disable missing-property
         radius: root.parent?.radius ?? 0
         topLeftRadius: root.parent?.topLeftRadius ?? radius ?? 0
         topRightRadius: root.parent?.topRightRadius ?? radius ?? 0
         bottomLeftRadius: root.parent?.bottomLeftRadius ?? radius ?? 0
         bottomRightRadius: root.parent?.bottomRightRadius ?? radius ?? 0
+        // qmllint enable missing-property
     }
 
     Shape {

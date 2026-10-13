@@ -94,7 +94,9 @@ Singleton {
         reloadableId: "players"
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "mediaToggle"
         description: qsTr("Toggle media playback")
         onPressed: {
@@ -104,7 +106,9 @@ Singleton {
         }
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "mediaPrev"
         description: qsTr("Previous track")
         onPressed: {
@@ -114,7 +118,9 @@ Singleton {
         }
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "mediaNext"
         description: qsTr("Next track")
         onPressed: {
@@ -124,7 +130,9 @@ Singleton {
         }
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "mediaStop"
         description: qsTr("Stop media playback")
         onPressed: root.active?.stop()

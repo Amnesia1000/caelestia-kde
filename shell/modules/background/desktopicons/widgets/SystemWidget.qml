@@ -149,10 +149,10 @@ Item {
 
                     anchors.fill: parent
                     visible: parent.height > 40
-                    line1: NetworkUsage.uploadBuffer
+                    line1: NetworkUsage.uploadBuffer // qmllint disable missing-type
                     line1Color: Colours.palette.m3tertiary
                     line1FillAlpha: 0.15
-                    line2: NetworkUsage.downloadBuffer
+                    line2: NetworkUsage.downloadBuffer // qmllint disable missing-type
                     line2Color: Colours.palette.m3secondary
                     line2FillAlpha: 0.2
                     maxValue: smoothMax

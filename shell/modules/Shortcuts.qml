@@ -104,13 +104,18 @@ Scope {
         Logger.mark("shortcuts-ready");
     }
 
+    // qmllint disable unresolved-type
+
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "nexus"
         description: qsTr("Open nexus")
         onPressed: WindowFactory.create()
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "showall"
         description: qsTr("Toggle launcher, dashboard and osd")
         onPressed: {
@@ -118,7 +123,9 @@ Scope {
             v.launcher = v.dashboard = v.osd = v.utilities = !(v.launcher || v.dashboard || v.osd || v.utilities);
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dashboard"
         description: qsTr("Toggle dashboard")
         onPressed: {
@@ -126,7 +133,9 @@ Scope {
             visibilities.dashboard = !visibilities.dashboard;
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "overview"
         description: qsTr("Toggle overview")
         onPressed: {
@@ -143,7 +152,9 @@ Scope {
             }
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "screenshot"
         description: qsTr("Toggle screenshot overlay")
         onPressed: {
@@ -151,21 +162,27 @@ Scope {
         }
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "googleLens"
         description: qsTr("Toggle Google Lens search")
         onPressed: {
             regionSelector.search();
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "ocr"
         description: qsTr("Recognize text on screen")
         onPressed: {
             regionSelector.ocr();
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "screenRecording"
         description: qsTr("Toggle screen recording")
         onPressed: {
@@ -180,7 +197,9 @@ Scope {
             }
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "session"
 
         description: qsTr("Toggle session menu")
@@ -189,7 +208,9 @@ Scope {
             visibilities.session = !visibilities.session;
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "launcher"
         description: qsTr("Toggle launcher")
         onPressed: root.launcherInterrupted = false
@@ -202,12 +223,16 @@ Scope {
             root.launcherInterrupted = false;
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "launcherInterrupt"
         description: qsTr("Interrupt launcher keybind")
         onPressed: root.launcherInterrupted = true
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "sidebar"
         description: qsTr("Toggle sidebar")
         onPressed: {
@@ -216,7 +241,9 @@ Scope {
             visibilities.sidebar = !visibilities.sidebar;
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "aiAssistant"
         description: qsTr("Toggle AI Assistant")
         onPressed: {
@@ -225,7 +252,9 @@ Scope {
             visibilities.sidebar = true;
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "utilities"
         description: qsTr("Toggle utilities")
         onPressed: {
@@ -233,7 +262,9 @@ Scope {
             visibilities.utilities = !visibilities.utilities;
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "emoji"
         description: qsTr("Open emoji picker")
         onPressed: {
@@ -242,7 +273,9 @@ Scope {
             visibilities.launcher = true;
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "clipboard"
         description: qsTr("Open clipboard history")
         onPressed: {
@@ -268,7 +301,9 @@ Scope {
         target: CUtils
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "windowSwitcher"
         description: qsTr("Open window switcher")
         enabled: Config.tabSwitch.enabled
@@ -287,7 +322,9 @@ Scope {
             }
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "windowSwitcherReverse"
         description: qsTr("Open window switcher (reverse)")
         enabled: Config.tabSwitch.enabled
@@ -306,7 +343,9 @@ Scope {
             }
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "wallpaper"
         description: qsTr("Open wallpaper picker")
         onPressed: {
@@ -315,7 +354,9 @@ Scope {
             visibilities.launcher = true;
         }
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "keybinds"
         description: qsTr("Open keybinds list")
         onPressed: {
@@ -354,52 +395,72 @@ Scope {
         description: qsTr("Color Picker")
         onPressed: ColorPicker.pickColor()
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace1"
         description: qsTr("Switch to workspace 1")
         onPressed: Kwin.setDesktop(1)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace2"
         description: qsTr("Switch to workspace 2")
         onPressed: Kwin.setDesktop(2)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace3"
         description: qsTr("Switch to workspace 3")
         onPressed: Kwin.setDesktop(3)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace4"
         description: qsTr("Switch to workspace 4")
         onPressed: Kwin.setDesktop(4)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace5"
         description: qsTr("Switch to workspace 5")
         onPressed: Kwin.setDesktop(5)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace6"
         description: qsTr("Switch to workspace 6")
         onPressed: Kwin.setDesktop(6)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace7"
         description: qsTr("Switch to workspace 7")
         onPressed: Kwin.setDesktop(7)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace8"
         description: qsTr("Switch to workspace 8")
         onPressed: Kwin.setDesktop(8)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace9"
         description: qsTr("Switch to workspace 9")
         onPressed: Kwin.setDesktop(9)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "workspace10"
         description: qsTr("Switch to workspace 10")
         onPressed: Kwin.setDesktop(10)
@@ -492,7 +553,9 @@ Scope {
     Instantiator {
         model: root.krohnkiteShortcuts
 
+        // qmllint disable unresolved-type
         delegate: CustomShortcut {
+            // qmllint enable unresolved-type
             required property var modelData
 
             name: modelData.name
@@ -511,108 +574,144 @@ Scope {
         defaultLogLevel: LoggingCategory.Info
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate1"
         description: qsTr("Open dock entry 1")
         key: ""
         onPressed: root.activateDockEntry(0)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate2"
         description: qsTr("Open dock entry 2")
         key: ""
         onPressed: root.activateDockEntry(1)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate3"
         description: qsTr("Open dock entry 3")
         key: ""
         onPressed: root.activateDockEntry(2)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate4"
         description: qsTr("Open dock entry 4")
         key: ""
         onPressed: root.activateDockEntry(3)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate5"
         description: qsTr("Open dock entry 5")
         key: ""
         onPressed: root.activateDockEntry(4)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate6"
         description: qsTr("Open dock entry 6")
         key: ""
         onPressed: root.activateDockEntry(5)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate7"
         description: qsTr("Open dock entry 7")
         key: ""
         onPressed: root.activateDockEntry(6)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate8"
         description: qsTr("Open dock entry 8")
         key: ""
         onPressed: root.activateDockEntry(7)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockActivate9"
         description: qsTr("Open dock entry 9")
         key: ""
         onPressed: root.activateDockEntry(8)
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow1"
         description: qsTr("Open new window of dock entry 1")
         key: "Meta+Ctrl+1"
         onPressed: root.activateDockEntryNew(0)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow2"
         description: qsTr("Open new window of dock entry 2")
         key: "Meta+Ctrl+2"
         onPressed: root.activateDockEntryNew(1)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow3"
         description: qsTr("Open new window of dock entry 3")
         key: "Meta+Ctrl+3"
         onPressed: root.activateDockEntryNew(2)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow4"
         description: qsTr("Open new window of dock entry 4")
         key: "Meta+Ctrl+4"
         onPressed: root.activateDockEntryNew(3)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow5"
         description: qsTr("Open new window of dock entry 5")
         key: "Meta+Ctrl+5"
         onPressed: root.activateDockEntryNew(4)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow6"
         description: qsTr("Open new window of dock entry 6")
         key: "Meta+Ctrl+6"
         onPressed: root.activateDockEntryNew(5)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow7"
         description: qsTr("Open new window of dock entry 7")
         key: "Meta+Ctrl+7"
         onPressed: root.activateDockEntryNew(6)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow8"
         description: qsTr("Open new window of dock entry 8")
         key: "Meta+Ctrl+8"
         onPressed: root.activateDockEntryNew(7)
     }
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "dockNewWindow9"
         description: qsTr("Open new window of dock entry 9")
         key: "Meta+Ctrl+9"

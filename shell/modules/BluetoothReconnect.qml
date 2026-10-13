@@ -30,7 +30,7 @@ Scope {
                 if (!attemptedDevices[device.address]) {
                     attemptedDevices[device.address] = true;
 
-                    if (device.state === BluetoothDeviceState.Disconnected) {
+                    if (device.state === BluetoothDeviceState.Disconnected) { // qmllint disable unresolved-type
                         Logger.log("[BluetoothReconnect] Reconnecting device on startup:", device.name, device.address);
                         device.connected = true;
                     }

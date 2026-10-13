@@ -560,7 +560,9 @@ Singleton {
             if (running)
                 gen = ++root.statusGen;
         }
+        // qmllint disable incompatible-type
         environment: ({
+                // qmllint enable incompatible-type
                 LANG: "C.UTF-8",
                 LC_ALL: "C.UTF-8"
             })
@@ -606,7 +608,7 @@ Singleton {
             }
         }
 
-        onExited: exitCode => {
+        onExited: exitCode => { // qmllint disable signal-handler-parameters
             root.connectExited = true;
 
             Qt.callLater(() => {
@@ -673,7 +675,7 @@ Singleton {
             }
         }
 
-        onExited: {
+        onExited: { // qmllint disable signal-handler-parameters
             root.disconnectExited = true;
             statusCheckTimer.start();
         }
@@ -690,7 +692,7 @@ Singleton {
     Process {
         id: registerProc
 
-        onExited: exitCode => {
+        onExited: exitCode => { // qmllint disable signal-handler-parameters
             if (exitCode === 0) {
                 statusCheckTimer.start();
             }

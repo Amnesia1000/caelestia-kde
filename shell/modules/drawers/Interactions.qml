@@ -75,7 +75,7 @@ CustomMouseArea {
     function inRightPanel(panel: Item, x: real, y: real, edge = 0, span = 100): bool {
         const onLeft = bar.position === "right";
         const strip = Math.max(Config.border.minThickness, edge || (onLeft ? panels.leftMargin : panels.rightMargin));
-        const closed = (panel.offsetScale ?? 0) >= 1 || panel.width <= 0;
+        const closed = (panel.offsetScale ?? 0) >= 1 || panel.width <= 0; // qmllint disable missing-property
 
         if (onLeft) {
             const shown = panels.leftMargin + panel.x + panel.width;
@@ -86,11 +86,11 @@ CustomMouseArea {
         return x > screen.width - (closed ? strip : Math.max(strip, shown)) && withinPanelHeight(panel, x, y, closed ? span : 100);
     }
     function inTopPanel(panel: Item, x: real, y: real, edge = Config.border.thickness, span = 100): bool {
-        const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0));
+        const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0)); // qmllint disable missing-property
         return y < Math.max(Config.border.minThickness, edge + panelHeight) && withinPanelWidth(panel, x, y, panelHeight > 0 ? 100 : span);
     }
     function inBottomPanel(panel: Item, x: real, y: real, isCorner = false, edge = Config.border.thickness, span = 100): bool {
-        const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0));
+        const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0)); // qmllint disable missing-property
         return y > screen.height - Math.max(Config.border.minThickness, edge + panelHeight) - (isCorner ? Config.border.rounding : 0) && withinPanelWidth(panel, x, y, panelHeight > 0 ? 100 : span);
     }
     function inOverviewCorner(x: real, y: real): string {

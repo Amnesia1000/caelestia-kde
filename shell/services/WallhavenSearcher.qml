@@ -314,6 +314,7 @@ Singleton {
             id: downloadErr
         }
 
+        // qmllint disable signal-handler-parameters
         onExited: code => {
             if (code !== 0) {
                 const errorText = downloadErr.text.trim();

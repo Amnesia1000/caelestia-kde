@@ -206,7 +206,7 @@ PY
             id: err
         }
 
-        onExited: code => {
+        onExited: code => { // qmllint disable signal-handler-parameters
             if (code === 3) {
                 root.setTokenMissing();
                 return;

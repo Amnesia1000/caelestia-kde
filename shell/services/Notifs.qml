@@ -259,7 +259,9 @@ Singleton {
         }
     }
 
+    // qmllint disable unresolved-type
     CustomShortcut {
+        // qmllint enable unresolved-type
         name: "clearNotifs"
         description: qsTr("Clear all notifications")
         onPressed: root.clear()

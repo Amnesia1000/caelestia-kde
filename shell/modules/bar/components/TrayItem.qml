@@ -51,7 +51,7 @@ Item {
     QsMenuOpener {
         id: menuOpener
 
-        menu: root.modelData.menu
+        menu: root.modelData.menu // qmllint disable unresolved-type
     }
 
     ColouredIcon {
