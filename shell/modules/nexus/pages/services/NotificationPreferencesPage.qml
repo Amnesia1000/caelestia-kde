@@ -113,10 +113,6 @@ PageBase {
             subtext: qsTr("Show notifications expanded by default")
             reset: ({ node: GlobalConfig.notifs, setting: "openExpanded" })
             checked: GlobalConfig.notifs.openExpanded
-            reset: ({
-                node: GlobalConfig.notifs,
-                setting: "openExpanded"
-            })
             onToggled: GlobalConfig.notifs.openExpanded = checked
         }
 
