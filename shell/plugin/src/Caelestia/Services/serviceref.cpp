@@ -32,4 +32,5 @@ void ServiceRef::setService(Service* service) {
         m_service->ref(this);
     }
 }
-}
+
+} // namespace caelestia::services

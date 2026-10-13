@@ -136,4 +136,5 @@ void SchemeLoader::loadCurrentScheme() {
 
     emit currentSchemeChanged();
 }
-}
+
+} // namespace caelestia::services

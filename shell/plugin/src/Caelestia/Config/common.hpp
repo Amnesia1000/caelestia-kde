@@ -49,7 +49,8 @@ class IconRule : public settings::ObjectNode {
     CONFIG_PROPERTY(QString, icon, QString())
 };
 CONFIG_LIST_TYPE(IconRule, IconRuleList)
-}
+
+} // namespace caelestia::config
 
 #define LIST_ENTRY(id, enabled) caelestia::settings::vmap({ { u"id"_s, u## #id##_s }, { u"enabled"_s, enabled } })
 

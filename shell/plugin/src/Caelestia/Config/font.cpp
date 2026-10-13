@@ -274,4 +274,5 @@ void FontTokens::rebuildClock() {
 void FontTokens::bindTokens(AppearanceTokens* tokens) {
     m_tokens = tokens;
 }
-}
+
+} // namespace caelestia::config

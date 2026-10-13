@@ -100,4 +100,5 @@ class BackgroundConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(DesktopShapes, desktopShapes)
     CONFIG_SUBOBJECT(BackgroundVisualiser, visualiser)
 };
-}
+
+} // namespace caelestia::config

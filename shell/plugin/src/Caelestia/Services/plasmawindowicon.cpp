@@ -41,7 +41,8 @@ QImage largestPixmap(const QIcon& icon) {
     }
     return icon.pixmap(best).toImage();
 }
-}
+
+} // namespace
 
 PlasmaWindowIcon::PlasmaWindowIcon(QObject* parent)
     : QObject(parent) {
@@ -164,4 +165,5 @@ void PlasmaWindowIcon::deliver(const QString& uuid, const QByteArray& payload) {
     m_resolved.insert(uuid, path);
     emit resolved(uuid, path);
 }
-}
+
+} // namespace caelestia::services

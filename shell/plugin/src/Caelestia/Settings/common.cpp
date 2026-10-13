@@ -78,7 +78,8 @@ QString receivedStr(const QJsonValue& value) {
         return QStringLiteral("nothing");
     }
 }
-}
+
+} // namespace
 
 Diagnostic Diagnostic::mismatch(ExpectedType expected, const QJsonValue& value, const QString& option) {
     return {
@@ -119,4 +120,5 @@ Diagnostic Diagnostic::mismatch(const QList<ExpectedType>& expected, const QJson
         Q_UNREACHABLE_RETURN(Diagnostic{});
     }
 }
-}
+
+} // namespace caelestia::settings

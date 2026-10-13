@@ -21,7 +21,8 @@ QByteArray randomBytes(int count) {
         bytes.append(static_cast<char>(QRandomGenerator::global()->generate()));
     return bytes;
 }
-}
+
+} // namespace
 
 QByteArray encode(const QString& deviceName) {
     QByteArray record;
@@ -71,4 +72,5 @@ QByteArray fromBase64Url(const QByteArray& encoded) {
         decoded = QByteArray::fromBase64(encoded);
     return decoded;
 }
-}
+
+} // namespace caelestia::services::endpointinfo

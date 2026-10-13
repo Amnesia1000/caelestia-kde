@@ -114,4 +114,5 @@ private:
     QVariantList m_obstacles;
     QVariantList m_clouds;
 };
-}
+
+} // namespace caelestia::services

@@ -164,7 +164,8 @@ QImage decodeLargest(const unsigned long* data, unsigned long count) {
 
     return best;
 }
-}
+
+} // namespace
 
 WindowIcon::WindowIcon(QObject* parent)
     : QObject(parent) {}
@@ -256,4 +257,5 @@ QString WindowIcon::extract(const QString& wmClass, const QString& title, qint64
     emit extracted(key, path);
     return path;
 }
-}
+
+} // namespace caelestia::services

@@ -63,7 +63,8 @@ bool labelStartsWith(const QByteArray& label, const char* prefix) {
     const auto n = std::strlen(prefix);
     return static_cast<size_t>(label.size()) >= n && std::memcmp(label.constData(), prefix, n) == 0;
 }
-}
+
+} // namespace
 
 void ensureInit() {
     std::call_once(g_initFlag, doInit);
@@ -163,4 +164,5 @@ std::optional<double> gpuPciAverageTemp() {
     }
     return std::nullopt;
 }
-}
+
+} // namespace caelestia::services::sensorslib

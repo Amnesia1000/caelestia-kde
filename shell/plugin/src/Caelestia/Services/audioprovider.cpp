@@ -78,4 +78,5 @@ void AudioProvider::stop() {
         QMetaObject::invokeMethod(m_processor, &AudioProcessor::stop);
     }
 }
-}
+
+} // namespace caelestia::services

@@ -95,4 +95,5 @@ private:
     const QList<ExpectedType> m_expectedTypes;
     QHash<int, const ValueCodec*> m_byType;
 };
-}
+
+} // namespace caelestia::settings

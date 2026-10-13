@@ -223,4 +223,5 @@ void SparklineItem::setLineWidth(qreal width) {
     emit lineWidthChanged();
     scheduleUpdate();
 }
-}
+
+} // namespace caelestia::components

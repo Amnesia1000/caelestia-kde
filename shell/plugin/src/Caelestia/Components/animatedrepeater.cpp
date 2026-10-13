@@ -441,4 +441,5 @@ void AnimatedRepeater::onDataChanged(
     for (int i = topLeft.row(); i <= bottomRight.row(); ++i)
         updateItemData(i);
 }
-}
+
+} // namespace caelestia::components

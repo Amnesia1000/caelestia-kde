@@ -63,4 +63,5 @@ private:
     int m_nextPinId = 1;
     QSet<int> m_activeDecodes;
 };
-}
+
+} // namespace caelestia::services

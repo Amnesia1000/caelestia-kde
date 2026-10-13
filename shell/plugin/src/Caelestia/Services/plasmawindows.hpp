@@ -162,4 +162,5 @@ private:
     PlasmaWindowManagement* m_management = nullptr;
     QHash<QString, PlasmaWindowHandle*> m_handles;
 };
-}
+
+} // namespace caelestia::services

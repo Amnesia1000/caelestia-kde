@@ -16,6 +16,7 @@ Q_LOGGING_CATEGORY(lcSettingsFile, "caelestia.settings.file", QtInfoMsg)
 namespace {
 
 constexpr int kMaxLoadRetries = 3;
+
 }
 
 SettingsFile::SettingsFile(const QString& path, QObject* parent)
@@ -190,4 +191,5 @@ void SettingsFile::save() {
 
     initWatcher();
 }
-}
+
+} // namespace caelestia::settings

@@ -37,7 +37,8 @@ QString normaliseCode(const QString& code) {
     normalised.replace(u'-', u'_');
     return normalised;
 }
-}
+
+} // namespace
 
 Translations::Translations(QObject* parent)
     : QObject(parent)
@@ -235,4 +236,5 @@ void Translations::refreshAvailable() {
         emit availableChanged();
     }
 }
-}
+
+} // namespace caelestia

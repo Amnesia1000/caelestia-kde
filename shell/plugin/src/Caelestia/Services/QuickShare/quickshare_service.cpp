@@ -33,7 +33,8 @@ constexpr quint16 quicksharePort = CAELESTIA_QUICKSHARE_PORT;
 void retire(QuickShareConnection* connection) {
     QTimer::singleShot(connectionLingerMs, connection, &QObject::deleteLater);
 }
-}
+
+} // namespace
 
 QuickShareService::QuickShareService(QObject* parent)
     : QObject(parent)
@@ -309,4 +310,5 @@ void QuickShareService::saveHistory() {
     if (!file.commit())
         qWarning() << u"QuickShareService: Failed to write"_s << path;
 }
-}
+
+} // namespace caelestia::services

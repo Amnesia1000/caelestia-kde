@@ -306,4 +306,5 @@ void KrohnkiteConfig::setTileLayoutEnabled(bool enabled) {
         emit layoutsChanged();
     }
 }
-}
+
+} // namespace caelestia::services

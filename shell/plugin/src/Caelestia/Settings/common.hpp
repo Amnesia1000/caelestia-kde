@@ -90,4 +90,5 @@ public:
 
     bool operator==(const Diagnostic& other) const = default;
 };
-}
+
+} // namespace caelestia::settings

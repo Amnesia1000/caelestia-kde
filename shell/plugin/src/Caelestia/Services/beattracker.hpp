@@ -47,4 +47,5 @@ private:
 
     void updateBpm(smpl_t bpm);
 };
-}
+
+} // namespace caelestia::services

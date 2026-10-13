@@ -108,4 +108,5 @@ private:
     KdeOutputManagement* m_management = nullptr;
     QHash<QString, KdeOutputDevice*> m_devices;
 };
-}
+
+} // namespace caelestia::services

@@ -39,4 +39,5 @@ class DashboardConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(int, hoverWidth, 50)
     CONFIG_SUBOBJECT(DashboardPerformance, performance)
 };
-}
+
+} // namespace caelestia::config

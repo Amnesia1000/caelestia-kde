@@ -80,7 +80,8 @@ void syncNodeRecursive(Node* node, const QVariantMap& props) {
         syncNodeRecursive(child, val.toMap());
     }
 }
-}
+
+} // namespace
 
 ListNode::ListNode(ListNode* fallback, QObject* parent, bool globalOnly)
     : Node(fallback, parent, globalOnly) {
@@ -425,4 +426,5 @@ void ListNode::onFallbackListNotify(const NodeChanges& added, const NodeChanges&
         emit countChanged();
     emit elementsChanged(added, removed, moved);
 }
-}
+
+} // namespace caelestia::settings

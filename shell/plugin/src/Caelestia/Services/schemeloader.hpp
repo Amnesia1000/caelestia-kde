@@ -44,4 +44,5 @@ private:
     QString m_currentVariant;
     QString m_schemeStatePath;
 };
-}
+
+} // namespace caelestia::services

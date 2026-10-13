@@ -100,4 +100,5 @@ private:
     QString m_screen;
     ConfigRoot* m_config = nullptr;
 };
-}
+
+} // namespace caelestia::config

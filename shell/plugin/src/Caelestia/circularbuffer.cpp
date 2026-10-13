@@ -138,4 +138,5 @@ void CircularBuffer::recomputeMaximum() {
     m_cachedMaximum = maxVal;
     m_maxDirty = false;
 }
-}
+
+} // namespace caelestia

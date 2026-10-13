@@ -473,4 +473,5 @@ QByteArray QuickShareCrypto::openDeviceToDevice(const QByteArray& secureMessage)
 
     return QByteArray(deviceToDevice.message().data(), static_cast<qsizetype>(deviceToDevice.message().size()));
 }
-}
+
+} // namespace caelestia::services

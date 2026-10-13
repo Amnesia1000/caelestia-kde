@@ -185,4 +185,5 @@ void ObjectNode::resetUnvisited(const QSet<QString>& visited) {
         setValue(desc.key, fallbackNode() ? fallbackNode()->value(desc.key) : desc.defaultValue());
     }
 }
-}
+
+} // namespace caelestia::settings

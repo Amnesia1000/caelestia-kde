@@ -211,4 +211,5 @@ QVariantMap LayoutGnome::calculateLayout(
 
     return result;
 }
-}
+
+} // namespace caelestia::layouts

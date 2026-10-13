@@ -380,7 +380,8 @@ template <typename Predicate> void findChildrenDfs(QQuickItem* root, Predicate&&
         findChildrenDfs(child, match, out);
     }
 }
-}
+
+} // namespace
 
 QQuickItem* CUtils::findChild(QQuickItem* root, const QString& name) {
     if (!root) {
@@ -418,4 +419,5 @@ QList<QQuickItem*> CUtils::findChildrenMatching(QQuickItem* root, const QString&
     }
     return children;
 }
-}
+
+} // namespace caelestia

@@ -17,4 +17,5 @@ QList<QByteArray> txtRecord(const QString& deviceName);
 QString toBase64Url(const QByteArray& bytes);
 
 QByteArray fromBase64Url(const QByteArray& encoded);
-}
+
+} // namespace caelestia::services::endpointinfo

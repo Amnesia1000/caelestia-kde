@@ -42,4 +42,5 @@ private:
     QString m_held;
     bool m_active = true;
 };
-}
+
+} // namespace caelestia::services

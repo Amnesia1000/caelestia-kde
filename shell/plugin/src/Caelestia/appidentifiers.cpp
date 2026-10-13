@@ -9,6 +9,7 @@ void setApplicationIdentifiers() {
     QCoreApplication::setOrganizationDomain(QStringLiteral("caelestia.dots"));
     QCoreApplication::setApplicationName(QStringLiteral("caelestia-shell"));
 }
-}
+
+} // namespace
 
 Q_CONSTRUCTOR_FUNCTION(setApplicationIdentifiers)

@@ -59,4 +59,5 @@ private:
     SocketPtr makeRequestJson(const QString& request, const std::function<void(bool, QJsonDocument)>& callback);
     SocketPtr makeRequest(const QString& request, const std::function<void(bool, QByteArray)>& callback);
 };
-}
+
+} // namespace caelestia::services::hypr

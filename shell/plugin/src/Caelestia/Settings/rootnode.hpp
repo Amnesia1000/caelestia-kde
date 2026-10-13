@@ -32,4 +32,5 @@ private:
     void reloadFromFile();
     void saveToFile();
 };
-}
+
+} // namespace caelestia::settings

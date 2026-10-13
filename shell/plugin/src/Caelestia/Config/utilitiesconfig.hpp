@@ -104,4 +104,5 @@ class UtilitiesConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, quickTogglesCustomOrder, false)
     CONFIG_PROPERTY(int, quickTogglesPerPage, 6)
 };
-}
+
+} // namespace caelestia::config

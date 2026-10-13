@@ -19,6 +19,7 @@ namespace caelestia::services {
 namespace {
 
 constexpr QLatin1String hotspotProfileId("caelestia-hotspot");
+
 }
 
 HotspotController::HotspotController(QObject* parent)
@@ -249,4 +250,5 @@ void HotspotController::disable(QJSValue callback) {
         finish(callback, true, QStringLiteral("Hotspot stopped"), {});
     });
 }
-}
+
+} // namespace caelestia::services

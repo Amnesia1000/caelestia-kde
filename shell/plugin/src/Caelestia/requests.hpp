@@ -61,4 +61,5 @@ private:
     QHash<int, ActiveRequest> m_activeRequests;
     int m_nextRequestId = 1;
 };
-}
+
+} // namespace caelestia

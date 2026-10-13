@@ -185,4 +185,5 @@ void BrightnessWatcher::onDeviceAdded(KdeOutputDevice* device) {
         device->deleteLater();
     });
 }
-}
+
+} // namespace caelestia::services

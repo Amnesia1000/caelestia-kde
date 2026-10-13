@@ -13,4 +13,5 @@ inline QByteArray serialize(const google::protobuf::MessageLite& message) {
         return {};
     return bytes;
 }
-}
+
+} // namespace caelestia::services

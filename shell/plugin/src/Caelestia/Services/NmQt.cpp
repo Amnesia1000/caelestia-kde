@@ -152,7 +152,8 @@ NetworkManager::WirelessDevice::Ptr findWirelessDevice() {
     }
     return {};
 }
-}
+
+} // namespace
 
 NmQt::NmQt(QObject* parent)
     : QObject(parent)
@@ -1118,7 +1119,7 @@ void NmQt::onConnectionsChanged() {
 }
 
 void NmQt::onDeviceStateChanged(NetworkManager::Device::State newState, NetworkManager::Device::State oldState,
-    NetworkManager::Device::StateChangeReason ) {
+    NetworkManager::Device::StateChangeReason) {
     Q_UNUSED(oldState)
     const bool wasConnecting = (oldState == NetworkManager::Device::State::NeedAuth ||
                                 oldState == NetworkManager::Device::State::ConfiguringHardware ||
@@ -1150,18 +1151,18 @@ void NmQt::onDeviceStateChanged(NetworkManager::Device::State newState, NetworkM
     emit isConnectedChanged();
 }
 
-void NmQt::onScanFinished(const QDateTime& ) {
+void NmQt::onScanFinished(const QDateTime&) {
     m_scanWatchdog->stop();
     m_scanning = false;
     emit scanningChanged();
     refreshNetworks();
 }
 
-void NmQt::onAccessPointAppeared(const QString& ) {
+void NmQt::onAccessPointAppeared(const QString&) {
     refreshNetworks();
 }
 
-void NmQt::onAccessPointDisappeared(const QString& ) {
+void NmQt::onAccessPointDisappeared(const QString&) {
     refreshNetworks();
 }
 
@@ -1612,4 +1613,5 @@ void NmQt::invokeCallback(
 
     callback.call({ result });
 }
-}
+
+} // namespace caelestia::services

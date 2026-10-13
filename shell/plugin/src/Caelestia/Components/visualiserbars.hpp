@@ -74,4 +74,5 @@ private:
     int m_animationDuration = 200;
     bool m_settled = true;
 };
-}
+
+} // namespace caelestia::components

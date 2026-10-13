@@ -481,4 +481,5 @@ void KWinWorkspaceState::onRowsChanged(uint rows) {
         emit rowsChanged();
     }
 }
-}
+
+} // namespace caelestia::services

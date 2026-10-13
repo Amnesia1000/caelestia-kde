@@ -70,7 +70,8 @@ QString localDeviceName() {
     const QString hostname = QSysInfo::machineHostName();
     return hostname.isEmpty() ? u"CaelestiaClient"_s : hostname;
 }
-}
+
+} // namespace
 
 QuickShareConnection::QuickShareConnection(QTcpSocket* socket, QObject* parent)
     : QObject(parent)
@@ -593,4 +594,5 @@ void QuickShareConnection::onError(QAbstractSocket::SocketError socketError) {
     qWarning() << u"QuickShareConnection error:"_s << m_socket->errorString();
     finishTransfer(false);
 }
-}
+
+} // namespace caelestia::services

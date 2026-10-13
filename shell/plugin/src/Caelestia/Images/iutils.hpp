@@ -24,4 +24,5 @@ private:
     explicit IUtils(QObject* parent = nullptr)
         : QObject(parent) {};
 };
-}
+
+} // namespace caelestia::images

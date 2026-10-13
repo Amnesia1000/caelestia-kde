@@ -227,4 +227,5 @@ void ImageAnalyser::analyse(QPromise<AnalyseResult>& promise, const QImage& imag
 
     promise.addResult(qMakePair(QColor((0xFFu << 24) | dominantColour), count == 0 ? 0.0 : totalLuminance / count));
 }
-}
+
+} // namespace caelestia::images

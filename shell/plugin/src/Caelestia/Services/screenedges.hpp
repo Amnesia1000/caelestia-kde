@@ -57,4 +57,5 @@ private:
     QTimer* m_reconfigureTimer;
     bool m_restored = false;
 };
-}
+
+} // namespace caelestia::services

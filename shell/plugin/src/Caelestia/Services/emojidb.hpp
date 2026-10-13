@@ -54,4 +54,5 @@ private:
     QHash<QString, QVector<int>> m_trigramIndex;
     bool m_loaded = false;
 };
-}
+
+} // namespace caelestia::services

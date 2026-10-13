@@ -43,8 +43,9 @@ template <std::floating_point T> bool compare(const QList<T>& a, const QList<T>&
             return false;
     return true;
 }
-}
-}
+
+} // namespace detail
+} // namespace caelestia::settings
 
 #define DEFAULT_ARG(...) __VA_ARGS__
 
@@ -83,10 +84,10 @@ public:                                                                         
                                                                                                                        \
     void set_##name(const Type& value) {                                                                               \
         if (rejectInvalidWrite(QStringLiteral(#name), value))                                                          \
-            return;                                                                 \
+            return;                                                                                                    \
                                                                                                                        \
         if (rejectGlobalWrite(QStringLiteral(#name)))                                                                  \
-            return;                              \
+            return;                                                                                                    \
                                                                                                                        \
         const auto needsNotify = !caelestia::settings::detail::compare(value, m_##name);                               \
         m_##name = value;                                                                                              \
@@ -139,7 +140,7 @@ private:                                                                        
         explicit Name(Name* fallback = nullptr, QObject* parent = nullptr, bool globalOnly = false)                    \
             : caelestia::settings::ListNode(fallback, parent, globalOnly) {}                                           \
                                                                                                                        \
-        [[nodiscard]] Q_INVOKABLE Element* at(qsizetype index) const {                                 \
+        [[nodiscard]] Q_INVOKABLE Element* at(qsizetype index) const {                                                 \
             return static_cast<Element*>(elementAt(index));                                                            \
         }                                                                                                              \
         [[nodiscard]] Q_INVOKABLE Element* insert(const QVariantMap& props, qsizetype index = -1) {                    \

@@ -146,4 +146,5 @@ private:
     bool m_threeColumnLayoutEnabled = false;
     bool m_tileLayoutEnabled = false;
 };
-}
+
+} // namespace caelestia::services

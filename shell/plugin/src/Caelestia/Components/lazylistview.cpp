@@ -18,7 +18,8 @@ QRectF clipVertical(const QRectF& rect, qreal top, qreal bottom) {
         return {};
     return { rect.x(), newTop, rect.width(), newBottom - newTop };
 }
-}
+
+} // namespace
 
 namespace caelestia::components {
 
@@ -1139,4 +1140,5 @@ void LazyListView::onModelReset() {
 
     resetContent();
 }
-}
+
+} // namespace caelestia::components

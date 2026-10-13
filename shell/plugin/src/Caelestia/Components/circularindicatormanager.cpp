@@ -18,7 +18,8 @@ constexpr qint32 CONSTANT_ROTATION_DEGREES = 1520;
 
 constexpr std::array<qint32, TOTAL_CYCLES> DELAY_TO_EXPAND_IN_MS = { 0, 1350, 2700, 4050 };
 constexpr std::array<qint32, TOTAL_CYCLES> DELAY_TO_COLLAPSE_IN_MS = { 667, 2017, 3367, 4717 };
-}
+
+} // namespace advance
 
 namespace retreat {
 
@@ -34,13 +35,15 @@ constexpr qint32 DURATION_TO_COMPLETE_END_IN_MS = 500;
 constexpr qint32 CONSTANT_ROTATION_DEGREES = 1080;
 constexpr qint32 SPIN_ROTATION_DEGREES = 90;
 constexpr std::array<qreal, 2> END_FRACTION_RANGE = { 0.10, 0.87 };
-}
+
+} // namespace retreat
 
 inline qreal getFractionInRange(qreal playtime, qreal start, qreal duration) {
     const auto fraction = (playtime - start) / duration;
     return std::clamp(fraction, 0.0, 1.0);
 }
-}
+
+} // namespace
 
 namespace caelestia::components {
 
@@ -196,4 +199,5 @@ void CircularIndicatorManager::updateAdvance(qreal progress) {
     if (!qFuzzyCompare(m_endFraction + 1.0, oldEnd + 1.0))
         emit endFractionChanged();
 }
-}
+
+} // namespace caelestia::components

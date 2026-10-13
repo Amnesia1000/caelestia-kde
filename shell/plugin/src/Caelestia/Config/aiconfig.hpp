@@ -73,4 +73,5 @@ class AiConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(QString, opencodeGoUrl, u"https://opencode.ai/zen/go/v1"_s)
     CONFIG_PROPERTY(QString, defaultOpencodeGoModel, u""_s)
 };
-}
+
+} // namespace caelestia::config

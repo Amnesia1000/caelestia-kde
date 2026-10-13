@@ -75,4 +75,5 @@ class GeneralConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(GeneralApps, apps)
     CONFIG_SUBOBJECT(GeneralBattery, battery)
 };
-}
+
+} // namespace caelestia::config

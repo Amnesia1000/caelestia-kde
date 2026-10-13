@@ -25,4 +25,5 @@ signals:
 private:
     QPointer<Service> m_service;
 };
-}
+
+} // namespace caelestia::services

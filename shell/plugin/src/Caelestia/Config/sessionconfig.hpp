@@ -38,4 +38,5 @@ class SessionConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(SessionIcons, icons)
     CONFIG_SUBOBJECT(SessionCommands, commands)
 };
-}
+
+} // namespace caelestia::config

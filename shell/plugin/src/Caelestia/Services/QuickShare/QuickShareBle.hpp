@@ -80,4 +80,5 @@ private:
     bool m_isScanning;
     QDateTime m_lastEmit;
 };
-}
+
+} // namespace caelestia::services

@@ -142,4 +142,5 @@ private:
     void updateAppFrequencies();
     void updateApps();
 };
-}
+
+} // namespace caelestia::models

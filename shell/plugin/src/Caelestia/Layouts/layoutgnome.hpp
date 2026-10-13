@@ -46,4 +46,5 @@ private:
     bool keepSameRow(const RowInfo& row, double width, double idealRowWidth);
     bool isBetterScaleAndSpace(double oldScale, double oldSpace, double scale, double space);
 };
-}
+
+} // namespace caelestia::layouts

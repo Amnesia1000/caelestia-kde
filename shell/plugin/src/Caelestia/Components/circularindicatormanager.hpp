@@ -68,4 +68,5 @@ private:
     void updateAdvance(qreal progress);
     void updateRetreat(qreal progress);
 };
-}
+
+} // namespace caelestia::components

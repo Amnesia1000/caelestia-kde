@@ -42,4 +42,5 @@ private:
     quint64 m_totalBytes;
     bool m_hasRoot;
 };
-}
+
+} // namespace caelestia::services

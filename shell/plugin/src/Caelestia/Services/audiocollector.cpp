@@ -274,4 +274,5 @@ void AudioCollector::stop() {
         m_thread.join();
     }
 }
-}
+
+} // namespace caelestia::services

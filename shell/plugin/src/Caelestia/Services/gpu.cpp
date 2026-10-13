@@ -218,7 +218,8 @@ const std::array<NameSource, 2>& nameSources() {
 }
 
 constexpr int kNvidiaSource = 0;
-}
+
+} // namespace
 
 Gpu::Gpu(QObject* parent)
     : TickingService(parent) {
@@ -570,4 +571,5 @@ Gpu::Type Gpu::parseType(const QString& s) {
     }
     return None;
 }
-}
+
+} // namespace caelestia::services

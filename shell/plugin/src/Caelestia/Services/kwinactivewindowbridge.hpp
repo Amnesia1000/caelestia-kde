@@ -80,4 +80,5 @@ private:
 
     QTimer m_updateTimer;
 };
-}
+
+} // namespace caelestia::services

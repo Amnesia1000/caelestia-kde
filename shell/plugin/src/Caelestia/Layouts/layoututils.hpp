@@ -40,4 +40,5 @@ inline void centreLayout(QVariantMap& layout, double areaWidth, double areaHeigh
         it.value() = box;
     }
 }
-}
+
+} // namespace caelestia::layouts

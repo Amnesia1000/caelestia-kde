@@ -176,4 +176,5 @@ void CavaProvider::updateValues(const QVector<double>& values) {
         emit valuesChanged();
     }
 }
-}
+
+} // namespace caelestia::services

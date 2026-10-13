@@ -41,11 +41,8 @@ bool QuickShareDiscovery::startDiscovery() {
         return false;
     }
 
-    QDBusReply<QDBusObjectPath> browserPath = avahiServer.call(u"ServiceBrowserNew"_s,
-        -1,
-        -1,
-        u"_FC9F5ED42C8A._tcp"_s, u"local"_s,
-        (uint)0);
+    QDBusReply<QDBusObjectPath> browserPath =
+        avahiServer.call(u"ServiceBrowserNew"_s, -1, -1, u"_FC9F5ED42C8A._tcp"_s, u"local"_s, (uint)0);
 
     if (!browserPath.isValid()) {
         qWarning() << u"QuickShareDiscovery: Failed to create ServiceBrowser:"_s << browserPath.error().message();
@@ -110,13 +107,9 @@ bool QuickShareDiscovery::advertise(const QString& deviceName, int port) {
     serviceId.append(static_cast<char>(0x00));
     const QString serviceName = endpointinfo::toBase64Url(serviceId);
 
-    QDBusMessage reply = m_entryGroup->call(u"AddService"_s,
-        -1,
-        -1,
-        (uint)0,
-        serviceName, u"_FC9F5ED42C8A._tcp"_s, u"local"_s,
-        u""_s,
-        QVariant::fromValue<quint16>(port), QVariant::fromValue(endpointinfo::txtRecord(deviceName)));
+    QDBusMessage reply =
+        m_entryGroup->call(u"AddService"_s, -1, -1, (uint)0, serviceName, u"_FC9F5ED42C8A._tcp"_s, u"local"_s, u""_s,
+            QVariant::fromValue<quint16>(port), QVariant::fromValue(endpointinfo::txtRecord(deviceName)));
 
     if (reply.type() == QDBusMessage::ErrorMessage) {
         qWarning() << u"QuickShareDiscovery: AddService failed:"_s << reply.errorMessage();
@@ -230,4 +223,5 @@ void QuickShareDiscovery::onItemRemove(
 
     emit deviceLost(name);
 }
-}
+
+} // namespace caelestia::services

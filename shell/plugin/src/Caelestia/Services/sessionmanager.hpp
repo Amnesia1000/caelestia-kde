@@ -48,4 +48,5 @@ private:
 
     QString m_sessionPath;
 };
-}
+
+} // namespace caelestia::services

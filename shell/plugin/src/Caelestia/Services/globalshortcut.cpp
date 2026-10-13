@@ -51,7 +51,8 @@ QStringList buildRestoreArgs(const QString& component, const QString& action, co
         QStringLiteral("['%1', '%2', '', '']").arg(escapeGVariantString(component), escapeGVariantString(action)),
         arrayStr, QStringLiteral("4") };
 }
-}
+
+} // namespace
 
 GlobalShortcutDispatcher* GlobalShortcutDispatcher::instance() {
     GlobalShortcutDispatcher* inst = s_dispatcher();

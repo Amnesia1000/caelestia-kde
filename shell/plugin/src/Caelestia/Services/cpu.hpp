@@ -44,4 +44,5 @@ private:
     quint64 m_lastTotal = 0;
     bool m_nameLoaded = false;
 };
-}
+
+} // namespace caelestia::services

@@ -34,4 +34,5 @@ private:
     QMutex m_mutex;
     QSet<QString> m_inflight;
 };
-}
+
+} // namespace caelestia::images

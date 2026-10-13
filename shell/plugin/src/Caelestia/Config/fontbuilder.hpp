@@ -34,4 +34,5 @@ public:
 private:
     QFont m_font;
 };
-}
+
+} // namespace caelestia::config

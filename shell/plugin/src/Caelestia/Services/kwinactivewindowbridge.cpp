@@ -522,4 +522,5 @@ void KWinActiveWindowBridge::refreshWindows() {
     }
     scheduleWindowListUpdate();
 }
-}
+
+} // namespace caelestia::services

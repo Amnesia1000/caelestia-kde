@@ -237,4 +237,5 @@ void DiscordIpc::clearActivity() {
 
     sendFrame(static_cast<int>(Opcode::Frame), payload);
 }
-}
+
+} // namespace caelestia

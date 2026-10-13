@@ -27,7 +27,8 @@ QString findAdapterPath(const QDBusMessage& reply, const QString& interface) {
     }
     return {};
 }
-}
+
+} // namespace
 
 QuickShareBleAdvertisementAdaptor::QuickShareBleAdvertisementAdaptor(QObject* parent)
     : QDBusAbstractAdaptor(parent) {}
@@ -235,4 +236,5 @@ void QuickShareBleScanner::checkDeviceProperties(const QVariantMap& props) {
         }
     }
 }
-}
+
+} // namespace caelestia::services

@@ -513,4 +513,5 @@ void ClipboardManager::clearHistory() {
 
     wipeProc->start();
 }
-}
+
+} // namespace caelestia::services

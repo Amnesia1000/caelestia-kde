@@ -75,4 +75,5 @@ private:
     class Private;
     Private* d;
 };
-}
+
+} // namespace caelestia

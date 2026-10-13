@@ -82,4 +82,5 @@ private:
 
     std::array<LinearIndicatorSegment*, SEGMENTS> m_activeIndicators;
 };
-}
+
+} // namespace caelestia::components

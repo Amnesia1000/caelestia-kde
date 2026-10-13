@@ -145,4 +145,5 @@ private:
     void applyChanges(const QSet<QString>& removedPaths, const QSet<QString>& addedPaths);
     [[nodiscard]] bool compareEntries(const FileSystemEntry* a, const FileSystemEntry* b) const;
 };
-}
+
+} // namespace caelestia::models

@@ -87,4 +87,5 @@ private:
     CONFIG_GLOBAL_PROPERTY(bool, arpcManualOverride, false)
     CONFIG_GLOBAL_PROPERTY(int, arpcIdleTimeout, 0)
 };
-}
+
+} // namespace caelestia::config

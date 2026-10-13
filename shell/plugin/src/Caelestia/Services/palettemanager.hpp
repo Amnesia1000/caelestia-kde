@@ -34,4 +34,5 @@ private:
 
     QVariantMap m_tPalette;
 };
-}
+
+} // namespace caelestia::services

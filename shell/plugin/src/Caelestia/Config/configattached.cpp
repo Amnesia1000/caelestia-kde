@@ -89,4 +89,5 @@ ConfigRoot* Config::forScreen(const QString& screen) {
 Config* Config::qmlAttachedProperties(QObject* object) {
     return new Config(object);
 }
-}
+
+} // namespace caelestia::config

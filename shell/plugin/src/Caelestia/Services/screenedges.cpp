@@ -113,7 +113,8 @@ void applyToKwin() {
         reconfigureEffect(effect);
     }
 }
-}
+
+} // namespace
 
 ScreenEdges::ScreenEdges(QObject* parent)
     : QObject(parent)
@@ -327,4 +328,5 @@ void ScreenEdges::persist() const {
 void ScreenEdges::scheduleReconfigure() {
     m_reconfigureTimer->start();
 }
-}
+
+} // namespace caelestia::services

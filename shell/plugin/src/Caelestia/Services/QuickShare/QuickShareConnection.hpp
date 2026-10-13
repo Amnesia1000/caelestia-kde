@@ -134,4 +134,5 @@ private:
 
     PayloadBuffer m_incomingFile;
 };
-}
+
+} // namespace caelestia::services

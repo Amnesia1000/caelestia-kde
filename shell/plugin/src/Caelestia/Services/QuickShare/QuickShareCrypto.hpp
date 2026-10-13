@@ -52,4 +52,5 @@ private:
     QByteArray m_hmacDecodeKey;
     QByteArray m_authString;
 };
-}
+
+} // namespace caelestia::services

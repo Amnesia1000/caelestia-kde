@@ -26,4 +26,5 @@ private:
     QSet<QString> loadFromJson(const QJsonObject& json, QList<Diagnostic>& diagnostics);
     void resetUnvisited(const QSet<QString>& visited);
 };
-}
+
+} // namespace caelestia::settings

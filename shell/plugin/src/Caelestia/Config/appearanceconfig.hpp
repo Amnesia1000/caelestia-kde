@@ -160,7 +160,8 @@ struct FontConfig {
     bool italic = false;
     QVariantMap vaxes = { { u"ROND"_s, 25 } };
 };
-}
+
+} // namespace detail
 
 #define ARG(...) __VA_ARGS__
 #define FONT(...) detail::FontConfig __VA_ARGS__
@@ -168,7 +169,7 @@ struct FontConfig {
     class FontConfig##Style##Size : public FontConfigNode {                                                            \
         CONFIG_NODE(FontConfig##Style##Size, FontConfigNode)                                                           \
                                                                                                                        \
-        CONFIG_PROPERTY(QString, family, ARG(props).family)                       \
+        CONFIG_PROPERTY(QString, family, ARG(props).family)                                                            \
         CONFIG_PROPERTY(int, size, ARG(props).size)                                                                    \
         CONFIG_PROPERTY(int, weight, ARG(props).weight)                                                                \
         CONFIG_PROPERTY(bool, italic, ARG(props).italic)                                                               \
@@ -319,4 +320,5 @@ class AppearanceConfig : public settings::ObjectNode {
     CONFIG_GLOBAL_PROPERTY(bool, ambientColor, true)
     CONFIG_GLOBAL_PROPERTY(qreal, ambientOpacity, 0.45)
 };
-}
+
+} // namespace caelestia::config

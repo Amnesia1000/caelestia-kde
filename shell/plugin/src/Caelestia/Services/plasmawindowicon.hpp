@@ -29,4 +29,5 @@ private:
     QSet<QString> m_inFlight;
     QHash<QString, QString> m_resolved;
 };
-}
+
+} // namespace caelestia::services

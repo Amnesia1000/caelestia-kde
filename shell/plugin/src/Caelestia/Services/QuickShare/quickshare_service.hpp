@@ -87,4 +87,5 @@ private:
 
     QPointer<QuickShareConnection> m_pendingIncomingRequest;
 };
-}
+
+} // namespace caelestia::services

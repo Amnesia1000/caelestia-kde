@@ -183,12 +183,12 @@ void NightColorBridge::updateState(const QVariantMap& config) {
     }
 
     if (config.contains(QStringLiteral("mode"))) {
-        bool newAuto =
-            (config.value(QStringLiteral("mode")).toUInt() == 1);
+        bool newAuto = (config.value(QStringLiteral("mode")).toUInt() == 1);
         if (newAuto != m_autoMode) {
             m_autoMode = newAuto;
             emit autoModeChanged();
         }
     }
 }
-}
+
+} // namespace caelestia::services

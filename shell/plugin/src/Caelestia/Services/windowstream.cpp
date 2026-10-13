@@ -85,7 +85,8 @@ QTimer* sweeper() {
     }();
     return s_sweeper;
 }
-}
+
+} // namespace
 
 WindowStream::WindowStream(QObject* parent)
     : QObject(parent) {
@@ -188,4 +189,5 @@ quint64 WindowStream::objectSerial() const {
 bool WindowStream::available() const {
     return objectSerial() != 0 || nodeId() != 0;
 }
-}
+
+} // namespace caelestia::services

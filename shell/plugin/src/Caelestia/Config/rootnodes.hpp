@@ -86,7 +86,8 @@ enum class ConfigKind {
 void loaded(ConfigKind kind, settings::RootNode* layer, const QString& screen);
 void loadFailed(ConfigKind kind, const QString& error, const QString& screen);
 void saveFailed(ConfigKind kind, const QString& error, const QString& screen);
-}
+
+} // namespace detail
 
 #define SINGLETON_DECL(Type, Root, QmlName)                                                                            \
     class Type : public Root {                                                                                         \
@@ -116,4 +117,5 @@ SINGLETON_DECL(ConfigSingleton, ConfigRoot, GlobalConfig)
 SINGLETON_DECL(TokensSingleton, TokensRoot, TokenConfig)
 
 #undef SINGLETON_DECL
-}
+
+} // namespace caelestia::config

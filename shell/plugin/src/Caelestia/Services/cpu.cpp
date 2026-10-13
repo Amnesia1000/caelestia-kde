@@ -114,4 +114,5 @@ QString Cpu::cleanName(QString s) {
     s.replace(spaces, QStringLiteral(" "));
     return s.trimmed();
 }
-}
+
+} // namespace caelestia::services

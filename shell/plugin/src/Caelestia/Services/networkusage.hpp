@@ -55,4 +55,5 @@ private:
     bool m_initialized = false;
     QElapsedTimer m_timer;
 };
-}
+
+} // namespace caelestia::services

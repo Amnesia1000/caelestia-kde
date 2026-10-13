@@ -110,4 +110,5 @@ void AnimTokens::bindDurations(AnimDurations* durations) {
     m_durations = durations;
     emit durationsChanged();
 }
-}
+
+} // namespace caelestia::config

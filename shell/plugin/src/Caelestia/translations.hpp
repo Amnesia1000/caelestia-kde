@@ -54,4 +54,5 @@ private:
     QVariantList m_available;
     QTranslator* m_translator;
 };
-}
+
+} // namespace caelestia

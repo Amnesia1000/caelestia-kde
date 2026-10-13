@@ -394,4 +394,5 @@ QString Requests::toJson(const QJSValue& value) const {
 void Requests::resetCookies() {
     m_manager->setCookieJar(new QNetworkCookieJar(m_manager));
 }
-}
+
+} // namespace caelestia

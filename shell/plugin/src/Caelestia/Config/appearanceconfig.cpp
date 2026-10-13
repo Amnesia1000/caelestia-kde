@@ -179,4 +179,5 @@ int AnimDurations::expressiveDefaultEffects() const {
 int AnimDurations::expressiveSlowEffects() const {
     return m_tokens ? static_cast<int>(m_tokens->expressiveSlowEffects() * m_scale) : 0;
 }
-}
+
+} // namespace caelestia::config

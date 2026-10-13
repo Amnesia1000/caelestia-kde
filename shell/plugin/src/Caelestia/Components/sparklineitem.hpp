@@ -90,4 +90,5 @@ private:
     bool m_updatePending = false;
     QTimer m_updateTimer;
 };
-}
+
+} // namespace caelestia::components

@@ -211,4 +211,5 @@ void VisualiserBars::setAnimationDuration(int duration) {
     m_animationDuration = duration;
     emit animationDurationChanged();
 }
-}
+
+} // namespace caelestia::components

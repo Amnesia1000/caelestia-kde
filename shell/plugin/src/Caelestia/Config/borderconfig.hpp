@@ -22,4 +22,5 @@ public:
 
     [[nodiscard]] int clampedThickness() const { return std::max(minThickness(), m_thickness); }
 };
-}
+
+} // namespace caelestia::config

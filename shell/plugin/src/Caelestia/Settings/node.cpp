@@ -272,4 +272,5 @@ void Node::onFallbackNotify(const QString& key) {
     const WriteScope scope(this, WriteOrigin::Layer);
     setValue(key, m_fallbackNode->value(key));
 }
-}
+
+} // namespace caelestia::settings

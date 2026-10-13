@@ -93,4 +93,5 @@ template <typename C, typename T> T Node::fallbackValue(T C::* member, std::type
     const auto* fallback = static_cast<const C*>(m_fallbackNode);
     return fallback ? fallback->*member : defaultValue;
 }
-}
+
+} // namespace caelestia::settings

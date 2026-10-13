@@ -41,7 +41,8 @@ QString fillSuffix(ImageCacher::FillMode fillMode) {
         return QStringLiteral("stretch");
     }
 }
-}
+
+} // namespace
 
 const QString& ImageCacher::cacheDir() {
     static const QString s_dir = [] {
@@ -154,4 +155,5 @@ void ImageCacher::runJob(const QString& sourcePath, const QString& cachePath, co
 
     qCDebug(lcCacher).noquote() << "Saved to" << cachePath;
 }
-}
+
+} // namespace caelestia::images
