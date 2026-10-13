@@ -51,15 +51,11 @@ QStringList buildRestoreArgs(const QString& component, const QString& action, co
         QStringLiteral("['%1', '%2', '', '']").arg(escapeGVariantString(component), escapeGVariantString(action)),
         arrayStr, QStringLiteral("4") };
 }
-
-} // namespace
+}
 
 GlobalShortcutDispatcher* GlobalShortcutDispatcher::instance() {
     GlobalShortcutDispatcher* inst = s_dispatcher();
 
-    // On very first access, run crash recovery: if the stolen-shortcuts file
-    // exists, a previous session crashed before cleaning up. Restore everything
-    // and pre-populate the collision index so blinkers light up immediately.
     static bool recovered = false;
     if (!recovered) {
         recovered = true;
@@ -86,8 +82,6 @@ GlobalShortcutDispatcher* GlobalShortcutDispatcher::instance() {
                         qDebug() << "[Caelestia] Crash recovery: restoring shortcut" << action << "for" << component;
                         QProcess::startDetached(QStringLiteral("gdbus"), buildRestoreArgs(component, action, keys));
 
-                        // Populate the collision index so the blinker shows collisions
-                        // even though no GlobalShortcut instances have been created yet.
                         QString label = componentFriendly.isEmpty() ? component : componentFriendly;
                         QString actionLabel = actionFriendly.isEmpty() ? action : actionFriendly;
                         QString friendlyLabel = label + QStringLiteral(" - ") + actionLabel;
@@ -100,7 +94,6 @@ GlobalShortcutDispatcher* GlobalShortcutDispatcher::instance() {
                     emit inst->collisionIndexChanged();
                 }
             }
-            // Remove recovery file — crash recovery is done
             QFile::remove(path);
         }
 

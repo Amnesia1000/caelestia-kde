@@ -63,8 +63,7 @@ bool labelStartsWith(const QByteArray& label, const char* prefix) {
     const auto n = std::strlen(prefix);
     return static_cast<size_t>(label.size()) >= n && std::memcmp(label.constData(), prefix, n) == 0;
 }
-
-} // namespace
+}
 
 void ensureInit() {
     std::call_once(g_initFlag, doInit);
@@ -112,9 +111,6 @@ std::optional<double> gpuPciAverageTemp() {
         return std::nullopt;
     }
 
-    // On hybrid / multi-GPU systems, averaging yields misleading numbers.
-    // Prefer the maximum primary GPU temperature across all PCI GPU devices;
-    // if none found, fall back to the maximum fallback sensor.
     double maxPrimary = -1.0;
     double maxFallback = -1.0;
 
@@ -167,5 +163,4 @@ std::optional<double> gpuPciAverageTemp() {
     }
     return std::nullopt;
 }
-
-} // namespace caelestia::services::sensorslib
+}

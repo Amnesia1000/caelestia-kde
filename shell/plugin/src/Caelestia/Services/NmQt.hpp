@@ -215,5 +215,4 @@ private:
     QString m_wirelessDeviceUni;
     QString m_ethernetDeviceUni;
 };
-
-} // namespace caelestia::services
+}

@@ -5,7 +5,7 @@ QtObject {
     id: theme
 
     property bool configAvailable: false
-    property string backgroundSource: "assets/background" // allow for different file extensions
+    property string backgroundSource: "assets/background"
     property bool videoActive: false
     property var videoItem: null
     property string fontFamily: "Google Sans Flex"

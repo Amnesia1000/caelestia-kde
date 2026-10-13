@@ -62,7 +62,6 @@ public:
     explicit ConfigRoot(const QString& path, ConfigRoot* fallback = nullptr, QObject* parent = nullptr);
 
 private:
-    // Binds the computed appearance values to the global token base values
     void bindTokens();
 };
 
@@ -87,8 +86,7 @@ enum class ConfigKind {
 void loaded(ConfigKind kind, settings::RootNode* layer, const QString& screen);
 void loadFailed(ConfigKind kind, const QString& error, const QString& screen);
 void saveFailed(ConfigKind kind, const QString& error, const QString& screen);
-
-} // namespace detail
+}
 
 #define SINGLETON_DECL(Type, Root, QmlName)                                                                            \
     class Type : public Root {                                                                                         \
@@ -118,5 +116,4 @@ SINGLETON_DECL(ConfigSingleton, ConfigRoot, GlobalConfig)
 SINGLETON_DECL(TokensSingleton, TokensRoot, TokenConfig)
 
 #undef SINGLETON_DECL
-
-} // namespace caelestia::config
+}

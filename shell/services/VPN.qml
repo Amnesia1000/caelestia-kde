@@ -197,12 +197,8 @@ Singleton {
             return;
         const iface = active.interface;
         if (iface.length > 0) {
-            // The interface name is user config, so it travels as a positional
-            // argument instead of being interpolated into the shell string.
             statsProc.command = ["sh", "-c", 'cat "/sys/class/net/$1/statistics/rx_bytes" "/sys/class/net/$1/statistics/tx_bytes" 2>/dev/null', "--", iface];
             statsProc.running = true;
-            // Measure latency over the tunnel by binding the ping to the VPN
-            // interface (-I), so the result reflects the VPN path, not the LAN.
             if (!pingProc.running) {
                 pingProc.command = ["sh", "-c", 'ping -c1 -W2 -I "$1" 1.1.1.1 2>/dev/null || ping -c1 -W2 1.1.1.1 2>/dev/null', "--", iface];
                 pingProc.running = true;
@@ -491,7 +487,6 @@ Singleton {
         }
     }
 
-
     Adapter {
         id: wireguardAdapter
 
@@ -545,7 +540,6 @@ Singleton {
         connectHint: error => error.includes("Access denied") || error.includes("checkprefs access denied") ? "Permission denied. Run in terminal: sudo tailscale set --operator=$USER" : ""
     }
 
-
     Process {
         id: nmMonitor
 
@@ -566,16 +560,14 @@ Singleton {
             if (running)
                 gen = ++root.statusGen;
         }
-        // qmllint disable incompatible-type
         environment: ({
-                // qmllint enable incompatible-type
                 LANG: "C.UTF-8",
                 LC_ALL: "C.UTF-8"
             })
         stdout: StdioCollector {
             onStreamFinished: {
                 if (statusProc.gen !== root.statusGen)
-                    return; // stale output from a provider that is no longer selected
+                    return;
                 const newStatus = root.active.parse(text);
                 root.updateStatus(newStatus);
             }
@@ -614,10 +606,9 @@ Singleton {
             }
         }
 
-        onExited: exitCode => { // qmllint disable signal-handler-parameters
+        onExited: exitCode => {
             root.connectExited = true;
 
-            // Deferred so an auth URL parsed from the output wins the race.
             Qt.callLater(() => {
                 if (root.status.state === "needs-auth")
                     return;
@@ -682,7 +673,7 @@ Singleton {
             }
         }
 
-        onExited: { // qmllint disable signal-handler-parameters
+        onExited: {
             root.disconnectExited = true;
             statusCheckTimer.start();
         }
@@ -699,7 +690,7 @@ Singleton {
     Process {
         id: registerProc
 
-        onExited: exitCode => { // qmllint disable signal-handler-parameters
+        onExited: exitCode => {
             if (exitCode === 0) {
                 statusCheckTimer.start();
             }

@@ -42,5 +42,4 @@ private:
     quint64 m_stamp = 0;
     int m_revision = 0;
 };
-
-} // namespace caelestia::services
+}

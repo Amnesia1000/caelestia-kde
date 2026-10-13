@@ -276,5 +276,4 @@ private:
 
     QList<QMetaObject::Connection> m_modelConnections;
 };
-
-} // namespace caelestia::components
+}

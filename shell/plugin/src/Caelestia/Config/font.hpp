@@ -169,5 +169,4 @@ private:
     IconFontStyle* m_icon;
     QFont m_clock;
 };
-
-} // namespace caelestia::config
+}

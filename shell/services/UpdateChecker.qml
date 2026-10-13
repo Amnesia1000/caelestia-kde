@@ -43,9 +43,7 @@ Singleton {
     function checkUpdates(branch, persistBranch) {
         if (branch === undefined) branch = "";
         if (!GlobalConfig.general.checkUpdates) return;
-        // Only an explicit branch pick re-points the tracked update channel;
         // background checks must not fight the channel the updater recorded
-        // from the tree it actually installed (issue #565).
         if (persistBranch === undefined) persistBranch = branch !== "";
         if (branch !== "") currentBranch = clampBranch(branch);
         else currentBranch = clampBranch(currentBranch);
@@ -53,7 +51,7 @@ Singleton {
         devCommitOffset = 0;
         hasMoreCommits = false;
         checkClaudeCodeUpdate();
-        
+
         let bashCmd = `
     CURRENT_BRANCH="$1"
     LOCAL_COMMIT="$(cat \"$HOME/.config/quickshell/caelestia/.current_commit\" 2>/dev/null || true)"
@@ -472,7 +470,7 @@ fi
         id: gitProcess
 
         command: []
-        onExited: _code => { // qmllint disable signal-handler-parameters
+        onExited: _code => {
             root.checkingUpdates = false;
             root.lastCheckMs = Date.now();
         }
@@ -489,7 +487,7 @@ fi
                     let parsedCommitCount = 0;
                     let parsedHasMore = false;
                     root.availableBranches = ["main", "dev"];
-                    
+
                     for (let i = 0; i < lines.length; i++) {
                         const line = lines[i].trim();
                         if (line === "") continue;
@@ -548,7 +546,6 @@ fi
                             if (tag === "")
                                 continue;
 
-                            // Fallback path when release JSON parsing is unavailable.
                             parsedCommits.push({
                                 hash: qsTr("Release"),
                                 subject: tag,
@@ -703,7 +700,7 @@ fi
                 }
             }
         }
-        onExited: _code => { // qmllint disable signal-handler-parameters
+        onExited: _code => {
             root.loadingMoreCommits = false;
         }
     }

@@ -28,7 +28,6 @@ QString toLocalPath(const QString& path) {
     return path;
 }
 
-// English is the source language, so it never needs a catalogue.
 bool isSourceLanguage(const QString& code) {
     return code == u"en"_s || code.startsWith(u"en_"_s);
 }
@@ -38,8 +37,7 @@ QString normaliseCode(const QString& code) {
     normalised.replace(u'-', u'_');
     return normalised;
 }
-
-} // namespace
+}
 
 Translations::Translations(QObject* parent)
     : QObject(parent)
@@ -237,5 +235,4 @@ void Translations::refreshAvailable() {
         emit availableChanged();
     }
 }
-
-} // namespace caelestia
+}

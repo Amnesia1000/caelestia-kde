@@ -32,5 +32,4 @@ private:
     int m_interval = 1000;
     bool m_running = false;
 };
-
-} // namespace caelestia::services
+}

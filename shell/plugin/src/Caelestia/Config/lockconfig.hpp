@@ -27,5 +27,4 @@ class LockConfig : public settings::ObjectNode {
     CONFIG_GLOBAL_PROPERTY(bool, showReboot, false)
     CONFIG_GLOBAL_PROPERTY(bool, showShutdown, false)
 };
-
-} // namespace caelestia::config
+}

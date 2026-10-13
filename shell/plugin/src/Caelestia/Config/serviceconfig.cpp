@@ -14,8 +14,7 @@ TemperatureUnit::Enum resolveTemperatureUnit(TemperatureUnit::Enum unit) {
     return system == QLocale::ImperialUSSystem || system == QLocale::ImperialUKSystem ? TemperatureUnit::Fahrenheit
                                                                                       : TemperatureUnit::Celsius;
 }
-
-} // namespace
+}
 
 bool ServiceConfig::twelveHourClock() const {
     const auto format = clockFormat();
@@ -32,5 +31,4 @@ TemperatureUnit::Enum ServiceConfig::weatherUnit() const {
 TemperatureUnit::Enum ServiceConfig::sensorUnit() const {
     return resolveTemperatureUnit(sensorUnits());
 }
-
-} // namespace caelestia::config
+}

@@ -154,9 +154,7 @@ FloatingWindow {
         }
     }
 
-    // qmllint disable unresolved-type
     CustomShortcut {
-        // qmllint enable unresolved-type
         name: "whatsnew"
         description: qsTr("What's New")
         onPressed: root.toggle()

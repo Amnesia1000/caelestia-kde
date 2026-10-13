@@ -92,7 +92,6 @@ public:
     explicit BrightnessWatcher(QObject* parent = nullptr);
 
     Q_INVOKABLE qreal brightness(const QString& outputName) const;
-    // Also asserts full dimming, in the same configuration: a brightness request is user
     // activity, and a multiplier KWin left behind must not swallow it (KDE bug 513809).
     Q_INVOKABLE void setBrightness(const QString& outputName, qreal value);
     Q_INVOKABLE qreal dimming(const QString& outputName) const;
@@ -109,5 +108,4 @@ private:
     KdeOutputManagement* m_management = nullptr;
     QHash<QString, KdeOutputDevice*> m_devices;
 };
-
-} // namespace caelestia::services
+}

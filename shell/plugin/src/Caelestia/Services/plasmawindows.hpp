@@ -9,8 +9,6 @@
 
 namespace caelestia::services {
 
-/// One org_kde_plasma_window handle, held for as long as something has a use
-/// for the window it names.
 class PlasmaWindowHandle : public QObject, public QtWayland::org_kde_plasma_window {
     Q_OBJECT
 
@@ -49,11 +47,6 @@ public:
 
     QStringList desktops() const { return m_desktops; }
 
-    /// Sets or clears one window state flag.
-    ///
-    /// The protocol request carries a flags bitfield (which states are being
-    /// touched) and a state bitfield (their new values), so clearing a flag is
-    /// flags=flag, state=0. Passing flags=0 matches no state at all and does
     /// nothing, which is what made the "restore" paths silently no-op.
     void setState(uint32_t flag, bool set) { set_state(flag, set ? flag : 0); }
 
@@ -145,14 +138,10 @@ public:
     bool available();
     void refresh();
 
-    /// The handle for @p uuid, or nullptr if the interface is unavailable or
-    /// the connection is already gone. Uuids are normalised, so callers need
-    /// not care whether theirs arrived brace-wrapped.
     PlasmaWindowHandle* handleFor(const QString& uuid);
 
     QList<QString> windowUuids() const { return m_handles.keys(); }
 
-    /// KWin hands out window ids as QUuid::toString(), i.e. brace-wrapped.
     static QString normaliseUuid(const QString& uuid);
 
 signals:
@@ -173,5 +162,4 @@ private:
     PlasmaWindowManagement* m_management = nullptr;
     QHash<QString, PlasmaWindowHandle*> m_handles;
 };
-
-} // namespace caelestia::services
+}

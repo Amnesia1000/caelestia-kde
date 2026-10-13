@@ -122,5 +122,4 @@ void Toaster::toast(const QString& title, const QString& message, const QString&
     m_toasts.push_front(toast);
     emit toastsChanged();
 }
-
-} // namespace caelestia
+}

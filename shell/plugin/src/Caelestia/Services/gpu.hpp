@@ -84,5 +84,4 @@ private:
     bool m_detecting = false;
     bool m_nvidiaQuerying = false;
 };
-
-} // namespace caelestia::services
+}

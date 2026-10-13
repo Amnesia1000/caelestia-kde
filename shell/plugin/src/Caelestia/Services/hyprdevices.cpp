@@ -130,5 +130,4 @@ bool HyprDevices::updateLastIpcObject(QJsonObject object) {
 
     return dirty;
 }
-
-} // namespace caelestia::services::hypr
+}

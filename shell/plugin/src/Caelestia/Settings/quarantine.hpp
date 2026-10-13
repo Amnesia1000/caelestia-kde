@@ -29,5 +29,4 @@ public:
 private:
     QHash<QString, QJsonValue> m_quarantine;
 };
-
-} // namespace caelestia::settings
+}

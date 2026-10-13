@@ -19,7 +19,6 @@ Item {
     property string installProgress: ""
     property string installError: ""
 
-    // id of the plugin currently being installed, for per-row progress feedback
     property string installingId: ""
     property var updatesAvailable: []
 
@@ -76,7 +75,6 @@ Item {
         error = false;
         errorMessage = "";
 
-        // Seed installed IDs from disk baseline if not done yet
         // (handles the race condition where fetchIndex resolves before PluginLoader's pluginsReloaded)
         if (!baselineLoaded && CaelestiaApi.plugins.available.count > 0) {
             baselineLoaded = true;
@@ -92,8 +90,6 @@ Item {
         fetchProc.running = true;
     }
 
-    // Store ids come from a remote index and become filesystem paths, so only
-    // plain directory names are accepted.
     function isValidPluginId(id) {
         return typeof id === "string" && /^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(id) && !id.includes("..");
     }
@@ -106,9 +102,7 @@ Item {
 
         let installBranch = branch || "main";
 
-        // repoPath must be a relative path inside the store repo. Installed plugins
         // report an absolute *install* dir as their path, which must never be used
-        // here - it would make the clone step target itself and wipe the plugin.
         let actualRepoPath = (typeof repoPath === "string" && repoPath !== "" && !repoPath.startsWith("/") && !repoPath.includes("..")) ? repoPath : ("plugins/" + id);
 
         installing = true;
@@ -215,7 +209,6 @@ echo "DONE"`;
             }
         }
     }
-
 
     function installFromUrl(url) {
         if (typeof url !== "string" || (url.indexOf("https://") !== 0 && url.indexOf("git@") !== 0)) {

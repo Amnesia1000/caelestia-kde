@@ -17,5 +17,4 @@ public:
 private:
     FillMode m_fillMode;
 };
-
-} // namespace caelestia::images
+}

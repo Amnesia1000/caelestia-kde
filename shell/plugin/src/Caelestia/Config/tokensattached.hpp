@@ -77,5 +77,4 @@ private:
     FontTokens* m_font = nullptr;
     AnimTokens* m_anim = nullptr;
 };
-
-} // namespace caelestia::config
+}

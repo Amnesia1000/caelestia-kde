@@ -54,5 +54,4 @@ private:
     void start() override;
     void stop() override;
 };
-
-} // namespace caelestia::services
+}

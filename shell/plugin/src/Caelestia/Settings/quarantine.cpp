@@ -23,5 +23,4 @@ QJsonValue ObjectQuarantine::apply(const QJsonValue& json) const {
             result.insert(key, value);
     return result;
 }
-
-} // namespace caelestia::settings
+}

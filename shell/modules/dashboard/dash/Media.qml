@@ -22,13 +22,8 @@ Item {
 
     readonly property real arcCoverGap: Tokens.spacing.extraSmall
 
-    // Lets embedders (e.g. the bar popout) show extra controls in the
-    // built-in row. Defaults to false, so the dashboard renders exactly
-    // as before.
     property bool extraButtons: false
 
-    // Lets embedders hide the gif block to compact the player.
-    // Defaults to true, so the dashboard renders exactly as before.
     property bool showGif: true
 
     anchors.top: parent.top
@@ -228,7 +223,7 @@ Item {
             anchors.fill: parent
 
             playing: Players.active?.isPlaying ?? false
-            speed: Audio.beatTracker.bpm / Config.general.mediaGifSpeedAdjustment // qmllint disable unresolved-type
+            speed: Audio.beatTracker.bpm / Config.general.mediaGifSpeedAdjustment
             source: Paths.absolutePath(Config.paths.mediaGif)
             asynchronous: true
             fillMode: AnimatedImage.PreserveAspectFit

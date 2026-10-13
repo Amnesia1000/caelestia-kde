@@ -251,5 +251,4 @@ void WavyLine::paintArc(QPainter* painter) {
 
     painter->drawPath(path);
 }
-
-} // namespace caelestia::components
+}

@@ -40,8 +40,6 @@ Singleton {
         return GlobalConfig.forScreen(screenName).background.desktopIconsEnabled;
     }
 
-    // Flips the icons as seen on the given screen and applies the result to
-    // every screen, dropping per-screen overrides so they stay in step.
     function toggleIcons(screenName: string): void {
         GlobalConfig.background.desktopIconsEnabled = !iconsShownOn(screenName);
         for (const screen of Quickshell.screens)
@@ -98,8 +96,6 @@ Singleton {
                         parsed = JSON.parse(text);
                     }
                 } catch (e) {
-                    // Otherwise a malformed file silently reverts to the defaults, and the
-                    // user's own entries disappear with nothing in the journal.
                     console.warn("[ContextMenuStore] ignoring an unreadable menu file:", e);
                 }
 

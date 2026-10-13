@@ -212,7 +212,7 @@ Item {
                     dashboardOpen: root.visibilities.dashboard
                 }
             }
-            
+
             Component {
                 id: terminalComponent
 

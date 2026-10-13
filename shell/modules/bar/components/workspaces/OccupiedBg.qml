@@ -21,8 +21,6 @@ Item {
         CAnim {}
     }
 
-    // Wrappers so the rects can extend 1px past the strip and still be faded as
-    // one layer.
     Item {
         anchors.fill: parent
         anchors.margins: -1

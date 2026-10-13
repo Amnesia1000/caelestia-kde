@@ -11,7 +11,6 @@ QMutex Qalculator::s_calculatorMutex;
 Qalculator::Qalculator(QObject* parent)
     : QObject(parent) {
     if (!CALCULATOR) {
-        // Calculator constructor sets the global `calculator` pointer (CALCULATOR macro),
         // but we need to assign it to a var so compiler doesn't flag it as a leak
         static const auto* const instance = new Calculator();
         Q_UNUSED(instance)
@@ -145,5 +144,4 @@ QString Qalculator::rawResult() const {
 bool Qalculator::busy() const {
     return m_busy;
 }
-
-} // namespace caelestia
+}

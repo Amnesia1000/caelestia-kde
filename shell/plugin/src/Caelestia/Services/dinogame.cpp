@@ -222,5 +222,4 @@ void DinoGameBackend::writeHighScore() {
         f.write(QString::number(std::floor(m_highScore)).toUtf8());
     }
 }
-
-} // namespace caelestia::services
+}

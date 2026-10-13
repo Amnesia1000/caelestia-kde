@@ -12,7 +12,6 @@ import qs.utils
 Singleton {
     id: root
 
-    // Lives next to the command builder so the switch and its values can't drift apart.
     enum SnipAction {
         Copy,
         Edit,
@@ -44,7 +43,7 @@ Singleton {
         const uploadAndGetUrl = (filePath) => {
             return `curl -sF files[]=@'${escapeShellStr(filePath)}' ${root.fileUploadApiEndpoint} | jq -r '.files[0].url'`
         }
-        
+
         const rawSaveDir = saveDir;
 
         switch (action) {

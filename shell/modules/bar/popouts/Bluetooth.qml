@@ -50,9 +50,9 @@ ColumnLayout {
                 scaleOffset: root.scaleOffset
                 fontScale: root.fontScale
                 label: qsTr("Enabled")
-                checked: Bluetooth.defaultAdapter?.enabled ?? false // qmllint disable unresolved-type
+                checked: Bluetooth.defaultAdapter?.enabled ?? false
                 toggle.onToggled: {
-                    const adapter = Bluetooth.defaultAdapter; // qmllint disable unresolved-type
+                    const adapter = Bluetooth.defaultAdapter;
                     if (adapter)
                         adapter.enabled = checked;
                 }
@@ -62,9 +62,9 @@ ColumnLayout {
                 scaleOffset: root.scaleOffset
                 fontScale: root.fontScale
                 label: qsTr("Discovering")
-                checked: Bluetooth.defaultAdapter?.discovering ?? false // qmllint disable unresolved-type
+                checked: Bluetooth.defaultAdapter?.discovering ?? false
                 toggle.onToggled: {
-                    const adapter = Bluetooth.defaultAdapter; // qmllint disable unresolved-type
+                    const adapter = Bluetooth.defaultAdapter;
                     if (adapter)
                         adapter.discovering = checked;
                 }
@@ -74,7 +74,7 @@ ColumnLayout {
                 Layout.topMargin: Tokens.spacing.small * root.scaleOffset
                 Layout.rightMargin: Tokens.padding.extraSmall * root.scaleOffset
                 text: {
-                    const devices = Bluetooth.devices.values; // qmllint disable unresolved-type
+                    const devices = Bluetooth.devices.values;
                     let available = qsTr("%1 device%2 available").arg(devices.length).arg(devices.length === 1 ? "" : "s");
                     const connected = devices.filter(d => d.connected).length;
                     if (connected > 0)
@@ -87,14 +87,14 @@ ColumnLayout {
 
             Repeater {
                 model: ScriptModel {
-                    values: [...Bluetooth.devices.values].sort((a, b) => (b.connected - a.connected) || (b.paired - a.paired) || a.name.localeCompare(b.name)).slice(0, 5) // qmllint disable unresolved-type
+                    values: [...Bluetooth.devices.values].sort((a, b) => (b.connected - a.connected) || (b.paired - a.paired) || a.name.localeCompare(b.name)).slice(0, 5)
                 }
 
                 Item {
                     id: device
 
                     required property BluetoothDevice modelData
-                    readonly property bool loading: modelData.state === BluetoothDeviceState.Connecting || modelData.state === BluetoothDeviceState.Disconnecting // qmllint disable unresolved-type
+                    readonly property bool loading: modelData.state === BluetoothDeviceState.Connecting || modelData.state === BluetoothDeviceState.Disconnecting
 
                     Layout.fillWidth: true
                     implicitHeight: deviceRow.implicitHeight
@@ -128,7 +128,7 @@ ColumnLayout {
                         }
 
                         RowLayout {
-                            visible: device.modelData.state === BluetoothDeviceState.Connected  // qmllint disable unresolved-type
+                            visible: device.modelData.state === BluetoothDeviceState.Connected
                             spacing: Tokens.spacing.extraSmall * root.scaleOffset
 
                             MaterialIcon {
@@ -138,8 +138,8 @@ ColumnLayout {
                             }
 
                             StyledText {
-                                visible: device.modelData.batteryAvailable // qmllint disable unresolved-type
-                                text: device.modelData.batteryAvailable ? qsTr("%1%").arg(Math.round(device.modelData.battery * 100)) : "" // qmllint disable unresolved-type
+                                visible: device.modelData.batteryAvailable
+                                text: device.modelData.batteryAvailable ? qsTr("%1%").arg(Math.round(device.modelData.battery * 100)) : ""
                                 font.pointSize: Tokens.font.body.small.pointSize * root.fontScale
                                 color: device.modelData.batteryAvailable && device.modelData.battery < 0.2 ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
                             }

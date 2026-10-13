@@ -19,8 +19,7 @@ const AppearanceConfig* resolveAppearance(ConfigRoot* config, bool complete, con
         qCWarning(lcConfig, "Tokens.%s accessed without a screen set on %s", prop, parent->metaObject()->className());
     return ConfigSingleton::instance()->appearance();
 }
-
-} // namespace
+}
 
 Tokens::Tokens(QObject* parent)
     : QQuickAttachedPropertyPropagator(parent)
@@ -128,5 +127,4 @@ TokensRoot* Tokens::forScreen(const QString& screen) {
 Tokens* Tokens::qmlAttachedProperties(QObject* object) {
     return new Tokens(object);
 }
-
-} // namespace caelestia::config
+}

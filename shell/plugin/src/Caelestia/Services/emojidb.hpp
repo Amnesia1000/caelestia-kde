@@ -51,9 +51,7 @@ private:
 
     QVector<EmojiEntry> m_emojis;
     QHash<QString, int> m_frequencies;
-    // Trigram -> emoji indices
     QHash<QString, QVector<int>> m_trigramIndex;
     bool m_loaded = false;
 };
-
-} // namespace caelestia::services
+}

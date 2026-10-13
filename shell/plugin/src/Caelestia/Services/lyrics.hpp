@@ -143,5 +143,4 @@ private:
     bool m_lyricsMapLoaded = false;
     bool m_settingFromPrefs = false;
 };
-
-} // namespace caelestia::services
+}

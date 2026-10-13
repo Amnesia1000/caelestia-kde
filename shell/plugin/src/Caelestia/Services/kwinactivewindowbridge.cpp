@@ -24,7 +24,6 @@ KWinActiveWindowBridge::KWinActiveWindowBridge(QObject* parent)
     connect(plasmaWindows, &PlasmaWindows::windowAdded, this, &KWinActiveWindowBridge::onWindowAdded);
     connect(plasmaWindows, &PlasmaWindows::handleLost, this, &KWinActiveWindowBridge::onWindowLost);
 
-    // Clear any stale highlight from a previous session or crash on startup
     clearHighlight();
 }
 
@@ -523,5 +522,4 @@ void KWinActiveWindowBridge::refreshWindows() {
     }
     scheduleWindowListUpdate();
 }
-
-} // namespace caelestia::services
+}

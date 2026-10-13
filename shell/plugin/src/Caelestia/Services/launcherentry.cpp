@@ -41,8 +41,7 @@ QVariantMap resolveEntry(const QVariantMap& properties) {
         { QStringLiteral("urgent"), properties.value(QStringLiteral("urgent")).toBool() },
     };
 }
-
-} // namespace
+}
 
 LauncherEntry::LauncherEntry(QObject* parent)
     : QObject(parent)
@@ -120,5 +119,4 @@ void LauncherEntry::onServiceUnregistered(const QString& service) {
     ++m_revision;
     emit changed();
 }
-
-} // namespace caelestia::services
+}

@@ -44,7 +44,6 @@ protected:
     void tick() override;
 
 private:
-    // One physical disk (or zfs pool), accumulated across the filesystems on it
     struct Accum {
         quint64 usedBytes = 0;
         quint64 totalBytes = 0;
@@ -77,5 +76,4 @@ private:
     QPointer<DiskInfo> m_manualPrimaryDisk;
     QFutureWatcher<AccumHash>* const m_futureWatcher;
 };
-
-} // namespace caelestia::services
+}

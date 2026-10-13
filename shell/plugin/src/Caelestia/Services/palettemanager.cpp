@@ -153,5 +153,4 @@ void PaletteManager::update(const QVariantMap& palette, bool light, bool transpE
     m_tPalette = result;
     emit tPaletteChanged();
 }
-
-} // namespace caelestia::services
+}

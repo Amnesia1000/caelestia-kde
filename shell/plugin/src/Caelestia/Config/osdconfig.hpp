@@ -16,5 +16,4 @@ class OsdConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, enableMicrophone, false)
     CONFIG_PROPERTY(bool, enableVolume, true)
 };
-
-} // namespace caelestia::config
+}

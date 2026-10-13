@@ -694,5 +694,4 @@ void Weather::saveCachedCity(const QString& coords, const QString& cityName) {
         f.write(QJsonDocument(obj).toJson(QJsonDocument::Compact));
     }
 }
-
-} // namespace caelestia::services
+}

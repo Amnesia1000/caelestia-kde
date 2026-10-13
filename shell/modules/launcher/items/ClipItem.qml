@@ -42,7 +42,6 @@ Item {
             return;
         }
 
-        // If already cached on disk, display immediately; otherwise wait for imageReady
         if (Clipboard.isImageCached(root.modelData.id)) {
             imagePreview.imagePath = Clipboard.getImagePath(root.modelData.id);
         } else {

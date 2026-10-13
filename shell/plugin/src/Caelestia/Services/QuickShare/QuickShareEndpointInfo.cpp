@@ -6,12 +6,8 @@ namespace caelestia::services::endpointinfo {
 
 namespace {
 
-/// The device type these records advertise (a laptop), in the high bits of the
-/// first byte, with the visibility bit below it.
 constexpr char deviceType = 3 << 1;
 
-/// The record's fixed part: the device type byte, a random id, then a name at the
-/// length-prefixed tail.
 constexpr int idSize = 16;
 constexpr int nameLengthOffset = 1 + idSize;
 constexpr int nameOffset = nameLengthOffset + 1;
@@ -25,8 +21,7 @@ QByteArray randomBytes(int count) {
         bytes.append(static_cast<char>(QRandomGenerator::global()->generate()));
     return bytes;
 }
-
-} // namespace
+}
 
 QByteArray encode(const QString& deviceName) {
     QByteArray record;
@@ -76,5 +71,4 @@ QByteArray fromBase64Url(const QByteArray& encoded) {
         decoded = QByteArray::fromBase64(encoded);
     return decoded;
 }
-
-} // namespace caelestia::services::endpointinfo
+}

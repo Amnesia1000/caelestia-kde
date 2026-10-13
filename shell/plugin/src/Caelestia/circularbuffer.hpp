@@ -44,5 +44,4 @@ private:
     qreal m_cachedMaximum = 0.0;
     bool m_maxDirty = false;
 };
-
-} // namespace caelestia
+}

@@ -41,16 +41,12 @@ Singleton {
 
         const url = player.metadata["xesam:url"] ?? "";
         if (url.startsWith("https://www.youtube.com/watch")) {
-            // Fallback for youtube
             const id = url.match(/[?&]v=([\w-]{11})/)?.[1];
             return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : "";
         }
         return "";
     }
 
-    // Quickshell only emits postTrackChanged when trackid/url/title change, so late
-    // artist updates (common with mpv-mpris + yt-dlp player) never retrigger it. Watch
-    // title/artist too and toast once both are usable.
     function maybeToastNowPlaying(): void {
         if (!GlobalConfig.utilities.toasts.nowPlaying)
             return;
@@ -98,9 +94,7 @@ Singleton {
         reloadableId: "players"
     }
 
-    // qmllint disable unresolved-type
     CustomShortcut {
-        // qmllint enable unresolved-type
         name: "mediaToggle"
         description: qsTr("Toggle media playback")
         onPressed: {
@@ -110,9 +104,7 @@ Singleton {
         }
     }
 
-    // qmllint disable unresolved-type
     CustomShortcut {
-        // qmllint enable unresolved-type
         name: "mediaPrev"
         description: qsTr("Previous track")
         onPressed: {
@@ -122,9 +114,7 @@ Singleton {
         }
     }
 
-    // qmllint disable unresolved-type
     CustomShortcut {
-        // qmllint enable unresolved-type
         name: "mediaNext"
         description: qsTr("Next track")
         onPressed: {
@@ -134,9 +124,7 @@ Singleton {
         }
     }
 
-    // qmllint disable unresolved-type
     CustomShortcut {
-        // qmllint enable unresolved-type
         name: "mediaStop"
         description: qsTr("Stop media playback")
         onPressed: root.active?.stop()

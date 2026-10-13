@@ -207,9 +207,6 @@ Singleton {
 
             root.showPreview = false;
 
-            // Absent, null, and a value the range does not take all mean the same thing here:
-            // what is in effect is the palette the engine produced. 0 is a real setting (a grey
-            // palette), so this cannot lean on falsiness either.
             const intensity = Number(scheme.intensity ?? NaN);
             root.intensity = Number.isFinite(intensity) ? Math.min(root.maxIntensity, Math.max(0, intensity)) : 1.0;
         } else {
@@ -236,8 +233,6 @@ Singleton {
             schemeRetryTimer.start();
     }
 
-    /// Fold a scheme's `colours` into a palette. A file leaves the leading `#` off and names a
-    /// terminal role plainly, so the role a palette holds is not the key the file uses.
     function applyColours(palette: M3Palette, colours: var): void {
         for (const [role, colour] of Object.entries(colours)) {
             const propName = role.startsWith("term") ? role : `m3${role}`;
@@ -274,7 +269,6 @@ Singleton {
     }
 
     function reloadHyprRules(): void {
-        // Layer rules are Hyprland-only; KWin handles blur via effects.
                     return;
 
         let rule, trEnabled;
@@ -312,8 +306,6 @@ Singleton {
 
         target: Kwin
     }
-
-
 
     FileView {
         id: schemeFile
@@ -394,8 +386,6 @@ Singleton {
     onLightChanged: Qt.callLater(updatePaletteManager)
 
     onShowPreviewChanged: Qt.callLater(updatePaletteManager)
-
-
 
     Timer {
         id: cooldownTimer

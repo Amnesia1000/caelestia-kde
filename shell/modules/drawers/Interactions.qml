@@ -24,8 +24,6 @@ CustomMouseArea {
     property bool osdShortcutActive
     property bool utilitiesShortcutActive
     readonly property bool isBarHorizontal: bar.isHorizontal
-    // Uses clampedThickness rather than the raw implicit size so the bar stays
-    // reachable when the border thickness is set to 0 (the collapsed bar is 0px wide).
 
     function inBarArea(x: real, y: real): bool {
         if (bar.position === "left")
@@ -71,15 +69,13 @@ CustomMouseArea {
             return y > screen.height - panels.bottomMargin - panelHeight && (withinPanelWidth(panel, x, y) || abovePopoutItem(panel, x));
         return false;
     }
-    // Next to the open sidebar a popout doesn't always cover the bar item that
-    // opened it; keep the strip straight above the item so it can be reached.
     function abovePopoutItem(panel: Item, x: real): bool {
         return panel === panels.popoutsWrapper && !popouts.isDetached && Math.abs(x - popouts.currentCenter) <= Config.border.rounding;
     }
     function inRightPanel(panel: Item, x: real, y: real, edge = 0, span = 100): bool {
         const onLeft = bar.position === "right";
         const strip = Math.max(Config.border.minThickness, edge || (onLeft ? panels.leftMargin : panels.rightMargin));
-        const closed = (panel.offsetScale ?? 0) >= 1 || panel.width <= 0; // qmllint disable missing-property
+        const closed = (panel.offsetScale ?? 0) >= 1 || panel.width <= 0;
 
         if (onLeft) {
             const shown = panels.leftMargin + panel.x + panel.width;
@@ -90,11 +86,11 @@ CustomMouseArea {
         return x > screen.width - (closed ? strip : Math.max(strip, shown)) && withinPanelHeight(panel, x, y, closed ? span : 100);
     }
     function inTopPanel(panel: Item, x: real, y: real, edge = Config.border.thickness, span = 100): bool {
-        const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0)); // qmllint disable missing-property
+        const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0));
         return y < Math.max(Config.border.minThickness, edge + panelHeight) && withinPanelWidth(panel, x, y, panelHeight > 0 ? 100 : span);
     }
     function inBottomPanel(panel: Item, x: real, y: real, isCorner = false, edge = Config.border.thickness, span = 100): bool {
-        const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0)); // qmllint disable missing-property
+        const panelHeight = panel.height * (1 - (panel.offsetScale ?? 0));
         return y > screen.height - Math.max(Config.border.minThickness, edge + panelHeight) - (isCorner ? Config.border.rounding : 0) && withinPanelWidth(panel, x, y, panelHeight > 0 ? 100 : span);
     }
     function inOverviewCorner(x: real, y: real): string {
@@ -121,7 +117,7 @@ CustomMouseArea {
 
         if (root.focusGrab && (root.focusGrab.active || popouts.isDetached)) {
             let inside = false;
-            
+
             if (inBarArea(event.x, event.y)) inside = true;
             else if (visibilities.launcher && inBottomPanel(panels.launcher, event.x, event.y, false, Config.launcher.hoverThickness, Config.launcher.hoverWidth) && withinPanelWidth(panels.launcher, event.x, event.y)) inside = true;
             else if (visibilities.session && inRightPanel(panels.sessionWrapper, event.x, event.y)) inside = true;
@@ -294,7 +290,7 @@ CustomMouseArea {
         const isUtilitiesOnLeft = bar.position === "right";
         const inUtilitiesAreaClosed = isUtilitiesOnLeft ? x <= (screen.width / 2) : (x >= (screen.width / 2) && (bar.position === "bottom" ? x <= (screen.width - 200) : true));
         const inUtilitiesAreaOpen = x >= 0 && x <= screen.width;
-        
+
         const inUtilitiesArea = bar.position === "bottom"
             ? inTopPanel(panels.utilities, x, y, Config.utilities.hoverThickness, Config.utilities.hoverWidth) && (root.visibilities.utilities ? inUtilitiesAreaOpen : inUtilitiesAreaClosed)
             : inBottomPanel(panels.utilities, x, y, true, Config.utilities.hoverThickness, Config.utilities.hoverWidth) && (root.visibilities.utilities ? inUtilitiesAreaOpen : inUtilitiesAreaClosed);

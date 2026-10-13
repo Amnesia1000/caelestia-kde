@@ -103,8 +103,6 @@ void CUtils::saveItem(QQuickItem* target, const QUrl& path, const QRect& rect, Q
 
     const QSharedPointer<const QQuickItemGrabResult> grabResult = target->grabToImage();
     if (!grabResult) {
-        // grabToImage() returns null when the item's window is hidden or otherwise
-        // not renderable; connecting to a null result would warn and never fire.
         qCWarning(lcCUtils) << "saveItem: failed to grab" << target;
         return;
     }
@@ -382,8 +380,7 @@ template <typename Predicate> void findChildrenDfs(QQuickItem* root, Predicate&&
         findChildrenDfs(child, match, out);
     }
 }
-
-} // namespace
+}
 
 QQuickItem* CUtils::findChild(QQuickItem* root, const QString& name) {
     if (!root) {
@@ -421,5 +418,4 @@ QList<QQuickItem*> CUtils::findChildrenMatching(QQuickItem* root, const QString&
     }
     return children;
 }
-
-} // namespace caelestia
+}

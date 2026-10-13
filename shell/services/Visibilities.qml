@@ -15,8 +15,6 @@ Singleton {
     property string lastSidebarTab: "notifications"
     property int openDialogs: 0
     readonly property bool sidebarPinned: GlobalConfig.sidebar.pinned
-    // Live width while the pinned sidebar's edge is dragged; otherwise follows
-    // sidebar.width, where 0 means the default width.
     property int sidebarWidth
     property bool sidebarResizing: false
     property string preOverviewActiveWindowAddress: ""
@@ -35,8 +33,6 @@ Singleton {
     }
 
     function setSidebarWidth(width: int): void {
-        // Also set the live width: the binding is off mid-drag, and a
-        // double-click's second press starts one.
         sidebarWidth = Math.max(0, width);
         GlobalConfig.sidebar.width = sidebarWidth;
     }

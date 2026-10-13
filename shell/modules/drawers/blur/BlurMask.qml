@@ -7,10 +7,10 @@ Region {
 
     required property Item target
     required property Item contentItem
-    property string vAnchor: (target && target["vAnchor"] !== undefined) ? target["vAnchor"] : "bottom" 
+    property string vAnchor: (target && target["vAnchor"] !== undefined) ? target["vAnchor"] : "bottom"
     property string hAnchor: (target && target["hAnchor"] !== undefined) ? target["hAnchor"] : "right"
     property real offsetScale: (target && target["offsetScale"] !== undefined) ? target["offsetScale"] : 0
-    
+
     property real blurOffsetTop: 0
     property real blurOffsetBottom: 0
     property real blurOffsetLeft: 0
@@ -55,8 +55,6 @@ Region {
         rRight: root.offsets.rRight
     }
 
-    // Pure native blur fallback: a static rectangle covering the widget's layout area,
-    // explicitly avoiding 'item: root.target' so we don't inherit its deformMatrix.
     Region {
         x: (!GlobalConfig.appearance.blurMask && root.offsets.isActive) ? root.offsets.tX : 0
         y: (!GlobalConfig.appearance.blurMask && root.offsets.isActive) ? root.offsets.tY : 0

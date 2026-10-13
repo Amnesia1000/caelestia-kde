@@ -155,7 +155,6 @@ void EmojiDb::loadEmojis() {
         }
     }
 
-    // 2. Also check for emojis.txt to support custom kaomojis or fallback lists
     const QString shellConfig = qEnvironmentVariable("CAELESTIA_SHELL_CONFIG");
     const QString configDir = qEnvironmentVariable("XDG_CONFIG_HOME", QDir::homePath() + QStringLiteral("/.config"));
     const QString dataHome = qEnvironmentVariable("XDG_DATA_HOME", QDir::homePath() + QStringLiteral("/.local/share"));
@@ -347,5 +346,4 @@ QVariantList EmojiDb::search(const QString& text, int limit) const {
     }
     return result;
 }
-
-} // namespace caelestia::services
+}

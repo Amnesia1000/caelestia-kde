@@ -282,5 +282,4 @@ QVariantMap LayoutKde::calculateLayout(
 
     return result;
 }
-
-} // namespace caelestia::layouts
+}

@@ -434,7 +434,6 @@ Item {
                         color: Colours.palette.m3tertiary
                     }
 
-                    // Text fields container to overlay ghost autocomplete text behind typing text
                     Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true

@@ -64,7 +64,6 @@ Item {
     signal requestWindowInfo(var client)
     signal requestClose()
 
-    /// The screen containing a point in global coordinates, or null.
     function screenAtGlobal(gx: real, gy: real): var {
         const all = Quickshell.screens;
         for (let i = 0; i < all.length; ++i) {
@@ -260,10 +259,8 @@ Item {
             height: listView.height
             Component.onCompleted: {
                 _updateWsWindows();
-                //console.log("WindowGrid Page initialized. wsId:", wsId, "windows found:", wsWindows.length, "Total windows globally:", Kwin.windowList.length);
             }
             onWsWindowsChanged: {
-                //console.log("WindowGrid Page updated. wsId:", wsId, "windows found:", wsWindows.length);
             }
 
             TapHandler {
@@ -338,9 +335,6 @@ Item {
                                     return activeWin.dropTargetScale;
                                 return activeWin.isSelected && !dragHandler.active ? root.hoverScale : 1;
                             }
-                            // Once the drag is over another screen that screen
-                            // draws it, and the half still poking out here would
-                            // otherwise sit there as a stream-less icon.
                             opacity: closing || Visibilities.streamClaim === activeWin.clientAddress ? 0 : 1
                             border.width: activeWin.isSelected && !activeWin.morphed ? 2 : 0
                             border.color: Colours.palette.m3primary
@@ -381,7 +375,6 @@ Item {
                                         activeWin.dropTargetScale = 0;
                                         Visibilities.clearDrag();
                                         switchTimer.restart();
-
 
                                         const target = root.screenAtGlobal(Visibilities.dragX, Visibilities.dragY);
                                         if (target && target.name !== root.screen.name) {

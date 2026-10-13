@@ -24,7 +24,6 @@ QString stolenEdgesPath() {
     return QDir::homePath() + QStringLiteral("/.config/caelestia/stolen-screen-edges.json");
 }
 
-/// The [ElectricBorders] key that names a corner, or empty if not a corner.
 QString electricBorderKey(int corner) {
     switch (corner) {
     case ScreenEdges::TopLeft:
@@ -49,7 +48,6 @@ bool isEdgeListKey(const QString& key) {
     return key.contains(QStringLiteral("BorderActivate")) || key.contains(QStringLiteral("BorderAlternativeActivate"));
 }
 
-/// KWin writes these lists as comma-separated ints; ElectricNone is 9.
 QList<int> parseEdgeList(const QString& raw) {
     QList<int> out;
     const auto parts = raw.split(QLatin1Char(','), Qt::SkipEmptyParts);
@@ -71,8 +69,6 @@ QString formatEdgeList(const QList<int>& edges) {
     return parts.isEmpty() ? QStringLiteral("9") : parts.join(QLatin1Char(','));
 }
 
-/// Keys whose compiled-in default reserves an edge even when absent from
-/// kwinrc, so a stock install still has to be written over explicitly.
 const QHash<QString, QList<int>>& implicitDefaults() {
     static const QHash<QString, QList<int>> defaults{
         { QStringLiteral("Effect-overview/BorderActivate"), { ScreenEdges::TopLeft } },
@@ -117,8 +113,7 @@ void applyToKwin() {
         reconfigureEffect(effect);
     }
 }
-
-} // namespace
+}
 
 ScreenEdges::ScreenEdges(QObject* parent)
     : QObject(parent)
@@ -332,5 +327,4 @@ void ScreenEdges::persist() const {
 void ScreenEdges::scheduleReconfigure() {
     m_reconfigureTimer->start();
 }
-
-} // namespace caelestia::services
+}

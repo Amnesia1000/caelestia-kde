@@ -21,5 +21,4 @@ void ChangeBatcher::flush() {
     m_dirty = false;
     emit dirtied();
 }
-
-} // namespace caelestia::settings
+}

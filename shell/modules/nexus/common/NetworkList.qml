@@ -14,7 +14,7 @@ ItemList {
     id: root
 
     required property NexusState nState
-    property int limit: 0 // 0 = show all
+    property int limit: 0
     property bool enableFilter
 
     signal networkSelected(ap: Nmcli.AccessPoint)

@@ -69,7 +69,6 @@ StyledRect {
         anchors.top: parent.top
         anchors.margins: Tokens.padding.medium * scaleOffset
         spacing: Tokens.spacing.small
-        // Fallback for pinned apps with no active windows
 
         StyledRect {
             implicitWidth: fallbackLayout.implicitWidth + Tokens.padding.small * scaleOffset * 2

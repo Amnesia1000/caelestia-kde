@@ -48,9 +48,6 @@ StyledRect {
         return root.popoutNames[id] ?? id;
     }
 
-    // Which icons are shown, and in what order, is the `bar.statusIcons` list, so
-    // that the settings page can add, remove and reorder them. Everything below is
-    // the other half of the question: whether an icon has anything to say now.
     function entryActive(id: string): bool {
         switch (id) {
         case "lockStatus":
@@ -429,10 +426,10 @@ StyledRect {
             rowSpacing: Tokens.spacing.medium / 2
 
             MaterialIcon {
-                visible: !Bluetooth.defaultAdapter?.enabled || !Bluetooth.devices.values.some(d => d.state !== BluetoothDeviceState.Disconnected) // qmllint disable unresolved-type
+                visible: !Bluetooth.defaultAdapter?.enabled || !Bluetooth.devices.values.some(d => d.state !== BluetoothDeviceState.Disconnected)
                 animate: true
                 text: {
-                    if (!Bluetooth.defaultAdapter?.enabled) // qmllint disable unresolved-type
+                    if (!Bluetooth.defaultAdapter?.enabled)
                         return "bluetooth_disabled";
                     return "bluetooth";
                 }
@@ -441,7 +438,7 @@ StyledRect {
 
             Repeater {
                 model: ScriptModel {
-                    values: Bluetooth.devices.values.filter(d => d.state !== BluetoothDeviceState.Disconnected) // qmllint disable unresolved-type
+                    values: Bluetooth.devices.values.filter(d => d.state !== BluetoothDeviceState.Disconnected)
                 }
 
                 MaterialIcon {
@@ -455,7 +452,7 @@ StyledRect {
                     fill: 1
 
                     SequentialAnimation on opacity {
-                        running: device.modelData?.state !== BluetoothDeviceState.Connected // qmllint disable unresolved-type
+                        running: device.modelData?.state !== BluetoothDeviceState.Connected
                         alwaysRunToEnd: true
                         loops: Animation.Infinite
 
@@ -513,7 +510,7 @@ StyledRect {
 
             Repeater {
                 model: ScriptModel {
-                    values: UPower.devices.values.filter(d => !d.isLaptopBattery && d.type !== UPowerDeviceType.LinePower && d.isPresent && !peripheralColumn.excluded.some(e => e === d.model || e === d.nativePath)) // qmllint disable unresolved-type
+                    values: UPower.devices.values.filter(d => !d.isLaptopBattery && d.type !== UPowerDeviceType.LinePower && d.isPresent && !peripheralColumn.excluded.some(e => e === d.model || e === d.nativePath))
                 }
 
                 MaterialIcon {

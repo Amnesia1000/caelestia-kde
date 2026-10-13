@@ -17,7 +17,6 @@ Item {
     id: root
 
     required property ShellScreen screenData
-    // Wallpaper layer, sampled for the frosted cards of large items.
     property Item wallpaper: null
     readonly property point gridOrigin: Qt.point(gridItem.x, gridItem.y)
 
@@ -35,21 +34,17 @@ Item {
     readonly property bool gridReady: gridItem.areaWidth > 0 && gridItem.areaHeight > 0
     readonly property bool folderReady: folderModel.status === FolderListModel.Ready
 
-    // File name -> FileEntry for everything in ~/Desktop.
     property var files: ({})
 
-    // Selected item keys. While a group is open these are its members.
     property var selection: ({})
     property string anchorKey: ""
     property string focusKey: ""
     property bool keyboardActive: false
     property var cutUris: []
 
-    // Drag session. dragGroup is set when the items come out of an open group.
     property var dragKeys: []
     property string dragGroup: ""
     property string dragAnchor: ""
-    // Where the anchor was grabbed, relative to its top-left corner.
     property point dragHotSpot
     property var previewPositions: null
     property var dropCells: []
@@ -60,19 +55,13 @@ Item {
     property string openGroupId: ""
     property var tiles: ({})
 
-    // Renames that are in flight: old file name -> new file name, so the new
-    // file keeps the old one's cell or group slot.
     property var pendingRenames: ({})
-    // New file name -> cell, for files dropped or pasted at a spot.
     property var pendingPlacements: ({})
     property point lastPointer: Qt.point(0, 0)
 
-    // Set while an inline rename editor is open; the background window raises
-    // its layer-shell keyboard focus on this so the editor can type.
     property Item renamingDelegate: null
     readonly property bool renameActive: renamingDelegate !== null
     readonly property var displayPositions: previewPositions ?? DesktopLayout.positions
-    // Key -> { w, h } for everything bigger than one cell: large folders and widgets.
     readonly property var spans: {
         const out = {};
         for (const id in DesktopLayout.groups) {
@@ -84,7 +73,6 @@ Item {
             out[DesktopLayout.widgetKey(id)] = DesktopLayout.widgets[id].size;
         return out;
     }
-    // Sizes shown while a resize is being dragged.
     property var previewSpans: null
     readonly property var displaySpans: previewSpans ?? spans
     readonly property WidgetCatalog widgetCatalog: WidgetCatalog {}
@@ -93,8 +81,6 @@ Item {
     property point pressPoint
     property var fileOpQueue: []
     property string typeAhead: ""
-
-    // ---- Lookups ----------------------------------------------------------
 
     function isGroupKey(key: string): bool {
         return key.startsWith("g/");
@@ -148,7 +134,6 @@ Item {
         return entryOf(key)?.displayName ?? nameOf(key);
     }
 
-    // Entries a key stands for: the file itself, or every member of a group.
     function entriesFor(keys: var): var {
         const out = [];
         for (const key of keys) {
@@ -169,7 +154,6 @@ Item {
         return out;
     }
 
-    // Positions of whatever the keyboard and selection act on right now.
     function contextPositions(): var {
         if (openGroupId !== "")
             return groupPopup.memberPositions();
@@ -198,8 +182,6 @@ Item {
     function cellOccupant(col: int, row: int, exclude: var): string {
         return Engine.occupantAt(contextPositionsTopLevel(), col, row, exclude, spans);
     }
-
-    // ---- Syncing files, groups and positions ------------------------------
 
     function registerFile(entry: var): void {
         const next = Object.assign({}, files);
@@ -253,7 +235,6 @@ Item {
         if (!DesktopLayout.loaded || !gridReady)
             return;
 
-        // Follow renames and drop members whose files are gone.
         const renames = pendingRenames;
         let renamesChanged = false;
         const groups = {};
@@ -310,7 +291,6 @@ Item {
                 }
             }
         }
-        // Keep cells of files that are still loading, so they come back where they were.
         if (!folderReady)
             for (const key in old)
                 if (!(key in positions))
@@ -355,8 +335,6 @@ Item {
         if (!samePositions(next, old))
             DesktopLayout.setPositions(next);
 
-        // Mirror the top-level keys in the models, keeping existing delegates.
-        // Large folders and widgets get their own delegate type.
         mirror(entriesModel, desired.filter(k => !isBigKey(k)));
         mirror(bigModel, desired.filter(k => isBigKey(k)));
 
@@ -410,8 +388,6 @@ Item {
         DesktopLayout.setAutoArrange(on);
     }
 
-    // ---- Selection --------------------------------------------------------
-
     function isSelected(key: string): bool {
         return selection[key] === true;
     }
@@ -457,8 +433,6 @@ Item {
         return Engine.rangeBetween(contextPositions(), anchorKey || key, key, rows);
     }
 
-    // ---- Pointer handling for tiles ---------------------------------------
-
     function grabKeyboard(): void {
         root.forceActiveFocus();
         Kwin.setActiveOutputName(screenData.name);
@@ -488,8 +462,6 @@ Item {
             setSelection([key]);
             anchorKey = key;
         } else if (ctrl && !isSelected(key)) {
-            // Ctrl+press adds right away so a Ctrl+drag carries the item;
-            // Ctrl+click on a selected item removes it on release instead.
             toggleSelected(key);
             anchorKey = key;
             ctrlAdded = key;
@@ -552,8 +524,6 @@ Item {
             closeGroup();
     }
 
-    // ---- Groups -----------------------------------------------------------
-
     function openGroup(id: string): void {
         if (!DesktopLayout.groups[id])
             return;
@@ -597,8 +567,6 @@ Item {
         return true;
     }
 
-    // Merges the given top-level keys into one group placed at `cell`.
-    // An existing group among them (or `intoGroup`) absorbs the rest.
     function makeGroup(keys: var, cell: var, intoGroup: string): void {
         const groups = Object.assign({}, DesktopLayout.groups);
         let id = intoGroup;
@@ -617,7 +585,6 @@ Item {
                 names.push(nameOf(key));
             }
         }
-        // Items might come straight out of another group.
         for (const gid in groups) {
             if (gid === id)
                 continue;
@@ -686,7 +653,6 @@ Item {
         });
     }
 
-    // Takes members out of their group, placing them from `cell` onwards.
     function removeFromGroup(id: string, names: var, cell: var): void {
         const g = DesktopLayout.groups[id];
         if (!g)
@@ -741,9 +707,6 @@ Item {
         DesktopLayout.setGroups(groups);
     }
 
-    // ---- Large folders and widgets ----------------------------------------
-
-    // Spans with one key changed, for resize previews and commits.
     function spansWith(key: string, w: int, h: int): var {
         const out = Object.assign({}, spans);
         if (w === 1 && h === 1 && isGroupKey(key))
@@ -837,8 +800,6 @@ Item {
         Qt.callLater(syncEntries);
     }
 
-    // ---- Renaming ---------------------------------------------------------
-
     function startRename(key: string): void {
         const tile = tiles[key];
         if (!tile)
@@ -855,8 +816,6 @@ Item {
         const e = entryOf(key);
         if (!e)
             return;
-        // Launchers are renamed by their shown name, not the file name.
-        // Otherwise preselect the base name so typing keeps the extension.
         const dot = e.fileName.lastIndexOf(".");
         tile.startRename(e.isDesktopFile ? e.displayName : e.fileName, !e.isDesktopFile && !e.fileIsDir && dot > 0 ? dot : 0);
     }
@@ -884,7 +843,6 @@ Item {
             }
             return;
         }
-        // Stay inside the desktop folder: no separators, no relative walks.
         if (trimmed === e.fileName || trimmed === "." || trimmed === ".." || trimmed.includes("/"))
             return;
         const renames = Object.assign({}, pendingRenames);
@@ -892,8 +850,6 @@ Item {
         pendingRenames = renames;
         runFileOp(["kioclient", "move", e.url, "file://" + desktopDir + "/" + encodeURIComponent(trimmed)], qsTr("Rename failed"), null);
     }
-
-    // ---- File operations --------------------------------------------------
 
     function runFileOp(command: var, failTitle: string, done: var): void {
         fileOpQueue = fileOpQueue.concat([{ command, failTitle, done }]);
@@ -917,12 +873,10 @@ Item {
             runFileOp(["kioclient", "move", ...urls, "trash:/"], qsTr("File operation failed"), null);
     }
 
-    // action is "move", "copy" or "link"; dest is a local directory.
     function transfer(urls: var, dest: string, action: string, cell: var): void {
         const sources = urls.filter(u => {
             if (action !== "move")
                 return true;
-            // Moving something into the folder it is already in does nothing.
             const local = decodeURIComponent(u.replace(/^file:\/\//, ""));
             return local.substring(0, local.lastIndexOf("/")) !== dest;
         });
@@ -937,13 +891,11 @@ Item {
             pendingPlacements = placements;
         }
         if (action === "link") {
-            // kioclient has no link command; only local files can be linked.
             const local = sources.filter(u => u.startsWith("file://")).map(u => decodeURIComponent(u.substring(7)));
             if (local.length > 0)
                 runFileOp(["ln", "-s", "--", ...local, dest + "/"], qsTr("File operation failed"), null);
             return;
         }
-        // Interactive so that name clashes bring up KIO's usual rename dialog.
         runFileOp(["kioclient", "--interactive", action === "copy" ? "copy" : "move", ...sources, "file://" + dest + "/"], qsTr("File operation failed"), null);
     }
 
@@ -963,13 +915,9 @@ Item {
         pasteProc.running = true;
     }
 
-    // ---- Drag and drop ----------------------------------------------------
-
     function prepareDragImage(key: string): void {
         dragImageReady = false;
         dragImageKey = key;
-        // Large items are grabbed as they look; icons go through dragPreview
-        // so several files get a count badge.
         let source = tiles[key];
         if (!isBigKey(key)) {
             dragPreview.key = key;
@@ -993,7 +941,6 @@ Item {
         startDrag(keys, key, openGroupId, isBigKey(key) ? pressPoint : Qt.point(dragPreview.width / 2, Tokens.padding.small + iconSize / 2));
     }
 
-    // Drags one app straight out of a large folder, without opening it.
     function beginMemberDrag(groupId: string, name: string, item: Item, x: real, y: real): void {
         if (renameActive)
             return;
@@ -1010,8 +957,6 @@ Item {
         });
     }
 
-    // Drags files that are not desktop items, such as those in a folder view.
-    // Desktop drops treat them like files coming from another app.
     function beginFileDrag(urls: var, item: Item, x: real, y: real): void {
         if (renameActive || urls.length === 0)
             return;
@@ -1035,8 +980,6 @@ Item {
         dragGroup = fromGroup;
         dragAnchor = anchor;
         dragHotSpot = hotSpot;
-        // Widgets have nothing to hand to other apps; the private type keeps
-        // the drag alive for moving them around the desktop.
         const mime = { "application/x-caelestia-desktop-items": keys.join("\n") };
         if (urls.length > 0)
             mime["text/uri-list"] = urls.join("\r\n") + "\r\n";
@@ -1072,7 +1015,6 @@ Item {
         return drag.source === dragSource && dragKeys.length > 0;
     }
 
-    // Works out what dropping at (x, y) in root coordinates would do.
     function dropPlan(x: real, y: real, internal: bool): var {
         const gx = x - gridItem.x;
         const gy = y - gridItem.y;
@@ -1082,8 +1024,6 @@ Item {
         };
         const moving = internal && dragGroup === "" ? dragKeys : [];
         const target = cellOccupant(cell.col, cell.row, moving);
-        // Large items land where their top-left corner is closest to, not
-        // where the pointer is, so they stay under the dragged image.
         const place = moving.length > 0 && isBigKey(dragAnchor) ? {
             col: Math.max(0, Math.min(cols - 1, Math.round((gx - dragHotSpot.x) / cellWidth))),
             row: Math.max(0, Math.min(rows - 1, Math.round((gy - dragHotSpot.y) / cellHeight)))
@@ -1093,7 +1033,6 @@ Item {
             return plan;
         const draggingFiles = !internal || dragKeys.every(k => isGroupKey(k) ? dragGroup === "" : entryOf(k)?.fileIsDir === false);
 
-        // Large items take drops anywhere on them.
         if (isBigKey(target)) {
             if (isGroupKey(target)) {
                 if (internal && dragGroup === nameOf(target))
@@ -1141,14 +1080,12 @@ Item {
         let moving = dragKeys;
         let anchor = dragAnchor;
         if (dragGroup !== "") {
-            // Members coming out of a group start off where the pointer is.
             moving = dragKeys.filter(k => !isGroupKey(k));
             anchor = moving.indexOf(dragAnchor) !== -1 ? dragAnchor : moving[0];
             moving.forEach((k, i) => base[k] = { col: plan.cell.col, row: plan.cell.row + i });
         }
         const next = DesktopLayout.autoArrange ? Engine.planInsert(base, moving, plan.place, rows, spans) : Engine.planMove(base, moving, anchor, plan.place, cols, rows, spans);
         dropCells = moving.map(k => Object.assign({}, next[k], spanOf(k)));
-        // The dragged items stay faded where they were; only the others move aside.
         const shown = Object.assign({}, DesktopLayout.positions, next);
         for (const k of moving)
             if (DesktopLayout.positions[k])
@@ -1202,8 +1139,6 @@ Item {
             DesktopLayout.setSortKey("");
     }
 
-    // ---- Keyboard ---------------------------------------------------------
-
     function focusOn(key: string, extend: bool): void {
         if (key === "")
             return;
@@ -1247,7 +1182,6 @@ Item {
             if (keys.length === 1)
                 startRename(keys[0]);
         } else if (event.key === Qt.Key_Delete) {
-            // Widgets go too, except notes that hold text.
             const keys = selectedKeys();
             trashKeys(keys);
             removeWidgets(keys.filter(k => isWidgetKey(k) && !(widgetOf(k)?.type === "note" && (widgetOf(k)?.config.text ?? "").length > 0)));
@@ -1281,7 +1215,6 @@ Item {
                 tileContextMenu(key, tiles[key].width / 2, tiles[key].height / 2);
             }
         } else if (!ctrl && event.text.length === 1 && event.text.trim().length === 1) {
-            // Type to jump to the next icon starting with what was typed.
             typeAhead += event.text.toLowerCase();
             typeAheadTimer.restart();
             const start = Math.max(0, order.indexOf(current));
@@ -1444,7 +1377,6 @@ wl-paste --no-newline --type text/uri-list`]
         }
     }
 
-    // Empty desktop: click to clear the selection, drag to select a range.
     Item {
         id: bandArea
 
@@ -1552,8 +1484,6 @@ wl-paste --no-newline --type text/uri-list`]
         readonly property int marginRight: Config.bar.position === "right" ? baseMargin + barZone : baseMargin
         readonly property int marginTop: Config.bar.position === "top" ? baseMargin + barZone : baseMargin
         readonly property int marginBottom: Config.bar.position === "bottom" ? baseMargin + barZone : baseMargin
-        // Space the cells may use. Only whole cells fit, so the grid is centred in it
-        // and the leftover is split between both sides instead of all going right and down.
         readonly property real areaWidth: root.width - marginLeft - marginRight
         readonly property real areaHeight: root.height - marginTop - marginBottom
 
@@ -1562,7 +1492,6 @@ wl-paste --no-newline --type text/uri-list`]
         width: root.cols * root.cellWidth
         height: root.rows * root.cellHeight
 
-        // Where the dragged items would land.
         Repeater {
             model: root.dropCells
 
@@ -1710,7 +1639,6 @@ wl-paste --no-newline --type text/uri-list`]
         z: 100
     }
 
-    // Carries the system drag; the image is grabbed from dragPreview.
     Item {
         id: dragSource
 

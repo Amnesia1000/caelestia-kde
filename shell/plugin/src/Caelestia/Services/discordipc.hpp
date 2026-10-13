@@ -51,5 +51,4 @@ private:
     QByteArray m_buffer;
     QStringList m_pendingPaths;
 };
-
-} // namespace caelestia
+}

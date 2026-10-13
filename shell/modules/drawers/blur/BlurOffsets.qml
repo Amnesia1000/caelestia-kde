@@ -6,7 +6,7 @@ Item {
     id: root
 
     required property Item target
-    property string vAnchor: "bottom" 
+    property string vAnchor: "bottom"
     property string hAnchor: "right"
     property real offsetScale: 0
     required property Item contentItem
@@ -20,8 +20,6 @@ Item {
 
         category: "Blur"
     }
-    // The centered deformMatrix from the BlobRect (identity by default)
-    // m11 = horizontal scale, m22 = vertical scale, applied around the center of the target
     property matrix4x4 deformMatrix
     property real animScale: 1 - offsetScale
     property real sTop: (vAnchor === "top" ? blurOffsetBottom : blurOffsetTop) * animScale

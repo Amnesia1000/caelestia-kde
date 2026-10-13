@@ -19,5 +19,4 @@ class SidebarConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, pinned, false)
     CONFIG_PROPERTY(int, width, 0)
 };
-
-} // namespace caelestia::config
+}

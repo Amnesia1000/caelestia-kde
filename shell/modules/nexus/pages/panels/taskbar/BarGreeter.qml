@@ -68,7 +68,6 @@ PageBase {
             first: true
             text: qsTr("Enable component")
             checked: BarWidgets.isEnabled(Config.bar, "greeter")
-            // Custom reset: enabled state lives in bar.entries, default is true
             reset: ({
                 customGet: () => BarWidgets.isEnabled(GlobalConfig.bar, "greeter"),
                 customDef: true,

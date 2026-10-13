@@ -1,17 +1,4 @@
 #!/usr/bin/env python3
-"""Checks QML files for Qt coding convention violations.
-
-https://doc.qt.io/qt-6/qml-codingconventions.html
-
-Required ordering within each QML object (with blank line between sections):
-  1. id
-  2. property declarations
-  3. signal declarations
-  4. JavaScript functions
-  5. object properties (bindings)
-  6. child objects
-  7. component definitions
-"""
 
 import re
 import sys
@@ -62,7 +49,6 @@ IMPORT_RE = re.compile(r"^import\s+(\S+)")
 
 
 def import_group(module: str) -> tuple[int, int] | None:
-    """Return (group, depth) for a module import, or None to skip."""
     if module.startswith('"'):
         return None
     depth = module.count(".") + 1
@@ -90,10 +76,6 @@ def import_group(module: str) -> tuple[int, int] | None:
 
 
 def parse_imports(lines: list[str]) -> tuple[int | None, int | None, list[str], list[tuple[str, int, int, str]]]:
-    """Parse the import block, returning (first_idx, last_idx, relative_imports, module_imports).
-
-    module_imports entries are (line_text, group, depth, module_name).
-    """
     first_import = None
     last_import = None
     relative_imports: list[str] = []
@@ -134,7 +116,6 @@ class Violation:
 
 
 def check_imports(filepath: Path, lines: list[str], rel: str) -> list[Violation]:
-    """Check that module imports are in the required order."""
     violations = []
     _, _, _, module_imports = parse_imports(lines)
     imports = [(i, *entry) for i, entry in enumerate(module_imports)]
@@ -143,7 +124,6 @@ def check_imports(filepath: Path, lines: list[str], rel: str) -> list[Violation]
         _, prev_line, prev_group, prev_depth, prev_mod = imports[j - 1]
         _, curr_line, curr_group, curr_depth, curr_mod = imports[j]
 
-        # Find actual line number for the current import
         lineno = 0
         count = 0
         for li, line in enumerate(lines):
@@ -178,7 +158,6 @@ def check_imports(filepath: Path, lines: list[str], rel: str) -> list[Violation]
 
 
 def fix_imports(lines: list[str]) -> list[str]:
-    """Sort imports and return the modified lines."""
     first, last, relative, module = parse_imports(lines)
     if first is None:
         return lines
@@ -189,7 +168,6 @@ def fix_imports(lines: list[str]) -> list[str]:
 
 
 def check_file_structure(lines: list[str], rel: str) -> list[Violation]:
-    """Check file-level structure: pragmas, then imports, then content."""
     violations = []
     pragma_indices: list[int] = []
     import_indices: list[int] = []
@@ -214,7 +192,6 @@ def check_file_structure(lines: list[str], rel: str) -> list[Violation]:
                 Violation(rel, pragma_indices[-1] + 1, "file-structure", "pragmas should appear before imports")
             )
 
-    # Separator between pragmas and imports
     if pragma_indices and import_indices:
         gap = import_indices[0] - pragma_indices[-1] - 1
         if gap == 0:
@@ -233,7 +210,6 @@ def check_file_structure(lines: list[str], rel: str) -> list[Violation]:
                 )
             )
 
-    # No blank lines within imports
     for j in range(1, len(import_indices)):
         if import_indices[j] != import_indices[j - 1] + 1:
             for gap_line in range(import_indices[j - 1] + 1, import_indices[j]):
@@ -242,7 +218,6 @@ def check_file_structure(lines: list[str], rel: str) -> list[Violation]:
                         Violation(rel, gap_line + 1, "file-structure", "no blank lines expected within imports")
                     )
 
-    # Separator between imports/pragmas and content
     last_header = import_indices[-1] if import_indices else (pragma_indices[-1] if pragma_indices else None)
     if last_header is not None and content_start is not None:
         gap = content_start - last_header - 1
@@ -267,7 +242,6 @@ def check_file_structure(lines: list[str], rel: str) -> list[Violation]:
 
 
 def fix_file_structure(lines: list[str]) -> list[str]:
-    """Ensure correct file structure: pragmas, blank, imports (no gaps), blank, content."""
     pragmas: list[str] = []
     imports: list[str] = []
     content_start: int | None = None
@@ -287,7 +261,6 @@ def fix_file_structure(lines: list[str]) -> list[str]:
     if content_start is None:
         content_start = len(lines)
 
-    # Skip any blank lines at the start of content
     while content_start < len(lines) and not lines[content_start].strip():
         content_start += 1
 
@@ -306,7 +279,6 @@ def fix_file_structure(lines: list[str]) -> list[str]:
 
 
 def fix_section_separators(lines: list[str]) -> list[str]:
-    """Insert blank lines between different sections and return modified lines."""
     insertions: list[int] = []
     scopes: dict[str, ScopeTracker] = {}
     in_block_comment = False
@@ -387,11 +359,7 @@ def fix_section_separators(lines: list[str]) -> list[str]:
 
 
 def fix_file(filepath: Path) -> bool:
-    """Fix auto-fixable violations. Returns True if file was modified."""
     try:
-        # Explicit UTF-8: locale-encoding reads (cp1252 on Windows) raise on
-        # emoji/non-Latin1 files and silently skip them, which makes --fix and
-        # baseline generation platform-dependent.
         text = filepath.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return False
@@ -409,7 +377,6 @@ def fix_file(filepath: Path) -> bool:
     return False
 
 
-# Regexes
 PROPERTY_DECL_RE = re.compile(r"^(?:required\s+|readonly\s+|default\s+)*property\s")
 SIGNAL_RE = re.compile(r"^signal\s")
 FUNCTION_RE = re.compile(r"^function\s")
@@ -421,23 +388,18 @@ BLOCK_COMMENT_START = re.compile(r"/\*")
 BLOCK_COMMENT_END = re.compile(r"\*/")
 BINDING_RE = re.compile(r"^[a-z][a-zA-Z0-9_.]*\s*:")
 SIGNAL_HANDLER_RE = re.compile(r"^on[A-Z][a-zA-Z]*\s*:")
-# Child object: starts with uppercase or is a known child-like pattern
 CHILD_OBJECT_RE = re.compile(r"^[A-Z][a-zA-Z0-9_.]*\s*\{")
-# Inline component: Component { ... }
 INLINE_COMPONENT_RE = re.compile(r"^Component\s*\{")
-# Behavior on <property> {, NumberAnimation on <property> {, etc.
 BEHAVIOR_ON_RE = re.compile(r"^[A-Z]\w+\s+on\s+\w[\w.]*\s*\{")
-# Attached signal handler: Component.onCompleted:, Drag.onDragStarted:, etc.
 ATTACHED_HANDLER_RE = re.compile(r"^[A-Z]\w+\.on[A-Z]\w*\s*:")
 
 
 class ScopeTracker:
-    """Tracks the current section and last-seen state for one indent level."""
 
     def __init__(self):
         self.last_section: Section | None = None
         self.last_section_line: int = 0
-        self.had_blank_before_current: bool = True  # no separator needed at start
+        self.had_blank_before_current: bool = True
 
 
 def get_indent(line: str) -> str:
@@ -445,7 +407,6 @@ def get_indent(line: str) -> str:
 
 
 def classify_line(stripped: str) -> Section | None:
-    """Classify a stripped QML line into a section category."""
     if ID_RE.match(stripped):
         return Section.ID
     if PROPERTY_DECL_RE.match(stripped):
@@ -455,7 +416,7 @@ def classify_line(stripped: str) -> Section | None:
     if FUNCTION_RE.match(stripped):
         return Section.FUNCTION
     if ENUM_RE.match(stripped):
-        return Section.PROPERTY  # enums go with declarations
+        return Section.PROPERTY
     if COMPONENT_DEF_RE.match(stripped):
         return Section.COMPONENT_DEF
     if BEHAVIOR_ON_RE.match(stripped):
@@ -483,17 +444,16 @@ def check_file(filepath: Path) -> list[Violation]:
     violations.extend(check_file_structure(lines, rel))
     violations.extend(check_imports(filepath, lines, rel))
 
-    scopes: dict[str, ScopeTracker] = {}  # indent -> tracker
+    scopes: dict[str, ScopeTracker] = {}
     in_block_comment = False
-    func_skip_depth = 0  # brace depth for skipping function bodies only
-    prev_blank: dict[str, bool] = {}  # indent -> was previous relevant line a blank?
+    func_skip_depth = 0
+    prev_blank: dict[str, bool] = {}
 
     for i, line in enumerate(lines):
         lineno = i + 1
         stripped = line.strip()
         indent = get_indent(line)
 
-        # Handle block comments
         if in_block_comment:
             if BLOCK_COMMENT_END.search(stripped):
                 in_block_comment = False
@@ -502,9 +462,7 @@ def check_file(filepath: Path) -> list[Violation]:
             in_block_comment = True
             continue
 
-        # Track blank lines per indent
         if not stripped:
-            # Check: blank line right after opening brace of a QML object
             if i > 0 and func_skip_depth == 0 and not in_block_comment and lines[i - 1].strip().endswith("{"):
                 violations.append(
                     Violation(
@@ -518,21 +476,16 @@ def check_file(filepath: Path) -> list[Violation]:
                 prev_blank[key] = True
             continue
 
-        # Skip line comments
         if COMMENT_LINE_RE.match(stripped):
             continue
 
-        # Skip inside function bodies (JS code, not QML structure)
         if func_skip_depth > 0:
             func_skip_depth += stripped.count("{") - stripped.count("}")
             if func_skip_depth <= 0:
                 func_skip_depth = 0
             continue
 
-        # Closing brace: pop all scopes deeper than this indent
-        # (the scope at this indent belongs to the parent object and must persist)
         if stripped == "}":
-            # Check: blank line right before closing brace
             if i > 0 and not lines[i - 1].strip():
                 violations.append(
                     Violation(
@@ -552,15 +505,13 @@ def check_file(filepath: Path) -> list[Violation]:
         if section is None:
             continue
 
-        # Get or create scope tracker for this indent
         if indent not in scopes:
             scopes[indent] = ScopeTracker()
-            prev_blank[indent] = True  # treat start of object as having separator
+            prev_blank[indent] = True
 
         tracker = scopes[indent]
         had_blank = prev_blank.get(indent, True)
 
-        # --- Check 1: Section ordering ---
         if tracker.last_section is not None and section < tracker.last_section:
             violations.append(
                 Violation(
@@ -573,7 +524,6 @@ def check_file(filepath: Path) -> list[Violation]:
                 )
             )
 
-        # --- Check 2: Missing blank line between different sections ---
         if tracker.last_section is not None and section != tracker.last_section and not had_blank:
             violations.append(
                 Violation(
@@ -584,29 +534,22 @@ def check_file(filepath: Path) -> list[Violation]:
                 )
             )
 
-        # Update tracker
         if tracker.last_section is None or section >= tracker.last_section:
             tracker.last_section = section
             tracker.last_section_line = lineno
 
         prev_blank[indent] = False
 
-        # Skip function bodies (they contain JS, not QML structure)
         brace_count = stripped.count("{") - stripped.count("}")
         if brace_count > 0 and section == Section.FUNCTION:
             func_skip_depth = brace_count
 
-        # Skip JS blocks in bindings (signal handlers, attached handlers,
-        # and expression blocks like `color: { ... }`)
         if brace_count > 0 and section == Section.BINDING:
             colon_idx = stripped.index(":")
             after_colon = stripped[colon_idx + 1 :].strip()
-            # If content after : doesn't start with an uppercase type name,
-            # it's a JS block (not an inline QML object like `contentItem: Rect {`)
             if not re.match(r"^[A-Z]", after_colon):
                 func_skip_depth = brace_count
 
-        # Child object/component opening resets deeper scopes
         if brace_count > 0 and section in (Section.CHILD, Section.COMPONENT_DEF):
             to_remove = [k for k in scopes if len(k) > len(indent)]
             for k in to_remove:

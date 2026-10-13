@@ -185,5 +185,4 @@ class LauncherConfig : public settings::ObjectNode {
 
         }))
 };
-
-} // namespace caelestia::config
+}

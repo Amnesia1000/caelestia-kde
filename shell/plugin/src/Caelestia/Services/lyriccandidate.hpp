@@ -59,5 +59,4 @@ private:
     QString m_album;
     qreal m_duration = 0.0;
 };
-
-} // namespace caelestia::services
+}

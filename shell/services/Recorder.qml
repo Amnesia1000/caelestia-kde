@@ -45,7 +45,6 @@ Singleton {
         Launch.exec(["spectacle", "-R", "r"]);
     }
 
-    // Forces a fresh probe of gpu-screen-recorder; `running` updates on exit.
     function probeRecording(): void {
         if (!checkProc.running) checkProc.running = true;
     }
@@ -66,7 +65,7 @@ Singleton {
         id: checkProc
 
         command: ["sh", "-c", "pidof gpu-screen-recorder >/dev/null && f=\"$(cat $HOME/.local/state/caelestia/record/current_recording_path 2>/dev/null)\" && [ -n \"$f\" ] && test -f \"$f\""]
-        onExited: code => { // qmllint disable signal-handler-parameters
+        onExited: code => {
             let isRunning = (code === 0);
 
             if (isRunning && !root._wasRunning) {

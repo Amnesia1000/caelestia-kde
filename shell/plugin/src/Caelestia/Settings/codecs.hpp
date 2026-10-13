@@ -83,7 +83,6 @@ private:
     const ValueCodec* m_elementCodec;
 };
 
-// Decodes any one of several types, for options that accept more than one shape
 class UnionCodec : public ValueCodec {
 public:
     explicit UnionCodec(const QList<const ValueCodec*>& alternatives);
@@ -96,5 +95,4 @@ private:
     const QList<ExpectedType> m_expectedTypes;
     QHash<int, const ValueCodec*> m_byType;
 };
-
-} // namespace caelestia::settings
+}

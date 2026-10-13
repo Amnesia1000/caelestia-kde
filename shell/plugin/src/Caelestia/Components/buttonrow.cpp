@@ -127,5 +127,4 @@ void ButtonRow::relayout() {
 qreal ButtonRow::getMorphExpansion(const QQuickItem* item) {
     return item->property("shapeMorphExpansion").toReal();
 }
-
-} // namespace caelestia::components
+}

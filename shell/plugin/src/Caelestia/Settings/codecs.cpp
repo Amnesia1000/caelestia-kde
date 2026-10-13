@@ -30,7 +30,6 @@ template <typename Container> ValueCodec* makeListCodec(const QMetaType& type) {
     return elementCodec ? new ListCodec<Container>(type, elementCodec) : nullptr;
 }
 
-// Unions are keyed by their alternatives in order, since order decides which one wins
 QString unionKey(const QList<QMetaType>& types) {
     QStringList ids;
     ids.reserve(types.size());
@@ -56,8 +55,7 @@ const QHash<int, ListFactory>& listFactories() {
     };
     return factories;
 }
-
-} // namespace
+}
 
 ValueCodec::ValueCodec(const QMetaType& type, ExpectedType expected)
     : m_type(type)
@@ -352,5 +350,4 @@ DecodeResult UnionCodec::decode(const QJsonValue& value) const {
 
 template class ListCodec<QStringList>;
 template class ListCodec<QList<qreal>>;
-
-} // namespace caelestia::settings
+}

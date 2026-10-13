@@ -276,7 +276,6 @@ void KWinWorkspaceState::updateShowingDesktop(bool showing) {
 }
 
 void KWinWorkspaceState::updateActiveId() {
-    // Counting sort by desktop position.
     int maxPos = 0;
     for (const auto& d : std::as_const(m_desktops)) {
         if (d.position > maxPos)
@@ -333,9 +332,6 @@ QVariantList KWinWorkspaceState::workspaces() const {
 }
 
 QString KWinWorkspaceState::resolveDesktopUuid(const QString& id) const {
-    // Numeric ids select by position (Meta+N -> setDesktop(N)). Resolve those
-    // before names so a desktop custom-named "3" cannot shadow the actual
-    // third desktop.
     const bool numeric = id.toInt() > 0;
     for (const auto& d : m_desktops) {
         if (d.id == id) {
@@ -485,5 +481,4 @@ void KWinWorkspaceState::onRowsChanged(uint rows) {
         emit rowsChanged();
     }
 }
-
-} // namespace caelestia::services
+}

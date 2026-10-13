@@ -64,7 +64,6 @@ PageBase {
                 }));
     }
 
-
     title: qsTr("Quick toggles")
     isSubPage: true
 
@@ -145,7 +144,6 @@ PageBase {
 
             model: root.customOrder ? [] : root.connectivityToggles
 
-
             delegate: QuickToggleRow {
                 first: index === 0
                 last: index === connectivityRepeater.count - 1
@@ -162,7 +160,6 @@ PageBase {
 
             model: root.customOrder ? [] : root.toolToggles
 
-
             delegate: QuickToggleRow {
                 first: index === 0
                 last: index === toolRepeater.count - 1
@@ -178,7 +175,6 @@ PageBase {
             id: systemRepeater
 
             model: root.customOrder ? [] : root.systemToggles
-
 
             delegate: QuickToggleRow {
                 first: index === 0

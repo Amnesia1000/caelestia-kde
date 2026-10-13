@@ -541,9 +541,7 @@ Singleton {
         target: "hypr"
     }
 
-    // qmllint disable unresolved-type
     CustomShortcut {
-        // qmllint enable unresolved-type
         name: "refreshDevices"
         description: qsTr("Reload devices")
         onPressed: extras.refreshDevices()

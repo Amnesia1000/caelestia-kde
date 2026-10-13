@@ -9,7 +9,6 @@ namespace caelestia::images {
 namespace {
 
 IUtils* s_instance = nullptr;
-
 }
 
 IUtils* IUtils::getInstance() {
@@ -73,5 +72,4 @@ bool IUtils::isVideo(const QString& path) {
         QStringLiteral("avi"), QStringLiteral("mov"), QStringLiteral("wmv"), QStringLiteral("flv") };
     return videoExtensions.contains(suffix);
 }
-
-} // namespace caelestia::images
+}

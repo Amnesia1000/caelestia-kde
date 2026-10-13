@@ -1,5 +1,4 @@
 #!/bin/bash
-# Outputs JSON array: [{"id":"..","path":"..","source":"bundled"|"user"}, ...]
 BUNDLED="${1:-${XDG_CONFIG_HOME:-$HOME/.config}/quickshell/caelestia/modules/plugins}"
 USER="${2:-${XDG_CONFIG_HOME:-$HOME/.config}/caelestia/plugins}"
 

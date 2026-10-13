@@ -19,34 +19,34 @@ Singleton {
             map[m.connector] = m;
         return map;
     }
-    readonly property list<Monitor> monitors: variants.instances // qmllint disable incompatible-type
+    readonly property list<Monitor> monitors: variants.instances
     property bool appleDisplayPresent: false
 
     function getMonitorForScreen(screen: ShellScreen): var {
-        return monitors.find(m => m.modelData === screen); // qmllint disable missing-property
+        return monitors.find(m => m.modelData === screen);
     }
 
     function getMonitor(query: string): var {
         if (query === "active") {
-            return monitors.find(m => Kwin.monitorFor(m.modelData)?.focused); // qmllint disable missing-property
+            return monitors.find(m => Kwin.monitorFor(m.modelData)?.focused);
         }
 
         if (query.startsWith("model:")) {
             const model = query.slice(6);
-            return monitors.find(m => m.modelData.model === model); // qmllint disable missing-property
+            return monitors.find(m => m.modelData.model === model);
         }
 
         if (query.startsWith("serial:")) {
             const serial = query.slice(7);
-            return monitors.find(m => m.modelData.serialNumber === serial); // qmllint disable missing-property
+            return monitors.find(m => m.modelData.serialNumber === serial);
         }
 
         if (query.startsWith("id:")) {
             const id = parseInt(query.slice(3), 10);
-            return monitors.find(m => Kwin.monitorFor(m.modelData)?.id === id); // qmllint disable missing-property
+            return monitors.find(m => Kwin.monitorFor(m.modelData)?.id === id);
         }
 
-        return monitors.find(m => m.modelData.name === query); // qmllint disable missing-property
+        return monitors.find(m => m.modelData.name === query);
     }
 
     function increaseBrightness(): void {
@@ -91,7 +91,6 @@ Singleton {
         }
     }
 
-    // Native Wayland listener
     Connections {
         target: BrightnessWatcher
 
@@ -110,17 +109,13 @@ Singleton {
         }
     }
 
-    // qmllint disable unresolved-type
     CustomShortcut {
-        // qmllint enable unresolved-type
         name: "brightnessUp"
         description: qsTr("Increase brightness")
         onPressed: root.increaseBrightness()
     }
 
-    // qmllint disable unresolved-type
     CustomShortcut {
-        // qmllint enable unresolved-type
         name: "brightnessDown"
         description: qsTr("Decrease brightness")
         onPressed: root.decreaseBrightness()
@@ -147,7 +142,6 @@ Singleton {
             return setFor("active", value);
         }
 
-        // Handles brightness value like brightnessctl: 0.1, +0.1, 0.1-, 10%, +10%, 10%-
         function setFor(query: string, value: string): string {
             const monitor = root.getMonitor(query);
             if (!monitor)
@@ -241,7 +235,6 @@ Singleton {
                     const pending = monitor.queuedBrightness;
                     monitor.queuedBrightness = NaN;
                     monitor.brightness = pending;
-                    // writeBrightness() skips setBrightness(), so KWin's record is updated here too.
                     monitor.syncKwinRecord(Math.round(pending * 100) / 100);
                     monitor.writeBrightness(pending);
                     monitor.timer.restart();
@@ -265,7 +258,6 @@ Singleton {
                 BrightnessWatcher.setBrightness(modelData.name, value);
         }
 
-        // Steps are relative to what the screen renders, not to the value last commanded.
         function stepBrightness(delta: real): void {
             setBrightness(effectiveBrightness + delta);
         }
@@ -274,8 +266,6 @@ Singleton {
             value = Math.max(0, Math.min(1, value));
             const rounded = Math.round(value * 100);
 
-            // The KWin write below also asserts full dimming; mirror it now so the OSD does not
-            // keep showing the stale multiplier until KWin echoes the cleared value back.
             if (dimming < 1)
                 dimming = 1;
 

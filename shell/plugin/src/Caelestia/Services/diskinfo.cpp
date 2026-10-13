@@ -5,7 +5,6 @@ namespace caelestia::services {
 namespace {
 
 constexpr qreal kKib = 1024.0;
-
 }
 
 DiskInfo::DiskInfo(QString mount, quint64 usedBytes, quint64 totalBytes, bool hasRoot, QObject* parent)
@@ -63,5 +62,4 @@ void DiskInfo::update(quint64 usedBytes, quint64 totalBytes, bool hasRoot) {
         emit hasRootChanged();
     }
 }
-
-} // namespace caelestia::services
+}

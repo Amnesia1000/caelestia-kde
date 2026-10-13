@@ -15,5 +15,4 @@ class TabSwitchConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, allScreens, true)
     CONFIG_PROPERTY(QString, layout, QStringLiteral("caelestia"))
 };
-
-} // namespace caelestia::config
+}

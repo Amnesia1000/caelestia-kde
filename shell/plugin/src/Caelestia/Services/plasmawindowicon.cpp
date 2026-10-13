@@ -25,8 +25,6 @@ Q_LOGGING_CATEGORY(logPlasmaWindowIcon, "caelestia.services.plasmawindowicon");
 QImage largestPixmap(const QIcon& icon) {
     const auto sizes = icon.availableSizes();
 
-    //  Ref #759. Discard any icons that are not raw pixel data.
-    // (the pipe is for raw pixel data, not theme lookups.)
     if (sizes.isEmpty() && !icon.name().isEmpty()) {
         return {};
     }
@@ -43,8 +41,7 @@ QImage largestPixmap(const QIcon& icon) {
     }
     return icon.pixmap(best).toImage();
 }
-
-} // namespace
+}
 
 PlasmaWindowIcon::PlasmaWindowIcon(QObject* parent)
     : QObject(parent) {
@@ -75,9 +72,6 @@ void PlasmaWindowIcon::request(const QString& uuid) {
         return;
     }
 
-    // The compositor writes the icon into the far end of a pipe from its own
-    // thread, so this cannot be read inline — the write blocks until someone
-    // drains it.
     int fds[2];
     if (::pipe2(fds, O_CLOEXEC | O_NONBLOCK) != 0) {
         qCWarning(logPlasmaWindowIcon) << "could not create a pipe for" << key;
@@ -170,5 +164,4 @@ void PlasmaWindowIcon::deliver(const QString& uuid, const QByteArray& payload) {
     m_resolved.insert(uuid, path);
     emit resolved(uuid, path);
 }
-
-} // namespace caelestia::services
+}

@@ -70,5 +70,4 @@ private:
     void saveKeybinds();
     void updateLowerCache(GlobalShortcut* sc);
 };
-
-} // namespace caelestia::services
+}

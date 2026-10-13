@@ -339,5 +339,4 @@ void AppDb::updateApps() {
         emit appsChanged();
     }
 }
-
-} // namespace caelestia::models
+}

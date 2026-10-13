@@ -34,9 +34,6 @@ Item {
 
         try {
 const wins = Kwin.windowList || [];
-// KWin serialises fullscreen as a boolean (true/false), not
-// the integer levels Hyprland uses (0/1/2). Use === true so
-// the check works for both truthy booleans and int > 0.
 if (pauseOnAllDisplays) {
     for (let i = 0; i < wins.length; i++) {
         if (pauseOnFullscreen && wins[i].fullscreen === true)
@@ -56,7 +53,7 @@ if (pauseOnAllDisplays) {
         }
     }
 }
-        
+
         } catch (e) {
         }
 
@@ -124,8 +121,6 @@ if (pauseOnAllDisplays) {
         videoOutput: videoOutput
         loops: MediaPlayer.Infinite
         autoPlay: true
-        // audioOutput is wired dynamically by the Loader above so that the
-        // PipeWire backend is only initialised when the user has enabled sound.
 
         onErrorOccurred: function(error, errorString) {
             if (mediaPlayer.audioOutput !== null) {

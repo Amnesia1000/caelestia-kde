@@ -35,5 +35,4 @@ private:
     quint64 m_lastUsed = 0;
     quint64 m_lastTotal = 0;
 };
-
-} // namespace caelestia::services
+}

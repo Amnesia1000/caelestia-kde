@@ -50,5 +50,4 @@ private:
     bool m_isAdvertising = false;
     bool m_isTempAdvertising = false;
 };
-
-} // namespace caelestia::services
+}

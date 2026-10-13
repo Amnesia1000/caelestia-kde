@@ -3,11 +3,9 @@ import Quickshell
 import Quickshell.Io
 import "attachments.js" as AttachmentPaths
 
-// Files attached to the next Claude Code message.
 QtObject {
     id: root
 
-    // [{ path, isImage }]
     property var pending: []
     readonly property string cacheDir: (Quickshell.env("XDG_CACHE_HOME") || ((Quickshell.env("HOME") || "") + "/.cache")) + "/caelestia/ai-attachments"
 
@@ -22,7 +20,6 @@ QtObject {
         }
     }
 
-    // pasteImage() found no image on the clipboard: paste text as usual instead.
     signal pasteText
 
     function add(path: string): void {
@@ -36,14 +33,12 @@ QtObject {
         pending = pending.filter(a => a.path !== path);
     }
 
-    // The attached paths, leaving nothing attached.
     function take(): var {
         const paths = pending.map(a => a.path);
         pending = [];
         return paths;
     }
 
-    // Saves a clipboard image to the attachment cache and attaches it.
     function pasteImage(): void {
         if (pasteProc.running)
             return;

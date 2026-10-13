@@ -251,5 +251,4 @@ void OutputScreencastRequest::setObjectSerial(quint64 objectSerial) {
         Q_EMIT objectSerialChanged();
     }
 }
-
-} // namespace caelestia::services
+}

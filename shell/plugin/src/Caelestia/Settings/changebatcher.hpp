@@ -20,5 +20,4 @@ private:
 
     void flush();
 };
-
-} // namespace caelestia::settings
+}

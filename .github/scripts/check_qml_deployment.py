@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Validate the installed QML module tree produced by the shell build."""
 
 from __future__ import annotations
 

@@ -46,8 +46,6 @@ Item {
         return root.commitTypes[match[1].toLowerCase()] || null;
     }
 
-    // The type chip already shows "fix", so drop the prefix from the line the
-    // reader actually reads: "fix(recorder): scope the gif" reads as noise twice.
     function typeStrippedSubject(subject) {
         const stripped = (subject || "").replace(/^\w+(\([^)]*\))?!?:\s*/, "");
         return stripped === "" ? (subject || "") : stripped;
@@ -89,9 +87,6 @@ Item {
             readonly property bool isClickable: (isAvailable || isPast || isCurrent) && modelData.id !== "##current##"
             readonly property bool isMerge: !!modelData.isMerge
             readonly property bool isRelease: !!modelData.isRelease
-            // Conventional-commit prefix (feat/fix/…) parsed from the subject —
-            // null for merges, releases, or subjects that don't follow the
-            // convention, in which case the dot falls back to a neutral tone.
             readonly property var typeInfo: (!isRelease && !isMerge) ? root.commitType(modelData.subject) : null
             readonly property string displaySubject: {
                 if (isRelease || !modelData.subject)

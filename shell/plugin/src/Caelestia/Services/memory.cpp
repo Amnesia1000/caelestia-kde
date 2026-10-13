@@ -54,5 +54,4 @@ void Memory::tick() {
     m_used = static_cast<qreal>(usedKib);
     emit changed();
 }
-
-} // namespace caelestia::services
+}

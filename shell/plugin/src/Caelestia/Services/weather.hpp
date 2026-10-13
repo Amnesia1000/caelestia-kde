@@ -128,5 +128,4 @@ private:
     bool m_loading = false;
     bool m_isDay = true;
 };
-
-} // namespace caelestia::services
+}

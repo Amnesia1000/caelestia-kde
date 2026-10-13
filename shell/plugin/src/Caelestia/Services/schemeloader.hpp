@@ -36,8 +36,6 @@ signals:
 private:
     void loadSchemes();
     void loadCurrentScheme();
-    // Starts watching scheme.json if it exists and is not watched yet.
-    // Returns true if the watch was newly established.
     bool watchSchemeState();
 
     QFileSystemWatcher* m_watcher;
@@ -46,5 +44,4 @@ private:
     QString m_currentVariant;
     QString m_schemeStatePath;
 };
-
-} // namespace caelestia::services
+}

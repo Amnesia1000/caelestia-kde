@@ -24,5 +24,4 @@ public:
 private:
     QHash<QString, QHash<quintptr, QRect>> m_published;
 };
-
-} // namespace caelestia::services
+}

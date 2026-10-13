@@ -20,7 +20,6 @@ PageBase {
     title: qsTr("Window Tiling")
     isSubPage: true
 
-
     property list<MenuItem> layoutItems: [
         MenuItem { text: qsTr("BTree"); visible: KrohnkiteConfig.binaryTreeLayoutEnabled },
         MenuItem { text: qsTr("Monocle"); visible: KrohnkiteConfig.monocleLayoutEnabled },
@@ -56,7 +55,7 @@ PageBase {
             icon: "logout"
             type: TextButton.Filled
             onClicked: restartProcess.running = true
-            
+
             Process {
                 id: restartProcess
 
@@ -348,7 +347,7 @@ PageBase {
             checked: KrohnkiteConfig.tileLayoutEnabled
             onToggled: KrohnkiteConfig.tileLayoutEnabled = checked
         }
-        
+
         ToggleRow {
             text: qsTr("Cascade")
             subtext: qsTr("Windows overlap sequentially like a waterfall")

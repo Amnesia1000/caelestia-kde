@@ -6,7 +6,6 @@ import Caelestia.Config
 import qs.components
 import qs.services
 
-// Time and date, current weather and, when wide enough, the next hours.
 Item {
     id: root
 
@@ -30,8 +29,6 @@ Item {
             Layout.alignment: root.wide ? Qt.AlignVCenter : Qt.AlignTop
             spacing: 0
 
-            // Stacked above the weather, the time only gets the height the
-            // weather leaves, so it shrinks to fit both ways there.
             StyledText {
                 Layout.fillWidth: true
                 Layout.fillHeight: !root.wide

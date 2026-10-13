@@ -17,7 +17,6 @@ setup_sandbox() {
     CALLS="$SANDBOX/calls.log"
     mkdir -p "$STUB_DIR" "$SANDBOX/state/caelestia/wallpaper"
 
-    # The stub writes the scheme back, which is how the script knows it worked and stops there.
     cat > "$STUB_DIR/caelestia" <<STUB
 #!/usr/bin/env bash
 printf 'caelestia %s\n' "\$*" >> "$CALLS"

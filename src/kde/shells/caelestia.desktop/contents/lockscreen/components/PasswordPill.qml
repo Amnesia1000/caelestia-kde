@@ -1,4 +1,3 @@
-
 import QtQuick
 import ".."
 import QtQuick.Layouts
@@ -31,9 +30,6 @@ FocusScope {
     property alias text: passwordBox.text
     property real shakeX: 0
 
-    // Shows the typed password as text instead of the shape-per-character drawing the
-    // pill normally shows. Cleared whenever the field empties, so an attempt never
-    // starts with the previous attempt's password on screen.
     property bool showPassword: false
     readonly property bool canReveal: !root.graceLocked && !root.isAuthenticating
 
@@ -280,7 +276,6 @@ FocusScope {
                     text: PasswordSync.password
 
                     onTextChanged: {
-                        // Never leave a revealed password on screen once the field empties
                         if (text.length === 0) root.showPassword = false;
                         var targetLen = text.length;
                         while (charModel.count < targetLen) {

@@ -19,7 +19,6 @@ public:
     Q_INVOKABLE void request(const QString& uuid);
 
 signals:
-    /// @p path is a PNG in the same cache the X extractor writes to.
     void resolved(const QString& uuid, const QString& path);
 
     void failed(const QString& uuid);
@@ -30,5 +29,4 @@ private:
     QSet<QString> m_inFlight;
     QHash<QString, QString> m_resolved;
 };
-
-} // namespace caelestia::services
+}

@@ -22,7 +22,6 @@ namespace detail {
 
 template <typename T>
 using AnnotationReturn = std::conditional_t<std::is_trivially_copyable_v<T> && sizeof(T) <= sizeof(void*), T, const T&>;
-
 }
 
 #define ANNOTATION(Type, name)                                                                                         \
@@ -76,5 +75,4 @@ private:
     QList<Descriptor> m_descriptors;
     QHash<QString, qsizetype> m_keyToIndex;
 };
-
-} // namespace caelestia::settings
+}

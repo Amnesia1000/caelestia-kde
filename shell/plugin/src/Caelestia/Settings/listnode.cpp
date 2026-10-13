@@ -80,13 +80,11 @@ void syncNodeRecursive(Node* node, const QVariantMap& props) {
         syncNodeRecursive(child, val.toMap());
     }
 }
-
-} // namespace
+}
 
 ListNode::ListNode(ListNode* fallback, QObject* parent, bool globalOnly)
     : Node(fallback, parent, globalOnly) {
     if (fallback) {
-        // Disconnect generic fallback notify, lists use a custom one
         QObject::disconnect(fallback, &ListNode::optionChanged, this, nullptr);
 
         // Global lists must not follow the overlay they were read through
@@ -427,5 +425,4 @@ void ListNode::onFallbackListNotify(const NodeChanges& added, const NodeChanges&
         emit countChanged();
     emit elementsChanged(added, removed, moved);
 }
-
-} // namespace caelestia::settings
+}

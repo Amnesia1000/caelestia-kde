@@ -30,22 +30,16 @@ QtObject {
     property string summary
     property string body
     property string appIcon
-    // A Material Symbols name to fall back on when there is no icon theme entry to
-    // resolve through appIcon, as is the case for shell-raised notifications.
     property string materialIcon
     property string appName
     property string image
-    // Body with markup stripped, for single-line previews (eliding raw markup cuts tags in half)
     readonly property string bodyPlain: body.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").trim()
-    // Summary is always shown on a single line, so collapse any whitespace too
     readonly property string summaryPlain: summary.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#39;|&apos;/g, "'").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim()
     property var hints
     property real expireTimeout: GlobalConfig.notifs.defaultExpireTimeout
     property int urgency: NotificationUrgency.Normal
     property bool resident
     property bool hasActionIcons
-    // A notification the shell raised itself. Kept out of the on-disk history:
-    // its actions hold live callbacks that would not survive a restart.
     property bool shellRaised
     property list<var> actions
 
@@ -63,9 +57,7 @@ QtObject {
     readonly property LazyLoader dummyImageLoader: LazyLoader {
         active: false
 
-        // qmllint disable uncreatable-type
         PanelWindow {
-            // qmllint enable uncreatable-type
             implicitWidth: TokenConfig.sizes.notifs.image
             implicitHeight: TokenConfig.sizes.notifs.image
             color: "transparent"
@@ -154,9 +146,7 @@ QtObject {
         }
 
         function onActionsChanged(): void {
-            // qmllint disable unresolved-type
             notif.actions = notif.notification.actions.map(a => ({
-                        // qmllint enable unresolved-type
                         identifier: a.identifier,
                         text: a.text,
                         invoke: () => a.invoke()
@@ -195,7 +185,6 @@ QtObject {
     }
 
     function maybeTriggerDummyImageLoader(): void {
-        // Absolute image-path hints (e.g. Chromium) arrive as image://icon//abs/path, which renders as a missing icon
         if (image.startsWith("image://icon//"))
             image = "file://" + image.slice("image://icon/".length);
         if (image && !image.startsWith("image://icon/") && !image.startsWith(Paths.notifimagecache))
@@ -243,9 +232,7 @@ QtObject {
         urgency = notification.urgency;
         resident = notification.resident;
         hasActionIcons = notification.hasActionIcons;
-        // qmllint disable unresolved-type
         actions = notification.actions.map(a => ({
-                    // qmllint enable unresolved-type
                     identifier: a.identifier,
                     text: a.text,
                     invoke: () => a.invoke()

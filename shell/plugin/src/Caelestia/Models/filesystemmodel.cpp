@@ -459,5 +459,4 @@ bool FileSystemModel::compareEntries(const FileSystemEntry* a, const FileSystemE
     const auto cmp = a->relativePath().localeAwareCompare(b->relativePath());
     return m_sortReverse ? cmp > 0 : cmp < 0;
 }
-
-} // namespace caelestia::models
+}

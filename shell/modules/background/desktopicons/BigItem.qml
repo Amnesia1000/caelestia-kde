@@ -6,9 +6,6 @@ import Caelestia.Config
 import qs.components
 import qs.services
 
-// A desktop item bigger than one cell: a large folder or a widget. Draws the
-// card, takes selection, dragging, the context menu and resizing, and loads
-// the actual content on top.
 Item {
     id: root
 
@@ -31,9 +28,6 @@ Item {
     readonly property bool hovered: hover.hovered
     readonly property bool resizing: grip.pressed
     readonly property alias content: loader.item
-    // Every large item carries its name under the card, like an icon label.
-    // The label sits in the gap to the next row, so that gap is kept only a little
-    // wider than the one between columns; otherwise rows look much further apart.
     readonly property real sideGap: Tokens.padding.extraLarge / 2
     readonly property real topGap: Tokens.padding.small
     readonly property real labelHeight: Tokens.padding.extraLargeIncreased
@@ -55,7 +49,6 @@ Item {
             DesktopLayout.setWidgetConfig(itemId, patch);
     }
 
-    // Renaming only applies to large folders, through their label.
     function startRename(text: string, selectUntil: int): void {
         if (isGroup)
             title.startRename(text);
@@ -93,7 +86,6 @@ Item {
         id: hover
     }
 
-    // Frosted glass: the wallpaper behind the card, blurred and clipped to it.
     Loader {
         anchors.fill: card
         active: !root.frameless && !!root.controller.wallpaper && !GameMode.enabled
@@ -135,8 +127,6 @@ Item {
         border.width: root.selected || root.mergeTarget || root.focusVisible ? 2 : (root.frameless ? 0 : 1)
         border.color: root.selected || root.mergeTarget || root.focusVisible ? Colours.palette.m3primary : Qt.alpha(Colours.palette.m3onSurface, 0.12)
 
-        // Background of the card: selects, opens, drags and resizes the item.
-        // Controls inside the content take their own clicks first.
         MouseArea {
             id: bgArea
 
@@ -203,8 +193,6 @@ Item {
         }
     }
 
-    // Centred in the gap down to the next row's card (its top gap included), so
-    // names in different scripts line up.
     StyledRect {
         visible: !root.frameless
         anchors.horizontalCenter: card.horizontalCenter
@@ -231,7 +219,6 @@ Item {
         }
     }
 
-    // Drag the corner to resize in whole cells.
     MouseArea {
         id: grip
 

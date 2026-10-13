@@ -51,9 +51,6 @@ Item {
 
     property real shellStartTime: Date.now() / 1000
 
-    /// Rich presence is meant to say what you are doing now, not what you were
-    /// doing before you walked away. Uses the Wayland idle protocol rather than
-    /// a focus-change heuristic, so it also covers sitting and reading.
     readonly property int idleTimeout: GlobalConfig.services.arpcIdleTimeout
 
     property bool userIdle: false
@@ -74,7 +71,6 @@ Item {
         onIsIdleChanged: root.userIdle = isIdle
 
         // Turning the feature off while idle must not strand the presence in
-        // the cleared state.
         onEnabledChanged: if (!enabled)
             root.userIdle = false
     }
@@ -210,7 +206,7 @@ Item {
             if (appId !== root.currentSteamAppId || !root.currentSteamData) {
                 root.currentSteamAppId = appId;
                 root.fetchSteamData(appId);
-                return; 
+                return;
             }
             if (root.currentSteamData) {
                 root.sendActivity({
@@ -251,7 +247,7 @@ Item {
             let os = SysInfo.osPrettyName || SysInfo.osName || "Linux";
             let kernel = SysInfo.kernel ? SysInfo.kernel : "";
             let qsVersion = CUtils.version ? " (v" + CUtils.version + ")" : "";
-            
+
             let detailsStr = os;
             if (kernel) detailsStr += " • " + kernel;
 
@@ -285,7 +281,7 @@ Item {
             if (steamData && steamData[appId] && steamData[appId].success) {
                 gameName = steamData[appId].data.name;
             }
-                
+
             Requests.get("https://store.steampowered.com/appreviews/" + appId + "?json=1", function(revRes) {
                 let revData = null;
                 try { revData = JSON.parse(revRes); } catch(e) {}
@@ -356,7 +352,7 @@ Item {
         if (data.name && data.name !== "") activity.name = data.name;
         if (data.state && data.state !== "") activity.state = data.state;
         if (data.details && data.details !== "") activity.details = data.details;
-        
+
         const assets = {};
         if (data.large_image && data.large_image !== "") assets.large_image = data.large_image;
         if (data.large_text && data.large_text !== "") assets.large_text = data.large_text;
@@ -379,5 +375,4 @@ Item {
         if (!DiscordIpc.connected) return;
         DiscordIpc.clearActivity();
     }
-
 }

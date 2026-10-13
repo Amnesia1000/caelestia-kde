@@ -16,8 +16,7 @@ QString nameFor(const QString& key) {
 QString forScreen(const QString& global, const QString& layer, const QString& screen) {
     return screen.isEmpty() ? global : layer.arg(screen);
 }
-
-} // namespace
+}
 
 namespace detail {
 
@@ -52,8 +51,7 @@ void saveFailed(ConfigKind kind, const QString& error, const QString& screen) {
     const auto title = forScreen(u"Failed to save config"_s, u"Failed to save config for %1"_s, screen);
     Toaster::instance()->toast(title, error, u"settings_alert"_s, Toast::Type::Error);
 }
-
-} // namespace detail
+}
 
 ConfigRoot::ConfigRoot(const QString& path, ConfigRoot* fallback, QObject* parent)
     : RootNode(path, fallback, parent) {
@@ -124,5 +122,4 @@ SINGLETON_IMPL(ConfigSingleton, ConfigRoot, QStringLiteral("shell.json"), detail
 SINGLETON_IMPL(TokensSingleton, TokensRoot, QStringLiteral("shell-tokens.json"), detail::ConfigKind::Tokens)
 
 #undef SINGLETON_IMPL
-
-} // namespace caelestia::config
+}

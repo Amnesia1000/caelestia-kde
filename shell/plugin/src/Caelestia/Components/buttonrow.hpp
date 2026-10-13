@@ -33,5 +33,4 @@ private:
     bool m_dirty;
     qreal m_spacing;
 };
-
-} // namespace caelestia::components
+}

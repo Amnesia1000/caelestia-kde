@@ -47,5 +47,4 @@ private:
     void onLoadDebounced();
     void save();
 };
-
-} // namespace caelestia::settings
+}

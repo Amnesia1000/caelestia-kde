@@ -108,5 +108,4 @@ void NetworkUsage::tick() {
 
     emit changed();
 }
-
-} // namespace caelestia::services
+}
