@@ -262,13 +262,11 @@ Searcher {
                 return;
             }
             root.actualCurrent = wall;
-            previewColoursState.release();
             if (!Images.isVideo(wall))
                 syncPlasmaWallpaper(wall);
         }
         onLoadFailed: {
             root.actualCurrent = root.fallback;
-            previewColoursState.release();
             Quickshell.execDetached(["caelestia", "wallpaper", "-f", root.fallback, ...Colours.smartArg]);
             syncPlasmaWallpaper(root.fallback);
         }

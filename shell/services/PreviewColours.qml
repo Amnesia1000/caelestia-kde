@@ -7,8 +7,10 @@ import qs.services
 //   show(source)  preview an image; a call made while a preview runs reruns it for the latest source.
 //                 An empty source is a no-op, so a source that is not previewable yet leaves whatever
 //                 is on screen alone until the caller can name one (see onVideoThumb)
-//   hold()        keep the preview on screen until release(), while the chosen scheme loads
-//   release()     the chosen scheme has landed; the preview ends unless the picker wants it again
+//   hold()        cover the applied palette until the scheme that replaces it lands, so an apply
+//                 does not fall back to the old palette while the engine runs; it holds nothing
+//                 unless a preview palette is on screen
+//   release()     the applied scheme has landed; the preview ends unless the picker wants it again
 //   stop()        the preview is over; a result that arrives later is dropped
 Item {
     id: root
@@ -30,7 +32,9 @@ Item {
     }
 
     function hold(): void {
-        held = true;
+        // A hold with no preview palette under it keeps nothing up, and an apply the engine does
+        // not follow — a named scheme, a wallpaper with no thumbnail yet — would never end it.
+        held = Colours.showPreview;
     }
 
     function release(): void {
@@ -73,9 +77,19 @@ Item {
                     Qt.callLater(root.start);
                     return;
                 }
-                if (Colours.load(text, true))
-                    Colours.showPreview = true;
+                Colours.loadPreview(text);
             }
         }
+    }
+
+    Connections {
+        // The applied scheme landing is the event a hold covers, so it is what ends one. An apply
+        // the engine does not follow leaves the preview up until the next scheme lands — and that
+        // palette comes from the wallpaper the user chose, which beats the one it was replacing.
+        function onSchemeApplied(): void {
+            root.release();
+        }
+
+        target: Colours
     }
 }
