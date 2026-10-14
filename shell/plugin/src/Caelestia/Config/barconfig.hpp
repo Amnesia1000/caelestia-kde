@@ -318,6 +318,12 @@ class BarConfig : public settings::ObjectNode {
             vmap({ { u"id"_s, u"perfBattery"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"showDesktop"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"power"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"notes"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"performance"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"weather"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"shortcuts"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"screencapture"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"keepawake"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
         }))
     CONFIG_PROPERTY(QStringList, excludedScreens, QStringList())
 };
