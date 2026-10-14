@@ -336,7 +336,6 @@ PageBase {
 
             StepperRow {
                 reset: ({ node: GlobalConfig.appearance.anim.durations, setting: "scale" })
-                last: true
                 Layout.fillWidth: true
                 label: qsTr("Animation speed scale")
                 value: GlobalConfig.appearance.anim.durations.scale
@@ -344,6 +343,16 @@ PageBase {
                 to: 4
                 stepSize: 0.05
                 onMoved: v => GlobalConfig.appearance.anim.durations.scale = v
+            }
+
+            ToggleRow {
+                reset: ({ node: GlobalConfig.appearance.anim, setting: "enabled" })
+                last: true
+                Layout.fillWidth: true
+                text: qsTr("Animations")
+                subtext: qsTr("Toggle animations on/off")
+                checked: GlobalConfig.appearance.anim.enabled
+                onToggled: GlobalConfig.appearance.anim.enabled = checked
             }
         }
 

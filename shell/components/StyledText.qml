@@ -8,6 +8,9 @@ Text {
     id: root
 
     property bool animate: false
+    // A swap grows in from this scale. 0.25 for a glyph, whose swap the growth makes
+    // legible; a run of text stays at 1, where a shrink would just look like a wobble.
+    property real swapFromScale: 1
 
     renderType: Text.NativeRendering
     textFormat: Text.PlainText
@@ -27,13 +30,29 @@ Text {
                 property: "opacity"
                 to: 0
                 type: Anim.FastEffects
+                easing: Tokens.anim.standard
             }
             PropertyAction {}
-            Anim {
+            PropertyAction {
                 target: root
-                property: "opacity"
-                to: 1
-                type: Anim.DefaultEffects
+                property: "scale"
+                value: root.swapFromScale
+            }
+            ParallelAnimation {
+                Anim {
+                    target: root
+                    property: "opacity"
+                    to: 1
+                    type: Anim.DefaultEffects
+                    easing: Tokens.anim.standard
+                }
+                Anim {
+                    target: root
+                    property: "scale"
+                    to: 1
+                    type: Anim.DefaultEffects
+                    easing: Tokens.anim.standard
+                }
             }
         }
     }

@@ -35,6 +35,10 @@ Singleton {
     readonly property Transparency transparency: Transparency {}
     readonly property alias wallLuminance: analyser.luminance
 
+    /// True for a frame or so while a palette lands. CAnim lands every colour while it is
+    /// set; see holdColourTransitions.
+    property bool switchingTheme: false
+
     signal schemeApplied
 
     function updatePaletteManager(): void {
@@ -249,11 +253,20 @@ Singleton {
     /// Fold a scheme's `colours` into a palette. A file leaves the leading `#` off and names a
     /// terminal role plainly, so the role a palette holds is not the key the file uses.
     function applyColours(palette: M3Palette, colours: var): void {
+        holdColourTransitions();
         for (const [role, colour] of Object.entries(colours)) {
             const propName = role.startsWith("term") ? role : `m3${role}`;
             if (palette.hasOwnProperty(propName))
                 palette[propName] = colour.startsWith("#") ? colour : `#${colour}`;
         }
+    }
+
+    /// Hold every colour transition still while a palette replaces the old one, so the
+    /// shell switches rather than cross-fading a few hundred colours at once. CAnim reads
+    /// `switchingTheme`; the release is queued once the writes have landed.
+    function holdColourTransitions(): void {
+        root.switchingTheme = true;
+        Qt.callLater(() => (root.switchingTheme = false));
     }
 
     function previewNamed(name: string, flavour: string, colours: var, light: bool): void {
@@ -398,8 +411,6 @@ Singleton {
     onLightChanged: Qt.callLater(updatePaletteManager)
 
     onShowPreviewChanged: Qt.callLater(updatePaletteManager)
-
-
 
     Timer {
         id: cooldownTimer

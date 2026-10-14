@@ -320,7 +320,7 @@ Item {
                 from: 0
                 to: img.maxRadius
                 type: Anim.Emphasized
-                duration: 2500
+                duration: Tokens.anim.duration(2500)
                 onFinished: root.releaseHidden()
             }
     }

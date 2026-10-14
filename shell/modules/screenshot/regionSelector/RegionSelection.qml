@@ -8,6 +8,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Caelestia.Config
 import Caelestia.Services
+import qs.components
 import qs.services
 import qs.utils
 
@@ -479,7 +480,7 @@ root.snapshotWorkspaceUuid = Kwin.workspaces[snapIdx]
                 opacity: root.draggedAway ? 0 : (root.targetedRegionValid() && !targeted ? 0 : root.targetRegionOpacity)
                 borderColor: root.windowBorderColor
                 fillColor: targeted ? root.windowFillColor : Qt.alpha(root.windowFillColor, 0)
-                radius: 12
+                radius: Tokens.rounding.medium
             }
         }
 
@@ -505,10 +506,10 @@ root.snapshotWorkspaceUuid = Kwin.workspaces[snapIdx]
                 }
             }
             Behavior on opacity {
-                animation: NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+                animation: Anim { type: Anim.DefaultEffects }
             }
             Behavior on anchors.bottomMargin {
-                animation: NumberAnimation { duration: 300; easing.type: Easing.OutQuad }
+                animation: Anim { type: Anim.FastSpatial }
             }
 
             spacing: 6

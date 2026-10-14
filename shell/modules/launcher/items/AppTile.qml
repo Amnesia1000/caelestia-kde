@@ -31,6 +31,9 @@ Item {
     readonly property bool shrunk: root.hovered && root.nameMode === LauncherNameOverflow.Shrink
     readonly property bool labelTruncated: root.flipped ? (flipFace.item?.truncated ?? false) : name.truncated
     readonly property int maxNameLines: nameMetrics.height > 0 ? Math.max(1, Math.floor((root.implicitHeight - Tokens.spacing.small) / nameMetrics.height)) : 1
+    // A long name reads in full rather than as an ellipsis; hovering with the shrink
+    // overflow mode halves the icon and buys it a line more.
+    readonly property int labelLines: root.shrunk ? 3 : 2
     readonly property int baseIconSize: Math.round(root.implicitWidth * 0.42)
 
     implicitWidth: Tokens.sizes.launcher.browseTileWidth
@@ -148,7 +151,7 @@ Item {
                     NameLabel {
                         id: name
 
-                        maxLines: root.shrunk ? 2 : 1
+                        maxLines: root.labelLines
                     }
                 }
             }
@@ -237,7 +240,9 @@ Item {
         elide: Text.ElideRight
         wrapMode: Text.Wrap
         maximumLineCount: maxLines
-        width: root.implicitWidth - Tokens.padding.medium * 2
+        // The label is clipped by the tile anyway, so it gets the tile's full width: the
+        // 24px inset it used to keep left a quarter of a 96px tile showing an ellipsis.
+        width: Math.max(0, root.width - Tokens.padding.extraSmall * 2)
         horizontalAlignment: Text.AlignHCenter
     }
 }
