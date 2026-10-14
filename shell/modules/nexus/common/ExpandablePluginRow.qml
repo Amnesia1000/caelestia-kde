@@ -165,7 +165,7 @@ StyledRect {
 
                             SequentialAnimation on opacity {
                                 loops: Animation.Infinite
-                                running: root.isUpdateAvailable && !root.updateBusy
+                                running: root.isUpdateAvailable && !root.updateBusy && Tokens.anim.enabled
 
                                 Anim {
                                     type: Anim.SlowEffects

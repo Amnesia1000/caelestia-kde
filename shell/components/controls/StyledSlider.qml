@@ -129,7 +129,7 @@ Slider {
 
                 Anim on waveProgress {
                     running: true
-                    paused: !root.animateWave
+                    paused: !root.animateWave || !Tokens.anim.enabled
                     from: 0
                     to: 1
                     duration: root.waveDuration

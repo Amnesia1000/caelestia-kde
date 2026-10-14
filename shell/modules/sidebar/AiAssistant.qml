@@ -1888,8 +1888,8 @@ Item {
                      color: Colours.palette.m3primary
                      x: isHistoryTab ? historyTab.x : chatTab.x
 
-                     Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                     Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                     Behavior on x { Anim { type: Anim.FastEffects } }
+                     Behavior on width { Anim { type: Anim.FastEffects } }
                  }
 
                  Row {
@@ -1904,7 +1904,7 @@ Item {
                          width: !isHistoryTab ? 40 : chatContent.implicitWidth + Tokens.padding.medium * 2
 
 
-                         Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                         Behavior on width { Anim { type: Anim.FastEffects } }
 
                          StateLayer {
                              radius: Tokens.rounding.full
@@ -1940,7 +1940,7 @@ Item {
                          width: isHistoryTab ? 40 : historyContent.implicitWidth + Tokens.padding.medium * 2
 
 
-                         Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
+                         Behavior on width { Anim { type: Anim.FastEffects } }
 
                          StateLayer {
                              radius: Tokens.rounding.full
@@ -2240,7 +2240,7 @@ Item {
                  opacity: !isHistoryTab ? 1 : 0
                  visible: opacity > 0
 
-                 Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.InOutQuad } }
+                 Behavior on opacity { Anim { type: Anim.DefaultEffects } }
 
                  VerticalFadeFlickable {
                      id: listView
@@ -2396,7 +2396,7 @@ Item {
                                              width: mainText.implicitWidth
                                              height: mainText.implicitHeight
 
-                                             Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
+                                             Behavior on width { Anim { type: Anim.FastSpatial } }
 
                                              StyledText {
                                                  id: mainText
@@ -2427,19 +2427,19 @@ Item {
                                                      id: switchAnim
 
                                                      ParallelAnimation {
-                                                         NumberAnimation { target: textTrans; property: "y"; to: -8; duration: 150; easing.type: Easing.InCubic }
-                                                         NumberAnimation { target: mainText; property: "opacity"; to: 0.0; duration: 150; easing.type: Easing.InCubic }
+                                                         Anim { target: textTrans; property: "y"; to: -8; type: Anim.FastEffects }
+                                                         Anim { target: mainText; property: "opacity"; to: 0.0; type: Anim.FastEffects }
                                                      }
                                                      PropertyAction { target: mainText; property: "displayedText"; value: mainText.nextText }
                                                      PropertyAction { target: textTrans; property: "y"; value: 8 }
                                                      ParallelAnimation {
-                                                         NumberAnimation { target: textTrans; property: "y"; to: 0; duration: 400; easing.type: Easing.OutBack; easing.overshoot: 1.5 }
-                                                         NumberAnimation { target: mainText; property: "opacity"; to: 1.0; duration: 250; easing.type: Easing.OutQuad }
+                                                         Anim { target: textTrans; property: "y"; to: 0; type: Anim.FastSpatial }
+                                                         Anim { target: mainText; property: "opacity"; to: 1.0; type: Anim.DefaultEffects }
                                                      }
                                                  }
 
                                                  SequentialAnimation {
-                                                     running: isThinking && !switchAnim.running
+                                                     running: isThinking && !switchAnim.running && Tokens.anim.enabled
                                                      loops: Animation.Infinite
 
                                                      NumberAnimation { target: mainText; property: "opacity"; from: 1.0; to: 0.4; duration: 800; easing.type: Easing.InOutSine }
@@ -2470,7 +2470,7 @@ Item {
                                                      font: Tokens.font.icon.small
                                                      rotation: root.isThoughtExpanded ? 180 : 0
 
-                                                     Behavior on rotation { NumberAnimation { duration: 150; easing.type: Easing.OutQuad } }
+                                                     Behavior on rotation { Anim { type: Anim.FastEffects } }
                                                  }
                                              }
                                              MouseArea {
@@ -2501,7 +2501,7 @@ Item {
                                          height: root.isThoughtExpanded ? footerThoughtContent.implicitHeight : 0
                                          clip: true
 
-                                         Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+                                         Behavior on height { Anim { type: Anim.FastSpatial } }
 
                                          TextEdit {
                                              id: footerThoughtContent
@@ -2521,7 +2521,7 @@ Item {
                                              Behavior on opacity {
                                                  SequentialAnimation {
                                                      PauseAnimation { duration: root.isThoughtExpanded ? 100 : 0 }
-                                                     NumberAnimation { duration: 150; easing.type: Easing.InOutQuad }
+                                                     Anim { type: Anim.FastEffects }
                                                  }
                                              }
                                          }
@@ -2537,7 +2537,7 @@ Item {
                      opacity: chatStore.messages.count === 0 && !isTyping && !isThinking ? 1.0 : 0.0
                      visible: opacity > 0
 
-                     Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.InOutQuad } }
+                     Behavior on opacity { Anim { type: Anim.DefaultEffects } }
 
                      spacing: Tokens.spacing.large
 
@@ -2603,13 +2603,13 @@ Item {
                      opacity: (!listView.atYEnd && chatStore.messages.count > 0) ? 1.0 : 0.0
                      visible: opacity > 0
 
-                     Behavior on opacity { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
+                     Behavior on opacity { Anim { type: Anim.DefaultEffects } }
 
                      StyledRect {
                          id: scrollBtnBg
 
                          anchors.fill: parent
-                         radius: 18
+                         radius: Tokens.rounding.largeIncreased
                          color: Colours.tPalette.m3surfaceContainerHigh
                      }
 
@@ -2804,12 +2804,12 @@ Item {
                      z: 10
                      implicitHeight: Math.max(48, inputArea.implicitHeight + Tokens.padding.medium * 2)
                      color: Colours.tPalette.m3surfaceContainer
-                     radius: 24
+                     radius: Tokens.rounding.extraLarge
 
                      StyledClippingRect {
                          z: -1
                          anchors.fill: parent
-                         radius: 24
+                         radius: Tokens.rounding.extraLarge
 
                          ShaderEffectSource {
                              id: inputBlurSource
@@ -2832,7 +2832,7 @@ Item {
                          id: inputStateLayer
 
                          anchors.fill: parent
-                         radius: 24
+                         radius: Tokens.rounding.extraLarge
                          hoverEnabled: false
                          cursorShape: Qt.IBeamCursor
                          onClicked: inputArea.forceActiveFocus()

@@ -416,11 +416,10 @@ Item {
                                 }
                             }
                             Behavior on opacity {
-                                NumberAnimation {
+                                Anim {
                                     id: opacityAnim
 
-                                    duration: 250
-                                    easing.type: Easing.OutCubic
+                                    type: Anim.DefaultEffects
                                 }
                             }
                             Connections {
@@ -432,8 +431,16 @@ Item {
 
                                 target: opacityAnim
                             }
-                            Behavior on x { enabled: !dragHandler.active && root.opacity > 0.5; NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
-                            Behavior on y { enabled: !dragHandler.active && root.opacity > 0.5; NumberAnimation { duration: 250; easing.type: Easing.OutQuad } }
+                            Behavior on x {
+                                enabled: !dragHandler.active && root.opacity > 0.5
+
+                                Anim { type: Anim.FastSpatial }
+                            }
+                            Behavior on y {
+                                enabled: !dragHandler.active && root.opacity > 0.5
+
+                                Anim { type: Anim.FastSpatial }
+                            }
                             HoverHandler {
                                 id: hover
 
@@ -786,7 +793,7 @@ Item {
         anchors.leftMargin: Tokens.padding.large
         implicitWidth: prevIcon.implicitWidth + Tokens.padding.large * 2
         implicitHeight: prevIcon.implicitHeight + Tokens.padding.large * 2
-        radius: height / 2
+        radius: (implicitHeight || height) / 2 * Math.min(1, Tokens.rounding.scale)
         color: Colours.tPalette.m3surfaceContainerHigh
         opacity: hoverPrev.hovered ? 1 : 0.6
         visible: listView.currentIndex > 0
@@ -812,7 +819,7 @@ Item {
         anchors.rightMargin: Tokens.padding.large
         implicitWidth: nextIcon.implicitWidth + Tokens.padding.large * 2
         implicitHeight: nextIcon.implicitHeight + Tokens.padding.large * 2
-        radius: height / 2
+        radius: (implicitHeight || height) / 2 * Math.min(1, Tokens.rounding.scale)
         color: Colours.tPalette.m3surfaceContainerHigh
         opacity: hoverNext.hovered ? 1 : 0.6
         visible: listView.currentIndex < listView.count - 1

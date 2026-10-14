@@ -125,7 +125,7 @@ PageBase {
                     when: activeDragArea.drag.active
 
                     ParentChange { target: activeDelegate; parent: root.flickable.contentItem }
-                    PropertyChanges { target: activeDelegate; scale: 1.05 }
+                    PropertyChanges { target: activeDelegate; scale: NexusStyle.dragScale }
                 }
 
                 Behavior on scale { Anim { type: Anim.FastSpatial } }

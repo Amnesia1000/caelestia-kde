@@ -16,8 +16,8 @@ Item {
     property color activeColor: DinoGameBackend.isInverted ? Colours.palette.m3inverseOnSurface : Colours.palette.m3onSurface
     property color bgColor: DinoGameBackend.isInverted ? Colours.palette.m3inverseSurface : "transparent"
 
-    Behavior on activeColor { CAnim { duration: 500 } }
-    Behavior on bgColor { CAnim { duration: 500 } }
+    Behavior on activeColor { CAnim {} }
+    Behavior on bgColor { CAnim {} }
 
     property bool isPlaying: DinoGameBackend.isPlaying
 

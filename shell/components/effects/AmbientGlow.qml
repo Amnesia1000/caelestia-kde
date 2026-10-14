@@ -84,7 +84,7 @@ Item {
             target: root
             property: "bloomProgress"
             to: 0.0
-            duration: 350
+            duration: Tokens.anim.duration(350)
             easing.type: Easing.OutQuad
         }
 
@@ -98,7 +98,7 @@ Item {
             target: root
             property: "bloomProgress"
             to: 1.0
-            duration: 1350
+            duration: Tokens.anim.duration(1350)
             easing.type: Easing.OutCubic
         }
     }
@@ -110,7 +110,7 @@ Item {
         property: "bloomProgress"
         from: 0.0
         to: 1.0
-        duration: 1350
+        duration: Tokens.anim.duration(1350)
         easing.type: Easing.OutCubic
     }
 

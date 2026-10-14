@@ -316,7 +316,7 @@ Item {
         anchors.fill: parent
         anchors.margins: Tokens.padding.large
         opacity: root.detailPanelOpen ? 1 : 0
-        scale: root.detailPanelOpen ? 1 : 0.95
+        scale: root.detailPanelOpen ? 1 : 0.96
         clip: true
         enabled: root.detailPanelOpen
 
