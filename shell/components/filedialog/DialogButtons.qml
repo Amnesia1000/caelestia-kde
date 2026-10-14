@@ -4,13 +4,11 @@ import Caelestia.Config
 import qs.components
 import qs.components.controls
 import qs.services
-import qs.utils
 
 StyledRect {
     id: root
 
     required property var dialog
-    required property FolderContents folder
 
     implicitHeight: inner.implicitHeight + Tokens.padding.medium * 2
 
@@ -55,20 +53,7 @@ StyledRect {
             inactiveColour: Colours.tPalette.m3surfaceContainerHigh
             inactiveOnColour: Colours.palette.m3onSurface
             disabled: !root.dialog.selectionValid
-            onClicked: {
-                if (root.dialog.selectFolder) {
-                    if (root.folder.currentItem?.modelData?.isDir) {
-                        root.dialog.accepted(root.folder.currentItem.modelData.path);
-                    } else {
-                        const currentPath = root.dialog.cwd[0] === "Home"
-                            ? (Paths.home + (root.dialog.cwd.length > 1 ? `/${root.dialog.cwd.slice(1).join("/")}` : ""))
-                            : root.dialog.cwd.join("/");
-                        root.dialog.accepted(currentPath);
-                    }
-                } else if (root.folder.currentItem?.modelData) {
-                    root.dialog.accepted(root.folder.currentItem.modelData.path);
-                }
-            }
+            onClicked: root.dialog.acceptSelection()
         }
 
         TextButton {
