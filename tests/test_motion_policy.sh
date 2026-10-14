@@ -39,8 +39,8 @@ test_the_animation_switch_is_a_global_key_that_collapses_durations() {
         "a duration the tokens do not name still has to honour the switch"
 }
 
-# Every animated state change in the shell reaches its duration through one of the two
-# shared animations, which is what lets the switch in the settings page reach them.
+# Every animated state change in the shell is supposed to reach its duration through one
+# of these two, which is what makes the switch in the settings page mean anything.
 test_the_shared_animations_carry_token_durations() {
     assert_file_contains "$COMPONENTS/Anim.qml" 'Tokens.anim.durations' \
         "Anim must take its duration from the tokens"
@@ -48,9 +48,6 @@ test_the_shared_animations_carry_token_durations() {
         "CAnim must take its duration from the tokens"
 }
 
-# A duration multiplied by the speed scale never reaches the duration getters, and the speed
-# scale itself does not collapse, so the multiplication would walk straight past the switch.
-# Anything scaled by hand has to be scaled through Tokens.anim.duration().
 test_a_scaled_duration_still_honours_the_switch() {
     local offenders
     offenders="$(grep -rn 'duration:.*Tokens\.anim\.durations\.scale' "$SHELL_DIR" --include='*.qml' \
@@ -60,12 +57,6 @@ test_a_scaled_duration_still_honours_the_switch() {
     fi
 }
 
-# An animation with no natural end cannot land by being given a zero duration — a loop that
-# runs in no time is a loop that runs every frame — so the condition that runs or pauses it
-# has to name the switch. A file may derive that condition once (AnimatedLogo's `introSkipped`
-# covers a whole intro) as long as the derivation itself reads the switch. The nearest
-# enclosing run condition is the one that counts, so a guarded sibling cannot cover for an
-# unguarded animation in the same container.
 test_every_unbounded_animation_can_be_stopped() {
     local file offenders
     while IFS= read -r file; do
@@ -94,8 +85,6 @@ test_every_unbounded_animation_can_be_stopped() {
                         return 1;
                 return 0;
             }
-            # The object at line h controls its children through its own run condition, which
-            # is the lines at the object body indentation: nested objects sit deeper.
             function gate_state(h,   j, ind, found, ok) {
                 ind = -1;
                 for (j = h + 1; j <= n; j++) {
@@ -262,9 +251,8 @@ test_circles_go_through_the_rounding_tokens() {
     fi
 }
 
-# Month navigation is a scroll-driven state change, so it has to retarget mid-flight rather
-# than replay a fixed sequence — and the two calendars have to share that motion rather than
-# each keeping its own copy of it.
+# Month navigation is a scroll-driven state change, so it has to retarget mid-flight
+# rather than replay a fixed sequence.
 test_the_calendars_animate_months_reversibly() {
     local shared="$COMPONENTS/CalendarMonthSlide.qml"
     local file

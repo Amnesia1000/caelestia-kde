@@ -11,9 +11,8 @@ Item {
     id: root
 
     property real blurAmount: introSkipped ? 0.0 : 1.0
-    // The intro is a long one-shot sequence, so the animations switch skips it whole and the
-    // shell shows the finished logo instead. A parent that wants the logo on screen at once
-    // sets this itself, which is why it is writable rather than derived.
+    // The intro is a long one-shot sequence, so the animations switch skips it whole and
+    // the shell shows the finished logo instead.
     property bool introSkipped: !Tokens.anim.enabled
 
     property real star1Opacity: introSkipped ? 1.0 : 0.0
@@ -34,8 +33,6 @@ Item {
 
     signal animationCompleted
 
-    // The ambient loop drives each star's y and scale outright, so stopping it has to put
-    // both back: the stars rest un-scaled at their own origin.
     function restStars(): void {
         for (const star of [star1, star2, star3]) {
             star.y = 0;
@@ -383,8 +380,6 @@ Item {
     }
 
     SequentialAnimation {
-        // The floating stars are decoration, so the switch stops them at rest rather than
-        // leaving each star wherever its loop was cut off.
         running: root.onScreen && !root.introSkipped
         loops: Animation.Infinite
 

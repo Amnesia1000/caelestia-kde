@@ -106,7 +106,6 @@ MaterialShape {
     RotationAnimation on cRotation {
         id: rotateAnim
 
-        // Unbounded, so the switch stops it rather than collapsing its duration.
         running: root.running && Tokens.anim.enabled
         from: 0
         to: 360

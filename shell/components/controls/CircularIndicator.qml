@@ -86,8 +86,6 @@ BusyIndicator {
     }
 
     NumberAnimation {
-        // An unbounded spin has to stop, not collapse to a zero duration: a loop that runs
-        // in no time is a loop that runs every frame.
         running: root.animState !== CircularIndicator.Stopped && Tokens.anim.enabled
         loops: Animation.Infinite
         target: manager

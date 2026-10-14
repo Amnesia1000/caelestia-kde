@@ -35,8 +35,8 @@ Singleton {
     readonly property Transparency transparency: Transparency {}
     readonly property alias wallLuminance: analyser.luminance
 
-    /// True while a palette replaces the old one. CAnim lands every colour while it is set
-    /// rather than cross-fading it; see holdColourTransitions.
+    /// True for a frame or so while a palette lands. CAnim lands every colour while it is
+    /// set; see holdColourTransitions.
     property bool switchingTheme: false
 
     signal schemeApplied
@@ -262,12 +262,8 @@ Singleton {
     }
 
     /// Hold every colour transition still while a palette replaces the old one, so the
-    /// shell switches rather than cross-fading a few hundred colours at once.
-    ///
-    /// Every CAnim reads `switchingTheme` as it starts, and the writes `applyColours` makes
-    /// land synchronously, so the hold only has to outlive this event-loop turn: releasing
-    /// it is queued rather than timed, and a colour change made after the hold ends
-    /// animates again.
+    /// shell switches rather than cross-fading a few hundred colours at once. CAnim reads
+    /// `switchingTheme`; the release is queued once the writes have landed.
     function holdColourTransitions(): void {
         root.switchingTheme = true;
         Qt.callLater(() => (root.switchingTheme = false));

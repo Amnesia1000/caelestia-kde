@@ -69,7 +69,6 @@ ProgressBar {
         gap: root.Tokens.spacing.extraSmall
 
         Anim on progress {
-            // Unbounded, so the switch stops it rather than collapsing its duration.
             running: root.indeterminateAnimState !== StyledProgressBar.Stopped && Tokens.anim.enabled
             from: 0
             to: 1
