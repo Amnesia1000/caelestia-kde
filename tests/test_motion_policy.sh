@@ -57,6 +57,25 @@ test_a_scaled_duration_still_honours_the_switch() {
     fi
 }
 
+# The overview's durations come from its own config rather than the tokens, so the switch
+# only reaches them if they are routed through Tokens.anim.duration() by hand. The
+# overview and the drawer blob it morphs are the shell's biggest motion, so a duration
+# that skips the switch is the one that is noticed.
+test_the_overview_motion_honours_the_switch() {
+    local file
+    for file in \
+        "$SHELL_DIR/modules/overview/Anim.qml" \
+        "$SHELL_DIR/modules/overview/WindowGrid.qml"; do
+        assert_file_contains "$file" 'Tokens.anim.duration(' \
+            "$(basename "$file") should take its duration through the animations switch"
+    done
+
+    # Every duration on the object has to be wrapped, so a bare one cannot creep back in.
+    assert_no_match 'readonly property int [a-zA-Z]*Duration: Math\.round' \
+        "an overview duration still reads the overview config directly" \
+        "$SHELL_DIR/modules/overview/Anim.qml"
+}
+
 test_every_unbounded_animation_can_be_stopped() {
     local file offenders
     while IFS= read -r file; do
@@ -325,6 +344,8 @@ test_popouts_contain_their_overscroll() {
         "the popout viewport should stop at its bounds"
     assert_file_contains "$SHELL_DIR/modules/bar/popouts/kblayout/KbLayout.qml" 'boundsBehavior: Flickable.StopAtBounds' \
         "so should the keyboard layout list"
+    assert_file_contains "$COMPONENTS/controls/Menu.qml" 'boundsBehavior: Flickable.StopAtBounds' \
+        "so should the menu's item list"
 }
 
 test_no_dead_icon_asset_needs_a_colour_baked_in() {
