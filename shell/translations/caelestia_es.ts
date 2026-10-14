@@ -14079,12 +14079,44 @@ PIN: %1</source>
 <context>
     <name>BarPerformance</name>
     <message>
-        <source>Performance</source>
-        <translation>Rendimiento</translation>
+        <source>Specific widgets</source>
+        <translation>Widgets específicos</translation>
     </message>
     <message>
-        <source>Widget</source>
-        <translation>Widget</translation>
+        <source>Panel widget</source>
+        <translation>Widget del panel</translation>
+    </message>
+    <message>
+        <source>Choose the shape of the specific pills</source>
+        <translation>Elegir la forma de las píldoras específicas</translation>
+    </message>
+    <message>
+        <source>Rectangle</source>
+        <translation>Rectángulo</translation>
+    </message>
+    <message>
+        <source>Style</source>
+        <translation>Estilo</translation>
+    </message>
+    <message>
+        <source>Icon</source>
+        <translation>Ícono</translation>
+    </message>
+    <message>
+        <source>Speed icon or a stat pill in the panel</source>
+        <translation>Ícono de velocidad o una píldora de estadística en el panel</translation>
+    </message>
+    <message>
+        <source>Metric</source>
+        <translation>Métrica</translation>
+    </message>
+    <message>
+        <source>Show the value next to the icon in the panel widget</source>
+        <translation>Mostrar el valor junto al icono en el widget del panel</translation>
+    </message>
+    <message>
+        <source>Performance</source>
+        <translation>Rendimiento</translation>
     </message>
     <message>
         <source>Pill</source>
@@ -14119,10 +14151,6 @@ PIN: %1</source>
         <translation>Batería</translation>
     </message>
     <message>
-        <source>Icon only</source>
-        <translation>Solo el ícono</translation>
-    </message>
-    <message>
         <source>Show values</source>
         <translation>Mostrar valores</translation>
     </message>
@@ -14133,18 +14161,6 @@ PIN: %1</source>
     <message>
         <source>Pill style</source>
         <translation>Estilo de píldora</translation>
-    </message>
-    <message>
-        <source>Classic keeps the current pills, compact is smaller with rounded corners</source>
-        <translation>La clásica mantiene las píldoras actuales, la compacta es más chica con bordes redondeados</translation>
-    </message>
-    <message>
-        <source>Classic</source>
-        <translation>Clásica</translation>
-    </message>
-    <message>
-        <source>Compact</source>
-        <translation>Compacta</translation>
     </message>
 </context>
 </TS>

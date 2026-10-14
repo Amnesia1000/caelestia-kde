@@ -181,6 +181,8 @@ class BarPerformance : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, showText, true)
     CONFIG_PROPERTY(QString, pill, u"cpu"_s)
     CONFIG_PROPERTY(QString, pillStyle, u"classic"_s)
+    CONFIG_PROPERTY(QString, widgetStyle, u"classic"_s)
+    CONFIG_PROPERTY(bool, widgetShowText, true)
 };
 
 class BarShortcuts : public settings::ObjectNode {

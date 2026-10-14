@@ -7,7 +7,8 @@ import qs.components
 import qs.services
 
 // System stats entry: shows the stat pill picked in Nexus, the full data lives
-// in the popout. Falls back to a single icon when no pill is picked.
+// in the popout. The widget style picks between the speed icon and a pill;
+// the specific per-component pills follow the global pill style instead.
 StyledRect {
     id: root
 
@@ -15,9 +16,16 @@ StyledRect {
 
     readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
     readonly property string pill: String(Config.bar.performance?.pill ?? "").trim().toLowerCase()
+    readonly property string widgetStyle: String(Config.bar.performance?.widgetStyle ?? "classic").trim().toLowerCase()
+    readonly property bool widgetShowText: typeof Config.bar.performance !== "undefined" && Config.bar.performance.widgetShowText !== undefined ? Config.bar.performance.widgetShowText : true
+    // An empty stored pill is a leftover from before the widget had its own
+    // style: it behaves like the icon style and migrates on load.
+    readonly property string effectivePill: root.pill === "" ? "cpu" : root.pill
+    readonly property bool effectiveIcon: root.widgetStyle === "icon" || root.pill === ""
+    readonly property string widgetPillStyle: root.widgetStyle === "compact" ? "compact" : "classic"
 
     readonly property var pillComponent: {
-        switch (root.pill) {
+        switch (root.effectivePill) {
         case "cpu":
             return cpuPill;
         case "gpu":
@@ -43,6 +51,14 @@ StyledRect {
 
     visible: enabled
 
+    Component.onCompleted: {
+        if (root.pill === "" && root.widgetStyle === "classic") {
+            GlobalConfig.bar.performance.pill = "cpu";
+            GlobalConfig.bar.performance.widgetStyle = "icon";
+            GlobalConfig.save();
+        }
+    }
+
     Loader {
         id: pillLoader
 
@@ -51,7 +67,7 @@ StyledRect {
         // sized from the component it loaded.
         width: implicitWidth
         height: implicitHeight
-        sourceComponent: root.pillComponent
+        sourceComponent: root.effectiveIcon ? null : root.pillComponent
     }
 
     MaterialIcon {
@@ -60,44 +76,64 @@ StyledRect {
         color: Colours.palette.m3onSurface
         fontStyle: Tokens.font.icon.builders.medium.build()
 
-        visible: root.pillComponent === null
+        visible: root.effectiveIcon
     }
 
-    // The Loader needs real components, not bare types.
+    // The Loader needs real components, not bare types. Each pill gets the
+    // widget's own text and style overrides so the specific pills keep
+    // following the global ones.
     Component {
         id: cpuPill
 
-        PerfCpu {}
+        PerfCpu {
+            showText: root.widgetShowText
+            pillStyle: root.widgetPillStyle
+        }
     }
 
     Component {
         id: gpuPill
 
-        PerfGpu {}
+        PerfGpu {
+            showText: root.widgetShowText
+            pillStyle: root.widgetPillStyle
+        }
     }
 
     Component {
         id: memoryPill
 
-        PerfMemory {}
+        PerfMemory {
+            showText: root.widgetShowText
+            pillStyle: root.widgetPillStyle
+        }
     }
 
     Component {
         id: storagePill
 
-        PerfStorage {}
+        PerfStorage {
+            showText: root.widgetShowText
+            pillStyle: root.widgetPillStyle
+        }
     }
 
     Component {
         id: networkPill
 
-        PerfNetwork {}
+        PerfNetwork {
+            showText: root.widgetShowText
+            pillStyle: root.widgetPillStyle
+        }
     }
 
     Component {
         id: batteryPill
 
-        PerfBattery {}
+        PerfBattery {
+            showText: root.widgetShowText
+            pillStyle: root.widgetPillStyle
+        }
     }
 
     MouseArea {
