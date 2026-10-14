@@ -59,20 +59,17 @@ Popup {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
     parent: Overlay.overlay
 
-    enter: Transition {
-        NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: Tokens.anim.durations.small }
-        NumberAnimation { property: "scale"; from: 0.9; to: 1.0; duration: Tokens.anim.durations.small; easing.type: Easing.OutCubic }
-    }
-    exit: Transition {
-        NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: Tokens.anim.durations.small }
-        NumberAnimation { property: "scale"; from: 1.0; to: 0.9; duration: Tokens.anim.durations.small; easing.type: Easing.InCubic }
+    enter: DialogTransition { }
+    exit: DialogTransition {
+        exiting: true
     }
 
     x: targetItem && parent ? Math.min(parent.width - width - 16, Math.max(16, targetItem.mapToItem(parent, targetItem.width - width, targetItem.height + 8).x)) : (parent ? Math.round((parent.width - width) / 2) : 0)
     y: targetItem && parent ? Math.min(parent.height - height - 16, Math.max(16, targetItem.mapToItem(parent, 0, targetItem.height + 8).y)) : (parent ? Math.round((parent.height - height) / 2) : 0)
 
     onConflictChanged: {
-        if (root.conflict !== "")
+        // The error text below is what names the conflict; the shake only drives it home.
+        if (root.conflict !== "" && Tokens.anim.enabled)
             shakeAnim.start();
     }
 
@@ -122,9 +119,7 @@ Popup {
 
             anchors.fill: parent
             color: Colours.palette.m3surfaceContainerHigh
-            radius: 16
-            border.width: 1
-            border.color: Colours.palette.m3outlineVariant
+            radius: Tokens.rounding.large
         }
     }
 
