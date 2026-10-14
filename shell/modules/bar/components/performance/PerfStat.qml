@@ -14,7 +14,7 @@ StyledRect {
     property real value: NaN
     property color textColor: Colours.palette.m3onSurface
     property color iconColor: accent
-    property real widthFactor: 2.35
+    property real widthFactor: 1.9
     property string maxText: "100"
     property bool showText: typeof Config.bar.performance !== "undefined" && Config.bar.performance.showText !== undefined ? Config.bar.performance.showText : true
     // "classic" keeps the current full pills, "compact" is smaller with
@@ -38,7 +38,7 @@ StyledRect {
     readonly property int vPadding: Tokens.padding.extraSmall
     readonly property int trackThickness: Math.max(4, Math.round(Tokens.padding.extraSmall * 0.8))
     readonly property int trackInset: Tokens.padding.medium
-    readonly property real effWidthFactor: root.compact ? 1.6 : root.widthFactor
+    readonly property real effWidthFactor: root.compact ? 1.3 : root.widthFactor
 
     color: Colours.tPalette.m3surfaceContainerHigh
     radius: root.compact ? Tokens.rounding.medium : Tokens.rounding.full
