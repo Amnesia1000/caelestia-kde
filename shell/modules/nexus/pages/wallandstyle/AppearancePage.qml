@@ -350,7 +350,7 @@ PageBase {
                 last: true
                 Layout.fillWidth: true
                 text: qsTr("Animations")
-                subtext: qsTr("Turn off to switch state without moving: every transition lands immediately")
+                subtext: qsTr("Toggle animations on/off")
                 checked: GlobalConfig.appearance.anim.enabled
                 onToggled: GlobalConfig.appearance.anim.enabled = checked
             }
