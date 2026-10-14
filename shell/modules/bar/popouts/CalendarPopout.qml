@@ -25,7 +25,7 @@ StyledRect {
     readonly property int animDirection: viewDate > _prevDate ? -1 : 1
     property real animTranslate
     property real animOpacity: 1
-    readonly property real animOffset: Tokens.padding.extraLarge * root.scaleOffset * root.animDirection
+    readonly property real animOffset: -Tokens.padding.extraLarge * root.scaleOffset * root.animDirection
     // Set while the incoming frame is parked off to one side, so the Behaviours below
     // let that reposition land instead of animating it.
     property bool animRepositioning: false

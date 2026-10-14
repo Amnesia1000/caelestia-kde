@@ -23,7 +23,7 @@ CustomMouseArea {
     readonly property int animDirection: currentDate > _prevDate ? -1 : 1
     property real animTranslate
     property real animOpacity: 1
-    readonly property real animOffset: root.Tokens.padding.extraLarge * root.animDirection
+    readonly property real animOffset: -root.Tokens.padding.extraLarge * root.animDirection
     // Set while the incoming month is parked off to one side, so the Behaviours below
     // let that reposition land instead of animating it.
     property bool animRepositioning: false

@@ -133,12 +133,15 @@ test_the_calendars_animate_months_reversibly() {
             "$(basename "$file") should drive its slide with a Behavior"
         assert_file_contains "$file" 'animRepositioning' \
             "$(basename "$file") needs the parked-frame reposition"
+        # The parked frame sits opposite the direction of travel, or the month appears to
+        # come from the side the wheel was not turned towards.
+        assert_file_matches "$file" 'property real animOffset: -.*animDirection' \
+            "$(basename "$file") must park the incoming month opposite the scroll direction"
     done
 }
 
 # A state carried by motion alone leaves nothing to read once the motion stops.
-test_a_pulsing_state_also_has_a_static_cue() {
-    local file
+test_a_pulsing_state_also_has_a_static_cue() {    local file
     for file in "$SHELL_DIR/modules/bar/components/status/BluetoothStatus.qml" "$SHELL_DIR/modules/bar/components/StatusIcons.qml"; do
         assert_file_contains "$file" 'readonly property bool pending' \
             "$(basename "$file") should name the connecting state"
