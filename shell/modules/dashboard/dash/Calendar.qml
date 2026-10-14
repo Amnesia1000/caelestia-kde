@@ -95,9 +95,9 @@ CustomMouseArea {
                 StyledText {
                     id: monthYearDisplay
 
-                    opacity: monthSlide.opacity
+                    opacity: monthSlide.animOpacity
                     transform: Translate {
-                        x: monthSlide.translate
+                        x: monthSlide.animTranslate
                     }
 
                     anchors.centerIn: parent
@@ -138,9 +138,9 @@ CustomMouseArea {
             Layout.fillWidth: true
             implicitHeight: grid.implicitHeight
 
-            opacity: monthSlide.opacity
+            opacity: monthSlide.animOpacity
             transform: Translate {
-                x: monthSlide.translate
+                x: monthSlide.animTranslate
             }
 
             MonthGrid {

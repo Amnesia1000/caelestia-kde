@@ -259,7 +259,7 @@ test_the_calendars_animate_months_reversibly() {
 
     assert_file_contains "$shared" 'property bool _repositioning' \
         "the shared month motion needs the parked-frame reposition"
-    assert_file_contains "$shared" 'Behavior on translate' \
+    assert_file_contains "$shared" 'Behavior on animTranslate' \
         "the shared month motion should slide with a Behavior"
     assert_file_not_contains "$shared" 'trOutAnim' \
         "the fixed out-then-in sequence has to be gone"

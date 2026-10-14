@@ -8,8 +8,8 @@ Item {
     property real offset: Tokens.padding.extraLarge
 
     property bool _repositioning: false
-    property real translate
-    property real opacity: 1
+    property real animTranslate
+    property real animOpacity: 1
 
     property date _prevDate
 
@@ -20,14 +20,14 @@ Item {
         _prevDate = shownDate;
 
         _repositioning = true;
-        translate = parked;
-        opacity = 0;
+        animTranslate = parked;
+        animOpacity = 0;
         _repositioning = false;
-        translate = 0;
-        opacity = 1;
+        animTranslate = 0;
+        animOpacity = 1;
     }
 
-    Behavior on translate {
+    Behavior on animTranslate {
         enabled: !root._repositioning
 
         Anim {
@@ -35,7 +35,7 @@ Item {
         }
     }
 
-    Behavior on opacity {
+    Behavior on animOpacity {
         enabled: !root._repositioning
 
         Anim {
