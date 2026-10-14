@@ -313,9 +313,7 @@ class AppearanceAnim : public settings::ObjectNode {
 public:
     // The duration getters read the switch through this rather than the property, which
     // warns on every read of a global-layer key.
-    [[nodiscard]] bool animationsEnabled() const {
-        return m_enabled;
-    }
+    [[nodiscard]] bool animationsEnabled() const { return m_enabled; }
 };
 
 class AppearanceTransparency : public settings::ObjectNode {
