@@ -31,10 +31,10 @@ StyledRect {
     readonly property int barThickness: Math.round(Tokens.sizes.bar.innerWidth * scaleFactor)
     readonly property int baseThickness: Tokens.sizes.bar.innerWidth
     readonly property int effectiveThickness: rawScale < 1.0 ? baseThickness : barThickness
-    readonly property int iconSize: Math.round(effectiveThickness * (root.compact ? 0.36 : 0.42))
-    readonly property int textSize: Math.round(effectiveThickness * (root.compact ? 0.28 : 0.32))
+    readonly property int iconSize: Math.round(effectiveThickness * 0.36)
+    readonly property int textSize: Math.round(effectiveThickness * 0.28)
     readonly property real progress: isNaN(value) ? 0 : Math.max(0, Math.min(1, value))
-    readonly property int hPadding: root.compact ? Tokens.padding.extraSmall : Tokens.padding.medium
+    readonly property int hPadding: Tokens.padding.extraSmall
     readonly property int vPadding: Tokens.padding.extraSmall
     readonly property int trackThickness: Math.max(4, Math.round(Tokens.padding.extraSmall * 0.8))
     readonly property int trackInset: Tokens.padding.medium
@@ -98,7 +98,7 @@ StyledRect {
         anchors.leftMargin: root.hPadding
         anchors.rightMargin: root.hPadding
         visible: root.isHorizontal
-        spacing: root.compact ? Tokens.spacing.extraSmall : Tokens.spacing.small
+        spacing: Tokens.spacing.extraSmall
 
         Item {
             Layout.fillWidth: true
