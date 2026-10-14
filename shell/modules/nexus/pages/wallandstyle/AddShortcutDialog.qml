@@ -7,8 +7,8 @@ import Quickshell
 import Caelestia.Config
 import qs.components.controls as Controls
 import qs.components.effects
-import qs.modules.nexus.common
 import qs.services
+import qs.modules.nexus.common
 
 Popup {
     id: root
