@@ -115,6 +115,8 @@ PageBase {
             last: true
             text: qsTr("Show values")
             subtext: qsTr("Show the value next to the icon in the panel widget")
+            enabled: root.widgetStyle !== "icon"
+            opacity: root.widgetStyle !== "icon" ? 1 : 0.5
             reset: ({ node: GlobalConfig.bar.performance, setting: "widgetShowText" })
             checked: Config.bar.performance.widgetShowText
             onToggled: {
