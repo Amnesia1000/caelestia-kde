@@ -373,13 +373,13 @@ PageBase {
                 font: Tokens.font.body.small
                 color: Colours.palette.m3onSurfaceVariant
             }
-            
+
             StyledRect {
                 Layout.fillWidth: true
                 implicitHeight: Math.max(root.emptyZoneHeight, activeList.contentHeight + root.zonePadding * 2)
                 color: Colours.palette.m3surfaceContainer
                 radius: Tokens.rounding.large
-                
+
                 Text {
                     text: qsTr("Empty Menu")
                     font: Tokens.font.label.large
@@ -397,7 +397,7 @@ PageBase {
                         let sourceItem = drag.source;
                         if (!sourceItem) return;
                         root.globalDragHoveredList = "active";
-                        
+
                         if (sourceItem.sourceList !== "active") {
                             let hasPlaceholder = false;
                             for (let i = 0; i < activeModel.count; i++) {
@@ -439,7 +439,7 @@ PageBase {
 
                 ColumnLayout {
                     spacing: 0
-                    
+
                     Text {
                         text: qsTr("Library")
                         font: Tokens.font.title.small
@@ -473,7 +473,7 @@ PageBase {
                 Layout.fillWidth: true
                 implicitHeight: Math.max(root.emptyZoneHeight, libList.contentHeight + root.zonePadding * 2)
                 color: "transparent"
-                
+
                 Text {
                     text: qsTr("Empty")
                     font: Tokens.font.label.large
@@ -490,9 +490,9 @@ PageBase {
                     onEntered: drag => {
                         let sourceItem = drag.source;
                         if (!sourceItem) return;
-                        
+
                         root.globalDragHoveredList = "library";
-                        
+
                         if (sourceItem.sourceList !== "library") {
                             let hasPlaceholder = false;
                             for (let i = 0; i < libraryModel.count; i++) {

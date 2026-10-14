@@ -13,6 +13,7 @@ import Caelestia.Services
 import qs.components
 import qs.services
 import qs.utils
+import qs.modules.bar
 
 Item {
     id: root
@@ -42,7 +43,8 @@ Item {
 
     // Overlay entries: each bar uses its own list (empty means empty).
     // Only the legacy primary bar (no barDef) uses the global list.
-    readonly property var effEntries: (root.barDef ? root.barDef.entries : null) ?? (Config.bar.entries || [])
+    // Unknown ids are dropped so stale config never reaches the delegates.
+    readonly property var effEntries: ((root.barDef ? root.barDef.entries : null) ?? (Config.bar.entries || [])).filter(e => BarWidgets.isKnown(e.id))
 
     property var leftEntries: effEntries.filter(e => e.enabled && (!e.zone || e.zone === "left") && e.id !== "spacer")
 
@@ -301,9 +303,9 @@ Item {
         } else if (Config.bar.scrollActions.brightness) {
             const monitor = Brightness.getMonitorForScreen(screen);
             if (angleDelta.y > 0)
-                monitor.setBrightness(monitor.brightness + GlobalConfig.services.brightnessIncrement);
+                monitor.stepBrightness(GlobalConfig.services.brightnessIncrement);
             else if (angleDelta.y < 0)
-                monitor.setBrightness(monitor.brightness - GlobalConfig.services.brightnessIncrement);
+                monitor.stepBrightness(-GlobalConfig.services.brightnessIncrement);
         }
     }
 

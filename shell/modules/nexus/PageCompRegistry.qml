@@ -241,6 +241,9 @@ QtObject {
                 Component {
                     QuickTogglesPage {}
                 }
+                Component {
+                    QuickSharePage {}
+                }
             }
         },
         Component {

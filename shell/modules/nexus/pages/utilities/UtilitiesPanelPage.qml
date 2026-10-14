@@ -43,6 +43,13 @@ PageBase {
         }
 
         ToggleRow {
+            text: qsTr("Quick Share")
+            subtext: qsTr("Show the Quick Share card while it is enabled")
+            checked: Config.utilities.showQuickShare
+            onToggled: GlobalConfig.utilities.showQuickShare = checked
+        }
+
+        ToggleRow {
             last: true
             text: qsTr("Quick Toggles")
             subtext: qsTr("Show the Quick Toggles card")

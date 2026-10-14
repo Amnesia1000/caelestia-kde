@@ -19,7 +19,7 @@ PanelWindow {
     WlrLayershell.namespace: "osd"
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-    
+
 
 
     exclusionMode: ExclusionMode.Ignore
@@ -260,7 +260,7 @@ root.snapshotWorkspaceId = snapId;
 const snapIdx = snapId > 0 ? snapId - 1 : 0;
 root.snapshotWorkspaceUuid = Kwin.workspaces[snapIdx]
     ? Kwin.workspaces[snapIdx].id : "";
-    
+
         root.visible = true;
         mouseArea.forceActiveFocus();
     }

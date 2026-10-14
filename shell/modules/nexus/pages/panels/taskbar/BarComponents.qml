@@ -10,6 +10,7 @@ import qs.components
 import qs.components.controls
 import qs.components.effects
 import qs.services
+import qs.modules.bar
 import qs.modules.bar.components as BarComponents
 import qs.modules.nexus.common
 
@@ -333,7 +334,9 @@ PageBase {
     }
 
     function load(): void {
-        let entries = root.entriesOverride ?? Config.bar.entries;
+        // Per-panel editing (BarPanelEditor) overrides the source list;
+        // otherwise the entries come from the widget registry.
+        let entries = root.entriesOverride ?? BarWidgets.entriesOf(Config.bar);
         leftModel.clear();
         middleModel.clear();
         rightModel.clear();
@@ -356,35 +359,11 @@ PageBase {
             }
         }
 
-        for (let key in componentMeta) {
-            if (!activeCounts[key]) {
-                libraryModel.append({ "compId": key, "isPlaceholder": false });
+        for (const id of BarWidgets.ids) {
+            if (!activeCounts[id]) {
+                libraryModel.append({ "compId": id, "isPlaceholder": false });
             }
         }
-    }
-
-    function defaultEntries(): var {
-        return [
-            { id: "logo", enabled: true, zone: "left" },
-            { id: "workspaces", enabled: true, zone: "left" },
-            { id: "greeter", enabled: true, zone: "left" },
-            { id: "dock", enabled: true, zone: "middle" },
-            { id: "tray", enabled: true, zone: "right" },
-            { id: "updateIndicator", enabled: true, zone: "right" },
-            { id: "github", enabled: false, zone: "right" },
-            { id: "clock", enabled: true, zone: "right" },
-            { id: "statusIcons", enabled: true, zone: "right" },
-            { id: "kbLayoutIndicator", enabled: false, zone: "right" },
-            { id: "notificationsIndicator", enabled: false, zone: "right" },
-            { id: "perfCpu", enabled: false, zone: "right" },
-            { id: "perfMemory", enabled: false, zone: "right" },
-            { id: "perfStorage", enabled: false, zone: "right" },
-            { id: "perfNetwork", enabled: false, zone: "right" },
-            { id: "perfGpu", enabled: false, zone: "right" },
-            { id: "perfBattery", enabled: false, zone: "right" },
-            { id: "showDesktop", enabled: true, zone: "right" },
-            { id: "power", enabled: true, zone: "right" }
-        ];
     }
 
     function resetToDefaults(): void {
@@ -393,28 +372,8 @@ PageBase {
             load();
             return;
         }
-        const entries = defaultEntries();
-        GlobalConfig.bar.entries = entries;
-
-        leftModel.clear();
-        middleModel.clear();
-        rightModel.clear();
-        libraryModel.clear();
-
-        for (const entry of entries) {
-            if (!entry.enabled) {
-                libraryModel.append({ compId: entry.id, isPlaceholder: false });
-                continue;
-            }
-
-            const zone = entry.zone || "left";
-            if (zone === "left")
-                leftModel.append({ compId: entry.id, isPlaceholder: false });
-            else if (zone === "middle")
-                middleModel.append({ compId: entry.id, isPlaceholder: false });
-            else
-                rightModel.append({ compId: entry.id, isPlaceholder: false });
-        }
+        BarWidgets.resetToDefaults(GlobalConfig.bar);
+        load();
     }
 
     function save(): void {
@@ -437,14 +396,15 @@ PageBase {
         }
         for (let i = 0; i < libraryModel.count; i++) {
             if (!libraryModel.get(i).isPlaceholder) {
-                newEntries.push({ id: libraryModel.get(i).compId, enabled: false, zone: "left" });
+                const id = libraryModel.get(i).compId;
+                newEntries.push({ id: id, enabled: false, zone: BarWidgets.zoneFor(Config.bar, id) });
             }
         }
 
         if (root.writeEntries)
             root.writeEntries(newEntries);
         else
-            GlobalConfig.bar.entries = newEntries;
+            BarWidgets.replaceAll(GlobalConfig.bar, newEntries);
     }
 
     title: qsTr("Toggle & rearrange")

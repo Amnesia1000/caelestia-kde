@@ -55,6 +55,8 @@ CORE_PACKAGES=(
     libepoxy-devel libdrm-devel
 
     libqalculate libqalculate-devel libsecret vulkan-headers ksshaskpass libX11-devel
+
+    protobuf-devel protobuf-compiler openssl-devel avahi
 )
 
 SHELL_PACKAGES=(

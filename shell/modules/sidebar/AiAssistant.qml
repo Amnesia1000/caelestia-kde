@@ -26,6 +26,7 @@ Item {
     ChatStore {
         id: chatStore
 
+        provider: root.provider
         onTitleNeeded: (chatId, firstMessage) => root.generateChatTitleAsync(chatId, firstMessage)
     }
 
@@ -994,7 +995,6 @@ Item {
             isTyping = false;
             isThinking = false;
             inAgentLoop = false;
-            chatStore.persist();
             return;
         }
         proc.startedAt = Date.now();
@@ -1051,7 +1051,6 @@ Item {
 
     function onClaudeCodeUsage(proc, usage) {
         chatStore.update(proc.chatId, proc.msgId, { "usageText": usage });
-        chatStore.persist();
     }
 
     function onClaudeCodeCompleted(proc, reply) {
@@ -1065,7 +1064,6 @@ Item {
             "usageText": reply.usage,
             "isFinished": true
         });
-        chatStore.persist();
         proc.toolRunning = false;
         if (proc.chatId === currentChatId) {
             isTyping = false;
@@ -1258,25 +1256,6 @@ Item {
         return activeReply;
     }
 
-    function deleteChat(id) {
-        cancelRateLimitRetry();
-        stopClaudeCode([id]);
-        if (!chatStore.removeChats([id]))
-            return;
-        if (chatStore.sessions.length > 0)
-            loadChat(chatStore.sessions[0].id);
-        else
-            createNewChat();
-    }
-
-    function clearAllHistory() {
-        cancelRateLimitRetry();
-        const ids = chatStore.sessions.map(s => s.id);
-        stopClaudeCode(ids);
-        chatStore.removeChats(ids);
-        createNewChat();
-    }
-
     function applyGeneratedTitle(chatId, raw) {
         if (!raw)
             return;
@@ -1395,7 +1374,6 @@ Item {
     function addAiMessage(message) {
         chatStore.append(currentChatId, { "text": message || "" });
         listView.positionViewAtEnd();
-        chatStore.persist();
     }
 
     function sendPrompt(promptText, isSystemToolResult = false, base64Image = null, toolName = "", isRetry = false) {
@@ -1415,7 +1393,6 @@ Item {
                 "attachments": attachmentPaths.join("\n")
             });
             listView.positionViewAtEnd();
-            chatStore.persist();
         }
 
         if (root.needsApiKey && root.getApiKey() === "") {
@@ -1437,7 +1414,7 @@ Item {
         inAgentLoop = true;
         currentThoughtText = "";
         isThoughtExpanded = false;
-        
+
         if (isSystemToolResult) {
             if (toolName === "web_search" || toolName === "read_webpage") {
                 currentActionText = "Reading results...";
@@ -1484,7 +1461,7 @@ Item {
             xhr.open("POST", ollamaUrl + "/api/chat", true);
             xhr.setRequestHeader("Content-Type", "application/json");
         }
-        
+
         var processedTextLength = 0;
         var accumulatedThoughtText = "";
         var accumulatedContentText = "";
@@ -1500,9 +1477,9 @@ Item {
                     var currentText = xhr.responseText;
                     var unparsed = currentText.substring(processedTextLength);
                     var lines = unparsed.split('\n');
-                    
+
                     var linesToProcess = (xhr.readyState === XMLHttpRequest.DONE) ? lines.length : lines.length - 1;
-                    
+
                     for (var i = 0; i < linesToProcess; i++) {
                         var rawLine = lines[i];
                         var line = rawLine.trim();
@@ -1617,15 +1594,14 @@ Item {
                         listView.positionViewAtEnd();
                     }
                 }
-                
+
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (root.currentRequest === xhr)
                         root.currentRequest = null;
                     if (xhr.status === 200) {
                         root.rateLimitRetries = 0;
                         chatStore.update(reply.chatId, reply.msgId, { "isFinished": true });
-                        chatStore.persist();
-                        
+
                         var enableTools = GlobalConfig.ai.enableCelestialMode;
                         var textToolCalls = enableTools ? AiToolCalls.parseTextToolCalls(rawAccumulatedContentText) : [];
 
@@ -1768,7 +1744,6 @@ Item {
                         isTyping = false;
                         isThinking = false;
                         inAgentLoop = false;
-                        chatStore.persist();
                     }
                 }
             }
@@ -1779,7 +1754,7 @@ Item {
         if (enableTools) {
             sysPrompt += AiToolCalls.toolsPrompt();
         }
-        
+
         var requestBody;
         if (useAnthropic) {
             var claudeMessages = [];
@@ -1912,7 +1887,7 @@ Item {
                      radius: Tokens.rounding.full
                      color: Colours.palette.m3primary
                      x: isHistoryTab ? historyTab.x : chatTab.x
-                     
+
                      Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
                      Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
                  }
@@ -1927,7 +1902,7 @@ Item {
 
                          height: parent.height
                          width: !isHistoryTab ? 40 : chatContent.implicitWidth + Tokens.padding.medium * 2
-                         
+
 
                          Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
@@ -1963,7 +1938,7 @@ Item {
 
                          height: parent.height
                          width: isHistoryTab ? 40 : historyContent.implicitWidth + Tokens.padding.medium * 2
-                         
+
 
                          Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
@@ -2250,7 +2225,7 @@ Item {
              }
 
          }
-         
+
          Item {
              id: contentStack
 
@@ -2351,7 +2326,7 @@ Item {
                              height: shown ? bubbleBg.height + Tokens.spacing.medium : 0
                              visible: opacity > 0
                              opacity: shown ? 1 : 0
-                             
+
                              Behavior on height { Anim { type: Anim.DefaultSpatial } }
                              Behavior on opacity { Anim { type: Anim.DefaultSpatial } }
 
@@ -2375,10 +2350,10 @@ Item {
                                      anchors.fill: parent
                                      anchors.margins: Tokens.padding.medium
                                      spacing: Tokens.spacing.small
-                                     
+
                                      Row {
                                          spacing: Tokens.spacing.small
-                                         
+
                                          LoadingIndicator {
                                              visible: !root.isClaudeCode
                                              width: 20
@@ -2416,20 +2391,20 @@ Item {
                                                  onTriggered: starGlyph.frame = (starGlyph.frame + 1) % starGlyph.frames.length
                                              }
                                          }
-                                         
+
                                          Item {
                                              width: mainText.implicitWidth
                                              height: mainText.implicitHeight
 
                                              Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-                                             
+
                                              StyledText {
                                                  id: mainText
 
                                                  text: displayedText
                                                  color: Colours.palette.m3onSurfaceVariant
                                                  font: Tokens.font.body.small
-                                                 
+
                                                  property string displayedText: root.currentActionText
 
                                                  property string nextText: ""
@@ -2472,13 +2447,13 @@ Item {
                                                  }
                                              }
                                          }
-                                         
+
                                          Item {
                                              visible: root.currentThoughtText !== ""
                                              width: Tokens.spacing.medium
                                              height: 1
                                          }
-                                         
+
                                          Item {
                                              visible: root.currentThoughtText !== ""
                                              width: thoughtRowFooter.implicitWidth
@@ -2525,7 +2500,7 @@ Item {
                                          width: root.isThoughtExpanded ? footerThoughtContent.width : 0
                                          height: root.isThoughtExpanded ? footerThoughtContent.implicitHeight : 0
                                          clip: true
-                                         
+
                                          Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
 
                                          TextEdit {
@@ -2542,7 +2517,7 @@ Item {
                                              selectionColor: Colours.palette.m3primary
                                              selectedTextColor: Colours.palette.m3onPrimary
                                              opacity: root.isThoughtExpanded ? 1.0 : 0.0
-                                             
+
                                              Behavior on opacity {
                                                  SequentialAnimation {
                                                      PauseAnimation { duration: root.isThoughtExpanded ? 100 : 0 }
@@ -2885,7 +2860,7 @@ Item {
                              id: inputScroll
                              Layout.fillWidth: true
                              Layout.fillHeight: true
-                             
+
                              TextArea {
                                  id: inputArea
 
@@ -2982,7 +2957,7 @@ Item {
                                  shape: root.isTyping ? MaterialShape.Cookie4Sided : (root.canSend ? MaterialShape.Arrow : MaterialShape.Circle)
                                  scale: (!root.canSend && !root.isTyping) ? 1 : sendMouse.pressed ? 0.6 : sendMouse.containsMouse ? 0.8 : 0.7
                                  rotation: 0
-                                 
+
                                  Behavior on scale { Anim { type: Anim.FastSpatial } }
                                  Behavior on color { CAnim {} }
 
@@ -2997,7 +2972,6 @@ Item {
                                              root.stopReply();
                                              if (root.activeReply)
                                                  chatStore.update(root.activeReply.chatId, root.activeReply.msgId, { "isFinished": true });
-                                             chatStore.persist();
                                          } else if (root.canSend) {
                                              root.sendPrompt(inputArea.text);
                                              inputArea.clear();
@@ -3020,179 +2994,26 @@ Item {
                  }
              }
 
-             Item {
+             HistoryPane {
+                 id: historyPane
+
                  anchors.fill: parent
-                 opacity: isHistoryTab ? 1 : 0
-                 visible: opacity > 0
+                 store: chatStore
+                 active: root.isHistoryTab
+                 busy: root.isTyping
 
-                 Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.InOutQuad } }
-
-                 GridView {
-                     anchors.top: parent.top
-                     anchors.left: parent.left
-                     anchors.right: parent.right
-                     anchors.bottom: newChatButton.top
-                     anchors.bottomMargin: Tokens.spacing.medium
-                     
-                     cellWidth: width / 2
-                     cellHeight: 90
-                     model: chatStore.chats
-
-                     delegate: Item {
-                         required property var model
-                         property string chatId: model && model.id ? String(model.id) : ""
-                         property string chatTitle: model && model.title ? String(model.title) : ""
-
-                         width: GridView.view.cellWidth
-                         height: GridView.view.cellHeight
-
-                         StyledRect {
-                             anchors.fill: parent
-                             anchors.margins: Tokens.spacing.small
-                             radius: Tokens.rounding.medium
-                             color: Colours.tPalette.m3surfaceContainerHigh
-
-                             StateLayer {
-                                 radius: Tokens.rounding.medium
-                                 onClicked: loadChat(chatId)
-                             }
-
-                             RowLayout {
-                                 anchors.fill: parent
-                                 anchors.margins: Tokens.padding.small
-                                 spacing: Tokens.spacing.medium
-
-                                 StyledRect {
-                                     Layout.preferredWidth: 32
-                                     Layout.preferredHeight: 32
-                                     radius: 16
-                                     color: Colours.tPalette.m3surfaceContainerHighest
-
-                                     MaterialIcon {
-                                         anchors.centerIn: parent
-                                         text: "chat"
-                                         color: Colours.palette.m3onSurfaceVariant
-                                         font: Tokens.font.icon.small
-                                     }
-                                 }
-
-                                 ColumnLayout {
-                                     Layout.fillWidth: true
-                                     spacing: 0
-
-                                     Text {
-                                         Layout.fillWidth: true
-                                         Layout.alignment: Qt.AlignVCenter
-                                         text: chatTitle ? chatTitle : qsTr("New Chat")
-                                         color: Colours.palette.m3onSurface
-                                         font: Tokens.font.label.small
-                                         elide: Text.ElideRight
-                                          wrapMode: Text.Wrap
-                                          maximumLineCount: 3
-                                     }
-                                 }
-
-                                 Item {
-                                     Layout.alignment: Qt.AlignTop | Qt.AlignRight
-                                     Layout.preferredWidth: 24
-                                     Layout.preferredHeight: 24
-                                     
-                                     StyledRect {
-                                         anchors.fill: parent
-                                         radius: 12
-                                         color: Colours.palette.m3onSurfaceVariant
-                                         opacity: deleteMouseArea.containsMouse ? 0.12 : 0.0
-
-                                         Behavior on opacity { NumberAnimation { duration: 150 } }
-                                     }
-
-                                     MaterialIcon {
-                                         anchors.centerIn: parent
-                                         text: "close"
-                                         font: Tokens.font.icon.small
-                                         color: Colours.palette.m3onSurfaceVariant
-                                     }
-
-                                     MouseArea {
-                                         id: deleteMouseArea
-
-                                         anchors.fill: parent
-                                         hoverEnabled: true
-                                         cursorShape: Qt.PointingHandCursor
-                                         onClicked: deleteChat(chatId)
-                                     }
-                                 }
-                             }
-                         }
-                     }
+                 onChatOpened: chatId => root.loadChat(chatId)
+                 onNewChatRequested: root.createNewChat()
+                 onRemoving: chatIds => {
+                     root.cancelRateLimitRetry();
+                     root.stopClaudeCode(chatIds);
                  }
-
-                 StyledRect {
-                     id: clearAllButton
-
-                     anchors.bottom: parent.bottom
-                     anchors.left: parent.left
-                     width: clearAllLayout.implicitWidth + Tokens.padding.large * 2
-                     height: 32
-                     radius: 16
-                     color: Colours.palette.m3errorContainer
-
-                     StateLayer {
-                         radius: 16
-                         onClicked: clearAllHistory()
-                     }
-
-                     RowLayout {
-                         id: clearAllLayout
-
-                         anchors.centerIn: parent
-                         spacing: Tokens.spacing.small
-
-                         MaterialIcon {
-                             text: "delete"
-                             color: Colours.palette.m3onErrorContainer
-                             font: Tokens.font.icon.small
-                         }
-                         Text {
-                             text: qsTr("Clear All")
-                             color: Colours.palette.m3onErrorContainer
-                             font: Tokens.font.body.small
-                         }
-                     }
-                 }
-
-                 StyledRect {
-                     id: newChatButton
-
-                     anchors.bottom: parent.bottom
-                     anchors.right: parent.right
-                     width: newChatLayout.implicitWidth + Tokens.padding.large * 2
-                     height: 32
-                     radius: 16
-                     color: Colours.palette.m3primaryContainer
-
-                     StateLayer {
-                         radius: 16
-                         onClicked: createNewChat()
-                     }
-
-                     RowLayout {
-                         id: newChatLayout
-
-                         anchors.centerIn: parent
-                         spacing: Tokens.spacing.small
-
-                         MaterialIcon {
-                             text: "add"
-                             color: Colours.palette.m3onPrimaryContainer
-                             font: Tokens.font.icon.small
-                         }
-                         Text {
-                             text: qsTr("New Chat")
-                             color: Colours.palette.m3onPrimaryContainer
-                             font: Tokens.font.body.small
-                         }
-                     }
+                 onSwitchChat: chatId => {
+                     if (chatId)
+                         root.loadChat(chatId);
+                     else
+                         root.createNewChat();
+                     root.isHistoryTab = true;
                  }
              }
          }
@@ -3217,3 +3038,4 @@ Item {
         }
     }
 }
+
