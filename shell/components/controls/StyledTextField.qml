@@ -108,7 +108,7 @@ TextFieldBase {
 
                     PropertyChanges {
                         placeholder.scale: root.smallFontScale
-                        placeholder.anchors.leftMargin: -(1 - root.smallFontScale) * placeholder.width / 2 + root.horizontalPadding + -root.Tokens.spacing.extraSmall
+                        placeholder.anchors.leftMargin: -(1 - root.smallFontScale) * placeholder.width / 2 + root.horizontalPadding + -Tokens.spacing.extraSmall
                     }
                     AnchorChanges {
                         target: placeholder
@@ -205,7 +205,7 @@ TextFieldBase {
             ShapePath {
                 id: path
 
-                readonly property real outlineGap: placeholder.width * root.smallFontScale + root.Tokens.spacing.extraSmall * 2
+                readonly property real outlineGap: placeholder.width * root.smallFontScale + Tokens.spacing.extraSmall * 2
                 property real outlineGapScale: root.activeFocus || root.text ? 1 : 0
                 readonly property real inset: strokeWidth / 2
 
