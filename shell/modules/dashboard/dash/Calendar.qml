@@ -19,26 +19,12 @@ CustomMouseArea {
     readonly property int currMonth: currentDate.getMonth()
     readonly property int currYear: currentDate.getFullYear()
 
-    property date _prevDate: currentDate
-    readonly property int animDirection: currentDate > _prevDate ? -1 : 1
-    property real animTranslate
-    property real animOpacity: 1
-    readonly property real animOffset: -root.Tokens.padding.extraLarge * root.animDirection
-    // Set while the incoming month is parked off to one side, so the Behaviours below
-    // let that reposition land instead of animating it.
-    property bool animRepositioning: false
-
-    function goTo(date: date): void {
-        root._prevDate = root.currentDate;
-        root.screenState.dashboardDate = date;
-    }
-
     function shiftMonth(delta: int): void {
-        goTo(new Date(root.currYear, root.currMonth + delta, 1));
+        root.screenState.dashboardDate = new Date(root.currYear, root.currMonth + delta, 1);
     }
 
     function goToToday(): void {
-        goTo(new Date());
+        root.screenState.dashboardDate = new Date();
     }
 
     function onWheel(event: WheelEvent): void {
@@ -55,31 +41,10 @@ CustomMouseArea {
     acceptedButtons: Qt.MiddleButton
     onClicked: root.goToToday()
 
-    // The caught-up month is parked at the side the wheel came from and slid in, so a
-    // fast flick retargets the two Behaviours instead of replaying a fixed sequence.
-    onCurrentDateChanged: {
-        animRepositioning = true;
-        animTranslate = animOffset;
-        animOpacity = 0;
-        animRepositioning = false;
-        animTranslate = 0;
-        animOpacity = 1;
-    }
+    CalendarMonthSlide {
+        id: monthSlide
 
-    Behavior on animTranslate {
-        enabled: !root.animRepositioning
-
-        Anim {
-            type: Anim.DefaultSpatial
-        }
-    }
-
-    Behavior on animOpacity {
-        enabled: !root.animRepositioning
-
-        Anim {
-            type: Anim.FastEffects
-        }
+        shownDate: root.currentDate
     }
 
     ColumnLayout {
@@ -130,9 +95,9 @@ CustomMouseArea {
                 StyledText {
                     id: monthYearDisplay
 
-                    opacity: root.animOpacity
+                    opacity: monthSlide.opacity
                     transform: Translate {
-                        x: root.animTranslate
+                        x: monthSlide.translate
                     }
 
                     anchors.centerIn: parent
@@ -173,9 +138,9 @@ CustomMouseArea {
             Layout.fillWidth: true
             implicitHeight: grid.implicitHeight
 
-            opacity: root.animOpacity
+            opacity: monthSlide.opacity
             transform: Translate {
-                x: root.animTranslate
+                x: monthSlide.translate
             }
 
             MonthGrid {

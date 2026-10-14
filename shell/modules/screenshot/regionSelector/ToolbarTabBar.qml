@@ -58,7 +58,7 @@ Item {
 
                 implicitHeight: 36
                 implicitWidth: contentRow.implicitWidth + 32
-                radius: (implicitHeight || height) / 2 * Math.min(1, Tokens.rounding.scale)
+                radius: Tokens.rounding.full
 
                 color: tabBtn.current ? Colours.palette.m3secondaryContainer : Qt.alpha(Colours.palette.m3secondaryContainer, 0)
 

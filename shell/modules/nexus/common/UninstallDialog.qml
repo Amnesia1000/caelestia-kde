@@ -56,6 +56,8 @@ Item {
                 anchors.fill: parent
                 color: Colours.palette.m3surfaceContainerHigh
                 radius: Tokens.rounding.large
+                border.width: 1
+                border.color: Colours.palette.m3outlineVariant
             }
         }
 

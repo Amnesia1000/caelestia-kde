@@ -35,8 +35,8 @@ Singleton {
     readonly property Transparency transparency: Transparency {}
     readonly property alias wallLuminance: analyser.luminance
 
-    /// True for a frame or so while a palette lands. CAnim lands every colour while it is
-    /// set; see suppressColourTransitions.
+    /// True while a palette replaces the old one. CAnim lands every colour while it is set
+    /// rather than cross-fading it; see holdColourTransitions.
     property bool switchingTheme: false
 
     signal schemeApplied
@@ -253,7 +253,7 @@ Singleton {
     /// Fold a scheme's `colours` into a palette. A file leaves the leading `#` off and names a
     /// terminal role plainly, so the role a palette holds is not the key the file uses.
     function applyColours(palette: M3Palette, colours: var): void {
-        suppressColourTransitions();
+        holdColourTransitions();
         for (const [role, colour] of Object.entries(colours)) {
             const propName = role.startsWith("term") ? role : `m3${role}`;
             if (palette.hasOwnProperty(propName))
@@ -262,11 +262,15 @@ Singleton {
     }
 
     /// Hold every colour transition still while a palette replaces the old one, so the
-    /// shell switches rather than cross-fading a few hundred colours at once. CAnim reads
-    /// `switchingTheme`; the timer restores transitions once the writes have landed.
-    function suppressColourTransitions(): void {
+    /// shell switches rather than cross-fading a few hundred colours at once.
+    ///
+    /// Every CAnim reads `switchingTheme` as it starts, and the writes `applyColours` makes
+    /// land synchronously, so the hold only has to outlive this event-loop turn: releasing
+    /// it is queued rather than timed, and a colour change made after the hold ends
+    /// animates again.
+    function holdColourTransitions(): void {
         root.switchingTheme = true;
-        themeSwitchTimer.restart();
+        Qt.callLater(() => (root.switchingTheme = false));
     }
 
     function previewNamed(name: string, flavour: string, colours: var, light: bool): void {
@@ -411,15 +415,6 @@ Singleton {
     onLightChanged: Qt.callLater(updatePaletteManager)
 
     onShowPreviewChanged: Qt.callLater(updatePaletteManager)
-
-
-
-    Timer {
-        id: themeSwitchTimer
-
-        interval: 16
-        onTriggered: root.switchingTheme = false
-    }
 
     Timer {
         id: cooldownTimer

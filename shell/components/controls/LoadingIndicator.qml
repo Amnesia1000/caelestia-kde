@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import M3Shapes
+import Caelestia.Config
 import qs.components
 import qs.services
 
@@ -64,7 +65,7 @@ MaterialShape {
     }
 
     FrameAnimation {
-        running: root.running && !root.springSettled
+        running: root.running && !root.springSettled && Tokens.anim.enabled
         onTriggered: {
             const t = timer.elapsed();
 
@@ -105,7 +106,8 @@ MaterialShape {
     RotationAnimation on cRotation {
         id: rotateAnim
 
-        running: root.running
+        // Unbounded, so the switch stops it rather than collapsing its duration.
+        running: root.running && Tokens.anim.enabled
         from: 0
         to: 360
         easing.type: Easing.Linear

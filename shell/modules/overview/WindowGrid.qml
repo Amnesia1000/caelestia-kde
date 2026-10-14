@@ -793,7 +793,7 @@ Item {
         anchors.leftMargin: Tokens.padding.large
         implicitWidth: prevIcon.implicitWidth + Tokens.padding.large * 2
         implicitHeight: prevIcon.implicitHeight + Tokens.padding.large * 2
-        radius: (implicitHeight || height) / 2 * Math.min(1, Tokens.rounding.scale)
+        radius: Tokens.rounding.full
         color: Colours.tPalette.m3surfaceContainerHigh
         opacity: hoverPrev.hovered ? 1 : 0.6
         visible: listView.currentIndex > 0
@@ -819,7 +819,7 @@ Item {
         anchors.rightMargin: Tokens.padding.large
         implicitWidth: nextIcon.implicitWidth + Tokens.padding.large * 2
         implicitHeight: nextIcon.implicitHeight + Tokens.padding.large * 2
-        radius: (implicitHeight || height) / 2 * Math.min(1, Tokens.rounding.scale)
+        radius: Tokens.rounding.full
         color: Colours.tPalette.m3surfaceContainerHigh
         opacity: hoverNext.hovered ? 1 : 0.6
         visible: listView.currentIndex < listView.count - 1

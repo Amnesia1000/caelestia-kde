@@ -21,62 +21,40 @@ StyledRect {
     property date viewDate: new Date()
     readonly property int currMonth: viewDate.getMonth()
     readonly property int currYear: viewDate.getFullYear()
-    property date _prevDate: new Date()
-    readonly property int animDirection: viewDate > _prevDate ? -1 : 1
-    property real animTranslate
-    property real animOpacity: 1
-    readonly property real animOffset: -Tokens.padding.extraLarge * root.scaleOffset * root.animDirection
-    // Set while the incoming frame is parked off to one side, so the Behaviours below
-    // let that reposition land instead of animating it.
-    property bool animRepositioning: false
+
+    function shiftMonth(delta: int): void {
+        root.viewDate = new Date(root.currYear, root.currMonth + delta, 1);
+    }
+
+    function goToToday(): void {
+        root.viewDate = new Date();
+    }
 
     implicitWidth: 497 * root.scaleOffset
     implicitHeight: inner.implicitHeight + Tokens.padding.large * 2 * root.scaleOffset
     radius: Tokens.rounding.extraLarge * root.scaleOffset
     color: Colours.tPalette.m3surfaceContainer
 
-    // The caught-up month is parked at the side the wheel came from and slid in, so a
-    // fast flick retargets the two Behaviours instead of replaying a fixed sequence.
-    onViewDateChanged: {
-        animRepositioning = true;
-        animTranslate = animOffset;
-        animOpacity = 0;
-        animRepositioning = false;
-        animTranslate = 0;
-        animOpacity = 1;
-    }
+    CalendarMonthSlide {
+        id: monthSlide
 
-    Behavior on animTranslate {
-        enabled: !root.animRepositioning
-
-        Anim {
-            type: Anim.DefaultSpatial
-        }
-    }
-
-    Behavior on animOpacity {
-        enabled: !root.animRepositioning
-
-        Anim {
-            type: Anim.FastEffects
-        }
+        shownDate: root.viewDate
+        offset: Tokens.padding.extraLarge * root.scaleOffset
     }
 
     CustomMouseArea {
         function onWheel(event: WheelEvent): void {
-            root._prevDate = root.viewDate;
             if (event.angleDelta.y > 0)
-                root.viewDate = new Date(root.currYear, root.currMonth - 1, 1);
+                root.shiftMonth(-1);
             else if (event.angleDelta.y < 0)
-                root.viewDate = new Date(root.currYear, root.currMonth + 1, 1);
+                root.shiftMonth(1);
         }
 
         anchors.fill: parent
         acceptedButtons: Qt.MiddleButton | Qt.RightButton
         onClicked: mouse => {
             if (mouse.button === Qt.MiddleButton) {
-                root._prevDate = root.viewDate;
-                root.viewDate = new Date();
+                root.goToToday();
             } else if (mouse.button === Qt.RightButton) {
                 root.popouts.currentName = "clockcontext";
             }
@@ -103,10 +81,7 @@ StyledRect {
                 type: IconButton.Text
                 font: Tokens.font.icon.builders.small.weight(Font.Bold).size(Tokens.font.icon.builders.small.build().pointSize * root.fontScale).build()
                 padding: Tokens.padding.small * root.scaleOffset
-                onClicked: {
-                    root._prevDate = root.viewDate;
-                    root.viewDate = new Date(root.currYear, root.currMonth - 1, 1);
-                }
+                onClicked: root.shiftMonth(-1)
             }
 
             Item {
@@ -123,10 +98,7 @@ StyledRect {
                         const now = new Date();
                         return root.currMonth === now.getMonth() && root.currYear === now.getFullYear();
                     }
-                    onClicked: {
-                        root._prevDate = root.viewDate;
-                        root.viewDate = new Date();
-                    }
+                    onClicked: root.goToToday()
 
                     Behavior on radius {
                         Anim {
@@ -138,9 +110,9 @@ StyledRect {
                 StyledText {
                     id: monthYearDisplay
 
-                    opacity: root.animOpacity
+                    opacity: monthSlide.opacity
                     transform: Translate {
-                        x: root.animTranslate
+                        x: monthSlide.translate
                     }
 
                     anchors.centerIn: parent
@@ -156,10 +128,7 @@ StyledRect {
                 type: IconButton.Text
                 font: Tokens.font.icon.builders.small.weight(Font.Bold).size(Tokens.font.icon.builders.small.build().pointSize * root.fontScale).build()
                 padding: Tokens.padding.small * root.scaleOffset
-                onClicked: {
-                    root._prevDate = root.viewDate;
-                    root.viewDate = new Date(root.currYear, root.currMonth + 1, 1);
-                }
+                onClicked: root.shiftMonth(1)
             }
         }
 
@@ -184,9 +153,9 @@ StyledRect {
             Layout.fillWidth: true
             implicitHeight: grid.implicitHeight
 
-            opacity: root.animOpacity
+            opacity: monthSlide.opacity
             transform: Translate {
-                x: root.animTranslate
+                x: monthSlide.translate
             }
 
             MonthGrid {

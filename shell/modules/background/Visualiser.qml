@@ -91,7 +91,9 @@ Item {
                     }
                 }
                 FrameAnimation {
-                    running: root.opacity > 0 && !bars.settled && (Audio.cava?.values?.length ?? 0) > 0
+                    // The bars follow the level, so there is nothing to land: the switch
+                    // stops them where they were rather than leaving them moving.
+                    running: root.opacity > 0 && !bars.settled && (Audio.cava?.values?.length ?? 0) > 0 && Tokens.anim.enabled
                     onTriggered: bars.advance(frameTime)
                 }
             }

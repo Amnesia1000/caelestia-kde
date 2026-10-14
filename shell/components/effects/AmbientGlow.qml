@@ -48,6 +48,18 @@ Item {
             return;
         }
 
+        // Without the fade there is nothing to carry a swap, so the bloom and the address
+        // land together. Restarting the sequence instead would hand the new address to the
+        // live stream on its zero-length first step while the old glow was still fading out,
+        // and the preview would stutter through the swap it was supposed to smooth.
+        if (!Tokens.anim.enabled) {
+            switchAnim.stop();
+            bloomInAnim.stop();
+            root.activeAddress = root.address;
+            root.bloomProgress = 1.0;
+            return;
+        }
+
         if (root.activeAddress === "") {
             root.activeAddress = root.address;
             root.bloomProgress = 0.0;
