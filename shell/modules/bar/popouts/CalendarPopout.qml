@@ -25,56 +25,40 @@ StyledRect {
     readonly property int animDirection: viewDate > _prevDate ? -1 : 1
     property real animTranslate
     property real animOpacity: 1
+    readonly property real animOffset: Tokens.padding.extraLarge * root.scaleOffset * root.animDirection
+    // Set while the incoming frame is parked off to one side, so the Behaviours below
+    // let that reposition land instead of animating it.
+    property bool animRepositioning: false
 
     implicitWidth: 497 * root.scaleOffset
     implicitHeight: inner.implicitHeight + Tokens.padding.large * 2 * root.scaleOffset
     radius: Tokens.rounding.extraLarge * root.scaleOffset
     color: Colours.tPalette.m3surfaceContainer
 
-    Anim {
-        id: trOutAnim
-
-        running: false
-        target: root
-        property: "animTranslate"
-        to: Tokens.padding.extraLarge * root.scaleOffset * root.animDirection
-        type: Anim.FastSpatial
+    // The caught-up month is parked at the side the wheel came from and slid in, so a
+    // fast flick retargets the two Behaviours instead of replaying a fixed sequence.
+    onViewDateChanged: {
+        animRepositioning = true;
+        animTranslate = animOffset;
+        animOpacity = 0;
+        animRepositioning = false;
+        animTranslate = 0;
+        animOpacity = 1;
     }
 
-    Behavior on viewDate {
-        SequentialAnimation {
-            ParallelAnimation {
-                ScriptAction {
-                    script: Qt.callLater(() => trOutAnim.start())
-                }
-                Anim {
-                    target: root
-                    property: "animOpacity"
-                    to: 0
-                    type: Anim.FastEffects
-                }
-            }
-            ScriptAction {
-                script: {
-                    trOutAnim.complete();
-                    root.animTranslate = Tokens.padding.extraLarge * root.scaleOffset * -root.animDirection;
-                }
-            }
-            PropertyAction {}
-            ParallelAnimation {
-                Anim {
-                    target: root
-                    property: "animTranslate"
-                    to: 0
-                    type: Anim.DefaultSpatial
-                }
-                Anim {
-                    target: root
-                    property: "animOpacity"
-                    to: 1
-                    type: Anim.DefaultEffects
-                }
-            }
+    Behavior on animTranslate {
+        enabled: !root.animRepositioning
+
+        Anim {
+            type: Anim.DefaultSpatial
+        }
+    }
+
+    Behavior on animOpacity {
+        enabled: !root.animRepositioning
+
+        Anim {
+            type: Anim.FastEffects
         }
     }
 

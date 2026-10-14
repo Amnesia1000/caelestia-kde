@@ -18,18 +18,34 @@ CustomMouseArea {
     property date currentDate: screenState.dashboardDate
     readonly property int currMonth: currentDate.getMonth()
     readonly property int currYear: currentDate.getFullYear()
-    readonly property int nonAnimCurrMonth: screenState.dashboardDate.getMonth()
-    readonly property int nonAnimCurrYear: screenState.dashboardDate.getFullYear()
 
-    readonly property int animDirection: screenState.dashboardDate > currentDate ? -1 : 1
+    property date _prevDate: currentDate
+    readonly property int animDirection: currentDate > _prevDate ? -1 : 1
     property real animTranslate
     property real animOpacity: 1
+    readonly property real animOffset: root.Tokens.padding.extraLarge * root.animDirection
+    // Set while the incoming month is parked off to one side, so the Behaviours below
+    // let that reposition land instead of animating it.
+    property bool animRepositioning: false
+
+    function goTo(date: date): void {
+        root._prevDate = root.currentDate;
+        root.screenState.dashboardDate = date;
+    }
+
+    function shiftMonth(delta: int): void {
+        goTo(new Date(root.currYear, root.currMonth + delta, 1));
+    }
+
+    function goToToday(): void {
+        goTo(new Date());
+    }
 
     function onWheel(event: WheelEvent): void {
         if (event.angleDelta.y > 0)
-            screenState.dashboardDate = new Date(nonAnimCurrYear, nonAnimCurrMonth - 1, 1);
+            shiftMonth(-1);
         else if (event.angleDelta.y < 0)
-            screenState.dashboardDate = new Date(nonAnimCurrYear, nonAnimCurrMonth + 1, 1);
+            shiftMonth(1);
     }
 
     anchors.left: parent.left
@@ -37,52 +53,32 @@ CustomMouseArea {
     implicitHeight: inner.implicitHeight + inner.anchors.margins * 2
 
     acceptedButtons: Qt.MiddleButton
-    onClicked: root.screenState.dashboardDate = new Date()
+    onClicked: root.goToToday()
 
-    Anim {
-        id: trOutAnim
-
-        running: false
-        target: root
-        property: "animTranslate"
-        to: root.Tokens.padding.extraLarge * root.animDirection
-        type: Anim.FastSpatial
+    // The caught-up month is parked at the side the wheel came from and slid in, so a
+    // fast flick retargets the two Behaviours instead of replaying a fixed sequence.
+    onCurrentDateChanged: {
+        animRepositioning = true;
+        animTranslate = animOffset;
+        animOpacity = 0;
+        animRepositioning = false;
+        animTranslate = 0;
+        animOpacity = 1;
     }
 
-    Behavior on currentDate {
-        SequentialAnimation {
-            ParallelAnimation {
-                ScriptAction {
-                    script: Qt.callLater(() => trOutAnim.start())
-                }
-                Anim {
-                    target: root
-                    property: "animOpacity"
-                    to: 0
-                    type: Anim.FastEffects
-                }
-            }
-            ScriptAction {
-                script: {
-                    trOutAnim.complete();
-                    root.animTranslate = root.Tokens.padding.extraLarge * -root.animDirection;
-                }
-            }
-            PropertyAction {}
-            ParallelAnimation {
-                Anim {
-                    target: root
-                    property: "animTranslate"
-                    to: 0
-                    type: Anim.DefaultSpatial
-                }
-                Anim {
-                    target: root
-                    property: "animOpacity"
-                    to: 1
-                    type: Anim.DefaultEffects
-                }
-            }
+    Behavior on animTranslate {
+        enabled: !root.animRepositioning
+
+        Anim {
+            type: Anim.DefaultSpatial
+        }
+    }
+
+    Behavior on animOpacity {
+        enabled: !root.animRepositioning
+
+        Anim {
+            type: Anim.FastEffects
         }
     }
 
@@ -105,7 +101,7 @@ CustomMouseArea {
                 type: IconButton.Text
                 font: Tokens.font.icon.builders.small.weight(Font.Bold).build()
                 padding: Tokens.padding.small
-                onClicked: root.screenState.dashboardDate = new Date(root.nonAnimCurrYear, root.nonAnimCurrMonth - 1, 1)
+                onClicked: root.shiftMonth(-1)
             }
 
             Item {
@@ -120,9 +116,9 @@ CustomMouseArea {
                     radius: pressed ? Tokens.rounding.small : height / 2
                     disabled: {
                         const now = new Date();
-                        return root.nonAnimCurrMonth === now.getMonth() && root.nonAnimCurrYear === now.getFullYear();
+                        return root.currMonth === now.getMonth() && root.currYear === now.getFullYear();
                     }
-                    onClicked: root.screenState.dashboardDate = new Date()
+                    onClicked: root.goToToday()
 
                     Behavior on radius {
                         Anim {
@@ -152,7 +148,7 @@ CustomMouseArea {
                 type: IconButton.Text
                 font: Tokens.font.icon.builders.small.weight(Font.Bold).build()
                 padding: Tokens.padding.small
-                onClicked: root.screenState.dashboardDate = new Date(root.nonAnimCurrYear, root.nonAnimCurrMonth + 1, 1)
+                onClicked: root.shiftMonth(1)
             }
         }
 
