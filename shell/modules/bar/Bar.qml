@@ -413,22 +413,6 @@ Item {
                 }
             }
             DelegateChoice {
-                roleValue: "dashboardButton"
-                delegate: WrappedLoader {
-                    sourceComponent: DashboardButton {
-                        bar: root
-                    }
-                }
-            }
-            DelegateChoice {
-                roleValue: "utilitiesButton"
-                delegate: WrappedLoader {
-                    sourceComponent: UtilitiesButton {
-                        bar: root
-                    }
-                }
-            }
-            DelegateChoice {
                 roleValue: "workspaces"
                 delegate: WrappedLoader {
                     sourceComponent: Workspaces {
