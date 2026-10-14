@@ -43,8 +43,11 @@ StyledRect {
         }
     }
 
-    implicitWidth: isHorizontal ? Math.max(Tokens.sizes.bar.innerWidth, pillLoader.implicitWidth) : Tokens.sizes.bar.innerWidth
-    implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : Math.max(Tokens.sizes.bar.innerWidth, pillLoader.implicitHeight)
+    // Keyed on effectiveIcon instead of the loader's implicit size: when the
+    // pill unloads the loader can keep reporting its old size until the
+    // shell restarts, leaving the icon centered in the pill's old space.
+    implicitWidth: isHorizontal ? (root.effectiveIcon ? Tokens.sizes.bar.innerWidth : Math.max(Tokens.sizes.bar.innerWidth, pillLoader.implicitWidth)) : Tokens.sizes.bar.innerWidth
+    implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : (root.effectiveIcon ? Tokens.sizes.bar.innerWidth : Math.max(Tokens.sizes.bar.innerWidth, pillLoader.implicitHeight))
 
     color: Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
     radius: Tokens.rounding.full
