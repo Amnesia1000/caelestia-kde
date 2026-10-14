@@ -23,7 +23,7 @@ Item {
         radius: Tokens.rounding.medium
         color: "transparent"
         border.width: 2
-        border.color: !root.enabled ? Qt.alpha(Colours.palette.m3onSurfaceVariant, 0.38) : root.checked ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+        border.color: !root.enabled ? Colours.disabledContainer : root.checked ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
 
         Behavior on border.color {
             CAnim {}
@@ -33,7 +33,7 @@ Item {
             anchors.centerIn: parent
             text: "check"
             fontStyle: Tokens.font.icon.builders.small.weight(Font.DemiBold).build()
-            color: !root.enabled ? Qt.alpha(Colours.palette.m3onSurface, 0.38) : Colours.palette.m3primary
+            color: !root.enabled ? Colours.disabledContent : Colours.palette.m3primary
             scale: root.checked ? 1 : 0
 
             Behavior on scale {

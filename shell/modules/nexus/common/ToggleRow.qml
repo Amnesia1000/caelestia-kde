@@ -66,7 +66,7 @@ StyledSwitch {
 
                 text: root.text
                 font: root.font
-                color: root.enabled ? Colours.palette.m3onSurface : Qt.alpha(Colours.palette.m3onSurface, 0.38)
+                color: root.enabled ? Colours.palette.m3onSurface : Colours.disabledContent
                 elide: Text.ElideRight
             }
 
@@ -76,7 +76,7 @@ StyledSwitch {
 
                 visible: root.subtext
                 text: root.subtext
-                color: root.enabled ? Colours.palette.m3onSurfaceVariant : Qt.alpha(Colours.palette.m3onSurfaceVariant, 0.38)
+                color: root.enabled ? Colours.palette.m3onSurfaceVariant : Colours.disabledContent
                 font: NexusStyle.secondaryFont
                 elide: Text.ElideRight
             }
