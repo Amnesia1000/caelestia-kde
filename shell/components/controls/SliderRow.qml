@@ -51,7 +51,7 @@ StyledRect {
             id: icon
 
             visible: text !== ""
-            color: Colours.palette.m3onSurfaceVariant
+            color: root.enabled ? Colours.palette.m3onSurfaceVariant : Qt.alpha(Colours.palette.m3onSurfaceVariant, 0.38)
             fontStyle: spacious ? Tokens.font.icon.medium : Tokens.font.icon.small
 
             MouseArea {
@@ -81,6 +81,7 @@ StyledRect {
 
                         Layout.fillWidth: true
                         font: Tokens.font.body.small
+                        color: root.enabled ? Colours.palette.m3onSurface : Qt.alpha(Colours.palette.m3onSurface, 0.38)
                         elide: Text.ElideRight
                     }
 
@@ -88,7 +89,7 @@ StyledRect {
                         Layout.fillWidth: true
                         visible: root.subtext !== ""
                         text: root.subtext
-                        color: Colours.palette.m3onSurfaceVariant
+                        color: root.enabled ? Colours.palette.m3onSurfaceVariant : Qt.alpha(Colours.palette.m3onSurfaceVariant, 0.38)
                         font: NexusStyle.secondaryFont
                         elide: Text.ElideRight
                     }
@@ -97,7 +98,7 @@ StyledRect {
                 StyledText {
                     id: valueLabel
 
-                    color: Colours.palette.m3onSurfaceVariant
+                    color: root.enabled ? Colours.palette.m3onSurfaceVariant : Qt.alpha(Colours.palette.m3onSurfaceVariant, 0.38)
                     font: Tokens.font.body.small
                 }
 
