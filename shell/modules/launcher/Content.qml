@@ -196,8 +196,6 @@ Item {
                 const currentItem = list.currentList?.currentItem;
                 if (currentItem) {
                     if (list.showWallpapers) {
-                        if (Colours.scheme === "dynamic" && currentItem.modelData.path !== Wallpapers.actualCurrent)
-                            Wallpapers.previewColourLock = true;
                         Wallpapers.setWallpaper(currentItem.modelData.path);
                         root.visibilities.launcher = false;
                     } else if (text.startsWith(GlobalConfig.launcher.actionPrefix)) {

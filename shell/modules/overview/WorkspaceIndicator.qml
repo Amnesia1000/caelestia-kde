@@ -159,7 +159,7 @@ Item {
             acceptedButtons: Qt.NoButton
             onWheel: event => {
                 if (!Config.bar.scrollActions.workspaces) return;
-                
+
                 if (event.angleDelta.y > 0 || event.angleDelta.x > 0) {
                     if (root.currentIndex > 0) {
                         root.workspaceSelected(root.currentIndex - 1);
@@ -187,15 +187,15 @@ Item {
                     const fromWs = sourceItem.ws;
                     const itemWidth = 200 * root.scaleFactor;
                     const spacing = typeof Tokens !== "undefined" ? Tokens.spacing.small : 8;
-                    
+
                     const localPoint = layout.mapFromItem(workspaceDropArea, drop.x, drop.y);
                     let insertIndex = Math.floor((localPoint.x + spacing / 2) / (itemWidth + spacing));
-                    
+
                     if (insertIndex < 0) insertIndex = 0;
                     if (insertIndex > root.count - 1) insertIndex = root.count - 1;
-                    
+
                     const toWs = insertIndex + 1;
-                    
+
                     if (fromWs !== toWs) {
                         if (Kwin.windowList.length > 0) {
                             const kwinList = Kwin.windowList;
@@ -251,7 +251,7 @@ Item {
                                 if (targetUuid)
                                     Kwin.switchToWorkspace(targetUuid, root.screenName);
                             }
-                        
+
                         }
                     }
                     drop.accept();

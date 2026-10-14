@@ -2018,7 +2018,7 @@
   <context>
     <name>BarComponents</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarComponents.qml" line="+20"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarComponents.qml" line="+21"/>
       <source>Logo</source>
       <translation type="unfinished"/>
     </message>
@@ -2163,7 +2163,7 @@
       <translation>Désactiver le composant</translation>
     </message>
     <message>
-      <location line="+183"/>
+      <location line="+140"/>
       <source>Toggle &amp; rearrange</source>
       <translation>Activer/désactiver et réorganiser</translation>
     </message>
@@ -2221,7 +2221,7 @@
   <context>
     <name>BarDock</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarDock.qml" line="+16"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarDock.qml" line="+17"/>
       <source>Group all windows</source>
       <translation>Grouper toutes les fenêtres</translation>
     </message>
@@ -2246,7 +2246,7 @@
       <translation>Activer le composant</translation>
     </message>
     <message>
-      <location line="+58"/>
+      <location line="+13"/>
       <source>Icon size</source>
       <translation>Taille de l&apos;icône</translation>
     </message>
@@ -2372,7 +2372,7 @@
   <context>
     <name>BarGreeter</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarGreeter.qml" line="+19"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarGreeter.qml" line="+20"/>
       <source>Time of day</source>
       <translation>Heure de la journée</translation>
     </message>
@@ -2412,7 +2412,7 @@
       <translation>Activer le composant</translation>
     </message>
     <message>
-      <location line="+56"/>
+      <location line="+18"/>
       <source>Inverted</source>
       <translation>Inversé</translation>
     </message>
@@ -2995,7 +2995,7 @@
   <context>
     <name>BarUpdates</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarUpdates.qml" line="+19"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarUpdates.qml" line="+13"/>
       <source>Updates</source>
       <translation>Mises à jour</translation>
     </message>
@@ -3010,7 +3010,7 @@
       <translation>Icône toujours visible dans la barre des tâches qui change quand une mise à jour Caelestia est disponible</translation>
     </message>
     <message>
-      <location line="+29"/>
+      <location line="+13"/>
       <source>Enable update checking</source>
       <translation>Activer la vérification des mises à jour</translation>
     </message>
@@ -3898,7 +3898,7 @@
       <translation>Tapez &quot;%1&quot; pour les commandes</translation>
     </message>
     <message>
-      <location line="+331"/>
+      <location line="+329"/>
       <source>Clear clipboard history?</source>
       <translation>Effacer l&apos;historique du presse-papiers ?</translation>
     </message>
@@ -4413,47 +4413,16 @@
     <name>DesktopAddonsPage</name>
     <message>
       <location filename="../modules/nexus/pages/wallandstyle/DesktopAddonsPage.qml" line="+19"/>
-      <source>Top left</source>
-      <translation>En haut à gauche</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <source>Top center</source>
-      <translation>En haut au centre</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <source>Top right</source>
-      <translation>En haut à droite</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <location line="+28"/>
-      <source>Center</source>
-      <translation>Centrer</translation>
-    </message>
-    <message>
-      <location line="-23"/>
-      <source>Bottom left</source>
-      <translation>En bas à gauche</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <source>Bottom center</source>
-      <translation>En bas au centre</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <source>Bottom right</source>
-      <translation>En bas à droite</translation>
-    </message>
-    <message>
-      <location line="+8"/>
       <source>Left</source>
       <translation>Gauche</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+5"/>
+      <source>Center</source>
+      <translation>Centrer</translation>
+    </message>
+    <message>
+      <location line="+5"/>
       <source>Right</source>
       <translation>Droite</translation>
     </message>
@@ -4464,18 +4433,6 @@
     </message>
     <message>
       <location line="+20"/>
-      <location line="+95"/>
-      <source>Desktop clock</source>
-      <translation>Horloge du bureau</translation>
-    </message>
-    <message>
-      <location line="-86"/>
-      <location line="+150"/>
-      <source>Desktop media shapes</source>
-      <translation>Formes de média du bureau</translation>
-    </message>
-    <message>
-      <location line="-136"/>
       <source>Auto-hide media shapes</source>
       <translation>Masquer automatiquement les formes de média</translation>
     </message>
@@ -4486,12 +4443,6 @@
     </message>
     <message>
       <location line="+9"/>
-      <location line="+164"/>
-      <source>Desktop lyrics</source>
-      <translation>Paroles sur le bureau</translation>
-    </message>
-    <message>
-      <location line="-150"/>
       <source>Auto-hide lyrics</source>
       <translation>Masquer automatiquement les paroles</translation>
     </message>
@@ -4531,44 +4482,28 @@
       <translation>Masquer également sur tous les autres écrans si désactivé par une fenêtre</translation>
     </message>
     <message>
-      <location line="+19"/>
-      <location line="+64"/>
-      <location line="+38"/>
-      <source>Scale</source>
-      <translation>Échelle</translation>
+      <location line="+9"/>
+      <source>Desktop clock</source>
+      <translation>Horloge du bureau</translation>
     </message>
     <message>
-      <location line="-91"/>
-      <location line="+65"/>
-      <location line="+37"/>
-      <source>Position</source>
-      <translation type="unfinished"/>
-    </message>
-    <message>
-      <location line="-86"/>
-      <location line="+116"/>
-      <source>Horizontal offset</source>
-      <translation>Décalage horizontal</translation>
-    </message>
-    <message>
-      <location line="-107"/>
-      <location line="+116"/>
-      <source>Vertical offset</source>
-      <translation>Décalage vertical</translation>
-    </message>
-    <message>
-      <location line="-106"/>
-      <location line="+116"/>
+      <location line="+11"/>
+      <location line="+33"/>
       <source>Invert colors</source>
       <translation>Inverser les couleurs</translation>
     </message>
     <message>
-      <location line="-33"/>
+      <location line="-25"/>
+      <source>Desktop lyrics</source>
+      <translation>Paroles sur le bureau</translation>
+    </message>
+    <message>
+      <location line="+10"/>
       <source>Alignment</source>
       <translation>Alignement</translation>
     </message>
     <message>
-      <location line="+41"/>
+      <location line="+23"/>
       <source>Visualiser</source>
       <translation>Visualiseur</translation>
     </message>
@@ -4717,7 +4652,7 @@
   <context>
     <name>DesktopIcons</name>
     <message>
-      <location filename="../modules/background/DesktopIcons.qml" line="+579"/>
+      <location filename="../modules/background/DesktopIcons.qml" line="+585"/>
       <location line="+3"/>
       <source>Group</source>
       <translation>Groupe</translation>
@@ -4741,17 +4676,9 @@
       <translation>Échec de l&apos;opération de fichier</translation>
     </message>
     <message>
-      <location line="+441"/>
+      <location line="+467"/>
       <source>%1 could not complete the request</source>
       <translation>%1 n&apos;a pas pu exécuter la requête</translation>
-    </message>
-  </context>
-  <context>
-    <name>DesktopLyrics</name>
-    <message>
-      <location filename="../modules/background/DesktopLyrics.qml" line="+291"/>
-      <source>Loading lyrics...</source>
-      <translation>Chargement des paroles...</translation>
     </message>
   </context>
   <context>
@@ -4873,8 +4800,8 @@
     </message>
     <message>
       <location line="+1"/>
-      <source>Clock, Shapes, Lyrics, Visualiser</source>
-      <translation>Horloge, Formes, Paroles, Visualiseur</translation>
+      <source>Visualiser, auto-hide, styling</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+7"/>
@@ -8107,7 +8034,7 @@ Allez maintenant prendre l&apos;air</translation>
     <name>NotifData</name>
     <message>
       <location filename="../services/NotifData.qml" line="+19"/>
-      <location line="+159"/>
+      <location line="+196"/>
       <source>now</source>
       <translation>maintenant</translation>
     </message>
@@ -8298,6 +8225,16 @@ Allez maintenant prendre l&apos;air</translation>
     </message>
     <message>
       <location line="+7"/>
+      <source>Do not disturb while sharing</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Mute notifications while the screen is being shared or recorded</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
       <source>Default timeout</source>
       <translation>Délai d&apos;attente par défaut</translation>
     </message>
@@ -12592,7 +12529,7 @@ PIN : %1</translation>
   <context>
     <name>Updates</name>
     <message>
-      <location filename="../modules/bar/popouts/Updates.qml" line="+32"/>
+      <location filename="../modules/bar/popouts/Updates.qml" line="+33"/>
       <source>Checking for updates…</source>
       <translation>Vérification des mises à jour…</translation>
     </message>
@@ -12622,7 +12559,7 @@ PIN : %1</translation>
       <translation>%1 s</translation>
     </message>
     <message>
-      <location line="+70"/>
+      <location line="+64"/>
       <location line="+78"/>
       <source>Checking…</source>
       <translation>Vérification en cours…</translation>
@@ -12661,7 +12598,7 @@ PIN : %1</translation>
   <context>
     <name>UpdatesPage</name>
     <message>
-      <location filename="../modules/nexus/pages/UpdatesPage.qml" line="+138"/>
+      <location filename="../modules/nexus/pages/UpdatesPage.qml" line="+139"/>
       <source>Updates</source>
       <translation>Mises à jour</translation>
     </message>
@@ -12781,7 +12718,7 @@ PIN : %1</translation>
       <translation>Afficher une icône de notification dans la barre des tâches lorsque des mises à jour sont disponibles</translation>
     </message>
     <message>
-      <location line="+39"/>
+      <location line="+8"/>
       <source>Open Backup Folder</source>
       <translation>Ouvrir le dossier de sauvegarde</translation>
     </message>
@@ -13683,8 +13620,23 @@ PIN : %1</translation>
     </message>
     <message>
       <location line="+1"/>
+      <source>Desktop Clock</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Media</source>
       <translation>Médias</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Media Shapes</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Desktop Lyrics</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+1"/>

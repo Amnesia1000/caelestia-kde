@@ -35,7 +35,6 @@ StyledRect {
         elide: Text.ElideRight
         maximumLineCount: 1
     }
-
     MouseArea {
         anchors.fill: parent
         acceptedButtons: Qt.RightButton

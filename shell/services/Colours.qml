@@ -35,6 +35,8 @@ Singleton {
     readonly property Transparency transparency: Transparency {}
     readonly property alias wallLuminance: analyser.luminance
 
+    signal schemeApplied
+
     function updatePaletteManager(): void {
         const p = root.palette;
         PaletteManager.update(
@@ -175,56 +177,64 @@ Singleton {
         return harmonizeWith(designColor, root.palette.m3primary);
     }
 
-    function load(data: string, isPreview: bool): void {
-        const raw = (data || "").trim();
-        if (raw === "") {
-            if (!isPreview)
-                scheduleSchemeReload();
+    function load(data: string): void {
+        const scheme = parseScheme(data);
+        if (!scheme) {
+            scheduleSchemeReload();
             return;
         }
 
-        const colours = isPreview ? preview : current;
+        root.scheme = (scheme.name || "").trim();
+        root.flavour = (scheme.flavour || "").trim();
+        root.variant = (scheme.variant || "").trim();
+        root.currentLight = scheme.mode === "light";
+
+        root.showPreview = false;
+
+        // Absent, null, and a value the range does not take all mean the same thing here:
+        // what is in effect is the palette the engine produced. 0 is a real setting (a grey
+        // palette), so this cannot lean on falsiness either.
+        const intensity = Number(scheme.intensity ?? NaN);
+        root.intensity = Number.isFinite(intensity) ? Math.min(root.maxIntensity, Math.max(0, intensity)) : 1.0;
+
+        applyColours(root.current, scheme.colours);
+
+        root.schemeLoaded = true;
+        root.schemeRetryCount = 0;
+
+        root.schemeApplied();
+    }
+
+    function loadPreview(data: string): void {
+        const scheme = parseScheme(data);
+        if (scheme)
+            applyPreview(scheme);
+    }
+
+    function applyPreview(scheme: var): void {
+        root.previewScheme = (scheme.name || "").trim();
+        root.previewFlavour = (scheme.flavour || "").trim();
+        root.previewVariant = (scheme.variant || "").trim();
+        root.previewLight = scheme.mode === "light";
+
+        applyColours(root.preview, scheme.colours);
+
+        root.showPreview = true;
+    }
+
+    function parseScheme(data: string): var {
+        const raw = (data || "").trim();
+        if (raw === "")
+            return null;
+
         let scheme = null;
         try {
             scheme = JSON.parse(raw);
         } catch (e) {
-            if (!isPreview)
-                scheduleSchemeReload();
-            return;
+            return null;
         }
 
-        if (!scheme || !scheme.colours) {
-            if (!isPreview)
-                scheduleSchemeReload();
-            return;
-        }
-
-        if (!isPreview) {
-            root.scheme = (scheme.name || "").trim();
-            root.flavour = (scheme.flavour || "").trim();
-            root.variant = (scheme.variant || "").trim();
-            root.currentLight = scheme.mode === "light";
-
-            root.showPreview = false;
-
-            // Absent, null, and a value the range does not take all mean the same thing here:
-            // what is in effect is the palette the engine produced. 0 is a real setting (a grey
-            // palette), so this cannot lean on falsiness either.
-            const intensity = Number(scheme.intensity ?? NaN);
-            root.intensity = Number.isFinite(intensity) ? Math.min(root.maxIntensity, Math.max(0, intensity)) : 1.0;
-        } else {
-            root.previewScheme = (scheme.name || "").trim();
-            root.previewFlavour = (scheme.flavour || "").trim();
-            root.previewVariant = (scheme.variant || "").trim();
-            root.previewLight = scheme.mode === "light";
-        }
-
-        applyColours(colours, scheme.colours);
-
-        if (!isPreview) {
-            root.schemeLoaded = true;
-            root.schemeRetryCount = 0;
-        }
+        return scheme && scheme.colours ? scheme : null;
     }
 
     function scheduleSchemeReload(): void {
@@ -247,14 +257,8 @@ Singleton {
     }
 
     function previewNamed(name: string, flavour: string, colours: var, light: bool): void {
-        if (!colours)
-            return;
-        root.previewScheme = name;
-        root.previewFlavour = flavour;
-        root.previewVariant = root.variant;
-        root.previewLight = light;
-        applyColours(root.preview, colours);
-        root.showPreview = true;
+        if (colours)
+            applyPreview({ name, flavour, variant: root.variant, mode: light ? "light" : "dark", colours });
     }
 
     function clearPreview(): void {
@@ -321,7 +325,7 @@ Singleton {
         path: `${Paths.state}/scheme.json`
         watchChanges: true
         onFileChanged: reload()
-        onLoaded: root.load(text(), false)
+        onLoaded: root.load(text())
     }
 
     Connections {

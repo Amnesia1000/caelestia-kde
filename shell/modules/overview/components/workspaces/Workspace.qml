@@ -335,7 +335,7 @@ StyledRect {
                             let tl = iconDelegate;
                             while (tl.parent) tl = tl.parent;
                             iconDelegate.topLevel = tl;
-                            
+
                             if (tl) {
                                 const p = iconDelegate.mapToItem(tl, 0, 0);
                                 iconDelegate.dragStartX = p.x;
@@ -363,7 +363,7 @@ StyledRect {
                         if (root.active) {
                             if (modelData.address) {
                                 Kwin.focusWindow(modelData.address);
-                                
+
                                 let p = parent;
                                 while (p) {
                                     if (p.requestClose) {

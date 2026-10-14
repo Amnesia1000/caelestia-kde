@@ -1414,7 +1414,7 @@ Item {
         inAgentLoop = true;
         currentThoughtText = "";
         isThoughtExpanded = false;
-        
+
         if (isSystemToolResult) {
             if (toolName === "web_search" || toolName === "read_webpage") {
                 currentActionText = "Reading results...";
@@ -1461,7 +1461,7 @@ Item {
             xhr.open("POST", ollamaUrl + "/api/chat", true);
             xhr.setRequestHeader("Content-Type", "application/json");
         }
-        
+
         var processedTextLength = 0;
         var accumulatedThoughtText = "";
         var accumulatedContentText = "";
@@ -1477,9 +1477,9 @@ Item {
                     var currentText = xhr.responseText;
                     var unparsed = currentText.substring(processedTextLength);
                     var lines = unparsed.split('\n');
-                    
+
                     var linesToProcess = (xhr.readyState === XMLHttpRequest.DONE) ? lines.length : lines.length - 1;
-                    
+
                     for (var i = 0; i < linesToProcess; i++) {
                         var rawLine = lines[i];
                         var line = rawLine.trim();
@@ -1594,14 +1594,14 @@ Item {
                         listView.positionViewAtEnd();
                     }
                 }
-                
+
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (root.currentRequest === xhr)
                         root.currentRequest = null;
                     if (xhr.status === 200) {
                         root.rateLimitRetries = 0;
                         chatStore.update(reply.chatId, reply.msgId, { "isFinished": true });
-                        
+
                         var enableTools = GlobalConfig.ai.enableCelestialMode;
                         var textToolCalls = enableTools ? AiToolCalls.parseTextToolCalls(rawAccumulatedContentText) : [];
 
@@ -1754,7 +1754,7 @@ Item {
         if (enableTools) {
             sysPrompt += AiToolCalls.toolsPrompt();
         }
-        
+
         var requestBody;
         if (useAnthropic) {
             var claudeMessages = [];
@@ -1887,7 +1887,7 @@ Item {
                      radius: Tokens.rounding.full
                      color: Colours.palette.m3primary
                      x: isHistoryTab ? historyTab.x : chatTab.x
-                     
+
                      Behavior on x { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
                      Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
                  }
@@ -1902,7 +1902,7 @@ Item {
 
                          height: parent.height
                          width: !isHistoryTab ? 40 : chatContent.implicitWidth + Tokens.padding.medium * 2
-                         
+
 
                          Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
@@ -1938,7 +1938,7 @@ Item {
 
                          height: parent.height
                          width: isHistoryTab ? 40 : historyContent.implicitWidth + Tokens.padding.medium * 2
-                         
+
 
                          Behavior on width { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
 
@@ -2225,7 +2225,7 @@ Item {
              }
 
          }
-         
+
          Item {
              id: contentStack
 
@@ -2326,7 +2326,7 @@ Item {
                              height: shown ? bubbleBg.height + Tokens.spacing.medium : 0
                              visible: opacity > 0
                              opacity: shown ? 1 : 0
-                             
+
                              Behavior on height { Anim { type: Anim.DefaultSpatial } }
                              Behavior on opacity { Anim { type: Anim.DefaultSpatial } }
 
@@ -2350,10 +2350,10 @@ Item {
                                      anchors.fill: parent
                                      anchors.margins: Tokens.padding.medium
                                      spacing: Tokens.spacing.small
-                                     
+
                                      Row {
                                          spacing: Tokens.spacing.small
-                                         
+
                                          LoadingIndicator {
                                              visible: !root.isClaudeCode
                                              width: 20
@@ -2391,20 +2391,20 @@ Item {
                                                  onTriggered: starGlyph.frame = (starGlyph.frame + 1) % starGlyph.frames.length
                                              }
                                          }
-                                         
+
                                          Item {
                                              width: mainText.implicitWidth
                                              height: mainText.implicitHeight
 
                                              Behavior on width { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
-                                             
+
                                              StyledText {
                                                  id: mainText
 
                                                  text: displayedText
                                                  color: Colours.palette.m3onSurfaceVariant
                                                  font: Tokens.font.body.small
-                                                 
+
                                                  property string displayedText: root.currentActionText
 
                                                  property string nextText: ""
@@ -2447,13 +2447,13 @@ Item {
                                                  }
                                              }
                                          }
-                                         
+
                                          Item {
                                              visible: root.currentThoughtText !== ""
                                              width: Tokens.spacing.medium
                                              height: 1
                                          }
-                                         
+
                                          Item {
                                              visible: root.currentThoughtText !== ""
                                              width: thoughtRowFooter.implicitWidth
@@ -2500,7 +2500,7 @@ Item {
                                          width: root.isThoughtExpanded ? footerThoughtContent.width : 0
                                          height: root.isThoughtExpanded ? footerThoughtContent.implicitHeight : 0
                                          clip: true
-                                         
+
                                          Behavior on height { NumberAnimation { duration: 200; easing.type: Easing.InOutQuad } }
 
                                          TextEdit {
@@ -2517,7 +2517,7 @@ Item {
                                              selectionColor: Colours.palette.m3primary
                                              selectedTextColor: Colours.palette.m3onPrimary
                                              opacity: root.isThoughtExpanded ? 1.0 : 0.0
-                                             
+
                                              Behavior on opacity {
                                                  SequentialAnimation {
                                                      PauseAnimation { duration: root.isThoughtExpanded ? 100 : 0 }
@@ -2860,7 +2860,7 @@ Item {
                              id: inputScroll
                              Layout.fillWidth: true
                              Layout.fillHeight: true
-                             
+
                              TextArea {
                                  id: inputArea
 
@@ -2957,7 +2957,7 @@ Item {
                                  shape: root.isTyping ? MaterialShape.Cookie4Sided : (root.canSend ? MaterialShape.Arrow : MaterialShape.Circle)
                                  scale: (!root.canSend && !root.isTyping) ? 1 : sendMouse.pressed ? 0.6 : sendMouse.containsMouse ? 0.8 : 0.7
                                  rotation: 0
-                                 
+
                                  Behavior on scale { Anim { type: Anim.FastSpatial } }
                                  Behavior on color { CAnim {} }
 
