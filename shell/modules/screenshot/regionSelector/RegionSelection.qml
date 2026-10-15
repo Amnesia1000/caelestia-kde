@@ -225,41 +225,22 @@ PanelWindow {
     property real regionY: Math.min(dragStartY, draggingY)
 
     TempScreenshotProcess {
-        id: screenshotProc
-
         running: true
         screen: root.screen
         screenshotDir: root.screenshotDir
         screenshotPath: root.screenshotPath
+        // A failed or timed-out snapshot (timeout exits 124) must never open
+        // the selector: it grabs keyboard focus exclusively, so a broken
+        // overlay looks like a frozen shell. The timeout itself lives in
+        // TempScreenshotProcess via `exec timeout`.
         onExited: (exitCode, exitStatus) => {
             Recorder.probeRecording();
-            // A failed snapshot must never open the selector: it grabs
-            // keyboard focus exclusively, so a broken overlay looks like
-            // a frozen shell.
             if (exitCode !== 0) {
                 console.warn("[RegionSelection] snapshot failed with exit code", exitCode, "- backing out");
                 root.dismiss();
                 return;
             }
             root.preparationDone = true;
-        }
-    }
-
-    // Safety net: the screenshot backend hangs instead of exiting when the
-    // portal is broken, which would leave the exclusive-focus overlay up
-    // forever. If the snapshot takes too long, kill it and back out.
-    Timer {
-        id: snapshotTimeout
-
-        interval: 15000
-        running: true
-        repeat: false
-        onTriggered: {
-            if (root.preparationDone)
-                return;
-            screenshotProc.running = false;
-            Quickshell.execDetached(["pkill", "-9", "-f", "spectacle -b -n -m"]);
-            root.dismiss();
         }
     }
 

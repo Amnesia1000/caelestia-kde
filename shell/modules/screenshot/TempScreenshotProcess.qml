@@ -17,5 +17,11 @@ Process {
 
     readonly property string _safePath: screenshotPath.split("'").join("'\\''")
 
-    command: ["bash", "-c", `mkdir -p '${_safeDir}' && spectacle -b -n -m -o '${_safePath}'`]
+    // Safety net: the backend hangs instead of exiting when the portal is
+    // broken, which would leave the exclusive-focus selector up forever.
+    // `timeout` kills it so onExited fires (124) and the caller backs out.
+    // Normal captures take well under a second.
+    property int timeoutSeconds: 15
+
+    command: ["bash", "-c", `mkdir -p '${_safeDir}' && exec timeout ${timeoutSeconds} spectacle -b -n -m -o '${_safePath}'`]
 }
