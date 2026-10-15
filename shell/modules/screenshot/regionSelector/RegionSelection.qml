@@ -229,10 +229,6 @@ PanelWindow {
         screen: root.screen
         screenshotDir: root.screenshotDir
         screenshotPath: root.screenshotPath
-        // A failed or timed-out snapshot (timeout exits 124) must never open
-        // the selector: it grabs keyboard focus exclusively, so a broken
-        // overlay looks like a frozen shell. The timeout itself lives in
-        // TempScreenshotProcess via `exec timeout`.
         onExited: (exitCode, exitStatus) => {
             Recorder.probeRecording();
             if (exitCode !== 0) {
