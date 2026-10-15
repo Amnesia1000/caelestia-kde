@@ -2,9 +2,11 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Services.Mpris
 import Caelestia.Config
 import qs.components
+import qs.components.controls
 import qs.services
 import qs.modules.dashboard.dash as DashMedia
 
@@ -34,17 +36,77 @@ ColumnLayout {
     width: root.miniWidth + Tokens.padding.large * 2
     spacing: Tokens.spacing.small
 
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: Tokens.spacing.small
-        visible: root.sourceName !== ""
+    Item {
+        id: sourceSelector
 
-        StyledText {
-            Layout.fillWidth: true
-            text: root.sourceName
-            font: Tokens.font.label.medium
-            color: Colours.palette.m3onSurfaceVariant
-            elide: Text.ElideRight
+        Layout.fillWidth: true
+        implicitHeight: sourceClickArea.implicitHeight
+        visible: root.sourceName !== "" || Players.list.length > 0
+
+        CustomMouseArea {
+            id: sourceClickArea
+
+            anchors.left: parent.left
+            anchors.right: parent.right
+            implicitHeight: Math.max(sourceLabel.implicitHeight, sourceExpandIcon.implicitHeight) + Tokens.padding.extraSmall
+            cursorShape: Players.list.length > 1 ? Qt.PointingHandCursor : Qt.ArrowCursor
+            hoverEnabled: true
+
+            onClicked: {
+                if (Players.list.length > 1)
+                    sourceMenu.expanded = !sourceMenu.expanded;
+            }
+
+            RowLayout {
+                anchors.fill: parent
+                spacing: Tokens.spacing.extraSmall
+
+                StyledText {
+                    id: sourceLabel
+
+                    Layout.fillWidth: true
+                    text: root.sourceName || qsTr("No media")
+                    font: Tokens.font.label.medium
+                    color: sourceClickArea.containsMouse && Players.list.length > 1 ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+                    elide: Text.ElideRight
+                }
+
+                MaterialIcon {
+                    id: sourceExpandIcon
+
+                    visible: Players.list.length > 1
+                    text: "expand_more"
+                    fontStyle: Tokens.font.icon.small
+                    color: sourceClickArea.containsMouse ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+                    rotation: sourceMenu.expanded ? 180 : 0
+
+                    Behavior on rotation {
+                        Anim {}
+                    }
+                }
+            }
+        }
+
+        Menu {
+            id: sourceMenu
+
+            attachTo: sourceSelector
+            attachSideY: Menu.Bottom
+            thisSideY: Menu.Top
+            attachSideX: Menu.Left
+            thisSideX: Menu.Left
+            marginY: Tokens.spacing.extraSmall
+
+            items: playerList.instances
+            onItemSelected: item => Players.manualActive = (item as PlayerItem).modelData
+        }
+
+        Variants {
+            id: playerList
+
+            model: Players.list
+
+            PlayerItem {}
         }
     }
 
@@ -69,5 +131,13 @@ ColumnLayout {
             else if (event.angleDelta.y < 0)
                 root.setVolumeLevel(root.currentVolume - step);
         }
+    }
+
+    component PlayerItem: MenuItem {
+        required property MprisPlayer modelData
+
+        icon: modelData === Players.active ? "check" : ""
+        text: Players.getIdentity(modelData)
+        activeIcon: "animated_images"
     }
 }

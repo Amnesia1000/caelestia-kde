@@ -12,7 +12,7 @@ Singleton {
     id: root
 
     readonly property list<MprisPlayer> list: Mpris.players.values
-    readonly property MprisPlayer active: props.manualActive ?? list.find(p => getIdentity(p) === GlobalConfig.services.defaultPlayer) ?? list[0] ?? null
+    readonly property MprisPlayer active: (props.manualActive && list.includes(props.manualActive)) ? props.manualActive : (list.find(p => getIdentity(p) === GlobalConfig.services.defaultPlayer) ?? list.find(p => p.isPlaying) ?? list[0] ?? null)
     property alias manualActive: props.manualActive
 
     readonly property list<string> appVolumePlayers: ["Spotify", "Fastpotify", "YouTube Music"]
@@ -71,6 +71,8 @@ Singleton {
     // (empty list follows the active player), or null when none matches.
     // Prefers currently-playing matches over paused ones.
     function sourcePlayer(names: var): MprisPlayer {
+        if (props.manualActive && root.list.includes(props.manualActive))
+            return props.manualActive;
         const sources = names || [];
         if (sources.length === 0)
             return root.active;
@@ -87,7 +89,7 @@ Singleton {
                 }
             }
         }
-        return firstMatch;
+        return firstMatch ?? root.active;
     }
 
     // A display name cut into comparable tokens: lowercased, ".desktop" and
@@ -253,6 +255,10 @@ Singleton {
     }
 
     onActiveChanged: lastNowPlayingKey = ""
+    onListChanged: {
+        if (props.manualActive && !list.includes(props.manualActive))
+            props.manualActive = null;
+    }
 
     Connections {
         function onPostTrackChanged(): void {
