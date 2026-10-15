@@ -23,31 +23,71 @@ Singleton {
         if (!player)
             return "";
         const alias = GlobalConfig.services.playerAliases.values.find(a => a.from === player.identity);
-        return alias?.to ?? player.identity;
+        if (alias)
+            return alias.to;
+        if (player.identity === "com.github.th-ch.youtube-music" || player.identity === "com.github.th_ch.youtube_music")
+            return "YouTube Music";
+        return player.identity;
+    }
+
+    function playerMatchesSource(player: MprisPlayer, name: string): bool {
+        if (!player || !name)
+            return false;
+        const target = String(name).trim().toLowerCase();
+        if (!target)
+            return false;
+
+        const friendly = root.getIdentity(player).toLowerCase();
+        const raw = String(player.identity ?? "").toLowerCase();
+        const entry = String(player.entry ?? "").toLowerCase();
+
+        if (friendly.includes(target) || raw.includes(target) || entry.includes(target))
+            return true;
+
+        const cleanTarget = target.replace(/[^a-z0-9]/g, "");
+        if (cleanTarget) {
+            const cleanFriendly = friendly.replace(/[^a-z0-9]/g, "");
+            const cleanRaw = raw.replace(/[^a-z0-9]/g, "");
+            const cleanEntry = entry.replace(/[^a-z0-9]/g, "");
+
+            if (cleanFriendly.includes(cleanTarget) || cleanRaw.includes(cleanTarget) || cleanEntry.includes(cleanTarget))
+                return true;
+
+            if ((cleanTarget === "youtubemusic" && cleanFriendly === "ytmusic") ||
+                (cleanTarget === "ytmusic" && (cleanFriendly === "youtubemusic" || cleanRaw.includes("youtube"))))
+                return true;
+        }
+
+        return false;
     }
 
     function supportsAppVolume(player: MprisPlayer): bool {
         if (!player)
             return false;
-        const identity = root.getIdentity(player).toLowerCase();
-        return root.appVolumePlayers.some(n => identity.includes(n.toLowerCase()));
+        return root.appVolumePlayers.some(n => root.playerMatchesSource(player, n));
     }
 
     // First player whose identity matches one of the given source names
     // (empty list follows the active player), or null when none matches.
+    // Prefers currently-playing matches over paused ones.
     function sourcePlayer(names: var): MprisPlayer {
         const sources = names || [];
         if (sources.length === 0)
             return root.active;
         const list = root.list || [];
+        let firstMatch = null;
         for (let i = 0; i < list.length; i++) {
-            const identity = root.getIdentity(list[i]).toLowerCase();
+            const p = list[i];
             for (let j = 0; j < sources.length; j++) {
-                if (identity.includes(String(sources[j]).toLowerCase()))
-                    return list[i];
+                if (root.playerMatchesSource(p, String(sources[j]))) {
+                    if (p.isPlaying)
+                        return p;
+                    if (!firstMatch)
+                        firstMatch = p;
+                }
             }
         }
-        return null;
+        return firstMatch;
     }
 
     // A display name cut into comparable tokens: lowercased, ".desktop" and
