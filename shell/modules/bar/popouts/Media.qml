@@ -123,6 +123,7 @@ ColumnLayout {
             id: dashMedia
 
             width: root.miniWidth
+            player: root.player
             extraButtons: true
             showGif: false
         }

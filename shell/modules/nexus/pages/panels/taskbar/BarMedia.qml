@@ -100,7 +100,7 @@ PageBase {
         TextFieldRow {
             last: true
             label: qsTr("Ignored players")
-            subtext: qsTr("Player names to skip, comma-separated; empty follows anything")
+            subtext: qsTr("Player names to skip, comma-separated; empty follows everything")
             value: (Config.bar.media.excludedSources || []).join(", ")
             onEditingFinished: value => {
                 GlobalConfig.bar.media.excludedSources = value.split(",").map(s => s.trim()).filter(s => s.length > 0);
