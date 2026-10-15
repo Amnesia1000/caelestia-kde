@@ -11,11 +11,11 @@
 #include <QJsonObject>
 #include <QKeySequence>
 #include <QProcess>
-#include <QStandardPaths>
 #include <QStringList>
 #include <QTextStream>
 #include <cstdlib>
 
+#include "../Config/common.hpp"
 #include "../Config/generalconfig.hpp"
 #include "../Config/rootnodes.hpp"
 
@@ -31,8 +31,7 @@ QString escapeGVariantString(const QString& value) {
 }
 
 QString stolenShortcutsPath() {
-    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
-           QStringLiteral("/caelestia/stolen-shortcuts.json");
+    return caelestia::config::configFile(QStringLiteral("stolen-shortcuts.json"));
 }
 
 QStringList buildRestoreArgs(const QString& component, const QString& action, const QList<QKeySequence>& keys) {

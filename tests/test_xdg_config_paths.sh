@@ -3,24 +3,43 @@ set -uo pipefail
 
 source "$(dirname "$0")/helpers.sh"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-shortcuts_function="$(sed -n '/QString stolenShortcutsPath()/,/^}/p' "$REPO_ROOT/shell/plugin/src/Caelestia/Services/globalshortcut.cpp")"
-edges_function="$(sed -n '/QString stolenEdgesPath()/,/^}/p' "$REPO_ROOT/shell/plugin/src/Caelestia/Services/screenedges.cpp")"
-keybinds_function="$(sed -n '/QString KeybindsModel::keybindsPath() const/,/^}/p' "$REPO_ROOT/shell/plugin/src/Caelestia/Services/keybindsmodel.cpp")"
+SERVICES="$REPO_ROOT/shell/plugin/src/Caelestia/Services"
 
-test_all_saved_paths_use_qstandardpaths_config_location() {
-    local function
-    for function in "$shortcuts_function" "$edges_function" "$keybinds_function"; do
-        assert_contains "$function" 'QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)' \
-            "each persisted Caelestia config path must honor XDG_CONFIG_HOME"
+# "<signature>|<source file>|<filename>" for each persisted Caelestia file. The
+# signature locates the function that builds the path; the filename must survive.
+persisted_paths=(
+    "QString stolenShortcutsPath()|globalshortcut.cpp|stolen-shortcuts.json"
+    "QString stolenEdgesPath()|screenedges.cpp|stolen-screen-edges.json"
+    "QString KeybindsModel::keybindsPath() const|keybindsmodel.cpp|keybinds.json"
+)
+
+path_function() {
+    sed -n "/$1/,/^}/p" "$SERVICES/$2"
+}
+
+test_persisted_paths_come_from_the_config_layer() {
+    local spec signature file function
+    for spec in "${persisted_paths[@]}"; do
+        IFS='|' read -r signature file _ <<< "$spec"
+        function="$(path_function "$signature" "$file")"
+        assert_contains "$function" 'config::' \
+            "$file must take its path from the config layer, which is what honors XDG_CONFIG_HOME"
+        assert_not_contains "$function" 'QStandardPaths::' \
+            "$file must not resolve the config root next to the path it builds"
         assert_not_contains "$function" 'QDir::homePath()' \
-            "persisted Caelestia config paths must not hard-code the home directory"
+            "$file must not hard-code the home directory"
+        assert_not_contains "$function" '/.config' \
+            "$file must not name the default config root"
     done
 }
 
-test_each_path_keeps_its_existing_relative_location() {
-    assert_contains "$shortcuts_function" '"/caelestia/stolen-shortcuts.json"' "shortcut backup filename must stay unchanged"
-    assert_contains "$edges_function" '"/caelestia/stolen-screen-edges.json"' "edge backup filename must stay unchanged"
-    assert_contains "$keybinds_function" '"/caelestia/keybinds.json"' "keybind filename must stay unchanged"
+test_each_path_keeps_its_existing_filename() {
+    local spec signature file name function
+    for spec in "${persisted_paths[@]}"; do
+        IFS='|' read -r signature file name <<< "$spec"
+        function="$(path_function "$signature" "$file")"
+        assert_contains "$function" "\"$name\"" "$file must keep writing $name"
+    done
 }
 
 run_tests

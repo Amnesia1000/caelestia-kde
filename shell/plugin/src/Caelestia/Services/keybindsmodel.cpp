@@ -10,8 +10,8 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QLoggingCategory>
-#include <QStandardPaths>
 
+#include "../Config/common.hpp"
 #include "../Config/generalconfig.hpp"
 #include "../Config/keybindsdefaults.hpp"
 #include "../Config/rootnodes.hpp"
@@ -252,8 +252,7 @@ void KeybindsModel::onShortcutUnregistered(GlobalShortcut* sc) {
 }
 
 QString KeybindsModel::keybindsPath() const {
-    return QStandardPaths::writableLocation(QStandardPaths::ConfigLocation) +
-           QStringLiteral("/caelestia/keybinds.json");
+    return caelestia::config::configFile(QStringLiteral("keybinds.json"));
 }
 
 void KeybindsModel::saveKeybinds() {

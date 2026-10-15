@@ -370,14 +370,16 @@ The installer configures exactly **5 desktops**. If you had a different count be
 Caelestia's `GlobalShortcut` system uses `kglobalacceld`. When it registers a shortcut that conflicts with another app, it "steals" the binding and records it in:
 
 ```text
-~/.config/caelestia/stolen-shortcuts.json
+${XDG_CONFIG_HOME:-~/.config}/caelestia/stolen-shortcuts.json
 ```
 
 **If shortcuts are missing or wrong:**
 ```bash
-rm -f ~/.config/caelestia/stolen-shortcuts.json
+rm -f "${XDG_CONFIG_HOME:-$HOME/.config}/caelestia/stolen-shortcuts.json"
 systemctl --user status plasma-kglobalaccel.service
 ```
+
+A file an older version left at `~/.config/caelestia/` because it ignored `XDG_CONFIG_HOME` is not read any more. If you set `XDG_CONFIG_HOME` somewhere other than `~/.config`, remove that leftover by hand.
 
 If `keyd` is active and manages Meta+1..5, the tweak script skips KWin bindings for those combos to avoid conflicts.
 
