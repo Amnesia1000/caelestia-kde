@@ -42,7 +42,7 @@ Item {
         acceptedButtons: Qt.RightButton
         cursorShape: Qt.PointingHandCursor
         onClicked: mouse => {
-            root.popouts.currentName = "elementscontext";
+            root.popouts.currentName = "rearrangecontext";
             root.popouts.currentCenter = root.mapToItem(null, root.implicitWidth / 2, 0).x;
             root.popouts.hasCurrent = true;
             mouse.accepted = true;

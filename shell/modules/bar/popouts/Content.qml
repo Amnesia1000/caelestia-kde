@@ -57,10 +57,8 @@ Item {
             previewKey: "greeter"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Greeter settings")
-                subPageIdx: 8
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -122,10 +120,8 @@ Item {
             previewKey: "clock"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Clock settings")
-                subPageIdx: 11
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -133,10 +129,8 @@ Item {
             name: "osiconcontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Launcher settings")
-                subPageIdx: 3
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -144,10 +138,8 @@ Item {
             name: "statusiconscontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Status icons settings")
-                subPageIdx: 10
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -286,10 +278,8 @@ Item {
             name: "workspacescontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Workspaces settings")
-                subPageIdx: 7
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -297,10 +287,8 @@ Item {
             name: "traycontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Tray settings")
-                subPageIdx: 9
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -308,10 +296,8 @@ Item {
             name: "githubcontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("GitHub settings")
-                subPageIdx: 13
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -319,10 +305,8 @@ Item {
             name: "mediacontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Media settings")
-                subPageIdx: 19
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -330,40 +314,32 @@ Item {
             name: "performancecontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Performance settings")
-                subPageIdx: 21
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
         Popout {
             name: "weathercontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Weather settings")
-                subPageIdx: 20
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
         Popout {
             name: "screencapturecontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Screen Capture settings")
-                subPageIdx: 22
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
         Popout {
             name: "keepawakecontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Keep Awake settings")
-                subPageIdx: 23
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
@@ -371,19 +347,17 @@ Item {
             name: "dockbgcontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Dock settings")
-                subPageIdx: 12
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 
         Popout {
-            name: "elementscontext"
+            name: "rearrangecontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Elements & Modules")
-                subPageIdx: 15
+                label: qsTr("Toggle & rearrange")
+                subPageIdx: 6
             }
         }
 

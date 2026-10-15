@@ -9,6 +9,7 @@ import qs.components
 import qs.components.controls
 import qs.services
 import qs.modules.dashboard.dash as DashMedia
+import qs.modules.nexus
 
 // Bar popout reusing the dashboard mini player, with a source line on top.
 ColumnLayout {
@@ -35,6 +36,29 @@ ColumnLayout {
 
     width: root.miniWidth + Tokens.padding.large * 2
     spacing: Tokens.spacing.small
+
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Tokens.spacing.small
+
+        StyledText {
+            Layout.fillWidth: true
+            text: qsTr("Now playing")
+            font: Tokens.font.body.medium
+        }
+
+        IconButton {
+            icon: "tune"
+            type: IconButton.Text
+            onClicked: {
+                root.popouts.hasCurrent = false;
+                WindowFactory.create(null, {
+                    initialPageIdx: PageRegistry.indexForKey("panels"),
+                    initialSubPageIdx: 19
+                });
+            }
+        }
+    }
 
     Item {
         id: sourceSelector

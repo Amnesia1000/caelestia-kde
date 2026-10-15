@@ -9,6 +9,7 @@ import qs.components.widgets as WeatherWidgets
 import qs.services
 import qs.utils
 import qs.modules.dashboard.dash
+import qs.modules.nexus
 
 // Weather popout: dashboard SmallWeather plus stats and an hourly strip,
 // all reusing the shared WeatherCards visuals.
@@ -37,6 +38,29 @@ ColumnLayout {
 
     width: 380
     spacing: Tokens.spacing.small
+
+    RowLayout {
+        Layout.fillWidth: true
+        spacing: Tokens.spacing.small
+
+        StyledText {
+            Layout.fillWidth: true
+            text: qsTr("Weather")
+            font: Tokens.font.body.medium
+        }
+
+        IconButton {
+            icon: "tune"
+            type: IconButton.Text
+            onClicked: {
+                root.popouts.hasCurrent = false;
+                WindowFactory.create(null, {
+                    initialPageIdx: PageRegistry.indexForKey("panels"),
+                    initialSubPageIdx: 20
+                });
+            }
+        }
+    }
 
     Behavior on scrollPos {
         Anim {
