@@ -147,9 +147,6 @@ QtObject {
                     BarPerformance {}
                 }
                 Component {
-                    BarShortcuts {}
-                }
-                Component {
                     BarScreenCapture {}
                 }
                 Component {

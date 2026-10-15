@@ -15,7 +15,7 @@ StyledRect {
     implicitWidth: Tokens.sizes.bar.innerWidth
     implicitHeight: Tokens.sizes.bar.innerWidth
 
-    color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "shortcutscontext"))
+    color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "elementscontext"))
         ? Colours.palette.m3secondaryContainer
         : (clickArea.containsMouse ? Colours.tPalette.m3surfaceContainerHigh : "transparent")
     radius: Tokens.rounding.full
@@ -29,7 +29,7 @@ StyledRect {
     MaterialIcon {
         anchors.centerIn: parent
         text: "toggle_on"
-        color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "shortcutscontext"))
+        color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "elementscontext"))
             ? Colours.palette.m3onSecondaryContainer
             : Colours.palette.m3primary
         fontStyle: Tokens.font.icon.builders.medium.weight(Font.Medium).build()
@@ -58,11 +58,11 @@ StyledRect {
                     root.popouts.hasCurrent = true;
                 }
             } else if (mouse.button === Qt.RightButton) {
-                if (root.popouts.hasCurrent && root.popouts.currentName === "shortcutscontext") {
+                if (root.popouts.hasCurrent && root.popouts.currentName === "elementscontext") {
                     root.popouts.currentName = "";
                     root.popouts.hasCurrent = false;
                 } else {
-                    root.popouts.currentName = "shortcutscontext";
+                    root.popouts.currentName = "elementscontext";
                     root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
                     root.popouts.hasCurrent = true;
                 }

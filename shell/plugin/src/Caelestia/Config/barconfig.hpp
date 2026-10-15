@@ -185,13 +185,6 @@ class BarPerformance : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, widgetShowText, true)
 };
 
-class BarShortcuts : public settings::ObjectNode {
-    CONFIG_NODE(BarShortcuts, settings::ObjectNode)
-
-    CONFIG_PROPERTY(bool, showApps, true)
-    CONFIG_PROPERTY(bool, showSystem, true)
-};
-
 class BarScreenCapture : public settings::ObjectNode {
     CONFIG_NODE(BarScreenCapture, settings::ObjectNode)
 
@@ -293,7 +286,6 @@ class BarConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(BarGithub, github)
     CONFIG_SUBOBJECT(BarMedia, media)
     CONFIG_SUBOBJECT(BarPerformance, performance)
-    CONFIG_SUBOBJECT(BarShortcuts, shortcuts)
     CONFIG_SUBOBJECT(BarScreenCapture, screencapture)
     CONFIG_SUBOBJECT(BarKeepAwake, keepawake)
     CONFIG_PROPERTY(QVariantList, entries,

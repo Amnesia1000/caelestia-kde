@@ -347,21 +347,11 @@ Item {
             }
         }
         Popout {
-            name: "shortcutscontext"
-            sourceComponent: BarComponentContext {
-                popouts: root.popouts
-                label: qsTr("Shortcuts settings")
-                subPageIdx: 22
-                secondLabel: qsTr("Elements & Modules")
-                secondSubPageIdx: 15
-            }
-        }
-        Popout {
             name: "screencapturecontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
                 label: qsTr("Screen Capture settings")
-                subPageIdx: 23
+                subPageIdx: 22
                 secondLabel: qsTr("Elements & Modules")
                 secondSubPageIdx: 15
             }
@@ -371,7 +361,7 @@ Item {
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
                 label: qsTr("Keep Awake settings")
-                subPageIdx: 24
+                subPageIdx: 23
                 secondLabel: qsTr("Elements & Modules")
                 secondSubPageIdx: 15
             }
