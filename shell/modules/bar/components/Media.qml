@@ -33,11 +33,11 @@ StyledRect {
     readonly property real contentWidth: root.hasContent ? contentLayout.implicitWidth : modeIcon.implicitWidth
     readonly property real contentHeight: root.hasContent ? contentLayout.implicitHeight : modeIcon.implicitHeight
 
-    // Stream-aware volume: MPRIS app volume first, then the matching
-    // PipeWire stream, then the global sink. Driven by mouse scroll.
+    // Stream-aware volume: matching PipeWire stream app volume first,
+    // then the global sink. Driven by mouse scroll.
     // Shared with the popout through Players so both stay in sync.
-    readonly property PwNode playerStream: Players.playerStream(root.player, Audio)
-    readonly property real currentVolume: Players.playerVolume(root.player, root.playerStream, Audio)
+    readonly property PwNode playerStream: Audio.appStreams ? Players.playerStream(root.player, Audio) : null
+    readonly property real currentVolume: (root.playerStream && root.playerStream.audio) ? root.playerStream.audio.volume : (root.playerStream ? Audio.getAppVolume(root.playerStream) : Audio.volume)
 
     function setVolumeLevel(v: real): void {
         Players.setPlayerVolume(root.player, root.playerStream, Audio, v);
@@ -166,10 +166,11 @@ StyledRect {
     WheelHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: event => {
+            const step = GlobalConfig.services.audioIncrement || 0.05;
             if (event.angleDelta.y > 0)
-                root.setVolumeLevel(root.currentVolume + 0.05);
+                root.setVolumeLevel(root.currentVolume + step);
             else if (event.angleDelta.y < 0)
-                root.setVolumeLevel(root.currentVolume - 0.05);
+                root.setVolumeLevel(root.currentVolume - step);
         }
     }
 }

@@ -93,69 +93,122 @@ Singleton {
     // A display name cut into comparable tokens: lowercased, ".desktop" and
     // "-desktop" tails dropped, split on anything that is not a letter or digit.
     function nameTokens(name: var): var {
-        return String(name ?? "").toLowerCase().replace(/\.desktop$/g, "").replace(/-desktop$/g, "").split(/[^a-z0-9]+/).filter(t => t.length > 0);
+        const ignored = new Set(["org", "mpris", "mediaplayer2", "com", "github", "instance", "desktop", "application"]);
+        return String(name ?? "").toLowerCase().replace(/\.desktop$/g, "").replace(/-desktop$/g, "").split(/[^a-z0-9]+/).filter(t => t.length > 0 && !ignored.has(t));
     }
 
-    // Process id from a Chromium-family MPRIS bus name
-    // (chromium.instance<PID>), or "" when the entry carries none.
-    function instancePid(entry: var): string {
-        const m = String(entry ?? "").match(/\.instance(\d+)$/);
+    // Process id from an MPRIS bus name (chromium.instance<PID>), or "" when none carries one.
+    function instancePid(name: var): string {
+        const m = String(name ?? "").match(/(?:^|\.)instance(\d+)(?:$|\.)/i) || String(name ?? "").match(/_(\d+)$/);
         return m ? m[1] : "";
     }
 
     // Whether a PipeWire stream belongs to an MPRIS player. Compares the
-    // stream name, process binary and app name against the player identity
-    // and entry by shared tokens or substring either way, and additionally
-    // matches the Chromium-family case by process id: branded forks report
-    // one name over MPRIS and another over PipeWire, so names alone never
-    // meet while the pid is the same on both sides.
-    function streamMatches(player: var, streamName: var, binary: var, appName: var, processId: var): bool {
+    // stream name, process binary, application name, node name, and icon against
+    // the player identity, desktopEntry, dbusName, and friendly name.
+    function streamMatches(player: var, streamName: var, binary: var, appName: var, processId: var, nodeName: var, iconName: var): bool {
         if (!player)
             return false;
-        const identity = String(player.identity ?? "").toLowerCase();
-        const entry = String(player.entry ?? "").toLowerCase();
-        if (!identity && !entry)
+        const identity = String(player.identity ?? "");
+        const desktopEntry = String(player.desktopEntry ?? "");
+        const dbusName = String(player.dbusName ?? "");
+        const friendly = String(root.getIdentity(player) ?? "");
+        if (!identity && !desktopEntry && !dbusName && !friendly)
             return false;
-        const pid = instancePid(entry);
+
+        const pid = instancePid(dbusName) || instancePid(desktopEntry);
         if (pid && String(processId ?? "") === pid)
             return true;
-        const playerTokens = [...nameTokens(identity), ...nameTokens(entry)];
-        const streamTokens = [...nameTokens(streamName), ...nameTokens(binary), ...nameTokens(appName)];
+
+        const playerTokens = [
+            ...nameTokens(identity),
+            ...nameTokens(desktopEntry),
+            ...nameTokens(dbusName),
+            ...nameTokens(friendly)
+        ];
+        const streamTokens = [
+            ...nameTokens(streamName),
+            ...nameTokens(binary),
+            ...nameTokens(appName),
+            ...nameTokens(nodeName),
+            ...nameTokens(iconName)
+        ];
         if (playerTokens.some(t => streamTokens.includes(t)))
             return true;
-        const playerNames = [identity, entry].filter(n => n);
-        const streamNames = [String(streamName ?? "").toLowerCase(), String(binary ?? "").toLowerCase(), String(appName ?? "").toLowerCase()].filter(n => n);
+
+        const playerNames = [identity, desktopEntry, dbusName, friendly]
+            .filter(n => n.length > 0)
+            .map(n => n.toLowerCase());
+        const streamNames = [streamName, binary, appName, nodeName, iconName]
+            .filter(n => String(n ?? "").length > 0)
+            .map(n => String(n).toLowerCase());
         return streamNames.some(sn => playerNames.some(pn => sn.includes(pn) || pn.includes(sn)));
     }
 
     // The PipeWire stream belonging to a player, or null when none matches.
-    // The audio service is passed in so both the bar widget and its popout
-    // share this lookup instead of duplicating it.
+    // Checks distinct appStreams first, then raw streams, falling back to the
+    // sole active appStream when only one app is outputting audio.
     function playerStream(player: var, audio: var): var {
-        const streams = audio?.streams ?? [];
-        return streams.find(s => {
+        if (!player || !audio)
+            return null;
+
+        const appStreams = audio.appStreams ?? [];
+        const matchApp = appStreams.find(s => {
             const props = s.properties ?? {};
-            return root.streamMatches(player, audio.getStreamName(s), (props["application.process.binary"] ?? "").toString(), (props["app.name"] ?? "").toString(), (props["application.process.id"] ?? "").toString());
-        }) || null;
+            return root.streamMatches(
+                player,
+                audio.getStreamName(s),
+                (props["application.process.binary"] ?? "").toString(),
+                (props["application.name"] ?? props["app.name"] ?? "").toString(),
+                (props["application.process.id"] ?? "").toString(),
+                (props["node.name"] ?? "").toString(),
+                (props["application.icon-name"] ?? "").toString()
+            );
+        });
+        if (matchApp)
+            return matchApp;
+
+        const streams = audio.streams ?? [];
+        const matchRaw = streams.find(s => {
+            if (audio.getStreamName(s) === audio.selfAppName)
+                return false;
+            const props = s.properties ?? {};
+            return root.streamMatches(
+                player,
+                audio.getStreamName(s),
+                (props["application.process.binary"] ?? "").toString(),
+                (props["application.name"] ?? props["app.name"] ?? "").toString(),
+                (props["application.process.id"] ?? "").toString(),
+                (props["node.name"] ?? "").toString(),
+                (props["application.icon-name"] ?? "").toString()
+            );
+        });
+        if (matchRaw)
+            return matchRaw;
+
+        if (appStreams.length === 1)
+            return appStreams[0];
+
+        return null;
     }
 
-    // Effective volume for scroll control: MPRIS app volume first, then the
-    // matching PipeWire stream, then the global sink.
+    // Effective volume for scroll control: matching PipeWire stream app volume first,
+    // then the global sink.
     function playerVolume(player: var, stream: var, audio: var): real {
+        if (stream && audio)
+            return stream?.audio?.volume ?? audio.getAppVolume(stream);
         if (root.supportsAppVolume(player) && player?.volume !== undefined && player?.volume !== null)
             return player.volume;
-        if (stream)
-            return audio.getStreamVolume(stream);
-        return audio.volume;
+        return audio?.volume ?? 0;
     }
 
     function setPlayerVolume(player: var, stream: var, audio: var, v: real): void {
-        const clamped = Math.max(0, Math.min(1, v));
-        if (root.supportsAppVolume(player) && player && player.volume !== undefined) {
+        const clamped = Math.max(0, Math.min(GlobalConfig.services.maxVolume, v));
+        if (stream && audio) {
+            audio.setAppVolume(stream, clamped);
+        } else if (root.supportsAppVolume(player) && player && player.volume !== undefined) {
             player.volume = clamped;
-        } else if (stream) {
-            audio.setStreamVolume(stream, clamped);
-        } else {
+        } else if (audio) {
             audio.setVolume(clamped);
         }
     }

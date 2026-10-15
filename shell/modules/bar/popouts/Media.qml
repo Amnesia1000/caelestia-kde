@@ -22,10 +22,10 @@ ColumnLayout {
     readonly property string sourceName: Players.getIdentity(root.player)
     readonly property real miniWidth: 228
 
-    // Same scroll volume as the bar icon: MPRIS app volume, matching
-    // PipeWire stream, global sink when nothing is playing.
-    readonly property var playerStream: Players.playerStream(root.player, Audio)
-    readonly property real currentVolume: Players.playerVolume(root.player, root.playerStream, Audio)
+    // Same scroll volume as the bar icon: matching PipeWire stream app
+    // volume, global sink when nothing is playing.
+    readonly property var playerStream: Audio.appStreams ? Players.playerStream(root.player, Audio) : null
+    readonly property real currentVolume: (root.playerStream && root.playerStream.audio) ? root.playerStream.audio.volume : (root.playerStream ? Audio.getAppVolume(root.playerStream) : Audio.volume)
 
     function setVolumeLevel(v: real): void {
         Players.setPlayerVolume(root.player, root.playerStream, Audio, v);
@@ -63,10 +63,11 @@ ColumnLayout {
     WheelHandler {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
         onWheel: event => {
+            const step = GlobalConfig.services.audioIncrement || 0.05;
             if (event.angleDelta.y > 0)
-                root.setVolumeLevel(root.currentVolume + 0.05);
+                root.setVolumeLevel(root.currentVolume + step);
             else if (event.angleDelta.y < 0)
-                root.setVolumeLevel(root.currentVolume - 0.05);
+                root.setVolumeLevel(root.currentVolume - step);
         }
     }
 }
