@@ -83,7 +83,6 @@ PageBase {
             icon: "web"
             label: qsTr("Browser")
             status: GlobalConfig.general.apps.browser.join(" ")
-            hideSystemDefault: true
             onSelected: app => GlobalConfig.general.apps.browser = app.command
         }
 
@@ -92,7 +91,6 @@ PageBase {
             icon: "code"
             label: qsTr("Editor")
             status: GlobalConfig.general.apps.editor.join(" ")
-            hideSystemDefault: true
             onSelected: app => GlobalConfig.general.apps.editor = app.command
         }
 
