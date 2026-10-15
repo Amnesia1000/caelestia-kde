@@ -8,8 +8,8 @@ import Caelestia.Config
 import qs.components
 import qs.components.controls
 import qs.services
-import qs.modules.dashboard.dash as DashMedia
 import qs.modules.nexus
+import qs.modules.dashboard.dash as DashMedia
 
 // Bar popout reusing the dashboard mini player, with a source line on top.
 ColumnLayout {

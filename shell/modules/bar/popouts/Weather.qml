@@ -8,8 +8,8 @@ import qs.components.controls
 import qs.components.widgets as WeatherWidgets
 import qs.services
 import qs.utils
-import qs.modules.dashboard.dash
 import qs.modules.nexus
+import qs.modules.dashboard.dash
 
 // Weather popout: dashboard SmallWeather plus stats and an hourly strip,
 // all reusing the shared WeatherCards visuals.
