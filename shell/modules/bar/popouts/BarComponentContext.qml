@@ -95,7 +95,11 @@ ColumnLayout {
         RowLayout {
             id: rowLayout
 
-            anchors.centerIn: parent
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: Tokens.padding.medium * root.scaleOffset
+            anchors.rightMargin: Tokens.padding.medium * root.scaleOffset
             spacing: Tokens.spacing.small * root.scaleOffset
 
             MaterialIcon {
