@@ -1,7 +1,6 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Layouts
 import Caelestia.Config
 import Caelestia.Services
 import qs.components
@@ -14,15 +13,34 @@ StyledRect {
 
     required property var popouts
 
-    property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
+    readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
 
-    implicitWidth: isHorizontal ? Tokens.sizes.bar.innerWidth : layout.implicitWidth
-    implicitHeight: isHorizontal ? layout.implicitHeight : Tokens.sizes.bar.innerWidth
+    implicitWidth: Tokens.sizes.bar.innerWidth
+    implicitHeight: Tokens.sizes.bar.innerWidth
 
-    color: Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
+    color: (root.popouts.hasCurrent && (root.popouts.currentName === "screencapture" || root.popouts.currentName === "rearrangecontext"))
+        ? Colours.palette.m3secondaryContainer
+        : (clickArea.containsMouse ? Colours.tPalette.m3surfaceContainerHigh : "transparent")
     radius: Tokens.rounding.full
 
     visible: enabled
+
+    Behavior on color {
+        CAnim {}
+    }
+
+    MaterialIcon {
+        anchors.centerIn: parent
+        text: Recorder.running ? "screen_record" : "photo_camera"
+        color: (root.popouts.hasCurrent && (root.popouts.currentName === "screencapture" || root.popouts.currentName === "rearrangecontext"))
+            ? Colours.palette.m3onSecondaryContainer
+            : Colours.palette.m3primary
+        fontStyle: Tokens.font.icon.builders.medium.weight(Font.Medium).build()
+
+        Behavior on color {
+            CAnim {}
+        }
+    }
 
     MouseArea {
         id: clickArea
@@ -30,16 +48,27 @@ StyledRect {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
 
-        onClicked: {
+        onClicked: mouse => {
             if (mouse.button === Qt.LeftButton) {
-                root.popouts.currentName = "screencapture";
-                root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
-                root.popouts.hasCurrent = true;
+                if (root.popouts.hasCurrent && root.popouts.currentName === "screencapture") {
+                    root.popouts.currentName = "";
+                    root.popouts.hasCurrent = false;
+                } else {
+                    root.popouts.currentName = "screencapture";
+                    root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
+                    root.popouts.hasCurrent = true;
+                }
             } else if (mouse.button === Qt.RightButton) {
-                root.popouts.currentName = "screencapturecontext";
-                root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
-                root.popouts.hasCurrent = true;
+                if (root.popouts.hasCurrent && root.popouts.currentName === "rearrangecontext") {
+                    root.popouts.currentName = "";
+                    root.popouts.hasCurrent = false;
+                } else {
+                    root.popouts.currentName = "rearrangecontext";
+                    root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
+                    root.popouts.hasCurrent = true;
+                }
             }
             mouse.accepted = true;
         }
@@ -56,110 +85,6 @@ StyledRect {
             if (Config.bar.showOnHover && root.popouts.currentName === "screencapture" && !root.popouts.hasCurrent) {
                 root.popouts.currentName = "";
                 root.popouts.hasCurrent = false;
-            }
-        }
-    }
-
-    ColumnLayout {
-        id: layout
-
-        anchors.centerIn: parent
-        spacing: Tokens.spacing.small
-
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: Tokens.spacing.medium
-
-            IconButton {
-                type: IconButton.Tonal
-                isRound: true
-                visible: Config.bar.screencapture.showRecord
-                icon: Recorder.running ? "pause" : "screen_record"
-                onClicked: {
-                    if (Recorder.running) {
-                        Recorder.togglePause();
-                    } else {
-                        Recorder.start();
-                    }
-                }
-            }
-
-            IconButton {
-                type: IconButton.Tonal
-                isRound: true
-                visible: Config.bar.screencapture.showShots
-                icon: "screenshot_region"
-                onClicked: {
-                    Launch.exec(["qs", "-c", "caelestia", "ipc", "call", "region", "screenshot"]);
-                }
-            }
-
-            IconButton {
-                type: IconButton.Tonal
-                isRound: true
-                visible: Config.bar.screencapture.showShots
-                icon: "photo_camera"
-                onClicked: {
-                    const pad = n => String(n).padStart(2, "0");
-                    const now = new Date();
-                    const file = `${GlobalConfig.paths.screenshotsDir}/screenshot-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}_${String(now.getHours()).padStart(2, "0")}.${String(now.getMinutes()).padStart(2, "0")}.${String(now.getSeconds()).padStart(2, "0")}.png`;
-                    Launch.exec(["spectacle", "-b", "-f", "-o", file]);
-                }
-            }
-
-            IconButton {
-                type: IconButton.Tonal
-                isRound: true
-                visible: Config.bar.screencapture.showRecord
-                icon: "video_camera_back"
-                onClicked: {
-                    Launch.exec(["spectacle", "-R", "s"]);
-                }
-            }
-
-            IconButton {
-                type: IconButton.Tonal
-                isRound: true
-                visible: Config.bar.screencapture.showRecord
-                icon: "animated_images"
-                onClicked: {
-                    Recorder.startGif();
-                }
-            }
-        }
-
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: Tokens.spacing.medium
-
-            IconButton {
-                type: IconButton.Tonal
-                isRound: true
-                visible: Config.bar.screencapture.showFolders
-                icon: "animated_images"
-                onClicked: {
-                    Qt.openUrlExternally(`file://${GlobalConfig.paths.recordingsDir}`);
-                }
-            }
-
-            IconButton {
-                type: IconButton.Tonal
-                isRound: true
-                visible: Config.bar.screencapture.showFolders
-                icon: "folder"
-                onClicked: {
-                    Qt.openUrlExternally(`file://${GlobalConfig.paths.screenshotsDir}`);
-                }
-            }
-
-            IconButton {
-                type: IconButton.Tonal
-                isRound: true
-                visible: Config.bar.screencapture.showShots
-                icon: "web"
-                onClicked: {
-                    Launch.exec(["spectacle"]);
-                }
             }
         }
     }
