@@ -24,11 +24,14 @@ StyledRect {
     readonly property bool isPlaying: player?.isPlaying ?? false
     readonly property bool available: player !== null
     readonly property bool showTitle: Config.bar.media.showTitle
+    readonly property bool showVisualiser: Config.bar.media.showVisualiser
     // Text mode only while actually playing; paused, stopped or missing
     // players fall back to the icon.
     readonly property bool showText: root.showTitle && root.isPlaying
-    readonly property real contentWidth: root.showText ? contentLayout.implicitWidth : modeIcon.implicitWidth
-    readonly property real contentHeight: root.showText ? contentLayout.implicitHeight : modeIcon.implicitHeight
+    readonly property bool showBars: root.showVisualiser && root.isPlaying
+    readonly property bool hasContent: root.showText || root.showBars
+    readonly property real contentWidth: root.hasContent ? contentLayout.implicitWidth : modeIcon.implicitWidth
+    readonly property real contentHeight: root.hasContent ? contentLayout.implicitHeight : modeIcon.implicitHeight
 
     // Stream-aware volume: MPRIS app volume first, then the matching
     // PipeWire stream, then the global sink. Driven by mouse scroll.
@@ -40,8 +43,8 @@ StyledRect {
         Players.setPlayerVolume(root.player, root.playerStream, Audio, v);
     }
 
-    implicitWidth: isHorizontal ? contentWidth + Tokens.padding.medium * 2 : Tokens.sizes.bar.innerWidth
-    implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : contentHeight + Tokens.padding.medium * 2
+    implicitWidth: isHorizontal ? (root.hasContent && root.showText ? contentWidth + Tokens.padding.medium * 2 : Math.max(Tokens.sizes.bar.innerWidth, contentWidth + Tokens.padding.medium * 2)) : Tokens.sizes.bar.innerWidth
+    implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : (root.hasContent && root.showText ? contentHeight + Tokens.padding.medium * 2 : Math.max(Tokens.sizes.bar.innerWidth, contentHeight + Tokens.padding.medium * 2))
 
     color: Config.bar.media.background ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
     radius: Tokens.rounding.full
@@ -57,10 +60,10 @@ StyledRect {
         id: contentLayout
 
         anchors.centerIn: parent
-        columns: root.isHorizontal ? 2 : 1
-        rows: root.isHorizontal ? 1 : 2
-        rowSpacing: Tokens.spacing.small
-        columnSpacing: Tokens.spacing.small
+        columns: root.isHorizontal ? (root.showText && root.showBars ? 2 : 1) : 1
+        rows: root.isHorizontal ? 1 : (root.showText && root.showBars ? 2 : 1)
+        rowSpacing: (root.showText && root.showBars) ? Tokens.spacing.small : 0
+        columnSpacing: (root.showText && root.showBars) ? Tokens.spacing.small : 0
 
         Item {
             id: textContainer
@@ -71,8 +74,8 @@ StyledRect {
             Layout.row: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 1 : 0)
             Layout.column: 0
 
-            implicitWidth: root.isHorizontal ? titleText.implicitWidth : titleText.implicitHeight
-            implicitHeight: root.isHorizontal ? titleText.implicitHeight : titleText.implicitWidth
+            implicitWidth: root.showText ? (root.isHorizontal ? titleText.implicitWidth : titleText.implicitHeight) : 0
+            implicitHeight: root.showText ? (root.isHorizontal ? titleText.implicitHeight : titleText.implicitWidth) : 0
 
             StyledText {
                 id: titleText
@@ -92,12 +95,12 @@ StyledRect {
             id: equalizerContainer
 
             Layout.alignment: Qt.AlignCenter
-            Layout.row: root.isHorizontal ? 0 : (Config.bar.media.inverted ? 0 : 1)
-            Layout.column: root.isHorizontal ? 1 : 0
+            Layout.row: root.isHorizontal ? 0 : (root.showText && Config.bar.media.inverted ? 0 : 1)
+            Layout.column: (root.isHorizontal && root.showText) ? 1 : 0
 
-            visible: Config.bar.media.showVisualiser && root.showText
-            implicitWidth: root.isHorizontal ? (visible ? 23 : 0) : 20
-            implicitHeight: root.isHorizontal ? 20 : (visible ? 23 : 0)
+            visible: root.showBars
+            implicitWidth: root.showBars ? (root.isHorizontal ? 23 : 20) : 0
+            implicitHeight: root.showBars ? (root.isHorizontal ? 20 : 23) : 0
 
             Item {
                 anchors.centerIn: parent
@@ -140,7 +143,7 @@ StyledRect {
         id: modeIcon
 
         anchors.centerIn: parent
-        visible: !root.showText
+        visible: !root.hasContent
         text: "graphic_eq"
         color: Colours.palette.m3onSurface
         fontStyle: Tokens.font.icon.builders.medium.build()
