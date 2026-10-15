@@ -1,28 +1,43 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Layouts
 import Caelestia.Config
-import Caelestia.Services
 import qs.components
-import qs.components.controls
 import qs.services
-import qs.modules.bar.popouts as BarPopouts
 
 StyledRect {
     id: root
 
     required property var popouts
 
-    property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
+    readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
 
-    implicitWidth: isHorizontal ? Tokens.sizes.bar.innerWidth : layout.implicitWidth
-    implicitHeight: isHorizontal ? layout.implicitHeight : Tokens.sizes.bar.innerWidth
+    implicitWidth: Tokens.sizes.bar.innerWidth
+    implicitHeight: Tokens.sizes.bar.innerWidth
 
-    color: Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
+    color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "shortcutscontext"))
+        ? Colours.palette.m3secondaryContainer
+        : (clickArea.containsMouse ? Colours.tPalette.m3surfaceContainerHigh : "transparent")
     radius: Tokens.rounding.full
 
     visible: enabled
+
+    Behavior on color {
+        CAnim {}
+    }
+
+    MaterialIcon {
+        anchors.centerIn: parent
+        text: "toggle_on"
+        color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "shortcutscontext"))
+            ? Colours.palette.m3onSecondaryContainer
+            : Colours.palette.m3primary
+        fontStyle: Tokens.font.icon.builders.medium.weight(Font.Medium).build()
+
+        Behavior on color {
+            CAnim {}
+        }
+    }
 
     MouseArea {
         id: clickArea
@@ -30,16 +45,27 @@ StyledRect {
         anchors.fill: parent
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
 
-        onClicked: {
+        onClicked: mouse => {
             if (mouse.button === Qt.LeftButton) {
-                root.popouts.currentName = "shortcuts";
-                root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
-                root.popouts.hasCurrent = true;
+                if (root.popouts.hasCurrent && root.popouts.currentName === "shortcuts") {
+                    root.popouts.currentName = "";
+                    root.popouts.hasCurrent = false;
+                } else {
+                    root.popouts.currentName = "shortcuts";
+                    root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
+                    root.popouts.hasCurrent = true;
+                }
             } else if (mouse.button === Qt.RightButton) {
-                root.popouts.currentName = "shortcutscontext";
-                root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
-                root.popouts.hasCurrent = true;
+                if (root.popouts.hasCurrent && root.popouts.currentName === "shortcutscontext") {
+                    root.popouts.currentName = "";
+                    root.popouts.hasCurrent = false;
+                } else {
+                    root.popouts.currentName = "shortcutscontext";
+                    root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
+                    root.popouts.hasCurrent = true;
+                }
             }
             mouse.accepted = true;
         }
@@ -56,65 +82,6 @@ StyledRect {
             if (Config.bar.showOnHover && root.popouts.currentName === "shortcuts" && !root.popouts.hasCurrent) {
                 root.popouts.currentName = "";
                 root.popouts.hasCurrent = false;
-            }
-        }
-    }
-
-    ColumnLayout {
-        id: layout
-
-        anchors.centerIn: parent
-        spacing: Tokens.spacing.small
-
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: Tokens.spacing.medium
-            visible: Config.bar.shortcuts.showSystem
-
-            Repeater {
-                model: [
-                    { name: qsTr("Nexus"), action: "nexus", icon: "dashboard" },
-                    { name: qsTr("Launcher"), action: "launcher", icon: "apps" },
-                    { name: qsTr("Overview"), action: "overview", icon: "view_array" },
-                    { name: qsTr("Dashboard"), action: "dashboard", icon: "dashboard" },
-                    { name: qsTr("Screenshot"), action: "screenshot", icon: "screenshot_region" },
-                    { name: qsTr("Record"), action: "screenRecording", icon: "screen_record" },
-                ]
-
-                delegate: IconButton {
-                    required property var modelData
-
-                    type: IconButton.Tonal
-                    isRound: true
-                    icon: modelData.icon
-                    onClicked: {
-                        Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "drawers", "toggle", modelData.action]);
-                    }
-                }
-            }
-        }
-
-        RowLayout {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: Tokens.spacing.medium
-            visible: Config.bar.shortcuts.showApps
-
-            Repeater {
-                model: [
-                    { name: qsTr("Terminal"), cmd: GlobalConfig.general.apps.terminal, icon: "terminal" },
-                    { name: qsTr("Browser"), cmd: ["firefox"], icon: "web" },
-                    { name: qsTr("Editor"), cmd: ["code"], icon: "code" },
-                    { name: qsTr("Files"), cmd: ["nemo"], icon: "folder" },
-                ]
-
-                delegate: IconButton {
-                    required property var modelData
-
-                    type: IconButton.Tonal
-                    isRound: true
-                    icon: modelData.icon
-                    onClicked: Launch.exec(modelData.cmd);
-                }
             }
         }
     }
