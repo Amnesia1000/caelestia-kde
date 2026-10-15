@@ -27,6 +27,7 @@ PageBase {
         { id: "dnd", label: qsTr("Do Not Disturb") },
         { id: "gameMode", label: qsTr("Game Mode") },
         { id: "pauseWallpaper", label: qsTr("Pause Wallpaper") },
+        { id: "visualiser", label: qsTr("Audio Visualiser") },
         { id: "nightlight", label: qsTr("Night Light") },
         { id: "easyeffects", label: qsTr("EasyEffects") },
         { id: "restartShell", label: qsTr("Restart Shell") },

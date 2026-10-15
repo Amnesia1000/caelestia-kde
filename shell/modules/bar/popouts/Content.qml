@@ -129,7 +129,7 @@ Item {
             name: "osiconcontext"
             sourceComponent: BarComponentContext {
                 popouts: root.popouts
-                label: qsTr("Launcher settings")
+                label: qsTr("Settings")
                 subPageIdx: 3
             }
         }

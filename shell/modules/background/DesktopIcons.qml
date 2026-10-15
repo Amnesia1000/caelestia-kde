@@ -985,6 +985,7 @@ Item {
         source.grabToImage(result => {
             if (dragImageKey !== key)
                 return;
+            dragImageProbe.source = result.url;
             dragSource.Drag.imageSource = result.url;
             dragImageReady = true;
             if (pendingDragKey === key) {
@@ -1003,7 +1004,20 @@ Item {
             return;
         }
         const keys = isSelected(key) ? selectedKeys() : [key];
-        startDrag(keys, key, openGroupId, isBigKey(key) ? pressPoint : Qt.point(dragPreview.width / 2, Tokens.padding.small + iconSize / 2));
+        // For big widgets, adjust the hotSpot to the card's position within the tile.
+        let hotSpot = pressPoint;
+        if (isBigKey(key)) {
+            const tile = tiles[key];
+            if (tile && tile.card) {
+                hotSpot = Qt.point(
+                    pressPoint.x - tile.card.anchors.leftMargin,
+                    pressPoint.y - tile.card.anchors.topMargin
+                );
+            }
+        } else {
+            hotSpot = Qt.point(dragPreview.width / 2, Tokens.padding.small + iconSize / 2);
+        }
+        startDrag(keys, key, openGroupId, hotSpot);
     }
 
     // Drags one app straight out of a large folder, without opening it.
@@ -1724,6 +1738,15 @@ wl-paste --no-newline --type text/uri-list`]
     }
 
     // Carries the system drag; the image is grabbed from dragPreview.
+    // The probe decodes the grab into the pixmap cache, so the drag finds it ready.
+    Image {
+        id: dragImageProbe
+
+        visible: false
+        asynchronous: false
+        cache: true
+    }
+
     Item {
         id: dragSource
 
