@@ -477,111 +477,129 @@ ColumnLayout {
         }
 
         // List editor
-        ColumnLayout {
+        Flickable {
+            id: listFlick
+
             Layout.fillWidth: true
-            spacing: Tokens.spacing.extraSmall
+            Layout.preferredHeight: 200
+            Layout.fillHeight: true
+            contentWidth: width
+            contentHeight: itemsCol.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
             visible: root.selectedNote && root.selectedNote.type === "list"
 
-            Repeater {
-                model: root.selectedNote && root.selectedNote.items ? root.selectedNote.items : []
+            ColumnLayout {
+                id: itemsCol
 
-                delegate: RowLayout {
-                    required property var modelData
-                    required property int index
+                width: listFlick.width
+                spacing: Tokens.spacing.extraSmall
 
-                    Layout.fillWidth: true
-                    spacing: Tokens.spacing.extraSmall
+                Repeater {
+                    model: root.selectedNote && root.selectedNote.items ? root.selectedNote.items : []
 
-                    StyledRect {
-                        id: checkBox
+                    delegate: RowLayout {
+                        id: itemRow
 
-                        Layout.alignment: Qt.AlignVCenter
-                        implicitWidth: 24
-                        implicitHeight: 24
+                        required property var modelData
+                        required property int index
 
-                        radius: Tokens.rounding.medium
-                        color: "transparent"
-                        border.width: 2
-                        border.color: modelData.checked ?? false ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
-
-                        MaterialIcon {
-                            anchors.centerIn: parent
-                            text: "check"
-                            fontStyle: Tokens.font.icon.builders.small.weight(Font.DemiBold).build()
-                            color: Colours.palette.m3primary
-                            scale: modelData.checked ? 1 : 0
-                        }
-
-                        CustomMouseArea {
-                            anchors.fill: parent
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: {
-                                const arr = (root.selectedNote.items || []).slice();
-                                arr[index] = Object.assign({}, arr[index], { checked: !modelData.checked });
-                                root.updateSelected("items", arr);
-                            }
-                        }
-                    }
-
-                    Item {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: itemInput.implicitHeight
-                        Layout.alignment: Qt.AlignVCenter
-                        opacity: (modelData.checked ?? false) ? 0.6 : 1
+                        spacing: Tokens.spacing.extraSmall
 
-                        TextInput {
-                            id: itemInput
+                        StyledRect {
+                            id: checkBox
 
-                            function commitItem(): void {
-                                if (text !== (modelData.text ?? "")) {
+                            Layout.alignment: Qt.AlignTop
+                            implicitWidth: 24
+                            implicitHeight: 24
+
+                            radius: Tokens.rounding.medium
+                            color: "transparent"
+                            border.width: 2
+                            border.color: itemRow.modelData.checked ?? false ? Colours.palette.m3primary : Colours.palette.m3onSurfaceVariant
+
+                            MaterialIcon {
+                                anchors.centerIn: parent
+                                text: "check"
+                                fontStyle: Tokens.font.icon.builders.small.weight(Font.DemiBold).build()
+                                color: Colours.palette.m3primary
+                                scale: itemRow.modelData.checked ? 1 : 0
+                            }
+
+                            CustomMouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
                                     const arr = (root.selectedNote.items || []).slice();
-                                    arr[index] = Object.assign({}, arr[index], { text: text });
+                                    arr[itemRow.index] = Object.assign({}, arr[itemRow.index], { checked: !itemRow.modelData.checked });
                                     root.updateSelected("items", arr);
                                 }
                             }
-
-                            anchors.fill: parent
-                            text: modelData.text ?? ""
-                            font: Tokens.font.body.medium
-                            color: (modelData.checked ?? false) ? Colours.palette.m3onSurfaceVariant : Colours.palette.m3onSurface
-                            selectByMouse: true
-                            selectionColor: Qt.alpha(Colours.palette.m3primary, 0.4)
-                            selectedTextColor: color
-                            renderType: TextInput.NativeRendering
-
-                            onAccepted: commitItem()
-                            onEditingFinished: commitItem()
                         }
 
-                        StyledText {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            visible: itemInput.text.length === 0
-                            text: qsTr("List item")
-                            font: itemInput.font
-                            opacity: 0.5
-                            color: Colours.palette.m3onSurfaceVariant
-                        }
+                        Item {
+                            id: itemWrapper
 
-                        Rectangle {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: Math.min(itemInput.contentWidth, parent.width)
-                            height: 1
-                            visible: modelData.checked ?? false
-                            color: Colours.palette.m3onSurfaceVariant
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: Math.max(itemInput.implicitHeight, checkBox.implicitHeight)
+                            Layout.alignment: Qt.AlignTop
+                            clip: true
+                            opacity: (itemRow.modelData.checked ?? false) ? 0.6 : 1
+
+                            TextInput {
+                                id: itemInput
+
+                                function commitItem(): void {
+                                    if (text !== (itemRow.modelData.text ?? "")) {
+                                        const arr = (root.selectedNote.items || []).slice();
+                                        arr[itemRow.index] = Object.assign({}, arr[itemRow.index], { text: text });
+                                        root.updateSelected("items", arr);
+                                    }
+                                }
+
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
+                                wrapMode: TextInput.Wrap
+                                clip: true
+                                text: itemRow.modelData.text ?? ""
+                                font: {
+                                    const f = Qt.font(Tokens.font.body.medium);
+                                    f.strikeout = !!(itemRow.modelData.checked ?? false);
+                                    return f;
+                                }
+                                color: (itemRow.modelData.checked ?? false) ? Colours.palette.m3onSurfaceVariant : Colours.palette.m3onSurface
+                                selectByMouse: true
+                                selectionColor: Qt.alpha(Colours.palette.m3primary, 0.4)
+                                selectedTextColor: color
+                                renderType: TextInput.NativeRendering
+
+                                onAccepted: commitItem()
+                                onEditingFinished: commitItem()
+                            }
+
+                            StyledText {
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                visible: itemInput.text.length === 0
+                                text: qsTr("List item")
+                                font: itemInput.font
+                                opacity: 0.5
+                                color: Colours.palette.m3onSurfaceVariant
+                            }
                         }
                     }
                 }
-            }
 
-            TextButton {
-                text: qsTr("Add item")
-                type: TextButton.Tonal
-                onClicked: {
-                    const arr = ((root.selectedNote && root.selectedNote.items) || []).slice();
-                    arr.push({ text: "", checked: false });
-                    root.updateSelected("items", arr);
+                TextButton {
+                    text: qsTr("Add item")
+                    type: TextButton.Tonal
+                    onClicked: {
+                        const arr = ((root.selectedNote && root.selectedNote.items) || []).slice();
+                        arr.push({ text: "", checked: false });
+                        root.updateSelected("items", arr);
+                    }
                 }
             }
         }
