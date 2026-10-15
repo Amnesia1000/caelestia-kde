@@ -504,6 +504,33 @@ StyledRect {
                     }
                 }
                 DelegateChoice {
+                    roleValue: "launcher"
+                    delegate: Toggle {
+                        icon: "apps"
+                        inactiveOnColour: Colours.palette.m3onSurfaceVariant
+                        isToggle: false
+                        onClicked: Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "drawers", "toggle", "launcher"])
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "overview"
+                    delegate: Toggle {
+                        icon: "view_array"
+                        inactiveOnColour: Colours.palette.m3onSurfaceVariant
+                        isToggle: false
+                        onClicked: Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "drawers", "toggle", "overview"])
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "dashboard"
+                    delegate: Toggle {
+                        icon: "dashboard"
+                        inactiveOnColour: Colours.palette.m3onSurfaceVariant
+                        isToggle: false
+                        onClicked: Quickshell.execDetached(["qs", "-c", "caelestia", "ipc", "call", "drawers", "toggle", "dashboard"])
+                    }
+                }
+                DelegateChoice {
                     roleValue: "gameMode"
                     delegate: Toggle {
                         icon: "gamepad"

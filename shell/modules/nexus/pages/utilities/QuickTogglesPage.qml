@@ -19,6 +19,9 @@ PageBase {
     readonly property var toolToggles: [
         { id: "settings", label: qsTr("Settings") },
         { id: "colorpicker", label: qsTr("Color Picker") },
+        { id: "launcher", label: qsTr("Launcher") },
+        { id: "overview", label: qsTr("Overview") },
+        { id: "dashboard", label: qsTr("Dashboard") },
         { id: "wallpaper", label: qsTr("Wallpaper") },
         { id: "badapple", label: qsTr("Bad Apple") },
     ]
