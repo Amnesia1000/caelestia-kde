@@ -20,7 +20,7 @@ ColumnLayout {
     property real fontScale: 1.0
     property bool _isSidebarOpen: false
 
-    readonly property MprisPlayer player: Players.sourcePlayer(Config.bar.media.sources)
+    readonly property MprisPlayer player: Players.sourcePlayer(Config.bar.media.excludedSources)
     readonly property string sourceName: Players.getIdentity(root.player)
     readonly property real miniWidth: 228
 

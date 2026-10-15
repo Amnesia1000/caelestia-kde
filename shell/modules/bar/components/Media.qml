@@ -16,7 +16,7 @@ StyledRect {
     required property var popouts
 
     readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
-    readonly property MprisPlayer player: Players.sourcePlayer(Config.bar.media.sources)
+    readonly property MprisPlayer player: Players.sourcePlayer(Config.bar.media.excludedSources)
 
     readonly property int maxLen: Config.bar.media.maxTitleLength
     readonly property string rawTitle: player?.trackTitle || qsTr("Nothing playing")

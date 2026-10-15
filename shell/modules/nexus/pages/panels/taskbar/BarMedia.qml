@@ -99,11 +99,11 @@ PageBase {
 
         TextFieldRow {
             last: true
-            label: qsTr("Sources")
-            subtext: qsTr("Player names to follow, comma-separated; empty follows anything")
-            value: (Config.bar.media.sources || []).join(", ")
+            label: qsTr("Ignored players")
+            subtext: qsTr("Player names to skip, comma-separated; empty follows anything")
+            value: (Config.bar.media.excludedSources || []).join(", ")
             onEditingFinished: value => {
-                GlobalConfig.bar.media.sources = value.split(",").map(s => s.trim()).filter(s => s.length > 0);
+                GlobalConfig.bar.media.excludedSources = value.split(",").map(s => s.trim()).filter(s => s.length > 0);
                 GlobalConfig.save();
             }
         }

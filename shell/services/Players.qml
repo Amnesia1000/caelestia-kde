@@ -67,29 +67,27 @@ Singleton {
         return root.appVolumePlayers.some(n => root.playerMatchesSource(player, n));
     }
 
-    // First player whose identity matches one of the given source names
-    // (empty list follows the active player), or null when none matches.
-    // Prefers currently-playing matches over paused ones.
-    function sourcePlayer(names: var): MprisPlayer {
+    // First playing player not matching one of the given excluded source
+    // names (empty list follows the active player), or null when every
+    // player is excluded. Prefers currently-playing players over paused ones.
+    function sourcePlayer(ignored: var): MprisPlayer {
         if (props.manualActive && root.list.includes(props.manualActive))
             return props.manualActive;
-        const sources = names || [];
-        if (sources.length === 0)
+        const excluded = ignored || [];
+        if (excluded.length === 0)
             return root.active;
         const list = root.list || [];
-        let firstMatch = null;
+        let firstKept = null;
         for (let i = 0; i < list.length; i++) {
             const p = list[i];
-            for (let j = 0; j < sources.length; j++) {
-                if (root.playerMatchesSource(p, String(sources[j]))) {
-                    if (p.isPlaying)
-                        return p;
-                    if (!firstMatch)
-                        firstMatch = p;
-                }
-            }
+            if (excluded.some(n => root.playerMatchesSource(p, String(n))))
+                continue;
+            if (p.isPlaying)
+                return p;
+            if (!firstKept)
+                firstKept = p;
         }
-        return firstMatch ?? root.active;
+        return firstKept;
     }
 
     // A display name cut into comparable tokens: lowercased, ".desktop" and
