@@ -315,7 +315,7 @@ PageBase {
                         RotationAnimation {
                             target: secondaryActionButton.iconLabel
                             property: "rotation"
-                            running: secondaryActionButton.isChecking
+                            running: secondaryActionButton.isChecking && Tokens.anim.enabled
                             loops: Animation.Infinite
                             from: 0
                             to: 360

@@ -804,7 +804,11 @@ Item {
 
                     SequentialAnimation on scale {
                         loops: 3
-                        running: root.selectedNote === null && root.dashboardOpen
+                        running: root.selectedNote === null && root.dashboardOpen && Tokens.anim.enabled
+
+                        // A condition change can stop this between breaths; the icon rests at
+                        // its own scale rather than wherever the sequence was cut off.
+                        onStopped: emptyIcon.scale = 1
 
                         NumberAnimation {
                             to: 1.06
