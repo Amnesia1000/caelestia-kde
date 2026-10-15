@@ -40,7 +40,7 @@ StyledRect {
         acceptedButtons: Qt.RightButton
         cursorShape: Qt.PointingHandCursor
         onClicked: mouse => {
-            root.popouts.currentName = "rearrangecontext";
+            root.popouts.currentName = "elementscontext";
             root.popouts.currentCenter = root.isHorizontal ? root.mapToItem(null, root.implicitWidth / 2, 0).x : (root.mapToItem(null, 0, root.implicitHeight / 2).y ?? 0);
             root.popouts.hasCurrent = true;
             mouse.accepted = true;

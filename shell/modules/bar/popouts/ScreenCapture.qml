@@ -5,10 +5,8 @@ import QtQuick.Layouts
 import Quickshell
 import Caelestia.Config
 import qs.components
-import qs.components.controls
 import "../../utilities/cards"
 import qs.services
-import qs.modules.nexus
 
 // Screen capture popout: the utilities card, reused as is.
 ColumnLayout {
@@ -19,29 +17,6 @@ ColumnLayout {
 
     width: Math.max(360, captureView.implicitWidth)
     spacing: Tokens.spacing.small
-
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: Tokens.spacing.small
-
-        StyledText {
-            Layout.fillWidth: true
-            text: qsTr("Screen Capture")
-            font: Tokens.font.body.medium
-        }
-
-        IconButton {
-            icon: "tune"
-            type: IconButton.Text
-            onClicked: {
-                root.popouts.hasCurrent = false;
-                WindowFactory.create(null, {
-                    initialPageIdx: PageRegistry.indexForKey("panels"),
-                    initialSubPageIdx: 22
-                });
-            }
-        }
-    }
 
     CaptureCard {
         id: captureView

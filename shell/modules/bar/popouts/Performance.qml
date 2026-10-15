@@ -4,10 +4,8 @@ import QtQuick
 import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
-import qs.components.controls
 import qs.services
 import qs.modules.dashboard as DashPerf
-import qs.modules.nexus
 
 // Performance popout: the full dashboard performance tab.
 ColumnLayout {
@@ -21,29 +19,6 @@ ColumnLayout {
 
     width: Math.max(300, perfView.implicitWidth)
     spacing: Tokens.spacing.small
-
-    RowLayout {
-        Layout.fillWidth: true
-        spacing: Tokens.spacing.small
-
-        StyledText {
-            Layout.fillWidth: true
-            text: qsTr("Performance")
-            font: Tokens.font.body.medium
-        }
-
-        IconButton {
-            icon: "tune"
-            type: IconButton.Text
-            onClicked: {
-                root.popouts.hasCurrent = false;
-                WindowFactory.create(null, {
-                    initialPageIdx: PageRegistry.indexForKey("panels"),
-                    initialSubPageIdx: 21
-                });
-            }
-        }
-    }
 
     Item {
         Layout.fillWidth: true
