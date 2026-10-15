@@ -55,6 +55,7 @@ Item {
     property var dropCells: []
     property string mergeKey: ""
     property bool dragImageReady: false
+    property string pendingDragKey: ""
     property string dragImageKey: ""
 
     property string openGroupId: ""
@@ -968,6 +969,7 @@ Item {
     function prepareDragImage(key: string): void {
         dragImageReady = false;
         dragImageKey = key;
+        pendingDragKey = "";
         // Large items are grabbed as they look; icons go through dragPreview
         // so several files get a count badge.
         let source = tiles[key];
@@ -976,19 +978,30 @@ Item {
             dragPreview.count = Math.max(1, entriesFor(selectedKeys()).length);
             source = dragPreview;
         }
-        if (!source)
+        if (!source) {
+            dragImageKey = "";
             return;
+        }
         source.grabToImage(result => {
             if (dragImageKey !== key)
                 return;
             dragSource.Drag.imageSource = result.url;
             dragImageReady = true;
+            if (pendingDragKey === key) {
+                pendingDragKey = "";
+                beginDrag(key);
+            }
         });
     }
 
     function beginDrag(key: string): void {
         if (renameActive)
             return;
+        // The first drag can outrun the async image grab; starting without it flickers.
+        if (!dragImageReady && dragImageKey === key) {
+            pendingDragKey = key;
+            return;
+        }
         const keys = isSelected(key) ? selectedKeys() : [key];
         startDrag(keys, key, openGroupId, isBigKey(key) ? pressPoint : Qt.point(dragPreview.width / 2, Tokens.padding.small + iconSize / 2));
     }
