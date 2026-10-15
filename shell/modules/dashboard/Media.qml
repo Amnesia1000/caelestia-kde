@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import M3Shapes
 import Caelestia.Config
 import qs.components
+import qs.components.effects
 import qs.services
 
 Item {
@@ -13,6 +14,15 @@ Item {
 
     implicitWidth: Tokens.sizes.dashboard.mediaTabWidth
     implicitHeight: Tokens.sizes.dashboard.mediaTabHeight
+
+    AmbientGlow {
+        anchors.fill: parent
+        source: Players.active ? Players.getArtUrl(Players.active) : ""
+        useFallback: false
+        radius: Tokens.rounding.large
+        clip: true
+        z: -1
+    }
 
     BackgroundShapes {
         anchors.fill: parent
