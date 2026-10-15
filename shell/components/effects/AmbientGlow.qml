@@ -27,13 +27,13 @@ Item {
     property real glowScaleX: 2.0
     property real glowScaleY: 2.0
     property int blurMax: 96
-    property real glowOpacity: GlobalConfig.appearance.ambientOpacity
+    property real glowOpacity: 0.45
     property real saturation: 1.0
     property real brightness: 0.25
     property real contrast: 0.2
     property real radius: Tokens.rounding.medium
     property bool deform: true
-    property bool active: GlobalConfig.appearance.ambientColor && !Colours.light
+    property bool active: !Colours.light
     property bool useFallback: true
     property real bloomProgress: 0.0
     property bool _thumbExists: root.thumbPath ? IUtils.fileExists(root.thumbPath) : false
