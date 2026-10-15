@@ -111,11 +111,17 @@ ColumnLayout {
     }
 
     Item {
+        id: mediaContainer
+
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: root.miniWidth
-        Layout.preferredHeight: 340
+        Layout.preferredHeight: dashMedia.implicitHeight
+        Layout.bottomMargin: Tokens.padding.small
+        implicitHeight: Layout.preferredHeight
 
         DashMedia.Media {
+            id: dashMedia
+
             width: root.miniWidth
             extraButtons: true
             showGif: false

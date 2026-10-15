@@ -31,9 +31,11 @@ Item {
     // Defaults to true, so the dashboard renders exactly as before.
     property bool showGif: true
 
-    anchors.top: parent.top
-    anchors.bottom: parent.bottom
+    anchors.top: parent ? parent.top : undefined
+    anchors.bottom: (root.showGif && parent) ? parent.bottom : undefined
+    height: root.showGif ? undefined : implicitHeight
     implicitWidth: Tokens.sizes.dashboard.mediaWidth
+    implicitHeight: Math.max(355, controls.y + controls.implicitHeight + Tokens.padding.large)
 
     Behavior on playerProgress {
         Anim {
