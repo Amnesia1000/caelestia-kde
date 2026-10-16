@@ -272,6 +272,13 @@ Item {
                 popouts.hasCurrent = false;
             }
         } else {
+            // Plugin widgets (and any widget without a bespoke branch) opt into
+            // hover popouts by exposing handleHover(pos, isHorizontal, popouts).
+            const item = ch.item;
+            if (item && typeof item.handleHover === "function") {
+                item.handleHover(pos - top, isHorizontal, popouts);
+                return;
+            }
             popouts.hasCurrent = false;
         }
     }
@@ -616,6 +623,14 @@ Item {
                     sourceComponent: Power {
                         visibilities: root.visibilities
                     }
+                }
+            }
+            // Fallback for plugin-provided widgets: DelegateChooser needs a
+            // static choice per id, so unknown ids resolve their component at
+            // runtime from the plugin registry.
+            DelegateChoice {
+                delegate: WrappedLoader {
+                    source: BarWidgetRegistry.widget(id)?.componentUrl ?? ""
                 }
             }
         }
