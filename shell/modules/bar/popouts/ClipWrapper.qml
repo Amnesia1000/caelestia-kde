@@ -18,6 +18,9 @@ Item {
 
     readonly property alias content: content
     readonly property bool isHorizontal: bar.isHorizontal
+    // The frame edge the popout grows out of: the bar's own side by default,
+    // or the side of the panel band that opened it.
+    readonly property string edge: content.currentEdge
     property real offsetScale: content.isDetached || content.hasCurrent ? 0 : 1
     // Where x is heading; x itself animates towards it.
     readonly property real targetX: {
@@ -36,7 +39,7 @@ Item {
                 return Math.max(off + diff, 0);
             return Math.max(off, 0);
         }
-        if (bar.position === "right")
+        if (root.edge === "right")
             return parent.width - implicitWidth;
         return 0;
     }
@@ -52,7 +55,7 @@ Item {
         if (content.isDetached)
             return (parent.height - content.nonAnimHeight) / 2;
         if (isHorizontal) {
-            if (bar.position === "bottom")
+            if (root.edge === "bottom")
                 return parent.height - implicitHeight;
             return 0;
         }
@@ -94,15 +97,15 @@ Item {
         visibilities: root.visibilities
         underSidebar: !root.isHorizontal || content.currentCenter - root.parent.leftMargin >= root.parent.width - Visibilities.sidebarWidthFor(Tokens.sizes.sidebar.width)
 
-        anchors.leftMargin: bar.position === "left" ? (-implicitWidth - 5) * root.offsetScale : 0
-        anchors.rightMargin: bar.position === "right" ? (-implicitWidth - 5) * root.offsetScale : 0
-        anchors.topMargin: bar.position === "top" ? (-implicitHeight - 5) * root.offsetScale : 0
-        anchors.bottomMargin: bar.position === "bottom" ? (-implicitHeight - 5) * root.offsetScale : 0
+        anchors.leftMargin: root.edge === "left" ? (-implicitWidth - 5) * root.offsetScale : 0
+        anchors.rightMargin: root.edge === "right" ? (-implicitWidth - 5) * root.offsetScale : 0
+        anchors.topMargin: root.edge === "top" ? (-implicitHeight - 5) * root.offsetScale : 0
+        anchors.bottomMargin: root.edge === "bottom" ? (-implicitHeight - 5) * root.offsetScale : 0
 
         states: [
             State {
                 name: "left"
-                when: bar.position === "left"
+                when: root.edge === "left"
 
                 AnchorChanges {
                     target: content
@@ -116,7 +119,7 @@ Item {
             },
             State {
                 name: "right"
-                when: bar.position === "right"
+                when: root.edge === "right"
 
                 AnchorChanges {
                     target: content
@@ -130,7 +133,7 @@ Item {
             },
             State {
                 name: "top"
-                when: bar.position === "top"
+                when: root.edge === "top"
 
                 AnchorChanges {
                     target: content
@@ -144,7 +147,7 @@ Item {
             },
             State {
                 name: "bottom"
-                when: bar.position === "bottom"
+                when: root.edge === "bottom"
 
                 AnchorChanges {
                     target: content

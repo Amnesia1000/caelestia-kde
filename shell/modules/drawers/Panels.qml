@@ -277,8 +277,8 @@ Item {
     BarPopouts.ClipWrapper {
         id: popoutsWrapper
 
-        property string vAnchor: (bar.position === "top" || bar.position === "bottom") ? bar.position : "none"
-        property string hAnchor: (bar.position === "left" || bar.position === "right") ? bar.position : "none"
+        property string vAnchor: (popoutsWrapper.edge === "top" || popoutsWrapper.edge === "bottom") ? popoutsWrapper.edge : "none"
+        property string hAnchor: (popoutsWrapper.edge === "left" || popoutsWrapper.edge === "right") ? popoutsWrapper.edge : "none"
 
         screen: root.screen
         bar: root.bar
