@@ -40,6 +40,13 @@ test_the_bar_falls_back_to_plugin_widgets() {
         "any widget can opt into hover popouts through handleHover"
 }
 
+test_the_bar_forwards_scroll_events_to_widgets() {
+    assert_file_contains "$BAR" 'typeof item.handleWheel === "function"' \
+        "any widget can opt into scroll handling through handleWheel"
+    assert_file_contains "$BAR" 'item.handleWheel(pos -' \
+        "the scroll hook is handed the position along the bar"
+}
+
 test_the_editor_labels_plugin_widgets() {
     assert_file_contains "$EDITOR" 'for (const widget of BarWidgetRegistry.widgets)' \
         "the toggle editor has to label every registered widget"

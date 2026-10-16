@@ -45,7 +45,9 @@ Once registered, the widget:
 - shows up in the Toggle & rearrange page (disable, move between zones);
 - renders in the bar (the bar shows it only while the entry is enabled);
 - can open a hover popout by exposing a
-  `handleHover(pos, isHorizontal, popouts)` function on its root item.
+  `handleHover(pos, isHorizontal, popouts)` function on its root item;
+- can react to scroll events sent through the bar by exposing a
+  `handleWheel(pos, isHorizontal, angleDelta)` function on its root item.
 
 Widgets are registered when the plugin loads and unregistered when it is
 disabled or removed, so no shell restart is needed after toggling the plugin.

@@ -293,6 +293,15 @@ Item {
             return;
         }
 
+        // Plugin widgets (and any widget without a bespoke branch) opt into
+        // scroll handling by exposing handleWheel(pos, isHorizontal, angleDelta).
+        const item = ch?.item;
+        if (item && typeof item.handleWheel === "function") {
+            const mappedChPos = mapFromItem(ch, 0, 0);
+            item.handleWheel(pos - (isHorizontal ? mappedChPos.x : mappedChPos.y), isHorizontal, angleDelta);
+            return;
+        }
+
         if (ch?.id === "workspaces" && Config.bar.scrollActions.workspaces) {
             const mon = (Config.bar.workspaces.perMonitor ? Kwin.monitorFor(screen) : Kwin.focusedMonitor);
             const specialWs = mon?.lastIpcObject.specialWorkspace.name;
