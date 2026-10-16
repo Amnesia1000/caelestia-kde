@@ -38,6 +38,9 @@ Item {
     // The frame edge the current popout grows out of: the bar's own side by
     // default, or the side of the panel band that opened it.
     property string currentEdge: Config.bar.position
+    // How much further from the frame edge the popout starts: a panel that only
+    // covers part of its edge is thin, so its popouts start at its inner side.
+    property real currentInset: 0
     // Set by ClipWrapper: whether the current bar item sits under the sidebar,
     // which can be narrower than the bar's right side now that it is resizable.
     property bool underSidebar: true

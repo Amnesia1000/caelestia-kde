@@ -187,6 +187,18 @@ CustomMouseArea {
             return;
         }
 
+        // The band under the pointer owns the popouts opened from it, so a
+        // popout a widget reveals on hover grows out of the same edge a clicked
+        // one would; back over the bar the frame edge is the bar's own side.
+        const hoverBand = barPanelAt(x, y);
+
+        if (hoverBand) {
+            hoverBand.applyPopoutContext();
+        } else if (inBarArea(x, y)) {
+            popouts.currentEdge = bar.position;
+            popouts.currentInset = 0;
+        }
+
         if (!visibilities.bar && Config.bar.showOnHover && inBarArea(x, y))
             bar.isHovered = true;
 

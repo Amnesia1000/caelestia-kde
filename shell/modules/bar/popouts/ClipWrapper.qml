@@ -97,10 +97,12 @@ Item {
         visibilities: root.visibilities
         underSidebar: !root.isHorizontal || content.currentCenter - root.parent.leftMargin >= root.parent.width - Visibilities.sidebarWidthFor(Tokens.sizes.sidebar.width)
 
-        anchors.leftMargin: root.edge === "left" ? (-implicitWidth - 5) * root.offsetScale : 0
-        anchors.rightMargin: root.edge === "right" ? (-implicitWidth - 5) * root.offsetScale : 0
-        anchors.topMargin: root.edge === "top" ? (-implicitHeight - 5) * root.offsetScale : 0
-        anchors.bottomMargin: root.edge === "bottom" ? (-implicitHeight - 5) * root.offsetScale : 0
+        // A panel that only covers part of its edge is thinner than the frame,
+        // so its popouts start at the panel's inner side instead of the frame's.
+        anchors.leftMargin: root.edge === "left" ? (-implicitWidth - 5) * root.offsetScale + content.currentInset : 0
+        anchors.rightMargin: root.edge === "right" ? (-implicitWidth - 5) * root.offsetScale + content.currentInset : 0
+        anchors.topMargin: root.edge === "top" ? (-implicitHeight - 5) * root.offsetScale + content.currentInset : 0
+        anchors.bottomMargin: root.edge === "bottom" ? (-implicitHeight - 5) * root.offsetScale + content.currentInset : 0
 
         states: [
             State {

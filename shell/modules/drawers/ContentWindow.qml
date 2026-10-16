@@ -74,6 +74,19 @@ StyledWindow {
             bottom: panelEdge("bottom")
         };
     }
+    // What the exclusion zones reserve on each side: a panel that stays on
+    // screen keeps its space whether it spans the whole edge or only part of
+    // it, so maximised windows stop at the panel instead of sliding under it.
+    // A panel that hides on its own takes no space.
+    readonly property var panelReservations: {
+        const panelEdge = edge => root.screenPanels.some(panel => (panel.position ?? "top") === edge && panel.persistent !== false) ? root.panelThickness : 0;
+        return {
+            left: panelEdge("left"),
+            right: panelEdge("right"),
+            top: panelEdge("top"),
+            bottom: panelEdge("bottom")
+        };
+    }
     // Single source of truth for the frame's thickness per screen side: on the
     // side the bar sits on, the frame is as thick as the bar itself, everywhere
     // else it is the plain border or the panel that thickens it. The frame
@@ -769,10 +782,22 @@ StyledWindow {
                     readonly property string edge: modelData.edge
                     readonly property bool horizontal: modelData.horizontal
 
+                    // The popouts grow out of the frame edge, so the band tells
+                    // the wrapper which edge opened them and how far past the
+                    // frame its own inner side sits: a full-edge panel needs
+                    // neither, a partial one starts at its island's inner side.
+                    function applyPopoutContext(): void {
+                        const host = band.edge === "top" ? panels.topMargin : band.edge === "bottom" ? panels.bottomMargin : band.edge === "left" ? panels.leftMargin : panels.rightMargin;
+                        const inner = band.horizontal ? (band.edge === "top" ? band.y + band.height : root.height - band.y) : (band.edge === "left" ? band.x + band.width : root.width - band.x);
+
+                        panels.popouts.currentEdge = band.edge;
+                        panels.popouts.currentInset = Math.max(0, inner - host);
+                    }
                     // Mirrors what the bar wrapper forwards to its Bar: the
                     // position along the band's edge, which is the window
                     // coordinate on that axis brought into the band.
                     function checkPopout(x: real, y: real): void {
+                        band.applyPopoutContext();
                         bandBar.checkPopout(band.horizontal ? x - band.x : y - band.y);
                     }
                     function resetHover(): void {
