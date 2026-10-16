@@ -49,6 +49,17 @@ Once registered, the widget:
 - can react to scroll events sent through the bar by exposing a
   `handleWheel(pos, isHorizontal, angleDelta)` function on its root item.
 
+A widget is handed the ambient values the built-ins get, for the ones its root
+declares: `bar`, `screen`, `visibilities` and `popouts`. Anything left out is
+not touched.
+
+| Property | Description |
+| --- | --- |
+| `bar` | The bar the widget is rendered in. |
+| `screen` | The screen that bar belongs to. |
+| `visibilities` | Which drawers and panels are currently visible. |
+| `popouts` | The popout state, so the widget can open a popout. |
+
 Widgets are registered when the plugin loads and unregistered when it is
 disabled or removed, so no shell restart is needed after toggling the plugin.
 

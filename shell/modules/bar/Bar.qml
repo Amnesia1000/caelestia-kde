@@ -326,6 +326,25 @@ Item {
         }
     }
 
+    // Built-in widgets are handed the ambient values one by one in their own
+    // delegate choice. Plugin widgets are plain components, so the values they
+    // declare are filled in here instead and the rest are left alone.
+    function applyWidgetContext(widget: var): void {
+        if (!widget)
+            return;
+
+        const context = {
+            bar: root,
+            screen: root.screen,
+            popouts: root.popouts,
+            visibilities: root.visibilities
+        };
+
+        for (const name in context)
+            if (widget.hasOwnProperty(name))
+                widget[name] = context[name];
+    }
+
     Component.onCompleted: Logger.mark("bar-ready")
 
     clip: true
@@ -640,6 +659,8 @@ Item {
             DelegateChoice {
                 delegate: WrappedLoader {
                     source: BarWidgetRegistry.widget(id)?.componentUrl ?? ""
+
+                    onItemChanged: root.applyWidgetContext(item)
                 }
             }
         }

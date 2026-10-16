@@ -47,6 +47,17 @@ test_the_bar_forwards_scroll_events_to_widgets() {
         "the scroll hook is handed the position along the bar"
 }
 
+test_the_bar_hands_plugin_widgets_its_context() {
+    assert_file_contains "$BAR" 'function applyWidgetContext(widget: var): void' \
+        "the bar fills in the ambient values a plugin widget declares"
+    assert_file_contains "$BAR" 'root.applyWidgetContext(item)' \
+        "the context is handed over when the plugin component loads"
+    assert_file_contains "$BAR" 'widget.hasOwnProperty(name)' \
+        "only the values the widget declares are filled in"
+    assert_file_contains "$DOCS" '`visibilities`' \
+        "the ambient values a widget can ask for are documented"
+}
+
 test_the_editor_labels_plugin_widgets() {
     assert_file_contains "$EDITOR" 'for (const widget of BarWidgetRegistry.widgets)' \
         "the toggle editor has to label every registered widget"
