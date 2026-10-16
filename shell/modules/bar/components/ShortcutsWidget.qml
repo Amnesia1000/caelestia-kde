@@ -5,7 +5,7 @@ import Caelestia.Config
 import qs.components
 import qs.services
 
-StyledRect {
+Item {
     id: root
 
     required property var popouts
@@ -15,28 +15,16 @@ StyledRect {
     implicitWidth: Tokens.sizes.bar.innerWidth
     implicitHeight: Tokens.sizes.bar.innerWidth
 
-    color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "elementscontext"))
-        ? Colours.palette.m3secondaryContainer
-        : (clickArea.containsMouse ? Colours.tPalette.m3surfaceContainerHigh : "transparent")
-    radius: Tokens.rounding.full
-
     visible: enabled
 
-    Behavior on color {
-        CAnim {}
-    }
-
     MaterialIcon {
+        id: icon
         anchors.centerIn: parent
         text: "toggle_on"
         color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "elementscontext"))
             ? Colours.palette.m3onSecondaryContainer
             : Colours.palette.m3primary
         fontStyle: Tokens.font.icon.builders.medium.weight(Font.Medium).build()
-
-        Behavior on color {
-            CAnim {}
-        }
     }
 
     MouseArea {
