@@ -19,6 +19,7 @@ Item {
 
     MaterialIcon {
         id: icon
+
         anchors.centerIn: parent
         text: "toggle_on"
         color: (root.popouts.hasCurrent && (root.popouts.currentName === "shortcuts" || root.popouts.currentName === "elementscontext"))
