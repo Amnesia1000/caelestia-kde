@@ -243,7 +243,7 @@ class BarPreviewFontScales : public settings::ObjectNode {
 // A secondary bar anchored to a screen edge and drawn as part of the frame.
 // The list of panels is global; each panel names the screens it applies to
 // (empty means every screen). `lengthPercent` 100 spans the whole edge, less
-// makes it a centred dock.
+// makes it a dock of that length, placed with `align`.
 class BarPanel : public settings::ObjectNode {
     CONFIG_NODE(BarPanel, settings::ObjectNode)
 
@@ -252,6 +252,7 @@ class BarPanel : public settings::ObjectNode {
     CONFIG_PROPERTY(QString, position, u"top"_s)
     CONFIG_PROPERTY(QStringList, screens, QStringList())
     CONFIG_PROPERTY(int, lengthPercent, 100)
+    CONFIG_PROPERTY(QString, align, u"center"_s)
     CONFIG_PROPERTY(bool, persistent, true)
     CONFIG_PROPERTY(bool, showOnHover, true)
     CONFIG_PROPERTY(QVariantList, entries, QVariantList())
