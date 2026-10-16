@@ -535,49 +535,6 @@ StyledWindow {
             }
         }
     }
-    // One widget band per full-edge panel, pinned to the frame edge it
-    // thickens. Each band draws the same Bar the primary bar uses, so the
-    // widgets and the spacing stay identical all around the frame.
-    Item {
-        id: panelLayer
-
-        anchors.fill: parent
-        visible: root.fullEdgePanels.length > 0
-
-        Repeater {
-            model: root.fullEdgePanels
-
-            delegate: Item {
-                id: band
-
-                required property var modelData
-
-                readonly property string edge: modelData.position ?? "top"
-                readonly property bool horizontal: band.edge === "top" || band.edge === "bottom"
-
-                x: band.horizontal || band.edge === "left" ? 0 : parent.width - band.width
-                y: band.horizontal && band.edge === "bottom" ? parent.height - band.height : 0
-                width: band.horizontal ? parent.width : root.panelThickness
-                height: band.horizontal ? root.panelThickness : parent.height
-
-                Bar {
-                    anchors.fill: parent
-                    anchors.topMargin: band.horizontal ? 0 : root.barPadding
-                    anchors.bottomMargin: band.horizontal ? 0 : root.barPadding
-                    anchors.leftMargin: band.horizontal ? root.barPadding : 0
-                    anchors.rightMargin: band.horizontal ? root.barPadding : 0
-
-                    position: band.edge
-                    entries: band.modelData.entries
-                    screen: root.screen
-                    visibilities: root.visibilities
-                    popouts: panels.popouts
-                    fullscreen: root.hasFullscreen
-                }
-            }
-        }
-    }
-
     DrawerVisibilities {
         id: visibilities
 
@@ -596,6 +553,7 @@ StyledWindow {
         visibilities: visibilities
         panels: panels
         bar: bar
+        barPanels: panelLayer
         borderThickness: root.borderLayoutThickness
         fullscreen: root.hasFullscreen
         focusGrab: focusGrabState
@@ -690,6 +648,92 @@ StyledWindow {
             anchors.fill: parent
             visible: visibilities.overview
             onClicked: Visibilities.setOverview(false)
+        }
+        // One widget band per full-edge panel, pinned to the frame edge it
+        // thickens. Each band draws the same Bar the primary bar uses, so the
+        // widgets and the spacing stay identical all around the frame. The
+        // bands live in the interactions (like the primary bar) so their
+        // widgets receive the pointer, but before the drawers and popouts so
+        // those still cover the frame when they open.
+        Item {
+            id: panelLayer
+
+            // The band under the given point, so the pointer interactions can
+            // be routed to it exactly like they are routed to the bar.
+            function bandAt(x: real, y: real): var {
+                for (let i = 0; i < panelRepeater.count; i++) {
+                    const band = panelRepeater.itemAt(i);
+
+                    if (band && band.contains(band.mapFromItem(null, x, y)))
+                        return band;
+                }
+
+                return null;
+            }
+            // Clears the hover state of every band, mirroring bar.resetHover().
+            function resetHover(): void {
+                for (let i = 0; i < panelRepeater.count; i++) {
+                    const band = panelRepeater.itemAt(i);
+
+                    if (band)
+                        band.resetHover();
+                }
+            }
+
+            anchors.fill: parent
+            // Like the bar, the panels collapse while the overview is up or a
+            // window is fullscreen (the frame edges already do the same).
+            visible: root.fullEdgePanels.length > 0 && !visibilities.overview && !root.hasFullscreen
+
+            Repeater {
+                id: panelRepeater
+
+                model: root.fullEdgePanels
+
+                delegate: Item {
+                    id: band
+
+                    required property var modelData
+
+                    readonly property string edge: modelData.position ?? "top"
+                    readonly property bool horizontal: band.edge === "top" || band.edge === "bottom"
+
+                    // Mirrors what the bar wrapper forwards to its Bar: the
+                    // position along the band's edge, which for a full-edge
+                    // band is the window position on that axis.
+                    function checkPopout(x: real, y: real): void {
+                        bandBar.checkPopout(band.horizontal ? x : y);
+                    }
+                    function resetHover(): void {
+                        bandBar.resetHover();
+                    }
+                    function handleWheel(x: real, y: real, angleDelta: point): void {
+                        bandBar.handleWheel(band.horizontal ? x : y, angleDelta);
+                    }
+
+                    x: band.horizontal || band.edge === "left" ? 0 : parent.width - band.width
+                    y: band.horizontal && band.edge === "bottom" ? parent.height - band.height : 0
+                    width: band.horizontal ? parent.width : root.panelThickness
+                    height: band.horizontal ? root.panelThickness : parent.height
+
+                    Bar {
+                        id: bandBar
+
+                        anchors.fill: parent
+                        anchors.topMargin: band.horizontal ? 0 : root.barPadding
+                        anchors.bottomMargin: band.horizontal ? 0 : root.barPadding
+                        anchors.leftMargin: band.horizontal ? root.barPadding : 0
+                        anchors.rightMargin: band.horizontal ? root.barPadding : 0
+
+                        position: band.edge
+                        entries: band.modelData.entries
+                        screen: root.screen
+                        visibilities: root.visibilities
+                        popouts: panels.popouts
+                        fullscreen: root.hasFullscreen
+                    }
+                }
+            }
         }
         Panels {
             id: panels

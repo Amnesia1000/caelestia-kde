@@ -16,6 +16,9 @@ CustomMouseArea {
     required property DrawerVisibilities visibilities
     required property Panels panels
     required property Bar.BarWrapper bar
+    // Bands of the full-edge panels; the pointer interactions are routed to the
+    // band under the cursor exactly like they are routed to the bar.
+    required property var barPanels
     required property real borderThickness
     required property bool fullscreen
     property var focusGrab: null
@@ -27,6 +30,11 @@ CustomMouseArea {
     // Uses clampedThickness rather than the raw implicit size so the bar stays
     // reachable when the border thickness is set to 0 (the collapsed bar is 0px wide).
 
+    // The band under the given point, so the pointer interactions can reach
+    // the full-edge panels exactly like they reach the bar.
+    function barPanelAt(x: real, y: real): var {
+        return barPanels ? barPanels.bandAt(x, y) : null;
+    }
     function inBarArea(x: real, y: real): bool {
         if (bar.position === "left")
             return x < bar.x + bar.clampedThickness;
@@ -108,7 +116,12 @@ CustomMouseArea {
     function onWheel(event: WheelEvent): void {
         if (fullscreen)
             return;
-        if (inBarArea(event.x, event.y)) {
+
+        const band = barPanelAt(event.x, event.y);
+
+        if (band) {
+            band.handleWheel(event.x, event.y, event.angleDelta);
+        } else if (inBarArea(event.x, event.y)) {
             bar.handleWheel(isBarHorizontal ? event.x : event.y, event.angleDelta);
         }
     }
@@ -122,7 +135,7 @@ CustomMouseArea {
         if (root.focusGrab && (root.focusGrab.active || popouts.isDetached)) {
             let inside = false;
 
-            if (inBarArea(event.x, event.y)) inside = true;
+            if (barPanelAt(event.x, event.y) || inBarArea(event.x, event.y)) inside = true;
             else if (visibilities.launcher && inBottomPanel(panels.launcher, event.x, event.y, false, Config.launcher.hoverThickness, Config.launcher.hoverWidth) && withinPanelWidth(panels.launcher, event.x, event.y)) inside = true;
             else if (visibilities.session && inRightPanel(panels.sessionWrapper, event.x, event.y)) inside = true;
             else if (visibilities.sidebar && inRightPanel(panels.sidebar, event.x, event.y)) inside = true;
@@ -279,11 +292,19 @@ CustomMouseArea {
                 visibilities.dashboard = false;
         }
 
-        if (inBarArea(x, y)) {
+        const band = barPanelAt(x, y);
+
+        if (band) {
+            band.checkPopout(x, y);
+            bar.resetHover();
+            popoutHideTimer.stop();
+        } else if (inBarArea(x, y)) {
             bar.checkPopout(isBarHorizontal ? x : y);
+            barPanels.resetHover();
             popoutHideTimer.stop();
         } else {
             bar.resetHover();
+            barPanels.resetHover();
             if ((!popouts.currentName.startsWith("traymenu") || (Config.bar.popouts.tray && ((popouts.current as StackView)?.depth ?? 0) <= 1)) && !inLeftPanel(panels.popoutsWrapper, x, y)) {
                 if (!popoutHideTimer.running) popoutHideTimer.start();
             } else {
