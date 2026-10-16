@@ -10,6 +10,7 @@ Region {
 
     required property Bar.BarWrapper bar
     required property Panels panels
+    required property var frameEdges
     required property var win
     readonly property real borderThickness: Config.border.thickness
     readonly property real clampedThickness: Config.border.clampedThickness
@@ -17,6 +18,12 @@ Region {
     readonly property real barRightWidth: bar.position === "right" ? bar.clampedThickness : clampedThickness
     readonly property real barTopHeight: bar.position === "top" ? bar.clampedThickness : clampedThickness
     readonly property real barBottomHeight: bar.position === "bottom" ? bar.clampedThickness : clampedThickness
+    // The interactive region is the screen minus the frame edge, where the
+    // frame edge is the bar/panel band when one sits there.
+    readonly property real leftEdge: Math.max(root.frameEdges.left, barLeftWidth)
+    readonly property real rightEdge: Math.max(root.frameEdges.right, barRightWidth)
+    readonly property real topEdge: Math.max(root.frameEdges.top, barTopHeight)
+    readonly property real bottomEdge: Math.max(root.frameEdges.bottom, barBottomHeight)
     // A closed panel's input region must be at least as deep as its hover trigger,
     // otherwise the pointer never reaches the area Interactions tests against.
 
@@ -24,10 +31,10 @@ Region {
         return Math.max(borderThickness, hoverThickness);
     }
 
-    x: barLeftWidth + win.dragMaskPadding
-    y: barTopHeight + win.dragMaskPadding
-    width: win.width - barLeftWidth - barRightWidth - win.dragMaskPadding * 2
-    height: win.height - barTopHeight - barBottomHeight - win.dragMaskPadding * 2
+    x: root.leftEdge + win.dragMaskPadding
+    y: root.topEdge + win.dragMaskPadding
+    width: win.width - root.leftEdge - root.rightEdge - win.dragMaskPadding * 2
+    height: win.height - root.topEdge - root.bottomEdge - win.dragMaskPadding * 2
     intersection: Intersection.Xor
 
     R {

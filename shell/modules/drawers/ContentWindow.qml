@@ -13,6 +13,7 @@ import Caelestia.Config
 import qs.components
 import qs.components.containers
 import qs.services
+import qs.utils
 import qs.modules.background
 import qs.modules.bar
 import qs.modules.overview as Overview
@@ -61,12 +62,27 @@ StyledWindow {
     // side the bar sits on, the frame is as thick as the bar itself, everywhere
     // else it is the plain border. The frame mask, its blur corners and the
     // panel insets all derive from this, so the numbers cannot drift apart.
-    readonly property var frameEdges: ({
-            left: Math.max(bar.position === "left" ? bar.implicitWidth : 0, root.borderThickness),
-            right: Math.max(bar.position === "right" ? bar.implicitWidth : 0, root.borderThickness),
-            top: Math.max(bar.position === "top" ? bar.implicitHeight : 0, root.borderThickness),
-            bottom: Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness)
-        })
+    readonly property var frameEdges: {
+        // A full-edge panel thickens the frame on its edge; while the overview
+        // is up or a window is fullscreen the panels (like the bar) collapse.
+        const visible = !visibilities.overview && !root.hasFullscreen;
+        const panelEdge = edge => visible && root.fullEdgePanels.some(panel => (panel.position ?? "top") === edge) ? root.panelThickness : 0;
+        return {
+            left: Math.max(bar.position === "left" ? bar.implicitWidth : 0, root.borderThickness, panelEdge("left")),
+            right: Math.max(bar.position === "right" ? bar.implicitWidth : 0, root.borderThickness, panelEdge("right")),
+            top: Math.max(bar.position === "top" ? bar.implicitHeight : 0, root.borderThickness, panelEdge("top")),
+            bottom: Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness, panelEdge("bottom"))
+        };
+    }
+    // Secondary panels: a full-edge panel thickens the frame on its edge and
+    // hosts its own widget band there (see panelLayer below). Reusing the bar's
+    // thickness keeps a panel and the bar visually identical.
+    readonly property real barScale: Math.max(0.6, !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0)
+    readonly property int barPadding: Math.max(Tokens.padding.small, Config.border.thickness)
+    readonly property int panelThickness: Math.round(Tokens.sizes.bar.innerWidth * root.barScale) + root.barPadding * 2
+    readonly property var fullEdgePanels: (GlobalConfig.bar.panels?.values ?? []).filter(panel => panel.enabled !== false
+        && (panel.lengthPercent ?? 100) >= 100
+        && ((panel.screens ?? []).length === 0 || Strings.testRegexList(panel.screens, screen.name)))
     readonly property real borderRounding: Config.border.rounding * (1 - fsTransitionProg)
     readonly property real shadowOpacity: 0.7 * (1 - fsTransitionProg)
     readonly property real borderLayoutThickness: hasFullscreen ? 0 : dynamicBorderThickness
@@ -191,6 +207,7 @@ StyledWindow {
 
         bar: bar
         panels: panels
+        frameEdges: root.frameEdges
         win: root
     }
     Region {
@@ -518,6 +535,49 @@ StyledWindow {
             }
         }
     }
+    // One widget band per full-edge panel, pinned to the frame edge it
+    // thickens. Each band draws the same Bar the primary bar uses, so the
+    // widgets and the spacing stay identical all around the frame.
+    Item {
+        id: panelLayer
+
+        anchors.fill: parent
+        visible: root.fullEdgePanels.length > 0
+
+        Repeater {
+            model: root.fullEdgePanels
+
+            delegate: Item {
+                id: band
+
+                required property var modelData
+
+                readonly property string edge: modelData.position ?? "top"
+                readonly property bool horizontal: band.edge === "top" || band.edge === "bottom"
+
+                x: band.horizontal || band.edge === "left" ? 0 : parent.width - band.width
+                y: band.horizontal && band.edge === "bottom" ? parent.height - band.height : 0
+                width: band.horizontal ? parent.width : root.panelThickness
+                height: band.horizontal ? root.panelThickness : parent.height
+
+                Bar {
+                    anchors.fill: parent
+                    anchors.topMargin: band.horizontal ? 0 : root.barPadding
+                    anchors.bottomMargin: band.horizontal ? 0 : root.barPadding
+                    anchors.leftMargin: band.horizontal ? root.barPadding : 0
+                    anchors.rightMargin: band.horizontal ? root.barPadding : 0
+
+                    position: band.edge
+                    entries: band.modelData.entries
+                    screen: root.screen
+                    visibilities: root.visibilities
+                    popouts: panels.popouts
+                    fullscreen: root.hasFullscreen
+                }
+            }
+        }
+    }
+
     DrawerVisibilities {
         id: visibilities
 
