@@ -58,15 +58,32 @@ StyledWindow {
         return grid ? grid.verticalOffset : 0;
     }
     readonly property real borderThickness: dynamicBorderThickness * (1 - fsTransitionProg)
+    // Secondary panels: a full-edge panel thickens the frame on its edge and
+    // hosts its own widget band there (see panelLayer below). The thickness is
+    // the bar's own, so a panel and the bar stay visually identical.
+    readonly property int panelThickness: bar.contentWidth
+    // The thickness each full-edge panel takes on its edge, whether the panels
+    // are collapsed or not: the exclusion zones reserve it so that maximised
+    // windows sit beside the panels instead of under them.
+    readonly property var panelEdges: {
+        const panelEdge = edge => root.fullEdgePanels.some(panel => (panel.position ?? "top") === edge) ? root.panelThickness : 0;
+        return {
+            left: panelEdge("left"),
+            right: panelEdge("right"),
+            top: panelEdge("top"),
+            bottom: panelEdge("bottom")
+        };
+    }
     // Single source of truth for the frame's thickness per screen side: on the
     // side the bar sits on, the frame is as thick as the bar itself, everywhere
-    // else it is the plain border. The frame mask, its blur corners and the
-    // panel insets all derive from this, so the numbers cannot drift apart.
+    // else it is the plain border or the panel that thickens it. The frame
+    // mask, its blur corners and the panel insets all derive from this, so the
+    // numbers cannot drift apart.
     readonly property var frameEdges: {
-        // A full-edge panel thickens the frame on its edge; while the overview
-        // is up or a window is fullscreen the panels (like the bar) collapse.
-        const visible = !visibilities.overview && !root.hasFullscreen;
-        const panelEdge = edge => visible && root.fullEdgePanels.some(panel => (panel.position ?? "top") === edge) ? root.panelThickness : 0;
+        // While the overview is up or a window is fullscreen the bar and the
+        // panels collapse, so they take no thickness from the frame.
+        const collapsed = visibilities.overview || root.hasFullscreen;
+        const panelEdge = edge => collapsed ? 0 : root.panelEdges[edge];
         return {
             left: Math.max(bar.position === "left" ? bar.implicitWidth : 0, root.borderThickness, panelEdge("left")),
             right: Math.max(bar.position === "right" ? bar.implicitWidth : 0, root.borderThickness, panelEdge("right")),
@@ -74,12 +91,6 @@ StyledWindow {
             bottom: Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness, panelEdge("bottom"))
         };
     }
-    // Secondary panels: a full-edge panel thickens the frame on its edge and
-    // hosts its own widget band there (see panelLayer below). Reusing the bar's
-    // thickness keeps a panel and the bar visually identical.
-    readonly property real barScale: Math.max(0.6, !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0)
-    readonly property int barPadding: Math.max(Tokens.padding.small, Config.border.thickness)
-    readonly property int panelThickness: Math.round(Tokens.sizes.bar.innerWidth * root.barScale) + root.barPadding * 2
     readonly property var fullEdgePanels: (GlobalConfig.bar.panels?.values ?? []).filter(panel => panel.enabled !== false
         && (panel.lengthPercent ?? 100) >= 100
         && ((panel.screens ?? []).length === 0 || Strings.testRegexList(panel.screens, screen.name)))
@@ -720,10 +731,10 @@ StyledWindow {
                         id: bandBar
 
                         anchors.fill: parent
-                        anchors.topMargin: band.horizontal ? 0 : root.barPadding
-                        anchors.bottomMargin: band.horizontal ? 0 : root.barPadding
-                        anchors.leftMargin: band.horizontal ? root.barPadding : 0
-                        anchors.rightMargin: band.horizontal ? root.barPadding : 0
+                        anchors.topMargin: band.horizontal ? 0 : bar.padding
+                        anchors.bottomMargin: band.horizontal ? 0 : bar.padding
+                        anchors.leftMargin: band.horizontal ? bar.padding : 0
+                        anchors.rightMargin: band.horizontal ? bar.padding : 0
 
                         position: band.edge
                         entries: band.modelData.entries
