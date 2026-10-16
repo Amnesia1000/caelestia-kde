@@ -12,6 +12,7 @@ Region {
     required property Panels panels
     required property var frameEdges
     required property var win
+    required property var partialPanelRects
     readonly property real borderThickness: Config.border.thickness
     readonly property real clampedThickness: Config.border.clampedThickness
     readonly property real barLeftWidth: bar.position === "left" ? bar.clampedThickness : clampedThickness
@@ -80,6 +81,35 @@ Region {
         panel: root.panels.popoutsWrapper
         width: panel.width * (1 - root.panels.popoutsWrapper.offsetScale)
     }
+    // A full-edge panel thickens the frame, so its band already sits inside
+    // the part of the screen this region keeps interactive. A partial panel
+    // does not, so it punches its own cutout. Regions only take Region
+    // children, so the slots are declared here and bound to the list; the
+    // spare ones collapse to nothing.
+    PanelCutout {
+        rect: root.partialPanelRects[0] ?? null
+    }
+    PanelCutout {
+        rect: root.partialPanelRects[1] ?? null
+    }
+    PanelCutout {
+        rect: root.partialPanelRects[2] ?? null
+    }
+    PanelCutout {
+        rect: root.partialPanelRects[3] ?? null
+    }
+    PanelCutout {
+        rect: root.partialPanelRects[4] ?? null
+    }
+    PanelCutout {
+        rect: root.partialPanelRects[5] ?? null
+    }
+    PanelCutout {
+        rect: root.partialPanelRects[6] ?? null
+    }
+    PanelCutout {
+        rect: root.partialPanelRects[7] ?? null
+    }
     Region {
         x: 0; y: 0
         width: (root.Config.overview.enabled && root.Config.overview.hoverTopLeft) ? root.Config.overview.hoverThickness : 0
@@ -112,6 +142,15 @@ Region {
         y: panel.y + root.panels.topMargin
         width: panel.width
         height: panel.height
+        intersection: Intersection.Subtract
+    }
+    component PanelCutout: Region {
+        required property var rect
+
+        x: rect ? rect.x : 0
+        y: rect ? rect.y : 0
+        width: rect ? rect.width : 0
+        height: rect ? rect.height : 0
         intersection: Intersection.Subtract
     }
     Config.screen: win.screen.name

@@ -91,9 +91,47 @@ StyledWindow {
             bottom: Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness, panelEdge("bottom"))
         };
     }
-    readonly property var fullEdgePanels: (GlobalConfig.bar.panels?.values ?? []).filter(panel => panel.enabled !== false
-        && (panel.lengthPercent ?? 100) >= 100
+    // Every panel enabled on this screen: the ones spanning a whole edge
+    // thicken the frame there, the rest are drawn as islands over it.
+    readonly property var screenPanels: (GlobalConfig.bar.panels?.values ?? []).filter(panel => panel.enabled !== false
         && ((panel.screens ?? []).length === 0 || Strings.testRegexList(panel.screens, screen.name)))
+    readonly property var fullEdgePanels: root.screenPanels.filter(panel => (panel.lengthPercent ?? 100) >= 100)
+    // Islands already keep the bar away from the screen edge, so a panel does
+    // the same there; without them a panel hugs the edge and merges with it.
+    readonly property int panelInset: GlobalConfig.appearance.islands ? Tokens.spacing.extraLarge : 0
+    // Where each panel sits, in window coordinates. A partial panel takes the
+    // bar's thickness but only part of its edge, placed by `align`, and never
+    // reserves space: the exclusion zones only know about full-edge panels.
+    readonly property var panelRects: {
+        const rects = [];
+        for (const panel of root.screenPanels) {
+            const edge = panel.position ?? "top";
+            const horizontal = edge === "top" || edge === "bottom";
+            const total = horizontal ? root.width : root.height;
+            const usable = Math.max(0, total - root.panelInset * 2);
+            const percent = Math.max(0, Math.min(100, panel.lengthPercent ?? 100));
+            const full = percent >= 100;
+            const length = full ? usable : Math.round(usable * percent / 100);
+            if (length <= 0) continue;
+            const align = panel.align ?? "center";
+            const along = full || align === "center" ? Math.round((total - length) / 2) : (align === "end" ? total - root.panelInset - length : root.panelInset);
+            const thickness = root.panelThickness;
+            rects.push({
+                panel,
+                edge,
+                horizontal,
+                full,
+                x: horizontal ? along : edge === "left" ? root.panelInset : root.width - root.panelInset - thickness,
+                y: horizontal ? (edge === "top" ? root.panelInset : root.height - root.panelInset - thickness) : along,
+                width: horizontal ? length : thickness,
+                height: horizontal ? thickness : length
+            });
+        }
+        return rects;
+    }
+    readonly property var partialPanelRects: root.panelRects.filter(rect => !rect.full)
+    readonly property var islandPanelRects: GlobalConfig.appearance.islands ? root.panelRects : root.partialPanelRects
+    readonly property bool panelsVisible: root.panelRects.length > 0 && !visibilities.overview && !root.hasFullscreen
     readonly property real borderRounding: Config.border.rounding * (1 - fsTransitionProg)
     readonly property real shadowOpacity: 0.7 * (1 - fsTransitionProg)
     readonly property real borderLayoutThickness: hasFullscreen ? 0 : dynamicBorderThickness
@@ -220,6 +258,7 @@ StyledWindow {
         panels: panels
         frameEdges: root.frameEdges
         win: root
+        partialPanelRects: root.partialPanelRects
     }
     Region {
         id: fullRegion
@@ -425,6 +464,23 @@ StyledWindow {
             implicitHeight: bar.height
             radius: Tokens.rounding.extraLarge
             deformScale: (GlobalConfig.appearance.blurMask || !GlobalConfig.appearance.transparency.enabled) ? ((0.1 * Config.appearance.deformScale) / 10000) : 0
+        }
+        Repeater {
+            model: root.islandPanelRects
+
+            delegate: BlobRect {
+                required property var modelData
+
+                group: root.panelsVisible ? blobGroup : null
+                visible: root.panelsVisible
+                x: modelData.x
+                y: modelData.y
+                implicitWidth: modelData.width
+                implicitHeight: modelData.height
+                radius: Tokens.rounding.extraLarge
+                deformScale: (GlobalConfig.appearance.blurMask || !GlobalConfig.appearance.transparency.enabled) ? ((0.1 * Config.appearance.deformScale) / 10000) : 0
+                Config.screen: root.screen.name
+            }
         }
         PanelBg {
             id: dashBg
@@ -663,12 +719,13 @@ StyledWindow {
             visible: visibilities.overview
             onClicked: Visibilities.setOverview(false)
         }
-        // One widget band per full-edge panel, pinned to the frame edge it
-        // thickens. Each band draws the same Bar the primary bar uses, so the
-        // widgets and the spacing stay identical all around the frame. The
-        // bands live in the interactions (like the primary bar) so their
-        // widgets receive the pointer, but before the drawers and popouts so
-        // those still cover the frame when they open.
+        // One widget band per panel, sitting where `panelRects` puts it: a
+        // full-edge panel thickens the frame on its edge, a partial one rides
+        // the island drawn over it. Each band draws the same Bar the primary
+        // bar uses, so the widgets and the spacing stay identical all around
+        // the frame. The bands live in the interactions (like the primary bar)
+        // so their widgets receive the pointer, but before the drawers and
+        // popouts so those still cover the frame when they open.
         Item {
             id: panelLayer
 
@@ -697,38 +754,38 @@ StyledWindow {
             anchors.fill: parent
             // Like the bar, the panels collapse while the overview is up or a
             // window is fullscreen (the frame edges already do the same).
-            visible: root.fullEdgePanels.length > 0 && !visibilities.overview && !root.hasFullscreen
+            visible: root.panelsVisible
 
             Repeater {
                 id: panelRepeater
 
-                model: root.fullEdgePanels
+                model: root.panelRects
 
                 delegate: Item {
                     id: band
 
                     required property var modelData
 
-                    readonly property string edge: modelData.position ?? "top"
-                    readonly property bool horizontal: band.edge === "top" || band.edge === "bottom"
+                    readonly property string edge: modelData.edge
+                    readonly property bool horizontal: modelData.horizontal
 
                     // Mirrors what the bar wrapper forwards to its Bar: the
-                    // position along the band's edge, which for a full-edge
-                    // band is the window position on that axis.
+                    // position along the band's edge, which is the window
+                    // coordinate on that axis brought into the band.
                     function checkPopout(x: real, y: real): void {
-                        bandBar.checkPopout(band.horizontal ? x : y);
+                        bandBar.checkPopout(band.horizontal ? x - band.x : y - band.y);
                     }
                     function resetHover(): void {
                         bandBar.resetHover();
                     }
                     function handleWheel(x: real, y: real, angleDelta: point): void {
-                        bandBar.handleWheel(band.horizontal ? x : y, angleDelta);
+                        bandBar.handleWheel(band.horizontal ? x - band.x : y - band.y, angleDelta);
                     }
 
-                    x: band.horizontal || band.edge === "left" ? 0 : parent.width - band.width
-                    y: band.horizontal && band.edge === "bottom" ? parent.height - band.height : 0
-                    width: band.horizontal ? parent.width : root.panelThickness
-                    height: band.horizontal ? root.panelThickness : parent.height
+                    x: modelData.x
+                    y: modelData.y
+                    width: modelData.width
+                    height: modelData.height
 
                     Bar {
                         id: bandBar
@@ -740,7 +797,7 @@ StyledWindow {
                         anchors.rightMargin: band.horizontal ? bar.padding : 0
 
                         position: band.edge
-                        entries: band.modelData.entries
+                        entries: band.modelData.panel.entries
                         screen: root.screen
                         visibilities: root.visibilities
                         popouts: panels.popouts
@@ -906,6 +963,33 @@ StyledWindow {
             width: root.width
             height: (!GlobalConfig.appearance.islands && GlobalConfig.appearance.blur) ? root.frameEdges.bottom : 0
             intersection: Intersection.Combine
+        }
+        // A partial panel is drawn over the frame instead of inside it, so its
+        // strip needs the same background blur as the edge it hangs from. The
+        // slots mirror the cutouts in the input region (see Regions.qml).
+        PanelBlur {
+            rect: root.partialPanelRects[0] ?? null
+        }
+        PanelBlur {
+            rect: root.partialPanelRects[1] ?? null
+        }
+        PanelBlur {
+            rect: root.partialPanelRects[2] ?? null
+        }
+        PanelBlur {
+            rect: root.partialPanelRects[3] ?? null
+        }
+        PanelBlur {
+            rect: root.partialPanelRects[4] ?? null
+        }
+        PanelBlur {
+            rect: root.partialPanelRects[5] ?? null
+        }
+        PanelBlur {
+            rect: root.partialPanelRects[6] ?? null
+        }
+        PanelBlur {
+            rect: root.partialPanelRects[7] ?? null
         }
         Region {
             x: root.frameEdges.left
@@ -1076,6 +1160,16 @@ StyledWindow {
             vAnchor: "both"
             hAnchor: "both"
         }
+    }
+
+    component PanelBlur: Region {
+        required property var rect
+
+        x: rect && !GlobalConfig.appearance.islands && GlobalConfig.appearance.blur ? rect.x : 0
+        y: rect && !GlobalConfig.appearance.islands && GlobalConfig.appearance.blur ? rect.y : 0
+        width: rect && !GlobalConfig.appearance.islands && GlobalConfig.appearance.blur ? rect.width : 0
+        height: rect && !GlobalConfig.appearance.islands && GlobalConfig.appearance.blur ? rect.height : 0
+        intersection: Intersection.Combine
     }
 
     component PanelBg: BlobRect {
