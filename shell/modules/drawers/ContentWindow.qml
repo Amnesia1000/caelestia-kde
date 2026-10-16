@@ -501,37 +501,40 @@ StyledWindow {
         PanelBg {
             id: popoutBg
 
+            // The side the popout grows out of: the bar's side, or the side of
+            // the panel band whose item opened it.
+            readonly property string edge: panels.popoutsWrapper.edge
             property real extraShift: panels.popouts.isDetached ? 0 : 0.2
-            property bool connectedToSidebar: (bar.position === "top" || bar.position === "bottom") && panels.popouts.sidebarOpen && panels.popouts.implicitWidth <= Visibilities.sidebarWidthFor(Tokens.sizes.sidebar.width) + 1 && !panels.popouts.isDockPopout
+            property bool connectedToSidebar: (edge === "top" || edge === "bottom") && panels.popouts.sidebarOpen && panels.popouts.implicitWidth <= Visibilities.sidebarWidthFor(Tokens.sizes.sidebar.width) + 1 && !panels.popouts.isDockPopout
 
             panel: panels.popoutsWrapper
             deformAmount: connectedToSidebar ? 0.03 : (panels.popouts.isDetached ? 0.05 : panels.popouts.hasCurrent ? 0.15 : 0.1)
             exclude: connectedToSidebar ? [sidebarBg] : []
             x: {
                 const baseX = panels.popoutsWrapper.x + panels.popouts.x + panels.leftMargin;
-                if (bar.position === "left")
+                if (edge === "left")
                     return baseX - panels.popouts.implicitWidth * extraShift;
                 return baseX;
             }
             implicitWidth: {
-                if (bar.position === "left" || bar.position === "right")
+                if (edge === "left" || edge === "right")
                     return panels.popouts.implicitWidth * (1 + extraShift);
                 return panels.popouts.implicitWidth;
             }
-            bottomLeftRadius: GlobalConfig.appearance.islands ? radius : ((bar.position === "top" && connectedToSidebar) ? 0 : radius)
-            bottomRightRadius: GlobalConfig.appearance.islands ? radius : ((bar.position === "top" && connectedToSidebar) ? 0 : radius)
-            topLeftRadius: GlobalConfig.appearance.islands ? radius : ((bar.position === "bottom" && connectedToSidebar) ? 0 : radius)
-            topRightRadius: GlobalConfig.appearance.islands ? radius : ((bar.position === "bottom" && connectedToSidebar) ? 0 : radius)
+            bottomLeftRadius: GlobalConfig.appearance.islands ? radius : ((edge === "top" && connectedToSidebar) ? 0 : radius)
+            bottomRightRadius: GlobalConfig.appearance.islands ? radius : ((edge === "top" && connectedToSidebar) ? 0 : radius)
+            topLeftRadius: GlobalConfig.appearance.islands ? radius : ((edge === "bottom" && connectedToSidebar) ? 0 : radius)
+            topRightRadius: GlobalConfig.appearance.islands ? radius : ((edge === "bottom" && connectedToSidebar) ? 0 : radius)
             y: {
                 const baseY = panels.popoutsWrapper.y + panels.popouts.y + panels.topMargin;
-                if (bar.position === "top")
+                if (edge === "top")
                     return baseY - panels.popouts.implicitHeight * extraShift;
-                if (bar.position === "bottom" && connectedToSidebar)
+                if (edge === "bottom" && connectedToSidebar)
                     return baseY - Tokens.spacing.extraLarge - 10;
                 return baseY;
             }
             implicitHeight: {
-                if (bar.position === "top" || bar.position === "bottom") {
+                if (edge === "top" || edge === "bottom") {
                     let h = panels.popouts.implicitHeight * (1 + extraShift);
                     if (connectedToSidebar) h += Tokens.spacing.extraLarge + 10;
                     return h;

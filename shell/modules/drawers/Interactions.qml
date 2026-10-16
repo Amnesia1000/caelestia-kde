@@ -68,14 +68,17 @@ CustomMouseArea {
     function inLeftPanel(panel: Item, x: real, y: real): bool {
         const panelWidth = panel.content ? panel.content.nonAnimWidth : panel.width;
         const panelHeight = panel.content ? panel.content.nonAnimHeight : panel.height;
+        // The side the panel grows out of, which is the bar's side unless a
+        // full-edge panel opened this popout.
+        const edge = panel.edge ?? bar.position; // qmllint disable missing-property
 
-        if (bar.position === "left")
+        if (edge === "left")
             return x < panels.leftMargin + panel.x + panelWidth && withinPanelHeight(panel, x, y);
-        if (bar.position === "right")
+        if (edge === "right")
             return x > screen.width - panels.rightMargin - panelWidth && withinPanelHeight(panel, x, y);
-        if (bar.position === "top")
+        if (edge === "top")
             return y < panels.topMargin + panel.y + panelHeight && (withinPanelWidth(panel, x, y) || abovePopoutItem(panel, x));
-        if (bar.position === "bottom")
+        if (edge === "bottom")
             return y > screen.height - panels.bottomMargin - panelHeight && (withinPanelWidth(panel, x, y) || abovePopoutItem(panel, x));
         return false;
     }
