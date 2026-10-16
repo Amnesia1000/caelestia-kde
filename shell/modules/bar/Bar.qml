@@ -23,6 +23,10 @@ Item {
     required property DrawerVisibilities visibilities
     required property BarPopouts.Wrapper popouts
     required property bool fullscreen
+    // Secondary panels reuse this component, passing the edge they sit on and
+    // their own widget list. The primary bar keeps reading the global config.
+    property string position: Config.bar.position
+    property var entries: Config.bar.entries
     property Item currentHoveredItem: null
 
     readonly property int vPadding: Tokens.padding.large
@@ -31,15 +35,15 @@ Item {
     readonly property real barScale: rawScale < 1.0 ? Math.sqrt(Math.max(0.1, rawScale)) : rawScale
     readonly property int thickness: Math.round(Tokens.sizes.bar.innerWidth * barScale)
 
-    readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
+    readonly property bool isHorizontal: root.position === "top" || root.position === "bottom"
 
     readonly property real leftZoneSize: isHorizontal ? leftLayout.implicitWidth : leftLayout.implicitHeight
     readonly property real middleZoneSize: isHorizontal ? middleLayout.implicitWidth : middleLayout.implicitHeight
     readonly property real rightZoneSize: isHorizontal ? rightLayout.implicitWidth : rightLayout.implicitHeight
 
-    property var leftEntries: BarWidgets.zoneEntries(Config.bar.entries, "left")
-    property var middleEntries: BarWidgets.zoneEntries(Config.bar.entries, "middle")
-    property var rightEntries: BarWidgets.zoneEntries(Config.bar.entries, "right")
+    property var leftEntries: BarWidgets.zoneEntries(root.entries, "left")
+    property var middleEntries: BarWidgets.zoneEntries(root.entries, "middle")
+    property var rightEntries: BarWidgets.zoneEntries(root.entries, "right")
 
     function resetHover(): void {
         if (currentHoveredItem) {
