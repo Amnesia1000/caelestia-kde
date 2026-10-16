@@ -11,7 +11,6 @@ Singleton {
     property var bars: new Map()
     property var docks: new Map()
     property var exclusions: new Map()
-    property string launcherInitialSearch: ""
     property string initialSidebarTab: ""
     property string lastSidebarTab: "notifications"
     property int openDialogs: 0
@@ -28,9 +27,7 @@ Singleton {
     property real dragWidth: 0
     property real dragHeight: 0
     property string streamClaim: ""
-    property bool launcherOpenAnywhere: false
-    property string launcherMode: ""
-    property DrawerVisibilities launcherInitialSearchTarget: null
+    property DrawerVisibilities launcherScreen: null
 
     signal cycleOverview(bool backwards)
     signal exclusionBoundsChanged(ShellScreen screen)
@@ -56,14 +53,16 @@ Singleton {
         visibilities.launcherChanged.connect(() => {
             if (!visibilities.launcher) {
                 Kwin.clearHighlight();
-                _syncLauncherState();
+                visibilities.launcherMode = "";
+                if (launcherScreen === visibilities)
+                    launcherScreen = null;
                 return;
             }
             for (const other of screens.values()) {
                 if (other !== visibilities)
                     other.launcher = false;
             }
-            _syncLauncherState();
+            launcherScreen = visibilities;
         });
         visibilities.overviewChanged.connect(() => {
             if (visibilities.overview)
@@ -73,7 +72,6 @@ Singleton {
             if (visibilities.session)
                 Kwin.clearHighlight();
         });
-        _syncLauncherState();
     }
 
     function registerBar(screen: ShellScreen, barWrapper: var): void {
@@ -103,44 +101,6 @@ Singleton {
         const monitor = Kwin.monitors.find(m => m.name === Kwin.cursorOutputName()) || Kwin.focusedMonitor;
         return screens.get(monitor) || screens.values().next().value;
     }
-    function launcherOpenVisibilities(): DrawerVisibilities {
-        for (const v of screens.values())
-            if (v.launcher)
-                return v;
-        return null;
-    }
-    function launcherTarget(): DrawerVisibilities {
-        return launcherOpenVisibilities() ?? getForActive();
-    }
-    function openLauncher(mode: string): void {
-        const v = launcherTarget();
-        if (!v)
-            return;
-        if (mode) {
-            launcherInitialSearchTarget = v;
-            launcherInitialSearch = `${GlobalConfig.launcher.actionPrefix}${mode} `;
-        } else {
-            launcherInitialSearchTarget = null;
-            launcherInitialSearch = "";
-        }
-        launcherMode = mode;
-        v.launcher = true;
-    }
-    function closeLauncher(): void {
-        const v = launcherOpenVisibilities();
-        if (v)
-            v.launcher = false;
-        launcherMode = "";
-    }
-    function toggleLauncher(mode: string): void {
-        const open = launcherOpenVisibilities();
-        if (open && launcherMode === mode) {
-            open.launcher = false;
-            launcherMode = "";
-            return;
-        }
-        openLauncher(mode);
-    }
     function modeForText(text: string): string {
         const prefix = GlobalConfig.launcher.actionPrefix;
         if (!text.startsWith(prefix))
@@ -149,17 +109,24 @@ Singleton {
         const space = rest.indexOf(" ");
         return space < 0 ? "" : rest.slice(0, space);
     }
-    function _syncLauncherState(): void {
-        let any = false;
-        for (const v of screens.values()) {
-            if (v.launcher) {
-                any = true;
-                break;
-            }
+    function openLauncher(mode: string): void {
+        const v = launcherScreen ?? getForActive();
+        if (!v)
+            return;
+        v.launcherInitialSearch = mode ? `${GlobalConfig.launcher.actionPrefix}${mode} ` : "";
+        v.launcherMode = mode;
+        v.launcher = true;
+    }
+    function closeLauncher(): void {
+        if (launcherScreen)
+            launcherScreen.launcher = false;
+    }
+    function toggleLauncher(mode: string): void {
+        if (launcherScreen && (mode === "" || launcherScreen.launcherMode === mode)) {
+            closeLauncher();
+            return;
         }
-        launcherOpenAnywhere = any;
-        if (!any)
-            launcherMode = "";
+        openLauncher(mode);
     }
     function setDrag(address: string, x: real, y: real, w: real, h: real, originScreen: string): void {
         dragAddress = address;
