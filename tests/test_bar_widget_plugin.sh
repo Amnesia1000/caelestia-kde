@@ -11,6 +11,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REGISTRY="$REPO_ROOT/shell/services/BarWidgetRegistry.qml"
 BAR_WIDGETS="$REPO_ROOT/shell/modules/bar/BarWidgets.qml"
 BAR="$REPO_ROOT/shell/modules/bar/Bar.qml"
+CONTENT="$REPO_ROOT/shell/modules/bar/popouts/Content.qml"
 EDITOR="$REPO_ROOT/shell/modules/nexus/pages/panels/taskbar/BarComponents.qml"
 LOADER="$REPO_ROOT/shell/services/PluginLoader.qml"
 DOCS="$REPO_ROOT/shell/modules/plugins/README.md"
@@ -56,6 +57,19 @@ test_the_bar_hands_plugin_widgets_its_context() {
         "only the values the widget declares are filled in"
     assert_file_contains "$DOCS" '`visibilities`' \
         "the ambient values a widget can ask for are documented"
+}
+
+test_a_widget_can_declare_a_sliding_popout() {
+    assert_file_contains "$REGISTRY" 'popoutUrl' \
+        "the registry keeps the popout path a widget declares"
+    assert_file_contains "$CONTENT" 'import qs.services as QsServices' \
+        "the services module is aliased so it cannot shadow the popout components"
+    assert_file_contains "$CONTENT" 'QsServices.BarWidgetRegistry.widgets.filter(widget => widget.popoutUrl)' \
+        "the popout container builds one popout per widget that declares one"
+    assert_file_contains "$CONTENT" 'source: modelData.popoutUrl' \
+        "a plugin popout is loaded from the path its manifest declares"
+    assert_file_contains "$DOCS" '`popout`' \
+        "the popout field is documented"
 }
 
 test_the_editor_labels_plugin_widgets() {
@@ -128,12 +142,14 @@ const eq = (actual, expected, msg) => {
 
 let meta = { id: "p", path: "/plugins/p", barWidgets: [
     { id: "w1", component: "Bar.qml" },
-    { id: "w2", name: "Two", icon: "star", defaultZone: "left", component: "sub/W.qml", unavailableText: "nope" }
+    { id: "w2", name: "Two", icon: "star", defaultZone: "left", component: "sub/W.qml", unavailableText: "nope" },
+    { id: "w3", component: "W.qml", popout: "Popout.qml" }
 ] };
 normalize(meta);
 eq(meta.barWidgets, [
-    { id: "w1", name: "w1", icon: "widgets", defaultZone: "right", available: true, unavailableText: "", componentUrl: "file:///plugins/p/Bar.qml" },
-    { id: "w2", name: "Two", icon: "star", defaultZone: "left", available: true, unavailableText: "nope", componentUrl: "file:///plugins/p/sub/W.qml" }
+    { id: "w1", name: "w1", icon: "widgets", defaultZone: "right", available: true, unavailableText: "", componentUrl: "file:///plugins/p/Bar.qml", popoutUrl: "" },
+    { id: "w2", name: "Two", icon: "star", defaultZone: "left", available: true, unavailableText: "nope", componentUrl: "file:///plugins/p/sub/W.qml", popoutUrl: "" },
+    { id: "w3", name: "w3", icon: "widgets", defaultZone: "right", available: true, unavailableText: "", componentUrl: "file:///plugins/p/W.qml", popoutUrl: "file:///plugins/p/Popout.qml" }
 ], "a well-formed manifest is completed with defaults");
 
 meta = { id: "p", path: "/plugins/p", barWidgets: [
@@ -141,10 +157,13 @@ meta = { id: "p", path: "/plugins/p", barWidgets: [
     { id: "b", component: "../evil.qml" },
     { id: "c" },
     { component: "NoId.qml" },
-    { id: "d", component: "ok.qml" }
+    { id: "d", component: "ok.qml" },
+    { id: "e", component: "ok2.qml", popout: "../evil.qml" },
+    { id: "f", component: "ok3.qml", popout: "/etc/passwd" }
 ] };
 normalize(meta);
-eq(meta.barWidgets.map(w => w.id), ["d"], "absolute paths, parent escapes and incomplete specs are dropped");
+eq(meta.barWidgets.map(w => w.id), ["d", "e", "f"], "absolute paths, parent escapes and incomplete specs are dropped");
+eq(meta.barWidgets.map(w => w.popoutUrl), ["", "", ""], "a popout that escapes the plugin folder is dropped while the widget survives");
 
 meta = { id: "p", path: "/plugins/p" };
 normalize(meta);

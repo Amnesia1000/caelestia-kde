@@ -7,7 +7,8 @@ QtObject {
 
     // Bar widgets declared by plugins through their metadata.json `barWidgets`
     // field. Each entry is normalised to:
-    // { id, name, icon, defaultZone, available, unavailableText, componentUrl, pluginId }
+    // { id, name, icon, defaultZone, available, unavailableText, componentUrl,
+    //   popoutUrl, pluginId }
     property var widgets: []
 
     readonly property var byId: {

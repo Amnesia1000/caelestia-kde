@@ -34,6 +34,7 @@ Fields per widget:
 | --- | --- | --- |
 | `id` | yes | Unique widget id. Must not collide with a built-in id (built-ins win). |
 | `component` | yes | QML file **relative to the plugin folder**. Absolute paths and `..` are rejected. |
+| `popout` | no | QML file **relative to the plugin folder**, rendered in the shell's sliding popout container. Same rules as `component`. Defaults to none. |
 | `name` | no | Label shown in the editor. Defaults to `id`. |
 | `icon` | no | Material icon name shown in the editor. Defaults to `widgets`. |
 | `defaultZone` | no | `left`, `middle` or `right`. Defaults to `right`. |
@@ -47,7 +48,9 @@ Once registered, the widget:
 - can open a hover popout by exposing a
   `handleHover(pos, isHorizontal, popouts)` function on its root item;
 - can react to scroll events sent through the bar by exposing a
-  `handleWheel(pos, isHorizontal, angleDelta)` function on its root item.
+  `handleWheel(pos, isHorizontal, angleDelta)` function on its root item;
+- can render a popout in the shell's sliding container: declare `popout` and
+  set `popouts.currentName` to the widget's `id` to reveal it.
 
 A widget is handed the ambient values the built-ins get, for the ones its root
 declares: `bar`, `screen`, `visibilities` and `popouts`. Anything left out is

@@ -40,8 +40,9 @@ Item {
     }
 
     // A plugin declares bar widgets in metadata.json under `barWidgets`:
-    // [{ id, name, icon, defaultZone, component, available, unavailableText }].
-    // `component` is a path relative to the plugin folder.
+    // [{ id, name, icon, defaultZone, component, popout, available,
+    // unavailableText }]. `component` and `popout` are paths relative to the
+    // plugin folder.
     function normalizeBarWidgets(meta): void {
         const specs = meta.barWidgets;
         const normalized = [];
@@ -52,6 +53,10 @@ Item {
             // Refuse to load a component outside the plugin folder.
             if (spec.component.startsWith("/") || spec.component.indexOf("..") !== -1)
                 continue;
+            // A popout is optional, and only the popout itself is dropped when
+            // it escapes the folder: the widget still renders.
+            const popout = spec.popout ?? "";
+            const hasPopout = popout.length > 0 && !popout.startsWith("/") && popout.indexOf("..") === -1;
             normalized.push({
                 id: spec.id,
                 name: spec.name ?? spec.id,
@@ -59,7 +64,8 @@ Item {
                 defaultZone: spec.defaultZone ?? "right",
                 available: spec.available ?? true,
                 unavailableText: spec.unavailableText ?? "",
-                componentUrl: "file://" + meta.path + "/" + spec.component
+                componentUrl: "file://" + meta.path + "/" + spec.component,
+                popoutUrl: hasPopout ? "file://" + meta.path + "/" + popout : ""
             });
         }
 
