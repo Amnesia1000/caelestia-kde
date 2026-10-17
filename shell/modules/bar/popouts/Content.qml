@@ -6,12 +6,12 @@ import Quickshell
 import Quickshell.Services.SystemTray
 import Caelestia.Config
 import qs.components
+import qs.services as QsServices
+
 // Aliased on purpose: qs.services declares singletons named after some of the
 // popouts this file instantiates (Weather, Audio), and an unqualified import
 // would make those names resolve to the services instead of the local
 // components.
-import qs.services as QsServices
-
 Item {
     id: root
 
