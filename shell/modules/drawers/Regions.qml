@@ -12,7 +12,7 @@ Region {
     required property Panels panels
     required property var frameEdges
     required property var win
-    required property var partialPanelRects
+    required property var partialPanelStrips
     readonly property real borderThickness: Config.border.thickness
     readonly property real clampedThickness: Config.border.clampedThickness
     readonly property real barLeftWidth: bar.position === "left" ? bar.clampedThickness : clampedThickness
@@ -87,28 +87,28 @@ Region {
     // children, so the slots are declared here and bound to the list; the
     // spare ones collapse to nothing.
     PanelCutout {
-        rect: root.partialPanelRects[0] ?? null
+        rect: root.partialPanelStrips[0] ?? null
     }
     PanelCutout {
-        rect: root.partialPanelRects[1] ?? null
+        rect: root.partialPanelStrips[1] ?? null
     }
     PanelCutout {
-        rect: root.partialPanelRects[2] ?? null
+        rect: root.partialPanelStrips[2] ?? null
     }
     PanelCutout {
-        rect: root.partialPanelRects[3] ?? null
+        rect: root.partialPanelStrips[3] ?? null
     }
     PanelCutout {
-        rect: root.partialPanelRects[4] ?? null
+        rect: root.partialPanelStrips[4] ?? null
     }
     PanelCutout {
-        rect: root.partialPanelRects[5] ?? null
+        rect: root.partialPanelStrips[5] ?? null
     }
     PanelCutout {
-        rect: root.partialPanelRects[6] ?? null
+        rect: root.partialPanelStrips[6] ?? null
     }
     PanelCutout {
-        rect: root.partialPanelRects[7] ?? null
+        rect: root.partialPanelStrips[7] ?? null
     }
     Region {
         x: 0; y: 0

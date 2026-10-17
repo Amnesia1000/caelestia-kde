@@ -62,11 +62,11 @@ StyledWindow {
     // hosts its own widget band there (see panelLayer below). The thickness is
     // the bar's own, so a panel and the bar stay visually identical.
     readonly property int panelThickness: bar.contentWidth
-    // The thickness each full-edge panel takes on its edge, whether the panels
-    // are collapsed or not: the exclusion zones reserve it so that maximised
-    // windows sit beside the panels instead of under them.
+    // The thickness each full-edge panel takes on its edge right now: a panel
+    // that slides away gives its thickness back, so the frame mask, its blur
+    // corners and the drawers' insets all follow it while it moves.
     readonly property var panelEdges: {
-        const panelEdge = edge => root.fullEdgePanels.some(panel => (panel.position ?? "top") === edge) ? root.panelThickness : 0;
+        const panelEdge = edge => panelLayer.thicknessOn(edge);
         return {
             left: panelEdge("left"),
             right: panelEdge("right"),
@@ -77,9 +77,10 @@ StyledWindow {
     // What the exclusion zones reserve on each side: a panel that stays on
     // screen keeps its space whether it spans the whole edge or only part of
     // it, so maximised windows stop at the panel instead of sliding under it.
-    // A panel that hides on its own takes no space.
+    // A panel that slid away takes no space, and one that was pulled open takes
+    // its space back while it is out.
     readonly property var panelReservations: {
-        const panelEdge = edge => root.screenPanels.some(panel => (panel.position ?? "top") === edge && panel.persistent !== false) ? root.panelThickness : 0;
+        const panelEdge = edge => panelLayer.takesSpaceOn(edge) ? root.panelThickness : 0;
         return {
             left: panelEdge("left"),
             right: panelEdge("right"),
@@ -108,7 +109,6 @@ StyledWindow {
     // thicken the frame there, the rest are drawn as islands over it.
     readonly property var screenPanels: (GlobalConfig.bar.panels?.values ?? []).filter(panel => panel.enabled !== false
         && ((panel.screens ?? []).length === 0 || Strings.testRegexList(panel.screens, screen.name)))
-    readonly property var fullEdgePanels: root.screenPanels.filter(panel => (panel.lengthPercent ?? 100) >= 100)
     // Islands already keep the bar away from the screen edge, so a panel does
     // the same there; without them a panel hugs the edge and merges with it.
     readonly property int panelInset: GlobalConfig.appearance.islands ? Tokens.spacing.extraLarge : 0
@@ -142,8 +142,18 @@ StyledWindow {
         }
         return rects;
     }
-    readonly property var partialPanelRects: root.panelRects.filter(rect => !rect.full)
-    readonly property var islandPanelRects: GlobalConfig.appearance.islands ? root.panelRects : root.partialPanelRects
+    // The bands themselves, handed out as they are: they are what slides, and
+    // reading their animated geometry keeps the repeater that draws the islands
+    // following them in and out instead of snapping. With the islands off only
+    // the partial panels get one, the full-edge ones are part of the frame.
+    readonly property var panelBands: panelLayer.bands(!GlobalConfig.appearance.islands)
+    // The plain, snapped rectangles the compositor reads: the background blur
+    // and the input mask. They sit where a band rests - its rect while it is
+    // out, the border strip at its edge while it is away - and change once per
+    // transition. Feeding those regions the animated geometry instead would
+    // have the compositor resample them every frame, which shows up as a
+    // shimmer over the whole drawer window while a panel slides.
+    readonly property var partialPanelStrips: panelLayer.strips(true)
     readonly property bool panelsVisible: root.panelRects.length > 0 && !visibilities.overview && !root.hasFullscreen
     readonly property real borderRounding: Config.border.rounding * (1 - fsTransitionProg)
     readonly property real shadowOpacity: 0.7 * (1 - fsTransitionProg)
@@ -271,7 +281,7 @@ StyledWindow {
         panels: panels
         frameEdges: root.frameEdges
         win: root
-        partialPanelRects: root.partialPanelRects
+        partialPanelStrips: root.partialPanelStrips
     }
     Region {
         id: fullRegion
@@ -479,7 +489,7 @@ StyledWindow {
             deformScale: (GlobalConfig.appearance.blurMask || !GlobalConfig.appearance.transparency.enabled) ? ((0.1 * Config.appearance.deformScale) / 10000) : 0
         }
         Repeater {
-            model: root.islandPanelRects
+            model: root.panelBands
 
             delegate: BlobRect {
                 required property var modelData
@@ -763,6 +773,109 @@ StyledWindow {
                         band.resetHover();
                 }
             }
+            // The thickness a full-edge panel takes on the given side right now,
+            // read off the band itself so it follows the slide animation.
+            function thicknessOn(side: string): real {
+                let thickness = 0;
+
+                for (let i = 0; i < panelRepeater.count; i++) {
+                    const band = panelRepeater.itemAt(i);
+
+                    if (band && band.full && band.edge === side)
+                        thickness = Math.max(thickness, band.thickness);
+                }
+
+                return thickness;
+            }
+            // Whether a panel on the given side keeps its space taken: one that
+            // stays on screen does, one that went away does not.
+            function takesSpaceOn(side: string): bool {
+                for (let i = 0; i < panelRepeater.count; i++) {
+                    const band = panelRepeater.itemAt(i);
+
+                    if (band && band.edge === side && band.takesSpace)
+                        return true;
+                }
+
+                return false;
+            }
+            // Where the bands sit right now, handed out as they are: they are
+            // what moves, and reading their geometry keeps everything that
+            // follows them - the repeater that draws the islands included -
+            // following them instead of snapping. `partialOnly` leaves the
+            // full-edge ones out, as with the islands off those are drawn as
+            // part of the frame.
+            function bands(partialOnly = false): var {
+                const bands = [];
+
+                for (let i = 0; i < panelRepeater.count; i++) {
+                    const band = panelRepeater.itemAt(i);
+
+                    if (band && (!partialOnly || !band.full))
+                        bands.push(band);
+                }
+
+                return bands;
+            }
+            // The plain, snapped rectangles the compositor reads: the blur
+            // region and the input mask. They sit where a band rests - its rect
+            // while it is out, the border strip at its edge while it is away -
+            // and change once per transition. Reading the animated geometry
+            // here instead would have the compositor resample those regions
+            // every frame, which shimmers over the whole drawer window.
+            function strips(partialOnly = false): var {
+                const strips = [];
+
+                for (let i = 0; i < panelRepeater.count; i++) {
+                    const band = panelRepeater.itemAt(i);
+
+                    if (band && (!partialOnly || !band.full))
+                        strips.push(band.place);
+                }
+
+                return strips;
+            }
+            // Reveals and hides the bands whose panel does not stay on screen: a
+            // panel that follows the pointer comes out while the pointer is on
+            // the strip it keeps at its edge, and one that does not has to be
+            // dragged open from that same strip, exactly like the bar.
+            function updateReveal(x: real, y: real, pressed: bool, dragStart: point, dragX: real, dragY: real): void {
+                if (!root.panelsVisible) return;
+
+                for (let i = 0; i < panelRepeater.count; i++) {
+                    const band = panelRepeater.itemAt(i);
+
+                    if (!band || band.persistent) continue;
+
+                    if (band.revealOnHover) {
+                        if (band.inStrip(x, y))
+                            band.hovered = true;
+
+                        continue;
+                    }
+
+                    if (pressed && band.inStrip(dragStart.x, dragStart.y)) {
+                        // Dragging inwards past the threshold pulls the panel
+                        // open, dragging back out closes it again.
+                        const inward = band.horizontal ? (band.edge === "top" ? dragY : -dragY) : (band.edge === "left" ? dragX : -dragX);
+
+                        if (inward > Config.bar.dragThreshold)
+                            band.pulled = true;
+                        else if (inward < -Config.bar.dragThreshold)
+                            band.pulled = false;
+                    }
+                }
+            }
+            // Hides again every band that came out on hover, mirroring what the
+            // bar does when the pointer leaves the frame.
+            function clearReveal(): void {
+                for (let i = 0; i < panelRepeater.count; i++) {
+                    const band = panelRepeater.itemAt(i);
+
+                    if (band)
+                        band.hovered = false;
+                }
+            }
 
             anchors.fill: parent
             // Like the bar, the panels collapse while the overview is up or a
@@ -781,6 +894,58 @@ StyledWindow {
 
                     readonly property string edge: modelData.edge
                     readonly property bool horizontal: modelData.horizontal
+                    readonly property bool full: modelData.full
+                    // A panel stays on screen unless it says otherwise, and then
+                    // it either follows the pointer or waits for a drag.
+                    readonly property bool persistent: modelData.panel.persistent !== false
+                    readonly property bool revealOnHover: modelData.panel.showOnHover !== false
+                    // Whether it came out because the pointer is on it, or
+                    // because it was pulled open from its edge.
+                    property bool hovered
+                    property bool pulled
+                    readonly property bool revealed: band.persistent || band.hovered || band.pulled
+                    // A panel that is away leaves the plain border at its edge,
+                    // like the bar does when it is not persistent.
+                    readonly property real hiddenThickness: Config.border.thickness
+                    readonly property real thickness: band.horizontal ? band.height : band.width
+                    readonly property real triggerThickness: Math.max(Config.border.minThickness, band.thickness)
+                    // A panel takes its space away from the windows while it is
+                    // on screen, or held open by a drag, but not while it only
+                    // follows the pointer.
+                    readonly property bool takesSpace: band.persistent || band.pulled
+                    // The plain rectangles the window's regions - the island
+                    // blobs, the background blur and the input mask - follow.
+                    // They are snapped to whether the panel is out or away, so
+                    // they change once per transition instead of every frame.
+                    readonly property var revealedRect: ({
+                        x: modelData.x,
+                        y: modelData.y,
+                        width: modelData.width,
+                        height: modelData.height
+                    })
+                    readonly property var restingRect: band.horizontal ? ({
+                        x: modelData.x,
+                        y: band.edge === "top" ? 0 : root.height - Config.border.thickness,
+                        width: modelData.width,
+                        height: Config.border.thickness
+                    }) : ({
+                        x: band.edge === "left" ? 0 : root.width - Config.border.thickness,
+                        y: modelData.y,
+                        width: Config.border.thickness,
+                        height: modelData.height
+                    })
+                    readonly property var place: band.revealed ? band.revealedRect : band.restingRect
+
+                    // Whether the given point is on the strip the panel keeps at
+                    // its edge, measured from the screen edge so a panel that is
+                    // away is still reachable.
+                    function inStrip(x: real, y: real): bool {
+                        const along = band.horizontal ? x >= band.x && x <= band.x + band.width : y >= band.y && y <= band.y + band.height;
+
+                        if (!along) return false;
+
+                        return band.horizontal ? (band.edge === "top" ? y <= band.triggerThickness : y >= root.height - band.triggerThickness) : (band.edge === "left" ? x <= band.triggerThickness : x >= root.width - band.triggerThickness);
+                    }
 
                     // The popouts grow out of the frame edge, so the band tells
                     // the wrapper which edge opened them and how far past the
@@ -811,6 +976,58 @@ StyledWindow {
                     y: modelData.y
                     width: modelData.width
                     height: modelData.height
+
+                    // The band slides in and out of the frame edge like the bar
+                    // does: it keeps its place while its panel stays on screen,
+                    // and otherwise leaves nothing but the border strip behind.
+                    clip: true
+                    visible: band.horizontal ? band.height > Config.border.thickness : band.width > Config.border.thickness
+
+                    states: State {
+                        name: "hidden"
+                        when: !band.revealed
+
+                        PropertyChanges {
+                            target: band
+
+                            x: band.horizontal ? band.modelData.x : (band.edge === "left" ? 0 : root.width - band.hiddenThickness)
+                            y: band.horizontal ? (band.edge === "top" ? 0 : root.height - band.hiddenThickness) : band.modelData.y
+                            width: band.horizontal ? band.modelData.width : band.hiddenThickness
+                            height: band.horizontal ? band.hiddenThickness : band.modelData.height
+                        }
+                    }
+                    transitions: [
+                        Transition {
+                            from: ""
+                            to: "hidden"
+
+                            Anim {
+                                target: band
+                                property: band.horizontal ? "height" : "width"
+                                type: Anim.Emphasized
+                            }
+                            Anim {
+                                target: band
+                                property: band.horizontal ? "y" : "x"
+                                type: Anim.Emphasized
+                            }
+                        },
+                        Transition {
+                            from: "hidden"
+                            to: ""
+
+                            Anim {
+                                target: band
+                                property: band.horizontal ? "height" : "width"
+                                type: Anim.DefaultSpatial
+                            }
+                            Anim {
+                                target: band
+                                property: band.horizontal ? "y" : "x"
+                                type: Anim.DefaultSpatial
+                            }
+                        }
+                    ]
 
                     Bar {
                         id: bandBar
@@ -993,28 +1210,28 @@ StyledWindow {
         // strip needs the same background blur as the edge it hangs from. The
         // slots mirror the cutouts in the input region (see Regions.qml).
         PanelBlur {
-            rect: root.partialPanelRects[0] ?? null
+            rect: root.partialPanelStrips[0] ?? null
         }
         PanelBlur {
-            rect: root.partialPanelRects[1] ?? null
+            rect: root.partialPanelStrips[1] ?? null
         }
         PanelBlur {
-            rect: root.partialPanelRects[2] ?? null
+            rect: root.partialPanelStrips[2] ?? null
         }
         PanelBlur {
-            rect: root.partialPanelRects[3] ?? null
+            rect: root.partialPanelStrips[3] ?? null
         }
         PanelBlur {
-            rect: root.partialPanelRects[4] ?? null
+            rect: root.partialPanelStrips[4] ?? null
         }
         PanelBlur {
-            rect: root.partialPanelRects[5] ?? null
+            rect: root.partialPanelStrips[5] ?? null
         }
         PanelBlur {
-            rect: root.partialPanelRects[6] ?? null
+            rect: root.partialPanelStrips[6] ?? null
         }
         PanelBlur {
-            rect: root.partialPanelRects[7] ?? null
+            rect: root.partialPanelStrips[7] ?? null
         }
         Region {
             x: root.frameEdges.left

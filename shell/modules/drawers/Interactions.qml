@@ -169,6 +169,9 @@ CustomMouseArea {
 
             if (Config.bar.showOnHover)
                 bar.isHovered = false;
+
+            if (barPanels)
+                barPanels.clearReveal();
         } else {
             popoutHideTimer.stop();
         }
@@ -201,6 +204,11 @@ CustomMouseArea {
 
         if (!visibilities.bar && Config.bar.showOnHover && inBarArea(x, y))
             bar.isHovered = true;
+
+        // The panels that do not stay on screen reveal themselves from the
+        // strip they keep at their edge: on hover, or on a drag from it.
+        if (barPanels)
+            barPanels.updateReveal(x, y, pressed, dragStart, dragX, dragY);
 
         if (pressed && inBarArea(dragStart.x, dragStart.y)) {
             if (bar.position === "left") {
