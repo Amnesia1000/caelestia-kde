@@ -118,12 +118,15 @@ PageBase {
         // in; declared outside of it the popup never gets a window and open() does nothing.
         Item {
             id: settingsPopupHost
+
+            readonly property var windowContentItem: QsWindow.window ? QsWindow.window.contentItem : null
+
             Layout.preferredWidth: 0
             Layout.preferredHeight: 0
-            readonly property var windowContentItem: QsWindow.window ? QsWindow.window.contentItem : null
 
             PluginSettingsPopup {
                 id: settingsPopup
+
                 parent: settingsPopupHost.windowContentItem
             }
         }
