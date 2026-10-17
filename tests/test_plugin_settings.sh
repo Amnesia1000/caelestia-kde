@@ -8,6 +8,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOADER="$REPO_ROOT/shell/services/PluginLoader.qml"
 PAGE="$REPO_ROOT/shell/modules/nexus/pages/PluginsPage.qml"
 POPUP="$REPO_ROOT/shell/modules/nexus/pages/PluginSettingsPopup.qml"
+README="$REPO_ROOT/shell/modules/plugins/README.md"
 
 # Prints the lookup out of the loader so the test drives the real implementation
 # rather than a copy of it. QML closes its functions with an indented brace, so
@@ -85,6 +86,29 @@ JSEOF
 
     assert_eq "$result" "2 1 0 0" \
         "a plugin should be found by id or by name, and a manifest without settings should come back empty"
+}
+
+test_the_popup_renders_every_type_a_manifest_can_declare() {
+    local popup
+    popup="$(cat "$POPUP")"
+
+    assert_contains "$popup" 'visible: delegateRow.modelData.type === "enum"' \
+        "the choices should still be offered"
+    assert_contains "$popup" 'visible: delegateRow.modelData.type === "toggle"' \
+        "a switch should be drawn for a toggle"
+    assert_contains "$popup" 'visible: delegateRow.modelData.type === "text"' \
+        "a field for a text setting"
+    assert_contains "$popup" 'visible: delegateRow.modelData.type === "number"' \
+        "and a spinner for a number"
+    assert_contains "$popup" 'pSettings.setValue(delegateRow.modelData.id' \
+        "every row should store its value under the setting's own id"
+}
+
+test_the_settings_schema_is_documented() {
+    assert_file_contains "$README" '`toggle`, `text`, `number` or `enum`' \
+        "the types a row can be should be documented"
+    assert_file_contains "$README" '`Plugin_<plugin id>`' \
+        "along with the category a plugin reads its values back from"
 }
 
 run_tests

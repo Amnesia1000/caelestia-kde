@@ -84,6 +84,30 @@ Popup {
                             }
                         }
                     }
+
+                    StyledSwitch {
+                        visible: delegateRow.modelData.type === "toggle"
+                        checked: root.visible ? pSettings.value(delegateRow.modelData.id, delegateRow.modelData.default ?? false) : false
+                        onToggled: pSettings.setValue(delegateRow.modelData.id, checked)
+                    }
+
+                    StyledTextField {
+                        visible: delegateRow.modelData.type === "text"
+                        Layout.preferredWidth: 180
+                        text: root.visible ? pSettings.value(delegateRow.modelData.id, delegateRow.modelData.default ?? "") : ""
+                        placeholderText: delegateRow.modelData.placeholder ?? ""
+                        onEditingFinished: pSettings.setValue(delegateRow.modelData.id, text)
+                    }
+
+                    CustomSpinBox {
+                        visible: delegateRow.modelData.type === "number"
+                        Layout.preferredWidth: 140
+                        min: delegateRow.modelData.min ?? 0
+                        max: delegateRow.modelData.max ?? 100
+                        step: delegateRow.modelData.step ?? 1
+                        value: root.visible ? Number(pSettings.value(delegateRow.modelData.id, delegateRow.modelData.default ?? 0)) : 0
+                        onValueModified: v => pSettings.setValue(delegateRow.modelData.id, v)
+                    }
                 }
             }
         }
