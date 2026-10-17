@@ -20,7 +20,7 @@ Popup {
 
     property string pluginId: ""
 
-    property var settingsSchema: []
+    property var settingsSchema: PluginLoader.settingsSchemaFor(root.pluginId)
 
     property string pluginName: ""
 
