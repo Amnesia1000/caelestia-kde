@@ -111,4 +111,17 @@ test_the_settings_schema_is_documented() {
         "along with the category a plugin reads its values back from"
 }
 
+test_the_popup_opens_in_the_window_of_the_page() {
+    assert_file_contains "$POPUP" 'function openIn(win)' \
+        "the popup should take the window it is opened from as its parent"
+    assert_file_not_contains "$POPUP" 'parent: Overlay.overlay' \
+        "the controls overlay is not part of the window tree of the nexus, so the popup cannot be parented to it"
+    assert_file_contains "$PAGE" 'settingsPopup.openIn(QsWindow.window)' \
+        "the settings button should open the popup in the window the page lives in"
+    assert_file_contains "$PAGE" 'parent: settingsPopupHost.windowContentItem' \
+        "and the popup should be declared inside the page content, where that window is reachable"
+    assert_file_contains "$PAGE" 'readonly property var windowContentItem' \
+        "the window of the page is what the popup ends up attached to"
+}
+
 run_tests

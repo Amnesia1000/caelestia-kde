@@ -108,19 +108,25 @@ PageBase {
         }
     }
 
-    Item {
-        Layout.preferredWidth: 0
-        Layout.preferredHeight: 0
-        PluginSettingsPopup {
-            id: settingsPopup
-        }
-    }
-
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         width: root.cappedWidth
         spacing: Tokens.spacing.extraSmall / 2
+
+        // Kept inside the page content so the popup is part of the window the page is shown
+        // in; declared outside of it the popup never gets a window and open() does nothing.
+        Item {
+            id: settingsPopupHost
+            Layout.preferredWidth: 0
+            Layout.preferredHeight: 0
+            readonly property var windowContentItem: QsWindow.window ? QsWindow.window.contentItem : null
+
+            PluginSettingsPopup {
+                id: settingsPopup
+                parent: settingsPopupHost.windowContentItem
+            }
+        }
 
         RowLayout {
             Layout.fillWidth: true
@@ -249,7 +255,7 @@ PageBase {
                                 onClicked: {
                                     settingsPopup.pluginId = bundledDelegate.id || bundledDelegate.name;
                                     settingsPopup.pluginName = bundledDelegate.name;
-                                    settingsPopup.open();
+                                    settingsPopup.openIn(QsWindow.window);
                                 }
                             }
                         }
@@ -322,7 +328,7 @@ PageBase {
                                 onClicked: {
                                     settingsPopup.pluginId = userDelegate.id || userDelegate.name;
                                     settingsPopup.pluginName = userDelegate.name;
-                                    settingsPopup.open();
+                                    settingsPopup.openIn(QsWindow.window);
                                 }
                             }
 
