@@ -11,9 +11,11 @@ import qs.modules.nexus.common
 Popup {
     id: root
 
-    parent: Overlay.overlay
-    x: Math.round((parent.width - width) / 2)
-    y: Math.round((parent.height - height) / 2)
+    // The popup is shown from a page of the Nexus, which lives inside a Quickshell content
+    // window. Overlay.overlay resolves to null there, so the parent is set from the window
+    // the caller is in: a QtQuick Popup can only be shown once it belongs to a window.
+    x: parent ? Math.round((parent.width - width) / 2) : 0
+    y: parent ? Math.round((parent.height - height) / 2) : 0
     width: 450
     modal: true
     dim: true
@@ -23,6 +25,13 @@ Popup {
     property var settingsSchema: PluginLoader.settingsSchemaFor(root.pluginId)
 
     property string pluginName: ""
+
+    function openIn(win) {
+        if (win && win.contentItem)
+            parent = win.contentItem;
+
+        open();
+    }
 
     Settings {
         id: pSettings
