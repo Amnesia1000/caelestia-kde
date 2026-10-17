@@ -369,7 +369,7 @@ CustomMouseArea {
 
         interval: 150
         onTriggered: {
-            if (popouts.isContextPopout)
+            if (popouts.isContextPopout || panels.popoutsWrapper.hovered)
                 return;
             if (!popouts.currentName.startsWith("traymenu") || ((popouts.current as StackView)?.depth ?? 0) <= 1) {
                 popouts.hasCurrent = false;
