@@ -203,7 +203,7 @@ PageBase {
                     required property string source
                     required property string id
                     required property bool enabled
-                    required property var settings
+                    required property int settingsCount
                     required property string path
                     required property string mediaurl
                     required property string authorName
@@ -245,11 +245,10 @@ PageBase {
                             IconButton {
                                 icon: "settings"
                                 type: IconButton.Tonal
-                                visible: bundledDelegate.settings && bundledDelegate.settings.count > 0
+                                visible: bundledDelegate.settingsCount > 0
                                 onClicked: {
                                     settingsPopup.pluginId = bundledDelegate.id || bundledDelegate.name;
                                     settingsPopup.pluginName = bundledDelegate.name;
-                                    settingsPopup.settingsSchema = bundledDelegate.settings;
                                     settingsPopup.open();
                                 }
                             }
@@ -277,7 +276,7 @@ PageBase {
                     required property string source
                     required property string id
                     required property bool enabled
-                    required property var settings
+                    required property int settingsCount
                     required property string path
                     required property string mediaurl
                     required property string authorName
@@ -319,11 +318,10 @@ PageBase {
                             IconButton {
                                 icon: "settings"
                                 type: IconButton.Tonal
-                                visible: userDelegate.settings && userDelegate.settings.count > 0
+                                visible: userDelegate.settingsCount > 0
                                 onClicked: {
                                     settingsPopup.pluginId = userDelegate.id || userDelegate.name;
                                     settingsPopup.pluginName = userDelegate.name;
-                                    settingsPopup.settingsSchema = userDelegate.settings;
                                     settingsPopup.open();
                                 }
                             }
