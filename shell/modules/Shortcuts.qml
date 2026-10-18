@@ -115,6 +115,15 @@ Scope {
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
+        name: "nexusBack"
+        description: qsTr("Go back in nexus")
+        enabled: WindowFactory.openWindowActive
+        onPressed: WindowFactory.goBack()
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
         name: "showall"
         description: qsTr("Toggle launcher, dashboard and osd")
         onPressed: {

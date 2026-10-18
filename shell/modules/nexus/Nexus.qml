@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Window
 import Caelestia.Blobs
 import Caelestia.Config
 import qs.components
@@ -15,6 +16,7 @@ Item {
 
     property int initialPageIdx: 0
     property var initialSubPageIdx: -1
+    readonly property bool windowActive: Window.window ? Window.window.active : false
 
     readonly property NexusState nState: NexusState {
         id: nState
