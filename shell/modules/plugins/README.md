@@ -66,3 +66,36 @@ not touched.
 Widgets are registered when the plugin loads and unregistered when it is
 disabled or removed, so no shell restart is needed after toggling the plugin.
 
+## Registering background widgets
+
+A plugin can add items to the desktop background layer by declaring them in its
+`metadata.json` under `backgroundWidgets`:
+
+```json
+{
+  "id": "my-plugin",
+  "name": "My Plugin",
+  "type": "quickshell",
+  "backgroundWidgets": [
+    {
+      "id": "myDesktopWidget",
+      "name": "My Desktop Widget",
+      "component": "DesktopWidget.qml",
+      "z": 2.5
+    }
+  ]
+}
+```
+
+Fields per widget:
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `id` | yes | Unique widget id. |
+| `component` | yes | QML file **relative to the plugin folder**. Absolute paths and `..` are rejected. |
+| `name` | no | Label for the widget. Defaults to `id`. |
+| `z` | no | Z-stacking order inside `Background.qml` (defaults to `2.5`, between wallpaper/visualiser and desktop icons). |
+
+A background widget is instantiated as a child inside `Background.qml` per active screen and is handed ambient values for whichever properties its root declares: `screen`, `modelData`, and `background`.
+
+
