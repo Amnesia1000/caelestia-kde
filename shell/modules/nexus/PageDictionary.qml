@@ -56,6 +56,9 @@ QtObject {
                 { label: qsTr("Taskbar"), pagePath: "panels/TaskbarPanel.qml", keywords: ["per-monitor", "position", "screen"], subPageIdx: 2 },
                 { label: qsTr("Dashboard"), pagePath: "panels/DashboardPanel.qml", subPageIdx: 1 },
                 { label: qsTr("Launcher"), pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
+                { label: qsTr("App browser layout"), keywords: ["launcher", "layout", "simple", "compact", "categories", "favourites"], pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
+                { label: qsTr("Truncated app names"), keywords: ["launcher", "name", "truncated", "long", "tooltip", "shrink", "flip"], pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
+                { label: qsTr("Clipboard"), keywords: ["history", "copied", "paste", "maximum entries", "history size", "confirm clear"], pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
                 { label: qsTr("Sidebar"), pagePath: "panels/SidebarPanel.qml", subPageIdx: 4 },
                 { label: qsTr("Quick Toggles Panel"), pagePath: "panels/UtilitiesPanel.qml", subPageIdx: 5 },
                 { label: qsTr("Overview"), pagePath: "panels/OverviewPanel.qml", keywords: ["overview", "animations", "blur"], subPageIdx: 16 },
@@ -70,6 +73,11 @@ QtObject {
                 { label: qsTr("Clock seconds"), keywords: ["clock", "time", "seconds", "show seconds"], pagePath: "panels/taskbar/BarClock.qml", subPageIdx: 11 },
                 { label: qsTr("Dock"), keywords: ["dock", "pinned", "apps", "grouping", "ungroup", "combine"], pagePath: "panels/taskbar/BarDock.qml", subPageIdx: 12 },
                 { label: qsTr("GitHub"), keywords: ["github", "contributions", "token"], pagePath: "panels/taskbar/BarGithub.qml", subPageIdx: 13 },
+                { label: qsTr("Media"), keywords: ["media", "music", "player", "spotify", "youtube", "now playing", "volume", "visualiser"], pagePath: "panels/taskbar/BarMedia.qml", subPageIdx: 19 },
+                { label: qsTr("Weather"), keywords: ["weather", "temperature", "units", "celsius", "fahrenheit", "city"], pagePath: "panels/taskbar/BarWeather.qml", subPageIdx: 20 },
+                { label: qsTr("Performance"), keywords: ["performance", "cpu", "gpu", "ram", "memory", "storage", "network", "battery", "pills", "stats"], pagePath: "panels/taskbar/BarPerformance.qml", subPageIdx: 21 },
+                { label: qsTr("Screen Capture"), keywords: ["screenshot", "recording", "region", "spectacle", "gif"], pagePath: "panels/taskbar/BarScreenCapture.qml", subPageIdx: 22 },
+                { label: qsTr("Keep Awake"), keywords: ["idle", "inhibit", "sleep", "caffeine", "coffee"], pagePath: "panels/taskbar/BarKeepAwake.qml", subPageIdx: 23 },
                 { label: qsTr("Per-element scaling offsets"), keywords: ["scale", "font scale", "preview"], pagePath: "panels/taskbar/BarPreviewScales.qml", subPageIdx: 14 },
                 { label: qsTr("Elements & Modules"), keywords: ["workspaces", "tray", "clock", "modules"], pagePath: "panels/taskbar/TaskbarElements.qml", subPageIdx: 15 },
                 { label: qsTr("Update indicator"), keywords: ["updates", "indicator"], pagePath: "panels/taskbar/BarUpdates.qml", subPageIdx: 17 },
@@ -139,15 +147,15 @@ QtObject {
             label: qsTr("Utilities"),
             key: "utilities",
             icon: "build",
-            description: qsTr("Quick controls, clipboard, game mode"),
+            description: qsTr("Quick controls, game mode"),
             category: "controls",
             settings: [
                 { label: qsTr("On-screen Sliders"), subPageIdx: 3, keywords: ["volume", "microphone", "brightness", "osd"] },
-                { label: qsTr("Clipboard"), subPageIdx: 4, keywords: ["history", "copied", "paste", "maximum entries", "history size"] },
-                { label: qsTr("Utilities Panel"), subPageIdx: 5, keywords: ["keep awake", "screenshot", "record"] },
-                { label: qsTr("Quick Toggles"), subPageIdx: 6, keywords: ["toggles", "dashboard", "switches"] },
+                { label: qsTr("Utilities Panel"), subPageIdx: 4, keywords: ["keep awake", "screenshot", "record"] },
+                { label: qsTr("Quick Toggles"), subPageIdx: 5, keywords: ["toggles", "dashboard", "switches"] },
                 { label: qsTr("Game Mode"), pagePath: "services/GameModePage.qml", subPageIdx: 1, keywords: ["hyprland overrides", "performance", "games"] },
-                { label: qsTr("Auto-enable rules"), keywords: ["game mode", "rules", "target windows"], pagePath: "services/GameModeTargetsPage.qml", subPageIdx: 2 }
+                { label: qsTr("Auto-enable rules"), keywords: ["game mode", "rules", "target windows"], pagePath: "services/GameModeTargetsPage.qml", subPageIdx: 2 },
+                { label: qsTr("Quick Share"), pagePath: "services/QuickSharePage.qml", subPageIdx: 6, keywords: ["bluetooth", "nearby", "file sharing", "send file", "receive file", "android"] }
             ]
         },
         {
@@ -195,6 +203,7 @@ QtObject {
             category: "shell",
             settings: [
                 { label: qsTr("Background Services"), keywords: ["daemons", "systemd", "tuning"] },
+                { label: qsTr("Visualiser Input"), keywords: ["visualiser", "microphone", "cava", "audio"] },
                 { label: qsTr("Rich Presence"), keywords: ["discord", "steamgriddb", "activity"], pagePath: "services/ArpcPage.qml", subPageIdx: 1 }
             ]
         },
@@ -257,4 +266,19 @@ QtObject {
             ]
         }
     ]
+
+    // Sub page index of the first entry pointing at the given page, or -1 when
+    // no entry does. Callers that jump to a sub page should look it up instead
+    // of hardcoding the number: inserting a sub page anywhere in the registry
+    // shifts every index after it, which silently repoints shortcuts.
+    function subPageIdxFor(pagePath: string): int {
+        for (let i = 0; i < pages.length; i++) {
+            const settings = pages[i].settings || [];
+            for (let j = 0; j < settings.length; j++) {
+                if (settings[j].pagePath === pagePath)
+                    return settings[j].subPageIdx;
+            }
+        }
+        return -1;
+    }
 }

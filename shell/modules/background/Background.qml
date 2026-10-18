@@ -22,6 +22,47 @@ Variants {
         readonly property bool isOverviewOpen: drawerVisibilities ? drawerVisibilities.overview : false
         readonly property bool wallpaperUp: wallpaper.item?.shown ?? false
         property bool wallpaperHasBeenUp: false
+        property int widgetUpdateTrigger: 0
+
+        readonly property var widgetRegions: {
+            widgetUpdateTrigger;
+            const list = [];
+            for (let i = 0; i < bgWidgetsRepeater.count; i++) {
+                const loader = bgWidgetsRepeater.itemAt(i);
+                const wItem = loader?.item;
+                if (!wItem)
+                    continue;
+                const r = wItem.inputRegions;
+                if (r && Array.isArray(r)) {
+                    for (const reg of r) {
+                        if (reg)
+                            list.push(reg);
+                    }
+                } else if (wItem.inputRegion) {
+                    list.push(wItem.inputRegion);
+                }
+            }
+            return list;
+        }
+
+        function applyWidgetContext(widget: var): void {
+            if (!widget)
+                return;
+
+            const context = {
+                screen: win.modelData,
+                modelData: win.modelData,
+                background: win
+            };
+
+            for (const name in context) {
+                if (widget.hasOwnProperty(name))
+                    widget[name] = context[name];
+            }
+
+            if (widget.inputRegionsChanged)
+                widget.inputRegionsChanged.connect(() => { win.widgetUpdateTrigger++; });
+        }
 
         onWallpaperUpChanged: {
             if (wallpaperUp)
@@ -33,7 +74,13 @@ Variants {
         isDesktopWidget: true
         color: (Config.background.wallpaperEnabled && wallpaperHasBeenUp) ? "black" : "transparent"
         surfaceFormat.opaque: false
-        mask: Config.background.wallpaperEnabled ? null : emptyRegion
+        mask: {
+            if (Config.background.wallpaperEnabled || BadApplePlayer.shouldPlay)
+                return null;
+            if (widgetRegions.length > 0)
+                return compositeWidgetMask;
+            return emptyRegion;
+        }
         anchors.top: true
         anchors.bottom: true
         anchors.left: true
@@ -45,13 +92,22 @@ Variants {
             width: 0
             height: 0
         }
+        Region {
+            id: compositeWidgetMask
+
+            regions: win.widgetRegions
+        }
         TapHandler {
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
             onTapped: (eventPoint, button) => {
                 if (desktopIcons.renameActive)
-                    desktopIcons.renamingDelegate?.cancelRename();
-                if (button === Qt.RightButton && Config.background.wallpaperEnabled && !desktopIcons.iconAt(eventPoint.position.x, eventPoint.position.y)) {
+                    desktopIcons.renamingDelegate?.commitRename();
+                const onEmptyDesktop = Config.background.wallpaperEnabled && !desktopIcons.iconAt(eventPoint.position.x, eventPoint.position.y);
+                if (button === Qt.RightButton && onEmptyDesktop) {
                     ContextMenuStore.openDesktopContextMenu(eventPoint.position.x, eventPoint.position.y, win.modelData.name);
+                } else if (button === Qt.MiddleButton && onEmptyDesktop) {
+                    // Middle click on empty desktop shows or hides the icons.
+                    ContextMenuStore.toggleIcons(win.modelData.name);
                 } else if (button === Qt.LeftButton) {
                     if (true) {
                         Kwin.setActiveOutputName(win.screen.name);
@@ -81,392 +137,46 @@ Variants {
                 z: 2
                 visible: true
             }
+            Loader {
+                id: badApple
+
+                anchors.fill: parent
+                active: BadApplePlayer.shouldPlay
+                z: 2.5
+                sourceComponent: BadAppleOverlay {
+                    screen: win.modelData
+                }
+            }
         }
         DesktopIcons {
             id: desktopIcons
 
             screenData: win.modelData
+            wallpaper: behindClock
             z: 3
         }
-        Loader {
-            id: clockLoader
+        Repeater {
+            id: bgWidgetsRepeater
 
-            readonly property int clockBarZone: Visibilities.bars.get(win.modelData.name)?.visualThickness ?? (Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness))
-            readonly property int clockBaseMargin: Tokens.padding.extraLargeIncreased
+            model: BackgroundWidgetRegistry.widgets
 
-            asynchronous: true
-            active: Config.background.desktopClock.enabled
-            anchors.margins: clockBaseMargin
-            anchors.leftMargin: Config.bar.position === "left" ? clockBaseMargin + clockBarZone : clockBaseMargin
-            anchors.rightMargin: Config.bar.position === "right" ? clockBaseMargin + clockBarZone : clockBaseMargin
-            anchors.topMargin: Config.bar.position === "top" ? clockBaseMargin + clockBarZone : clockBaseMargin
-            anchors.bottomMargin: Config.bar.position === "bottom" ? clockBaseMargin + clockBarZone : clockBaseMargin
-            anchors.horizontalCenterOffset: {
-                if (Config.bar.position === "left") return clockBarZone / 2;
-                if (Config.bar.position === "right") return -clockBarZone / 2;
-                return 0;
-            }
-            anchors.verticalCenterOffset: {
-                if (Config.bar.position === "top") return clockBarZone / 2;
-                if (Config.bar.position === "bottom") return -clockBarZone / 2;
-                return 0;
-            }
-            sourceComponent: DesktopClock {
-                wallpaper: behindClock
-                absX: clockLoader.x
-                absY: clockLoader.y
-            }
-            transitions: Transition {
-                AnchorAnim {}
-            }
-            state: Config.background.desktopClock.position
-            states: [
-                State {
-                    name: "top-left"
+            Loader {
+                id: bgWidgetLoader
 
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.top: parent.top
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "top-center"
+                required property var modelData
 
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "top-right"
+                anchors.fill: parent
+                z: modelData.z ?? 4
+                source: modelData.componentUrl ?? ""
 
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.top: parent.top
-                        anchors.right: parent.right
-                    }
-                },
-                State {
-                    name: "middle-left"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "center"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "middle-center"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "middle-right"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: parent.right
-                    }
-                },
-                State {
-                    name: "bottom-left"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "bottom-center"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "bottom-right"
-
-                    AnchorChanges {
-                        target: clockLoader
-                        anchors.bottom: parent.bottom
-                        anchors.right: parent.right
-                    }
+                onItemChanged: {
+                    win.applyWidgetContext(item);
+                    win.widgetUpdateTrigger++;
                 }
-            ]
-        }
-        Loader {
-            id: lyricsLoader
-
-            readonly property int lyricsBarZone: Visibilities.bars.get(win.modelData.name)?.visualThickness ?? (Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness))
-            readonly property int lyricsBaseMargin: Tokens.padding.large * 2
-
-            asynchronous: true
-            active: Config.background.desktopLyrics.enabled && !(GameMode.enabled && GlobalConfig.utilities.gameMode.disableDesktopLyrics)
-            anchors.margins: lyricsBaseMargin
-            anchors.leftMargin: Config.bar.position === "left" ? lyricsBaseMargin + lyricsBarZone : lyricsBaseMargin
-            anchors.rightMargin: Config.bar.position === "right" ? lyricsBaseMargin + lyricsBarZone : lyricsBaseMargin
-            anchors.topMargin: Config.bar.position === "top" ? lyricsBaseMargin + lyricsBarZone : lyricsBaseMargin
-            anchors.bottomMargin: Config.bar.position === "bottom" ? lyricsBaseMargin + lyricsBarZone : lyricsBaseMargin
-            anchors.horizontalCenterOffset: {
-                if (Config.bar.position === "left") return lyricsBarZone / 2;
-                if (Config.bar.position === "right") return -lyricsBarZone / 2;
-                return 0;
             }
-            anchors.verticalCenterOffset: {
-                if (Config.bar.position === "top") return lyricsBarZone / 2;
-                if (Config.bar.position === "bottom") return -lyricsBarZone / 2;
-                return 0;
-            }
-            sourceComponent: DesktopLyrics {
-                screen: modelData
-                wallpaper: behindClock
-                absX: lyricsLoader.x
-                absY: lyricsLoader.y
-            }
-            transitions: Transition {
-                AnchorAnim {}
-            }
-            state: Config.background.desktopLyrics.position
-            states: [
-                State {
-                    name: "top-left"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.top: parent.top
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "top-center"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "top-right"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.top: parent.top
-                        anchors.right: parent.right
-                    }
-                },
-                State {
-                    name: "middle-left"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "center"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "middle-center"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "middle-right"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: parent.right
-                    }
-                },
-                State {
-                    name: "bottom-left"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "bottom-center"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "bottom-right"
-
-                    AnchorChanges {
-                        target: lyricsLoader
-                        anchors.bottom: parent.bottom
-                        anchors.right: parent.right
-                    }
-                }
-            ]
-        }
-        Loader {
-            id: shapesLoader
-
-            readonly property int shapesBarZone: Visibilities.bars.get(win.modelData.name)?.visualThickness ?? (Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness))
-            readonly property int shapesBaseMargin: Tokens.padding.large * 2
-
-            asynchronous: true
-            active: Config.background.desktopShapes.enabled && !(GameMode.enabled && GlobalConfig.utilities.gameMode.disableDesktopLyrics)
-            anchors.margins: shapesBaseMargin
-            anchors.leftMargin: Config.bar.position === "left" ? shapesBaseMargin + shapesBarZone : shapesBaseMargin
-            anchors.rightMargin: Config.bar.position === "right" ? shapesBaseMargin + shapesBarZone : shapesBaseMargin
-            anchors.topMargin: Config.bar.position === "top" ? shapesBaseMargin + shapesBarZone : shapesBaseMargin
-            anchors.bottomMargin: Config.bar.position === "bottom" ? shapesBaseMargin + shapesBarZone : shapesBaseMargin
-            anchors.horizontalCenterOffset: {
-                if (Config.bar.position === "left") return shapesBarZone / 2;
-                if (Config.bar.position === "right") return -shapesBarZone / 2;
-                return 0;
-            }
-            anchors.verticalCenterOffset: {
-                if (Config.bar.position === "top") return shapesBarZone / 2;
-                if (Config.bar.position === "bottom") return -shapesBarZone / 2;
-                return 0;
-            }
-            sourceComponent: DesktopShapes {
-                screen: modelData
-                wallpaper: behindClock
-                absX: shapesLoader.x
-                absY: shapesLoader.y
-            }
-            transitions: Transition {
-                AnchorAnim {}
-            }
-            state: Config.background.desktopShapes.position
-            states: [
-                State {
-                    name: "top-left"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.top: parent.top
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "top-center"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.top: parent.top
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "top-right"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.top: parent.top
-                        anchors.right: parent.right
-                    }
-                },
-                State {
-                    name: "middle-left"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "center"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "middle-center"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "middle-right"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: parent.right
-                    }
-                },
-                State {
-                    name: "bottom-left"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.bottom: parent.bottom
-                        anchors.left: parent.left
-                    }
-                },
-                State {
-                    name: "bottom-center"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.bottom: parent.bottom
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                },
-                State {
-                    name: "bottom-right"
-
-                    AnchorChanges {
-                        target: shapesLoader
-                        anchors.bottom: parent.bottom
-                        anchors.right: parent.right
-                    }
-                }
-            ]
         }
         WlrLayershell.exclusionMode: ExclusionMode.Ignore
         WlrLayershell.layer: WlrLayer.Bottom
-        WlrLayershell.keyboardFocus: desktopIcons.renameActive ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+        WlrLayershell.keyboardFocus: desktopIcons.renameActive ? WlrKeyboardFocus.Exclusive : desktopIcons.visible ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
     }
 }

@@ -68,7 +68,6 @@ class BarWorkspaces : public settings::ObjectNode {
 class BarGreeter : public settings::ObjectNode {
     CONFIG_NODE(BarGreeter, settings::ObjectNode)
 
-    CONFIG_PROPERTY(bool, compact, false)
     CONFIG_PROPERTY(bool, inverted, false)
     CONFIG_PROPERTY(bool, showOnHover, true)
 
@@ -162,10 +161,43 @@ class BarGithub : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, background, false)
 };
 
+class BarMedia : public settings::ObjectNode {
+    CONFIG_NODE(BarMedia, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, background, false)
+    CONFIG_PROPERTY(bool, showVisualiser, true)
+    CONFIG_PROPERTY(int, maxTitleLength, 25)
+    CONFIG_PROPERTY(bool, inverted, false)
+    CONFIG_PROPERTY(bool, showTitle, true)
+    CONFIG_PROPERTY(bool, autoHide, false)
+    // Player names (MPRIS identity fragments) the widget ignores, e.g.
+    // a browser showing videos. Empty follows anything playing.
+    CONFIG_PROPERTY(QStringList, excludedSources, QStringList())
+};
+
 class BarPerformance : public settings::ObjectNode {
     CONFIG_NODE(BarPerformance, settings::ObjectNode)
 
     CONFIG_PROPERTY(bool, showText, true)
+    CONFIG_PROPERTY(QString, pill, u"cpu"_s)
+    CONFIG_PROPERTY(QString, pillStyle, u"classic"_s)
+    CONFIG_PROPERTY(QString, widgetStyle, u"classic"_s)
+    CONFIG_PROPERTY(bool, widgetShowText, true)
+};
+
+class BarScreenCapture : public settings::ObjectNode {
+    CONFIG_NODE(BarScreenCapture, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showShots, true)
+    CONFIG_PROPERTY(bool, showRecord, true)
+    CONFIG_PROPERTY(bool, showFolders, true)
+};
+
+class BarKeepAwake : public settings::ObjectNode {
+    CONFIG_NODE(BarKeepAwake, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, showActiveChip, true)
+    CONFIG_PROPERTY(bool, autoHide, false)
 };
 
 class BarPreviewScales : public settings::ObjectNode {
@@ -178,6 +210,7 @@ class BarPreviewScales : public settings::ObjectNode {
     CONFIG_PROPERTY(qreal, clock, 0.0)
     CONFIG_PROPERTY(qreal, dock, 0.0)
     CONFIG_PROPERTY(qreal, github, 0.0)
+    CONFIG_PROPERTY(qreal, media, 0.0)
     CONFIG_PROPERTY(qreal, kblayout, 0.0)
     CONFIG_PROPERTY(qreal, lockStatus, 0.0)
     CONFIG_PROPERTY(qreal, network, 0.0)
@@ -197,6 +230,7 @@ class BarPreviewFontScales : public settings::ObjectNode {
     CONFIG_PROPERTY(qreal, clock, 0.0)
     CONFIG_PROPERTY(qreal, dock, 0.0)
     CONFIG_PROPERTY(qreal, github, 0.0)
+    CONFIG_PROPERTY(qreal, media, 0.0)
     CONFIG_PROPERTY(qreal, kblayout, 0.0)
     CONFIG_PROPERTY(qreal, lockStatus, 0.0)
     CONFIG_PROPERTY(qreal, network, 0.0)
@@ -250,7 +284,10 @@ class BarConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(BarClock, clock)
     CONFIG_SUBOBJECT(BarDock, dock)
     CONFIG_SUBOBJECT(BarGithub, github)
+    CONFIG_SUBOBJECT(BarMedia, media)
     CONFIG_SUBOBJECT(BarPerformance, performance)
+    CONFIG_SUBOBJECT(BarScreenCapture, screencapture)
+    CONFIG_SUBOBJECT(BarKeepAwake, keepawake)
     CONFIG_PROPERTY(QVariantList, entries,
         DEFAULT_ARG({
             vmap({ { u"id"_s, u"logo"_s }, { u"enabled"_s, true }, { u"zone"_s, u"left"_s } }),
@@ -260,6 +297,7 @@ class BarConfig : public settings::ObjectNode {
             vmap({ { u"id"_s, u"tray"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"updateIndicator"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"github"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"media"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"clock"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"statusIcons"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"kbLayoutIndicator"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
@@ -272,6 +310,12 @@ class BarConfig : public settings::ObjectNode {
             vmap({ { u"id"_s, u"perfBattery"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"showDesktop"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"power"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"notes"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"performance"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"weather"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"shortcuts"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"screencapture"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"keepawake"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
         }))
     CONFIG_PROPERTY(QStringList, excludedScreens, QStringList())
 };

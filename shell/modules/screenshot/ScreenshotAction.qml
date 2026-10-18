@@ -5,6 +5,7 @@ import QtQuick
 import QtQuick.Controls
 import Qt.labs.synchronizer
 import Quickshell
+import Caelestia.Config
 import qs.services
 import qs.utils
 
@@ -43,12 +44,12 @@ Singleton {
         const uploadAndGetUrl = (filePath) => {
             return `curl -sF files[]=@'${escapeShellStr(filePath)}' ${root.fileUploadApiEndpoint} | jq -r '.files[0].url'`
         }
-        
+
         const rawSaveDir = saveDir;
 
         switch (action) {
             case ScreenshotAction.SnipAction.Copy: {
-                let saveDir = rawSaveDir === "" ? "~/Pictures/Screenshots" : rawSaveDir;
+                let saveDir = rawSaveDir === "" ? GlobalConfig.paths.screenshotsDir : rawSaveDir;
                 return `set -euo pipefail; ` +
                     `SAVE_DIR='${escapeShellStr(saveDir)}'; ` +
                     `SAVE_DIR="\${SAVE_DIR/#\\~/$HOME}"; ` +
@@ -56,13 +57,13 @@ Singleton {
                     `saveFile="$SAVE_DIR/screenshot-$(date +%Y-%m-%d_%H.%M.%S).png" && ` +
                     `${cropBase} "$saveFile" && ` +
                     `wl-copy -t image/png < "$saveFile"; ` +
-                    `ACTION=$(notify-send "Screenshot Captured" "Saved to $saveFile" -i "$saveFile" -a "Screenshot" --action="open=Open" --action="folder=Open Folder" || true); ` +
-                    `if [ "$ACTION" = "open" ]; then xdg-open "$saveFile"; elif [ "$ACTION" = "folder" ]; then xdg-open "$SAVE_DIR"; fi; ` +
-                    `${cleanup}`
+                    `${cleanup}; ` +
+                    `(ACTION=$(notify-send "Screenshot Captured" "Saved to $saveFile" -i "$saveFile" -a "Screenshot" --action="open=Open" --action="folder=Open Folder" || true); ` +
+                    `if [ "$ACTION" = "open" ]; then xdg-open "$saveFile"; elif [ "$ACTION" = "folder" ]; then xdg-open "$SAVE_DIR"; fi) &`
             }
 
             case ScreenshotAction.SnipAction.Edit: {
-                let saveDir = rawSaveDir === "" ? "~/Pictures/Screenshots" : rawSaveDir;
+                let saveDir = rawSaveDir === "" ? GlobalConfig.paths.screenshotsDir : rawSaveDir;
                 return `set -euo pipefail; ` +
                     `SAVE_DIR='${escapeShellStr(saveDir)}'; ` +
                     `SAVE_DIR="\${SAVE_DIR/#\\~/$HOME}"; ` +
@@ -84,8 +85,8 @@ Singleton {
                     `rm -rf "$SWAPPY_OUT_DIR"; ` +
                     `if [ -s "$saveFile" ]; then ` +
                         `wl-copy -t image/png < "$saveFile"; ` +
-                        `ACTION=$(notify-send "Screenshot Captured" "Saved to $saveFile" -i "$saveFile" -a "Screenshot" --action="open=Open" --action="folder=Open Folder" || true); ` +
-                        `if [ "$ACTION" = "open" ]; then xdg-open "$saveFile"; elif [ "$ACTION" = "folder" ]; then xdg-open "$SAVE_DIR"; fi; ` +
+                        `(ACTION=$(notify-send "Screenshot Captured" "Saved to $saveFile" -i "$saveFile" -a "Screenshot" --action="open=Open" --action="folder=Open Folder" || true); ` +
+                        `if [ "$ACTION" = "open" ]; then xdg-open "$saveFile"; elif [ "$ACTION" = "folder" ]; then xdg-open "$SAVE_DIR"; fi) & ` +
                     `fi; ` +
                     `rm -f "$TMPF"; ${cleanup}`
             }

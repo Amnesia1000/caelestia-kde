@@ -37,6 +37,7 @@ PageBase {
         ToggleRow {
             first: true
             text: qsTr("Enabled")
+            reset: ({ node: GlobalConfig.sidebar, setting: "enabled" })
             checked: Config.sidebar.enabled
             onToggled: GlobalConfig.sidebar.enabled = checked
         }
@@ -46,6 +47,7 @@ PageBase {
             Layout.fillWidth: true
             label: qsTr("Drag threshold")
             subtext: qsTr("Pixels dragged before the sidebar opens")
+            reset: ({ node: GlobalConfig.sidebar, setting: "dragThreshold" })
             value: Config.sidebar.dragThreshold
             from: 0
             to: 200
@@ -59,6 +61,7 @@ PageBase {
             last: true
             label: qsTr("Grab width")
             subtext: qsTr("Pixels of screen edge reserved for grabbing the sidebar")
+            reset: ({ node: GlobalConfig.sidebar, setting: "grabWidth" })
             value: Config.sidebar.grabWidth
             from: 1
             to: 100
@@ -88,6 +91,7 @@ PageBase {
             Layout.fillWidth: true
             text: qsTr("Show News tab")
             subtext: qsTr("Show the News tab in the sidebar")
+            reset: ({ node: GlobalConfig.ai, setting: "showNews" })
             checked: GlobalConfig.ai.showNews
             onToggled: GlobalConfig.ai.showNews = checked
         }
@@ -98,6 +102,7 @@ PageBase {
             last: true
             text: qsTr("Show Caelestia Mode")
             subtext: qsTr("Show the Caelestia Mode toggle at the bottom of notifications")
+            reset: ({ node: GlobalConfig.ai, setting: "showCaelestiaMode" })
             checked: GlobalConfig.ai.showCaelestiaMode
             onToggled: GlobalConfig.ai.showCaelestiaMode = checked
         }

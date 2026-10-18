@@ -137,6 +137,21 @@ QtObject {
                 Component {
                     TabSwitcherPanel {}
                 }
+                Component {
+                    BarMedia {}
+                }
+                Component {
+                    BarWeather {}
+                }
+                Component {
+                    BarPerformance {}
+                }
+                Component {
+                    BarScreenCapture {}
+                }
+                Component {
+                    BarKeepAwake {}
+                }
             }
         },
         Component {
@@ -227,13 +242,13 @@ QtObject {
                     OsdPage {}
                 }
                 Component {
-                    ClipboardPage {}
-                }
-                Component {
                     UtilitiesPanelPage {}
                 }
                 Component {
                     QuickTogglesPage {}
+                }
+                Component {
+                    QuickSharePage {}
                 }
             }
         },

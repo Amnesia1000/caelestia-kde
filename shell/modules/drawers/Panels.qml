@@ -50,19 +50,7 @@ Item {
         const h = barPos === "right" ? "left" : "right";
         return `${v}-${h}`;
     }
-    property bool notifAutoFlipped: false
-    property int _prevPopupCount: 0
-    readonly property string notifPosition: {
-        if (GlobalConfig.notifs.position !== "auto")
-            return GlobalConfig.notifs.position;
-        if (notifAutoFlipped) {
-            const parts = notifAutoPosition.split("-");
-            const v = parts[0] === "top" ? "bottom" : "top";
-            const h = parts[1] === "left" ? "right" : "left";
-            return `${v}-${h}`;
-        }
-        return notifAutoPosition;
-    }
+    readonly property string notifPosition: GlobalConfig.notifs.position !== "auto" ? GlobalConfig.notifs.position : notifAutoPosition
     readonly property bool notifAtTop: notifPosition.startsWith("top")
     readonly property bool notifAtBottom: notifPosition.startsWith("bottom")
     readonly property real notifReservedHeight: notifications.implicitHeight > 0 ? notifications.implicitHeight + Tokens.spacing.extraLarge : 0
@@ -72,8 +60,10 @@ Item {
         if (bar.isHorizontal) {
             const notifLeft = notifications.x;
             const notifRight = notifLeft + (notifications.implicitWidth > 0 ? notifications.implicitWidth : Tokens.sizes.notifs.width);
-            const popLeft = popoutsWrapper.x;
-            const popRight = popoutsWrapper.x + popoutsWrapper.content.nonAnimWidth;
+            // Use where the popout ends up, not where its slide currently is, so
+            // switching between bar items doesn't push the sidebar on the way.
+            const popLeft = popoutsWrapper.targetX;
+            const popRight = popoutsWrapper.targetX + popoutsWrapper.content.nonAnimWidth;
             return popLeft < notifRight && popRight > notifLeft;
         } else {
             const notifTop = notifications.y;
@@ -233,28 +223,6 @@ Item {
             return Math.max(0, parent.height - implicitHeight - _pushOffset);
         }
     }
-    Connections {
-        function onPopupCountChanged() {
-            const len = Notifs.popupCount;
-            if (len > 0 && root._prevPopupCount === 0 && GlobalConfig.notifs.position === "auto") {
-                const defParts = root.notifAutoPosition.split("-");
-                const defV = defParts[0];
-                const defH = defParts[1];
-                const notifW = Tokens.sizes.notifs.width;
-                const notifH = Math.min(root.height / 2, 600);
-                const panelX = root.cursorPos.x - root.leftMargin;
-                const panelY = root.cursorPos.y - root.topMargin;
-                const cornerX = defH === "right" ? (root.width - notifW) : 0;
-                const cornerY = defV === "bottom" ? (root.height - notifH) : 0;
-                const inCorner = panelX >= cornerX && panelX <= cornerX + notifW
-                    && panelY >= cornerY && panelY <= cornerY + notifH;
-                root.notifAutoFlipped = inCorner;
-            }
-            root._prevPopupCount = len;
-        }
-
-        target: Notifs
-    }
     Item {
         id: sessionWrapper
 
@@ -344,7 +312,7 @@ Item {
         property bool shouldPush: root.popoutIntersectsSidebar && !popoutsWrapper.content.isDockPopout
         // A popout no wider than the sidebar is drawn joined to it (ContentWindow.qml),
         // so it goes right below the sidebar instead of leaving a gap.
-        readonly property real pushSpacing: popoutsWrapper.content.implicitWidth <= Tokens.sizes.sidebar.width + 1 ? 0 : Tokens.spacing.extraLarge
+        readonly property real pushSpacing: popoutsWrapper.content.implicitWidth <= Visibilities.sidebarWidthFor(Tokens.sizes.sidebar.width) + 1 ? 0 : Tokens.spacing.extraLarge
 
         visibilities: root.visibilities
         popouts: popoutsWrapper.content
