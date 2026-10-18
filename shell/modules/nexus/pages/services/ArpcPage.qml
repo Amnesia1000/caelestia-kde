@@ -152,7 +152,7 @@ PageBase {
                     Layout.preferredHeight: 32
                     radius: Tokens.rounding.small
                     color: Colours.layer(Colours.palette.m3surfaceVariant, 2)
-                    
+
                     StyledTextField {
                         id: tokenInput
 
@@ -227,8 +227,8 @@ PageBase {
                 model: GlobalConfig.services.arpcTargetWindows
                 clip: true
 
-                move: Transition { NumberAnimation { properties: "y"; duration: 200; easing.type: Easing.OutCubic } }
-                moveDisplaced: Transition { NumberAnimation { properties: "y"; duration: 200; easing.type: Easing.OutCubic } }
+                move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
+                moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
 
                 delegate: StyledRect {
                     id: delegateRect
@@ -274,7 +274,7 @@ PageBase {
 
                                 StateLayer {
                                     anchors.fill: parent
-                                    radius: 14
+                                    radius: Tokens.rounding.full
                                     onClicked: {
                                         let list = Array.from(GlobalConfig.services.arpcTargetWindows);
                                         let labels = Array.from(GlobalConfig.services.arpcTargetWindowLabels);
@@ -378,8 +378,8 @@ PageBase {
                 model: GlobalConfig.services.arpcSteamBlacklist
                 clip: true
 
-                move: Transition { NumberAnimation { properties: "y"; duration: 200; easing.type: Easing.OutCubic } }
-                moveDisplaced: Transition { NumberAnimation { properties: "y"; duration: 200; easing.type: Easing.OutCubic } }
+                move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
+                moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
 
                 delegate: StyledRect {
                     id: blacklistDelegateRect
@@ -422,7 +422,7 @@ PageBase {
 
                             StateLayer {
                                 anchors.fill: parent
-                                radius: 14
+                                radius: Tokens.rounding.full
                                 onClicked: {
                                     let list = Array.from(GlobalConfig.services.arpcSteamBlacklist);
                                     list.splice(blacklistDelegateRect.index, 1);
@@ -542,7 +542,7 @@ PageBase {
                 Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 40
-                    
+
                     IconTextButton {
                         anchors.right: parent.right
                         anchors.verticalCenter: parent.verticalCenter

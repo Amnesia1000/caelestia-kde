@@ -111,6 +111,7 @@ Item {
         anchors.fill: parent
         sourceComponent: Content {
             popouts: popoutState
+            visibilities: root.visibilities
         }
     }
     Comp {
@@ -179,7 +180,7 @@ Item {
 
                 SequentialAnimation {
                     Anim {
-                        type: Anim.DefaultEffects
+                        type: Anim.FastEffects
                         property: "opacity"
                     }
                     PropertyAction {

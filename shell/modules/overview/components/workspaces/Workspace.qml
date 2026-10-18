@@ -144,7 +144,7 @@ StyledRect {
             id: closeBtn
 
             anchors.fill: parent
-            radius: parent.width / 2
+            radius: Tokens.rounding.full
             onClicked: {
                 const wId = Kwin.workspaces[root.ws - 1].id;
                 if (wId)
@@ -320,12 +320,20 @@ StyledRect {
                         Visibilities.streamClaim = "";
                 }
 
-                Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-                Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-                Behavior on height { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-                Behavior on x { enabled: !dragHandler.active; NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-                Behavior on y { enabled: !dragHandler.active; NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                Behavior on scale { Anim { type: Anim.FastSpatial } }
+                Behavior on opacity { Anim { type: Anim.DefaultEffects } }
+                Behavior on width { Anim { type: Anim.FastSpatial } }
+                Behavior on height { Anim { type: Anim.FastSpatial } }
+                Behavior on x {
+                    enabled: !dragHandler.active
+
+                    Anim { type: Anim.FastSpatial }
+                }
+                Behavior on y {
+                    enabled: !dragHandler.active
+
+                    Anim { type: Anim.FastSpatial }
+                }
 
                 DragHandler {
                     id: dragHandler
@@ -335,7 +343,7 @@ StyledRect {
                             let tl = iconDelegate;
                             while (tl.parent) tl = tl.parent;
                             iconDelegate.topLevel = tl;
-                            
+
                             if (tl) {
                                 const p = iconDelegate.mapToItem(tl, 0, 0);
                                 iconDelegate.dragStartX = p.x;
@@ -363,7 +371,7 @@ StyledRect {
                         if (root.active) {
                             if (modelData.address) {
                                 Kwin.focusWindow(modelData.address);
-                                
+
                                 let p = parent;
                                 while (p) {
                                     if (p.requestClose) {
@@ -392,8 +400,8 @@ StyledRect {
             radius: Tokens.rounding.small
             visible: windowDropArea.hovering !== null
 
-            Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-            Behavior on height { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+            Behavior on width { Anim { type: Anim.FastSpatial } }
+            Behavior on height { Anim { type: Anim.FastSpatial } }
         }
     }
 }

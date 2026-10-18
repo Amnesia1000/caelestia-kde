@@ -444,7 +444,7 @@
   <context>
     <name>AddShortcutDialog</name>
     <message>
-      <location filename="../modules/nexus/pages/wallandstyle/AddShortcutDialog.qml" line="+62"/>
+      <location filename="../modules/nexus/pages/wallandstyle/AddShortcutDialog.qml" line="+59"/>
       <source>Add Custom Shortcut</source>
       <translation>Añadir acceso directo personalizado</translation>
     </message>
@@ -1262,7 +1262,7 @@
   <context>
     <name>AppTile</name>
     <message>
-      <location filename="../modules/launcher/items/AppTile.qml" line="+227"/>
+      <location filename="../modules/launcher/items/AppTile.qml" line="+230"/>
       <source>Matched by a regex in favouriteApps - edit the config file to change</source>
       <translation>Coincide con una expresión regular en favouriteApps; edita el archivo de configuración para cambiarlo</translation>
     </message>
@@ -1409,26 +1409,6 @@
       <translation>Requiere reiniciar el shell</translation>
     </message>
     <message>
-      <location line="+9"/>
-      <source>Ambient color mode</source>
-      <translation>Modo de color ambiental</translation>
-    </message>
-    <message>
-      <location line="+1"/>
-      <source>Ambient glow is unavailable in light mode</source>
-      <translation>El brillo ambiental no está disponible en el modo claro</translation>
-    </message>
-    <message>
-      <location line="+0"/>
-      <source>Ambient light glow in window info panel</source>
-      <translation>Brillo de luz ambiental en el panel de información de la ventana</translation>
-    </message>
-    <message>
-      <location line="+10"/>
-      <source>Ambient glow opacity</source>
-      <translation>Opacidad del brillo ambiental</translation>
-    </message>
-    <message>
       <location line="+23"/>
       <source>Background Blur</source>
       <translation>Desenfoque del fondo</translation>
@@ -1484,12 +1464,22 @@
       <translation>Escala del relleno</translation>
     </message>
     <message>
-      <location line="+12"/>
+      <location line="+11"/>
       <source>Animation speed scale</source>
       <translation>Escala de velocidad de las animaciones</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+12"/>
+      <source>Animations</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Toggle animations on/off</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
       <source>Corners &amp; effects</source>
       <translation>Esquinas y efectos</translation>
     </message>
@@ -1545,6 +1535,16 @@
       <location line="+8"/>
       <source>Media playback</source>
       <translation>Reproducción multimedia</translation>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Browser</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Editor</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+9"/>
@@ -2018,7 +2018,7 @@
   <context>
     <name>BarComponents</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarComponents.qml" line="+20"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarComponents.qml" line="+21"/>
       <source>Logo</source>
       <translation>Logotipo</translation>
     </message>
@@ -2148,6 +2148,36 @@
       <translation>Menú de apagado</translation>
     </message>
     <message>
+      <location line="+1"/>
+      <source>Shortcuts</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Screen Capture</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Keep Awake</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Notes</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Performance</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Weather</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
       <location line="+189"/>
       <source>Not detected</source>
       <translation>No detectado</translation>
@@ -2163,7 +2193,7 @@
       <translation>Desactivar componente</translation>
     </message>
     <message>
-      <location line="+183"/>
+      <location line="+140"/>
       <source>Toggle &amp; rearrange</source>
       <translation>Activar y reorganizar</translation>
     </message>
@@ -2221,7 +2251,7 @@
   <context>
     <name>BarDock</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarDock.qml" line="+16"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarDock.qml" line="+17"/>
       <source>Group all windows</source>
       <translation>Agrupar todas las ventanas</translation>
     </message>
@@ -2246,7 +2276,7 @@
       <translation>Activar componente</translation>
     </message>
     <message>
-      <location line="+58"/>
+      <location line="+13"/>
       <source>Icon size</source>
       <translation>Tamaño de los iconos</translation>
     </message>
@@ -2372,7 +2402,7 @@
   <context>
     <name>BarGreeter</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarGreeter.qml" line="+19"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarGreeter.qml" line="+20"/>
       <source>Time of day</source>
       <translation>Momento del día</translation>
     </message>
@@ -2412,7 +2442,7 @@
       <translation>Activar componente</translation>
     </message>
     <message>
-      <location line="+56"/>
+      <location line="+18"/>
       <source>Inverted</source>
       <translation>Invertido</translation>
     </message>
@@ -2666,6 +2696,44 @@
     </message>
   </context>
   <context>
+    <name>BarKeepAwake</name>
+    <message>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarKeepAwake.qml" line="+10"/>
+      <source>Keep Awake</source>
+      <translation>Mantener activo</translation>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Configuration</source>
+      <translation>Configuración</translation>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Show active indicator</source>
+      <translation>Mostrar indicador de actividad</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Show a chip with the activation time when Keep Awake is on</source>
+      <translation>Mostrar una píldora con la hora de activación cuando Mantener activo esté encendido</translation>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Widget</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Auto-hide when inactive</source>
+      <translation>Ocultar automáticamente cuando esté inactivo</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Hide the widget when Keep Awake is off</source>
+      <translation>Ocultar el widget cuando Mantener activo esté apagado</translation>
+    </message>
+  </context>
+  <context>
     <name>BarMedia</name>
     <message>
       <location filename="../modules/nexus/pages/panels/taskbar/BarMedia.qml" line="+10"/>
@@ -2688,7 +2756,7 @@
       <translation>Renderizar un fondo sólido detrás del widget</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Show visualiser</source>
       <translation>Mostrar el visualizador</translation>
     </message>
@@ -2698,7 +2766,7 @@
       <translation>Mostrar barras de frecuencia animadas junto al título</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Inverted text direction</source>
       <translation>Invertir la dirección del texto</translation>
     </message>
@@ -2708,7 +2776,7 @@
       <translation>Girar el título al revés cuando la barra es vertical</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Auto-hide</source>
       <translation>Ocultar automáticamente</translation>
     </message>
@@ -2718,7 +2786,7 @@
       <translation>Ocultar el widget cuando no hay una fuente de multimedia</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+11"/>
       <source>Show title</source>
       <translation>Mostrar el título</translation>
     </message>
@@ -2728,12 +2796,12 @@
       <translation>Mostrar el título de la pista en la barra; si no, un icono</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+10"/>
       <source>Widget</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+5"/>
       <source>Max title length</source>
       <translation>Longitud máxima del título</translation>
     </message>
@@ -2741,6 +2809,127 @@
       <location line="+1"/>
       <source>Character count before the track title is cut off</source>
       <translation>Cantidad de caracteres antes de que el título se corte</translation>
+    </message>
+    <message>
+      <location line="+14"/>
+      <source>Ignored players</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Player names to skip, comma-separated; empty follows everything</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
+    <name>BarPerformance</name>
+    <message>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarPerformance.qml" line="+13"/>
+      <source>CPU</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>GPU</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Memory</source>
+      <translation>Memoria</translation>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Storage</source>
+      <translation>Almacenamiento</translation>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Network</source>
+      <translation>Red</translation>
+    </message>
+    <message>
+      <location line="+2"/>
+      <source>Battery</source>
+      <translation>Batería</translation>
+    </message>
+    <message>
+      <location line="+6"/>
+      <location line="+10"/>
+      <source>Pill</source>
+      <translation>Píldora</translation>
+    </message>
+    <message>
+      <location line="-8"/>
+      <location line="+10"/>
+      <source>Rectangle</source>
+      <translation>Rectángulo</translation>
+    </message>
+    <message>
+      <location line="-4"/>
+      <source>Icon</source>
+      <translation>Ícono</translation>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Performance</source>
+      <translation>Rendimiento</translation>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Specific widgets</source>
+      <translation>Widgets específicos</translation>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Pill style</source>
+      <translation>Estilo de píldora</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Choose the shape of the specific pills</source>
+      <translation>Elegir la forma de las píldoras específicas</translation>
+    </message>
+    <message>
+      <location line="+11"/>
+      <location line="+41"/>
+      <source>Show values</source>
+      <translation>Mostrar valores</translation>
+    </message>
+    <message>
+      <location line="-40"/>
+      <source>Show the value next to the icon in each pill</source>
+      <translation>Mostrar el valor junto al ícono en cada píldora</translation>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Panel widget</source>
+      <translation>Widget del panel</translation>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Style</source>
+      <translation>Estilo</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Speed icon or a stat pill in the panel</source>
+      <translation>Ícono de velocidad o una píldora de estadística en el panel</translation>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Metric</source>
+      <translation>Métrica</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Stat shown in the bar, the full data is in the popout</source>
+      <translation>Estadística mostrada en la barra, los datos completos están en el popout</translation>
+    </message>
+    <message>
+      <location line="+14"/>
+      <source>Show the value next to the icon in the panel widget</source>
+      <translation>Mostrar el valor junto al icono en el widget del panel</translation>
     </message>
   </context>
   <context>
@@ -2849,6 +3038,49 @@
       <location line="+14"/>
       <source>Now playing</source>
       <translation>Reproduciendo ahora</translation>
+    </message>
+  </context>
+  <context>
+    <name>BarScreenCapture</name>
+    <message>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarScreenCapture.qml" line="+10"/>
+      <source>Screen Capture</source>
+      <translation>Captura de pantalla</translation>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Configuration</source>
+      <translation>Configuración</translation>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Show screenshot buttons</source>
+      <translation>Mostrar botones de captura</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Show region/window/screen capture buttons</source>
+      <translation>Mostrar botones de captura de región, ventana y pantalla</translation>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Show recording buttons</source>
+      <translation>Mostrar botones de grabación</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Show region/screen recording buttons</source>
+      <translation>Mostrar botones de grabación de región y pantalla</translation>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Show folder shortcuts</source>
+      <translation>Mostrar accesos a carpetas</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Show buttons to open screenshots/recordings folders</source>
+      <translation>Mostrar botones para abrir las carpetas de capturas y grabaciones</translation>
     </message>
   </context>
   <context>
@@ -2995,7 +3227,7 @@
   <context>
     <name>BarUpdates</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/taskbar/BarUpdates.qml" line="+19"/>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarUpdates.qml" line="+13"/>
       <source>Updates</source>
       <translation>Actualizaciones</translation>
     </message>
@@ -3010,7 +3242,7 @@
       <translation>Icono siempre visible en la barra de tareas que cambia cuando hay una actualización de Caelestia disponible</translation>
     </message>
     <message>
-      <location line="+29"/>
+      <location line="+13"/>
       <source>Enable update checking</source>
       <translation>Activar comprobación de actualizaciones</translation>
     </message>
@@ -3018,6 +3250,54 @@
       <location line="+1"/>
       <source>Enables the update indicator and periodic checks (every 30 minutes)</source>
       <translation>Activa el indicador de actualizaciones y las comprobaciones periódicas (cada 30 minutos)</translation>
+    </message>
+  </context>
+  <context>
+    <name>BarWeather</name>
+    <message>
+      <location filename="../modules/nexus/pages/panels/taskbar/BarWeather.qml" line="+15"/>
+      <source>Auto</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>°C</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+4"/>
+      <source>°F</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Weather</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Units</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+5"/>
+      <source>Temperature</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Units for weather temperatures</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Location</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Set the weather location</source>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -3170,7 +3450,7 @@
   <context>
     <name>BatteryMonitor</name>
     <message>
-      <location filename="../modules/BatteryMonitor.qml" line="+19"/>
+      <location filename="../modules/BatteryMonitor.qml" line="+29"/>
       <source>Charger unplugged</source>
       <translation>Cargador desconectado</translation>
     </message>
@@ -3793,42 +4073,85 @@
   <context>
     <name>Content</name>
     <message>
-      <location filename="../modules/bar/popouts/Content.qml" line="+59"/>
+      <location filename="../modules/bar/popouts/Content.qml" line="+61"/>
       <source>Greeter settings</source>
       <translation>Configuración de la pantalla de bienvenida</translation>
     </message>
     <message>
-      <location line="+63"/>
+      <location line="+2"/>
+      <location line="+65"/>
+      <location line="+11"/>
+      <location line="+11"/>
+      <location line="+142"/>
+      <location line="+11"/>
+      <location line="+11"/>
+      <location line="+11"/>
+      <location line="+11"/>
+      <location line="+10"/>
+      <location line="+10"/>
+      <location line="+10"/>
+      <location line="+11"/>
+      <location line="+9"/>
+      <source>Elements &amp; Modules</source>
+      <translation>Elementos y módulos</translation>
+    </message>
+    <message>
+      <location line="-260"/>
       <source>Clock settings</source>
       <translation>Configuración del reloj</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>Launcher settings</source>
       <translation>Configuración del lanzador</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>Status icons settings</source>
       <translation>Configuración de los iconos de estado</translation>
     </message>
     <message>
-      <location line="+96"/>
+      <location line="+142"/>
       <source>Workspaces settings</source>
       <translation>Configuración de los espacios de trabajo</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>Tray settings</source>
       <translation>Configuración de la bandeja del sistema</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
       <source>GitHub settings</source>
       <translation>Configuración de GitHub</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+11"/>
+      <source>Media settings</source>
+      <translation>Configuración de multimedia</translation>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Performance settings</source>
+      <translation>Configuración de rendimiento</translation>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Weather settings</source>
+      <translation>Configuración del clima</translation>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Screen Capture settings</source>
+      <translation>Configuración de captura de pantalla</translation>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Keep Awake settings</source>
+      <translation>Configuración de Mantener activo</translation>
+    </message>
+    <message>
+      <location line="+11"/>
       <source>Dock settings</source>
       <translation>Configuración del dock</translation>
     </message>
@@ -3898,7 +4221,7 @@
       <translation>Escribe &quot;%1&quot; para ejecutar comandos</translation>
     </message>
     <message>
-      <location line="+331"/>
+      <location line="+329"/>
       <source>Clear clipboard history?</source>
       <translation>¿Borrar el historial del portapapeles?</translation>
     </message>
@@ -4172,7 +4495,7 @@
   <context>
     <name>DashboardPanel</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/DashboardPanel.qml" line="+20"/>
+      <location filename="../modules/nexus/pages/panels/DashboardPanel.qml" line="+21"/>
       <source>Circle</source>
       <translation>Círculo</translation>
     </message>
@@ -4183,12 +4506,12 @@
     </message>
     <message>
       <location line="+5"/>
-      <location line="+86"/>
+      <location line="+85"/>
       <source>Pill</source>
       <translation>Píldora</translation>
     </message>
     <message>
-      <location line="-81"/>
+      <location line="-80"/>
       <source>Diamond</source>
       <translation>Rombo</translation>
     </message>
@@ -4234,12 +4557,12 @@
     </message>
     <message>
       <location line="+4"/>
-      <location line="+65"/>
+      <location line="+64"/>
       <source>Dashboard</source>
       <translation>Panel</translation>
     </message>
     <message>
-      <location line="-54"/>
+      <location line="-53"/>
       <source>General</source>
       <translation type="unfinished"/>
     </message>
@@ -4259,7 +4582,7 @@
       <translation>Mostrar cuando el cursor llegue al borde de la pantalla</translation>
     </message>
     <message>
-      <location line="+9"/>
+      <location line="+8"/>
       <source>Dashboard profile picture shape</source>
       <translation>Forma de la foto de perfil del panel</translation>
     </message>
@@ -4329,7 +4652,27 @@
       <translation>Reemplazar el GIF multimedia por formas de Material reactivas al audio</translation>
     </message>
     <message>
+      <location line="+8"/>
+      <source>Ambient color mode</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Ambient glow is unavailable in light mode</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Ambient light glow in media tab</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
       <location line="+9"/>
+      <source>Ambient glow opacity</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+14"/>
       <source>Welcome splash</source>
       <translation>Pantalla de bienvenida</translation>
     </message>
@@ -4413,47 +4756,16 @@
     <name>DesktopAddonsPage</name>
     <message>
       <location filename="../modules/nexus/pages/wallandstyle/DesktopAddonsPage.qml" line="+19"/>
-      <source>Top left</source>
-      <translation>Arriba a la izquierda</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <source>Top center</source>
-      <translation>Arriba al centro</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <source>Top right</source>
-      <translation>Arriba a la derecha</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <location line="+28"/>
-      <source>Center</source>
-      <translation>Centro</translation>
-    </message>
-    <message>
-      <location line="-23"/>
-      <source>Bottom left</source>
-      <translation>Abajo a la izquierda</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <source>Bottom center</source>
-      <translation>Abajo al centro</translation>
-    </message>
-    <message>
-      <location line="+5"/>
-      <source>Bottom right</source>
-      <translation>Abajo a la derecha</translation>
-    </message>
-    <message>
-      <location line="+8"/>
       <source>Left</source>
       <translation>Izquierda</translation>
     </message>
     <message>
-      <location line="+10"/>
+      <location line="+5"/>
+      <source>Center</source>
+      <translation>Centro</translation>
+    </message>
+    <message>
+      <location line="+5"/>
       <source>Right</source>
       <translation>Derecha</translation>
     </message>
@@ -4464,18 +4776,6 @@
     </message>
     <message>
       <location line="+20"/>
-      <location line="+95"/>
-      <source>Desktop clock</source>
-      <translation>Reloj del escritorio</translation>
-    </message>
-    <message>
-      <location line="-86"/>
-      <location line="+150"/>
-      <source>Desktop media shapes</source>
-      <translation>Formas multimedia del escritorio</translation>
-    </message>
-    <message>
-      <location line="-136"/>
       <source>Auto-hide media shapes</source>
       <translation>Ocultar automáticamente las formas multimedia</translation>
     </message>
@@ -4486,12 +4786,6 @@
     </message>
     <message>
       <location line="+9"/>
-      <location line="+164"/>
-      <source>Desktop lyrics</source>
-      <translation>Lyrics de Multimedia (Mostrar letras en el escritorio)</translation>
-    </message>
-    <message>
-      <location line="-150"/>
       <source>Auto-hide lyrics</source>
       <translation>Ocultar automáticamente las letras</translation>
     </message>
@@ -4531,44 +4825,28 @@
       <translation>Ocultar también en todos los demás monitores si una ventana lo desactiva</translation>
     </message>
     <message>
-      <location line="+19"/>
-      <location line="+64"/>
-      <location line="+38"/>
-      <source>Scale</source>
-      <translation>Escala</translation>
+      <location line="+9"/>
+      <source>Desktop clock</source>
+      <translation>Reloj del escritorio</translation>
     </message>
     <message>
-      <location line="-91"/>
-      <location line="+65"/>
-      <location line="+37"/>
-      <source>Position</source>
-      <translation>Posición</translation>
-    </message>
-    <message>
-      <location line="-86"/>
-      <location line="+116"/>
-      <source>Horizontal offset</source>
-      <translation>Desplazamiento horizontal</translation>
-    </message>
-    <message>
-      <location line="-107"/>
-      <location line="+116"/>
-      <source>Vertical offset</source>
-      <translation>Desplazamiento vertical</translation>
-    </message>
-    <message>
-      <location line="-106"/>
-      <location line="+116"/>
+      <location line="+11"/>
+      <location line="+33"/>
       <source>Invert colors</source>
       <translation>Invertir colores</translation>
     </message>
     <message>
-      <location line="-33"/>
+      <location line="-25"/>
+      <source>Desktop lyrics</source>
+      <translation>Lyrics de Multimedia (Mostrar letras en el escritorio)</translation>
+    </message>
+    <message>
+      <location line="+10"/>
       <source>Alignment</source>
       <translation>Alineación</translation>
     </message>
     <message>
-      <location line="+41"/>
+      <location line="+23"/>
       <source>Visualiser</source>
       <translation>Visualizador</translation>
     </message>
@@ -4717,7 +4995,7 @@
   <context>
     <name>DesktopIcons</name>
     <message>
-      <location filename="../modules/background/DesktopIcons.qml" line="+579"/>
+      <location filename="../modules/background/DesktopIcons.qml" line="+586"/>
       <location line="+3"/>
       <source>Group</source>
       <translation>Agrupar</translation>
@@ -4741,17 +5019,9 @@
       <translation>Falló la operación de archivo</translation>
     </message>
     <message>
-      <location line="+441"/>
+      <location line="+493"/>
       <source>%1 could not complete the request</source>
       <translation>%1 no pudo completar la solicitud</translation>
-    </message>
-  </context>
-  <context>
-    <name>DesktopLyrics</name>
-    <message>
-      <location filename="../modules/background/DesktopLyrics.qml" line="+291"/>
-      <source>Loading lyrics...</source>
-      <translation>Cargando letras...</translation>
     </message>
   </context>
   <context>
@@ -4873,8 +5143,8 @@
     </message>
     <message>
       <location line="+1"/>
-      <source>Clock, Shapes, Lyrics, Visualiser</source>
-      <translation>Reloj, formas, letras, visualizador</translation>
+      <source>Visualiser, auto-hide, styling</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+7"/>
@@ -4949,12 +5219,12 @@
       <translation>Filtrar:</translation>
     </message>
     <message>
-      <location line="+15"/>
+      <location line="+18"/>
       <source>Folders</source>
       <translation>Carpetas</translation>
     </message>
     <message>
-      <location line="+35"/>
+      <location line="+7"/>
       <source>Select Folder</source>
       <translation>Seleccionar carpeta</translation>
     </message>
@@ -4964,7 +5234,7 @@
       <translation>Seleccionar</translation>
     </message>
     <message>
-      <location line="+24"/>
+      <location line="+9"/>
       <source>Cancel</source>
       <translation>Cancelar</translation>
     </message>
@@ -5475,7 +5745,7 @@ Ahora salir a tocar el pasto</translation>
   <context>
     <name>FileDialog</name>
     <message>
-      <location filename="../components/filedialog/FileDialog.qml" line="+13"/>
+      <location filename="../components/filedialog/FileDialog.qml" line="+14"/>
       <source>All files</source>
       <translation>Todos los archivos</translation>
     </message>
@@ -5782,7 +6052,7 @@ Ahora salir a tocar el pasto</translation>
   <context>
     <name>HeroCard</name>
     <message>
-      <location filename="../modules/dashboard/performance/HeroCard.qml" line="+157"/>
+      <location filename="../modules/dashboard/performance/HeroCard.qml" line="+164"/>
       <source>Usage</source>
       <translation>Uso</translation>
     </message>
@@ -6147,7 +6417,7 @@ Ahora salir a tocar el pasto</translation>
       <translation>Distribuciones del teclado</translation>
     </message>
     <message>
-      <location line="+64"/>
+      <location line="+62"/>
       <source>XKB supports only 4 layouts at a time</source>
       <translation>XKB admite solo 4 disposiciones a la vez</translation>
     </message>
@@ -6166,9 +6436,22 @@ Ahora salir a tocar el pasto</translation>
     </message>
   </context>
   <context>
+    <name>KeepAwakeWidget</name>
+    <message>
+      <location filename="../modules/bar/components/KeepAwakeWidget.qml" line="+109"/>
+      <source>Active since %1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Inactive</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>KeyCaptureDialog</name>
     <message>
-      <location filename="../modules/nexus/common/KeyCaptureDialog.qml" line="+156"/>
+      <location filename="../modules/nexus/common/KeyCaptureDialog.qml" line="+153"/>
       <source>Record Keybind</source>
       <translation>Registrar atajo de teclado</translation>
     </message>
@@ -7461,17 +7744,18 @@ Ahora salir a tocar el pasto</translation>
     <name>Media</name>
     <message>
       <location filename="../modules/bar/components/Media.qml" line="+22"/>
-      <location filename="../modules/dashboard/Media.qml" line="+117"/>
+      <location filename="../modules/dashboard/Media.qml" line="+129"/>
       <source>Nothing playing</source>
       <translation>No hay nada reproduciéndose</translation>
     </message>
     <message>
-      <location filename="../modules/dashboard/dash/Media.qml" line="+101"/>
+      <location filename="../modules/bar/popouts/Media.qml" line="+69"/>
+      <location filename="../modules/dashboard/dash/Media.qml" line="+108"/>
       <source>No media</source>
       <translation>Sin contenido</translation>
     </message>
     <message>
-      <location line="+0"/>
+      <location filename="../modules/dashboard/dash/Media.qml" line="+0"/>
       <source>Unknown title</source>
       <translation>Título desconocido</translation>
     </message>
@@ -7596,7 +7880,7 @@ Ahora salir a tocar el pasto</translation>
       <translation>%1 perfiles disponibles</translation>
     </message>
     <message>
-      <location line="+133"/>
+      <location line="+130"/>
       <source>No VPN profiles found</source>
       <translation>No se encontraron perfiles VPN</translation>
     </message>
@@ -7624,7 +7908,7 @@ Ahora salir a tocar el pasto</translation>
   <context>
     <name>NetworkCard</name>
     <message>
-      <location filename="../modules/dashboard/performance/NetworkCard.qml" line="+40"/>
+      <location filename="../modules/dashboard/performance/NetworkCard.qml" line="+42"/>
       <source>Network</source>
       <translation>Red</translation>
     </message>
@@ -7976,6 +8260,126 @@ Ahora salir a tocar el pasto</translation>
     </message>
   </context>
   <context>
+    <name>Notes</name>
+    <message>
+      <location filename="../modules/bar/popouts/Notes.qml" line="+37"/>
+      <location line="+228"/>
+      <source>Untitled</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-111"/>
+      <source>Notes</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+161"/>
+      <source>No additional text</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+37"/>
+      <source>No notes yet. Tap + to add one.</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+72"/>
+      <source>Title</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+47"/>
+      <source>Start writing...</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+115"/>
+      <source>List item</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
+      <source>Add item</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+22"/>
+      <source>Pause</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Play</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+7"/>
+      <source>Stop</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Record</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+13"/>
+      <location line="+51"/>
+      <source>Upload</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="-42"/>
+      <source>No audio yet</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+51"/>
+      <source>Paste image URL…</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+20"/>
+      <source>No image yet</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Add a caption…</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+9"/>
+      <source>Select audio file</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Audio files</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Select image</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Image files</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+17"/>
+      <source>Edited %1</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+28"/>
+      <source>Select a note</source>
+      <translation type="unfinished"/>
+    </message>
+  </context>
+  <context>
     <name>NotesTab</name>
     <message>
       <location filename="../modules/dashboard/NotesTab.qml" line="+32"/>
@@ -8009,12 +8413,12 @@ Ahora salir a tocar el pasto</translation>
       <translation>Empezar a escribir...</translation>
     </message>
     <message>
-      <location line="+81"/>
+      <location line="+94"/>
       <source>List item</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+19"/>
+      <location line="+10"/>
       <source>Add item</source>
       <translation type="unfinished"/>
     </message>
@@ -8090,7 +8494,7 @@ Ahora salir a tocar el pasto</translation>
       <translation>Editada %1</translation>
     </message>
     <message>
-      <location line="+42"/>
+      <location line="+46"/>
       <source>Select a note or create one</source>
       <translation>Elegí una nota o creá una</translation>
     </message>
@@ -8107,7 +8511,7 @@ Ahora salir a tocar el pasto</translation>
     <name>NotifData</name>
     <message>
       <location filename="../services/NotifData.qml" line="+19"/>
-      <location line="+159"/>
+      <location line="+196"/>
       <source>now</source>
       <translation>ahora</translation>
     </message>
@@ -8298,6 +8702,16 @@ Ahora salir a tocar el pasto</translation>
     </message>
     <message>
       <location line="+7"/>
+      <source>Do not disturb while sharing</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Mute notifications while the screen is being shared or recorded</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+10"/>
       <source>Default timeout</source>
       <translation>Tiempo de espera predeterminado</translation>
     </message>
@@ -8637,7 +9051,7 @@ Ahora salir a tocar el pasto</translation>
   <context>
     <name>OverviewPanel</name>
     <message>
-      <location filename="../modules/nexus/pages/panels/OverviewPanel.qml" line="+18"/>
+      <location filename="../modules/nexus/pages/panels/OverviewPanel.qml" line="+19"/>
       <source>KDE Grid</source>
       <translation>Cuadrícula de KDE</translation>
     </message>
@@ -8699,12 +9113,12 @@ Ahora salir a tocar el pasto</translation>
     </message>
     <message>
       <location line="+5"/>
-      <location line="+141"/>
+      <location line="+160"/>
       <source>Back In</source>
       <translation>Retroceso de entrada</translation>
     </message>
     <message>
-      <location line="-136"/>
+      <location line="-155"/>
       <source>Back Out</source>
       <translation>Retroceso de salida</translation>
     </message>
@@ -8809,7 +9223,7 @@ Ahora salir a tocar el pasto</translation>
       <translation>No desenfocar el fondo de pantalla al abrir la vista general</translation>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+6"/>
       <source>Enable overview blur</source>
       <translation>Activar desenfoque de la vista general</translation>
     </message>
@@ -8820,6 +9234,26 @@ Ahora salir a tocar el pasto</translation>
     </message>
     <message>
       <location line="+6"/>
+      <source>Ambient color mode</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Ambient glow is unavailable in light mode</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+0"/>
+      <source>Ambient light glow in window info panel</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+8"/>
+      <source>Ambient glow opacity</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+11"/>
       <source>Animations</source>
       <translation>Animaciones</translation>
     </message>
@@ -8877,7 +9311,7 @@ Ahora salir a tocar el pasto</translation>
   <context>
     <name>PageCompRegistry</name>
     <message>
-      <location filename="../modules/nexus/PageCompRegistry.qml" line="+334"/>
+      <location filename="../modules/nexus/PageCompRegistry.qml" line="+346"/>
       <source>Page under construction</source>
       <translation>Página en construcción</translation>
     </message>
@@ -9136,6 +9570,27 @@ Ahora salir a tocar el pasto</translation>
     </message>
     <message>
       <location line="+1"/>
+      <source>Weather</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <location line="+7"/>
+      <source>Performance</source>
+      <translation>Rendimiento</translation>
+    </message>
+    <message>
+      <location line="-6"/>
+      <source>Screen Capture</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Keep Awake</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Per-element scaling offsets</source>
       <translation>Ajustes de escala por elemento</translation>
     </message>
@@ -9155,12 +9610,7 @@ Ahora salir a tocar el pasto</translation>
       <translation>Escala de vista previa</translation>
     </message>
     <message>
-      <location line="+1"/>
-      <source>Performance</source>
-      <translation>Rendimiento</translation>
-    </message>
-    <message>
-      <location line="+1"/>
+      <location line="+2"/>
       <source>Dashboard clock seconds</source>
       <translation>Segundos del reloj del panel</translation>
     </message>
@@ -9700,7 +10150,7 @@ Ahora salir a tocar el pasto</translation>
   <context>
     <name>Performance</name>
     <message>
-      <location filename="../modules/dashboard/Performance.qml" line="+36"/>
+      <location filename="../modules/dashboard/Performance.qml" line="+40"/>
       <source>No widgets enabled</source>
       <translation>No hay widgets activados</translation>
     </message>
@@ -9710,12 +10160,12 @@ Ahora salir a tocar el pasto</translation>
       <translation>Activa widgets en la configuración del panel</translation>
     </message>
     <message>
-      <location line="+32"/>
+      <location line="+33"/>
       <source>CPU</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+19"/>
+      <location line="+20"/>
       <source>GPU</source>
       <translation type="unfinished"/>
     </message>
@@ -9723,7 +10173,7 @@ Ahora salir a tocar el pasto</translation>
   <context>
     <name>Players</name>
     <message>
-      <location filename="../services/Players.qml" line="+72"/>
+      <location filename="../services/Players.qml" line="+252"/>
       <source>Now Playing</source>
       <translation>Reproduciendo ahora</translation>
     </message>
@@ -9733,7 +10183,7 @@ Ahora salir a tocar el pasto</translation>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+33"/>
+      <location line="+37"/>
       <source>Toggle media playback</source>
       <translation>Reproducir o pausar contenido multimedia</translation>
     </message>
@@ -9911,7 +10361,7 @@ Ahora salir a tocar el pasto</translation>
   <context>
     <name>Preview</name>
     <message>
-      <location filename="../modules/windowinfo/Preview.qml" line="+85"/>
+      <location filename="../modules/windowinfo/Preview.qml" line="+86"/>
       <source>No active client</source>
       <translation>No hay ningún cliente activo</translation>
     </message>
@@ -10272,6 +10722,21 @@ PIN: %1</source>
     </message>
     <message>
       <location line="+1"/>
+      <source>Launcher</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Overview</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Dashboard</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Wallpaper</source>
       <translation>Fondo de pantalla</translation>
     </message>
@@ -10299,6 +10764,11 @@ PIN: %1</source>
       <location line="+1"/>
       <source>Pause Wallpaper</source>
       <translation>Pausar fondo de pantalla</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Audio Visualiser</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+1"/>
@@ -10331,7 +10801,7 @@ PIN: %1</source>
       <translation>Reordenar los botones con los tiradores</translation>
     </message>
     <message>
-      <location line="+8"/>
+      <location line="+16"/>
       <source>Toggles per page</source>
       <translation>Botones por página</translation>
     </message>
@@ -10341,7 +10811,7 @@ PIN: %1</source>
       <translation>Entradas que se muestran en cada página del cajón</translation>
     </message>
     <message>
-      <location line="+51"/>
+      <location line="+52"/>
       <source>Connectivity</source>
       <translation>Conectividad</translation>
     </message>
@@ -10423,7 +10893,7 @@ PIN: %1</source>
   <context>
     <name>RegionSelection</name>
     <message>
-      <location filename="../modules/screenshot/regionSelector/RegionSelection.qml" line="+544"/>
+      <location filename="../modules/screenshot/regionSelector/RegionSelection.qml" line="+548"/>
       <source>Full Screen Screenshot</source>
       <translation>Captura de pantalla completa</translation>
     </message>
@@ -11691,8 +12161,8 @@ PIN: %1</source>
     <name>TaskbarElements</name>
     <message>
       <location filename="../modules/nexus/pages/panels/taskbar/TaskbarElements.qml" line="+12"/>
-      <source>Taskbar Elements</source>
-      <translation>Elementos de la barra de tareas</translation>
+      <source>Elements &amp; Modules</source>
+      <translation>Elementos y módulos</translation>
     </message>
     <message>
       <location line="+11"/>
@@ -11778,6 +12248,26 @@ PIN: %1</source>
       <location line="+1"/>
       <source>Media widget, visualiser, volume</source>
       <translation>Widget de multimedia, visualizador y volumen</translation>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Weather</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Widget units</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Performance</source>
+      <translation>Rendimiento</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Widget pill</source>
+      <translation>Píldora del widget</translation>
     </message>
     <message>
       <location line="+7"/>
@@ -12202,7 +12692,7 @@ PIN: %1</source>
   <context>
     <name>Toggles</name>
     <message>
-      <location filename="../modules/utilities/cards/Toggles.qml" line="+283"/>
+      <location filename="../modules/utilities/cards/Toggles.qml" line="+287"/>
       <source>Quick Toggles</source>
       <translation>Atajos rápidos</translation>
     </message>
@@ -12239,7 +12729,7 @@ PIN: %1</source>
   <context>
     <name>UninstallDialog</name>
     <message>
-      <location filename="../modules/nexus/common/UninstallDialog.qml" line="+75"/>
+      <location filename="../modules/nexus/common/UninstallDialog.qml" line="+71"/>
       <source>Uninstall Caelestia?</source>
       <translation>¿Desinstalar Caelestia?</translation>
     </message>
@@ -12588,7 +13078,7 @@ PIN: %1</source>
   <context>
     <name>Updates</name>
     <message>
-      <location filename="../modules/bar/popouts/Updates.qml" line="+32"/>
+      <location filename="../modules/bar/popouts/Updates.qml" line="+33"/>
       <source>Checking for updates…</source>
       <translation>Buscando actualizaciones…</translation>
     </message>
@@ -12618,7 +13108,7 @@ PIN: %1</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+70"/>
+      <location line="+64"/>
       <location line="+78"/>
       <source>Checking…</source>
       <translation>Comprobando…</translation>
@@ -12657,7 +13147,7 @@ PIN: %1</source>
   <context>
     <name>UpdatesPage</name>
     <message>
-      <location filename="../modules/nexus/pages/UpdatesPage.qml" line="+138"/>
+      <location filename="../modules/nexus/pages/UpdatesPage.qml" line="+141"/>
       <source>Updates</source>
       <translation>Actualizaciones</translation>
     </message>
@@ -12777,7 +13267,7 @@ PIN: %1</source>
       <translation>Mostrar un icono de notificación en la barra de tareas cuando haya actualizaciones disponibles</translation>
     </message>
     <message>
-      <location line="+39"/>
+      <location line="+8"/>
       <source>Open Backup Folder</source>
       <translation>Abrir carpeta de copias de seguridad</translation>
     </message>
@@ -12984,7 +13474,7 @@ PIN: %1</source>
       <translation>Mostrar la tarjeta Mantener despierto</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Screen Capture</source>
       <translation>Captura de pantalla</translation>
     </message>
@@ -12994,7 +13484,7 @@ PIN: %1</source>
       <translation>Mostrar la tarjeta de captura de pantalla</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>GIF Recorder</source>
       <translation>Grabador de GIF</translation>
     </message>
@@ -13004,7 +13494,7 @@ PIN: %1</source>
       <translation>Mostrar la opción Grabar GIF en el menú del grabador</translation>
     </message>
     <message>
-      <location line="+6"/>
+      <location line="+7"/>
       <source>Quick Share</source>
       <translation type="unfinished"/>
     </message>
@@ -13014,7 +13504,7 @@ PIN: %1</source>
       <translation type="unfinished"/>
     </message>
     <message>
-      <location line="+7"/>
+      <location line="+8"/>
       <source>Quick Toggles</source>
       <translation>Atajos rápidos</translation>
     </message>
@@ -13258,7 +13748,7 @@ PIN: %1</source>
       <translation>Cargar más</translation>
     </message>
     <message>
-      <location line="+138"/>
+      <location line="+142"/>
       <source>Downloading...</source>
       <translation>Descargando...</translation>
     </message>
@@ -13543,6 +14033,37 @@ PIN: %1</source>
   <context>
     <name>Weather</name>
     <message>
+      <location filename="../modules/bar/popouts/Weather.qml" line="+59"/>
+      <source>H:%1 L:%2</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Humidity</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Feels like</source>
+      <comment>apparent temperature</comment>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+6"/>
+      <source>Wind</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>%1 km/h</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+11"/>
+      <source>Hourly forecast</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
       <location filename="../services/Weather.qml" line="+127"/>
       <source>Couldn&apos;t parse location results. Check your connection and try again.</source>
       <translation>No se pudieron interpretar los resultados de ubicación. Comprueba tu conexión e inténtalo de nuevo.</translation>
@@ -13564,6 +14085,15 @@ PIN: %1</source>
       <location line="+14"/>
       <source>High %1 • Low %2</source>
       <translation>Máx %1 • Mín %2</translation>
+    </message>
+  </context>
+  <context>
+    <name>WeatherCards</name>
+    <message>
+      <location filename="../components/widgets/WeatherCards.qml" line="+253"/>
+      <source>Now</source>
+      <comment>hourly forecast, current hour</comment>
+      <translation type="unfinished"/>
     </message>
   </context>
   <context>
@@ -13679,8 +14209,23 @@ PIN: %1</source>
     </message>
     <message>
       <location line="+1"/>
+      <source>Desktop Clock</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
       <source>Media</source>
       <translation>Multimedia</translation>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Media Shapes</source>
+      <translation type="unfinished"/>
+    </message>
+    <message>
+      <location line="+1"/>
+      <source>Desktop Lyrics</source>
+      <translation type="unfinished"/>
     </message>
     <message>
       <location line="+1"/>
