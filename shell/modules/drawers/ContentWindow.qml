@@ -1002,6 +1002,12 @@ StyledWindow {
                             y: band.horizontal ? (band.edge === "top" ? 0 : root.height - band.hiddenThickness) : band.modelData.y
                             width: band.horizontal ? band.modelData.width : band.hiddenThickness
                             height: band.horizontal ? band.hiddenThickness : band.modelData.height
+
+                            // The rows fade with the slide instead of vanishing
+                            // in one step the moment the band reaches the edge,
+                            // and at rest nothing of them is left drawn under
+                            // the frame.
+                            opacity: 0
                         }
                     }
                     transitions: [
@@ -1019,6 +1025,11 @@ StyledWindow {
                                 property: band.horizontal ? "y" : "x"
                                 type: Anim.Emphasized
                             }
+                            Anim {
+                                target: band
+                                property: "opacity"
+                                type: Anim.Emphasized
+                            }
                         },
                         Transition {
                             from: "hidden"
@@ -1032,6 +1043,11 @@ StyledWindow {
                             Anim {
                                 target: band
                                 property: band.horizontal ? "y" : "x"
+                                type: Anim.DefaultSpatial
+                            }
+                            Anim {
+                                target: band
+                                property: "opacity"
                                 type: Anim.DefaultSpatial
                             }
                         }

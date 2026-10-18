@@ -77,10 +77,11 @@ test_panel_bands_slide_through_the_frame_edge() {
     assert_contains "$CONTENT_SRC" 'from: ""' "the hidden state must be animated out of"
     assert_contains "$CONTENT_SRC" 'to: "hidden"' "hiding must be a transition of its own"
     assert_contains "$CONTENT_SRC" 'from: "hidden"' "coming back must be a transition of its own"
-    assert_eq 2 "$(printf '%s\n' "$CONTENT_SRC" | grep -c 'type: Anim.Emphasized')" "hiding must be emphasized"
+    assert_eq 3 "$(printf '%s\n' "$CONTENT_SRC" | grep -c 'type: Anim.Emphasized')" "hiding must be emphasized"
     local showing
     showing=$(awk '/from: "hidden"/,/^                    \]/' "$DRAWERS/ContentWindow.qml")
-    assert_eq 2 "$(printf '%s\n' "$showing" | grep -c 'Anim.DefaultSpatial')" "coming back must be a spatial default"
+    assert_eq 3 "$(printf '%s\n' "$showing" | grep -c 'Anim.DefaultSpatial')" "coming back must be a spatial default"
+    assert_contains "$CONTENT_SRC" 'property: "opacity"' "the rows must fade while the band slides"
 }
 
 test_only_full_edge_panels_thicken_the_frame() {
