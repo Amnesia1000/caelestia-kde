@@ -494,8 +494,8 @@ StyledWindow {
             delegate: BlobRect {
                 required property var modelData
 
-                group: root.panelsVisible ? blobGroup : null
-                visible: root.panelsVisible
+                group: root.panelsVisible && !modelData.islandAway ? blobGroup : null
+                visible: root.panelsVisible && !modelData.islandAway
                 x: modelData.x
                 y: modelData.y
                 implicitWidth: modelData.width
@@ -908,6 +908,14 @@ StyledWindow {
                     // like the bar does when it is not persistent.
                     readonly property real hiddenThickness: Config.border.thickness
                     readonly property real thickness: band.horizontal ? band.height : band.width
+                    // A band that settled at its edge leaves the plain border
+                    // there, which the frame already draws in the group's own
+                    // colour. Keeping its island would not show it - it sits
+                    // inside the border - but the group's smooth union would
+                    // bulge the border inward around it, which showed up as a
+                    // sliver of the panel sticking out of the frame. It stays
+                    // in while the band slides, so the movement is unchanged.
+                    readonly property bool islandAway: !band.revealed && band.thickness <= band.hiddenThickness + 0.5
                     readonly property real triggerThickness: Math.max(Config.border.minThickness, band.thickness)
                     // A panel takes its space away from the windows while it is
                     // on screen, or held open by a drag, but not while it only
