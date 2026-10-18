@@ -71,7 +71,7 @@ QtObject {
             "title": qsTr("Shimeji Cat update"),
             "settingsPage": "plugins",
             "settingsSubPage": 1,
-            "description": qsTr("Multiple Shimeji Cats can now be summoned at once. Also a fix regarding the cat hiding when clicking desktop has been pushed.")
+            "description": qsTr("Multiple Shimeji Cats can now be summoned at once. Also a fix regarding the cat hiding when clicking desktop has been pushed. Update from plugin store to access new features!")
         }
     ]
 
