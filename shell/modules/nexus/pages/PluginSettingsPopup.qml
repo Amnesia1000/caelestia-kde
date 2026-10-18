@@ -33,12 +33,6 @@ Popup {
     modal: true
     dim: true
 
-    Settings {
-        id: pSettings
-
-        category: "Plugin_" + root.pluginId
-    }
-
     background: Rectangle {
         color: Colours.palette.m3surface
         radius: Tokens.rounding.large
@@ -48,6 +42,12 @@ Popup {
 
     contentItem: ColumnLayout {
         spacing: Tokens.spacing.large
+
+        Settings {
+            id: pSettings
+
+            category: "Plugin_" + root.pluginId
+        }
 
         StyledText {
             text: root.pluginName + " " + qsTr("Settings")
@@ -81,10 +81,9 @@ Popup {
                             model: delegateRow.modelData.options
                             delegate: TextButton {
                                 required property string modelData
+                                property string currentVal: root.visible ? pSettings.value(delegateRow.modelData.id, delegateRow.modelData.default) : ""
 
                                 text: modelData
-
-                                property string currentVal: root.visible ? pSettings.value(delegateRow.modelData.id, delegateRow.modelData.default) : ""
                                 enabled: currentVal !== modelData
                                 onClicked: {
                                     pSettings.setValue(delegateRow.modelData.id, modelData);
