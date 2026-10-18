@@ -60,6 +60,11 @@ test_the_popup_reads_the_schema_from_the_loader() {
 }
 
 test_the_schema_lookup_finds_a_plugin_by_id_or_name() {
+    if ! command -v node >/dev/null 2>&1; then
+        skip_test "node is not available"
+        return 0
+    fi
+
     local body result
     body="$(extract_settings_schema_for)" || {
         fail "the schema lookup could not be read out of the loader"
