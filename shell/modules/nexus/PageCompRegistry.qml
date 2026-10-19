@@ -152,6 +152,9 @@ QtObject {
                 Component {
                     BarKeepAwake {}
                 }
+                Component {
+                    ExtraBarsPanel {}
+                }
             }
         },
         Component {

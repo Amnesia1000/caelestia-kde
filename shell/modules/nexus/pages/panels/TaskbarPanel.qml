@@ -248,6 +248,19 @@ PageBase {
         }
 
         SectionHeader {
+            text: qsTr("Extra bars")
+        }
+
+        NavRow {
+            first: true
+            last: true
+            icon: "view_week"
+            label: qsTr("Extra bars")
+            status: GlobalConfig.bar.panels.count === 0 ? qsTr("Add bars on other edges, or more than one per edge") : qsTr("%1 configured").arg(GlobalConfig.bar.panels.count)
+            onClicked: root.nState.openSubPage(24)
+        }
+
+        SectionHeader {
             text: qsTr("Scroll actions")
         }
 
