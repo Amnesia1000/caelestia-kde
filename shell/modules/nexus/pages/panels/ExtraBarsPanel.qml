@@ -17,32 +17,12 @@ PageBase {
     readonly property bool hasSelection: root.selectedIndex >= 0 && root.selectedIndex < GlobalConfig.bar.panels.count
     readonly property var selectedPanel: root.hasSelection ? GlobalConfig.bar.panels.at(root.selectedIndex) : null
 
-    readonly property list<MenuItem> alignItems: [
-        MenuItem {
-            value: "start"
-            text: qsTr("Start")
-        },
-        MenuItem {
-            value: "center"
-            text: qsTr("Center")
-        },
-        MenuItem {
-            value: "end"
-            text: qsTr("End")
-        }
-    ]
-    readonly property MenuItem allScreensItem: MenuItem {
-        value: ""
-        text: qsTr("All screens")
-    }
+    readonly property var alignItems: root.buildAlignItems()
     readonly property var positionItems: root.edgeItems(root.selectedPanel?.position ?? "")
     readonly property var addableEdges: root.edgeDialogItems()
     readonly property var screenItems: root.buildScreenItems()
 
-    readonly property Component edgeItemComp: Component {
-        MenuItem {}
-    }
-    readonly property Component screenItemComp: Component {
+    readonly property Component menuItemComp: Component {
         MenuItem {}
     }
 
@@ -61,10 +41,30 @@ PageBase {
     property int selectedIndex: 0
     property real lengthDraft: -1
 
-    title: qsTr("Extra bars")
-    isSubPage: true
+    function buildAlignItems(): var {
+        const values = ["start", "center", "end"];
+        const items = [];
+        for (let i = 0; i < values.length; ++i) {
+            const value = values[i];
+            items.push(root.menuItemComp.createObject(root, {
+                value: value,
+                text: root.alignLabel(value)
+            }));
+        }
 
-    onSelectedIndexChanged: root.lengthDraft = -1
+        return items;
+    }
+
+    function alignLabel(align: string): string {
+        switch (align) {
+        case "start":
+            return qsTr("Start");
+        case "end":
+            return qsTr("End");
+        }
+
+        return qsTr("Center");
+    }
 
     function edgeLabel(edge: string): string {
         switch (edge) {
@@ -108,7 +108,7 @@ PageBase {
         const edges = root.freeEdges(keep);
         const items = [];
         for (let i = 0; i < edges.length; ++i) {
-            items.push(root.edgeItemComp.createObject(root, {
+            items.push(root.menuItemComp.createObject(root, {
                 value: edges[i],
                 text: root.edgeLabel(edges[i])
             }));
@@ -133,10 +133,13 @@ PageBase {
     }
 
     function buildScreenItems(): var {
-        const items = [root.allScreensItem];
+        const items = [root.menuItemComp.createObject(root, {
+            value: "",
+            text: qsTr("All screens")
+        })];
         const screens = Quickshell.screens;
         for (let i = 0; i < screens.length; ++i) {
-            items.push(root.screenItemComp.createObject(root, {
+            items.push(root.menuItemComp.createObject(root, {
                 value: screens[i].name,
                 text: screens[i].name
             }));
@@ -181,6 +184,11 @@ PageBase {
         root.lengthDraft = value;
         root.lengthTimer.restart();
     }
+
+    title: qsTr("Extra bars")
+    isSubPage: true
+
+    onSelectedIndexChanged: root.lengthDraft = -1
 
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
