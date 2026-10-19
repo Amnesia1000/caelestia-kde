@@ -26,6 +26,9 @@ Singleton {
     property bool autoArrange: false
     // Clip full-colour icons to a rounded square.
     property bool roundIcons: true
+    // Draw an outline around every widget, so that one that is empty (or hidden
+    // by its own condition) can still be located. Off by default.
+    property bool widgetOutlines: false
     // "" keeps the manual order; otherwise name, type, modified or size.
     property string sortKey: ""
     property bool defaultsSeeded: false
@@ -156,6 +159,13 @@ Singleton {
         scheduleSave();
     }
 
+    function setWidgetOutlines(on: bool): void {
+        if (widgetOutlines === on)
+            return;
+        widgetOutlines = on;
+        scheduleSave();
+    }
+
     function setSortKey(key: string): void {
         if (sortKey === key)
             return;
@@ -220,6 +230,7 @@ Singleton {
                 iconSize = prefs.iconSize;
             autoArrange = prefs.autoArrange === true;
             roundIcons = prefs.roundIcons !== false;
+            widgetOutlines = prefs.widgetOutlines === true;
             sortKey = typeof prefs.sortKey === "string" ? prefs.sortKey : "";
             defaultsSeeded = prefs.defaultsSeeded === true;
         }
@@ -305,7 +316,7 @@ Singleton {
             });
         return JSON.stringify({
             version: 2,
-            prefs: { iconSize, autoArrange, sortKey, roundIcons, defaultsSeeded },
+            prefs: { iconSize, autoArrange, sortKey, roundIcons, widgetOutlines, defaultsSeeded },
             items,
             groups: groupList,
             widgets: widgetList

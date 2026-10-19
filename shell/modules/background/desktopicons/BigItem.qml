@@ -29,9 +29,10 @@ Item {
     readonly property bool frameless: !isGroup && (info.frameless === true || config.frameless === true)
     // Locked widgets cannot be dragged or resized from the desktop.
     readonly property bool locked: !isGroup && widget?.locked === true
-    // While desktop icons are shown, every widget keeps its outline so that one
-    // that is empty (or hidden by its own condition) can still be located.
-    readonly property bool outlineAlways: !isGroup && controller.iconsEnabled === true
+    // Keeps the outline on every widget while the option is on, so that one that
+    // is empty (or hidden by its own condition) can still be located. It does not
+    // follow the desktop icons toggle: widgets stay on the desktop without them.
+    readonly property bool outlineAlways: !isGroup && DesktopLayout.widgetOutlines
 
     property bool selected: false
     property bool focusVisible: false
@@ -210,8 +211,8 @@ Item {
         }
     }
 
-    // Outline for every widget while the desktop icons are shown: locates
-    // widgets that are empty or hidden by their own condition.
+    // Outline for every widget while the outlines option is on: locates widgets
+    // that are empty or hidden by their own condition.
     StyledRect {
         id: outline
 
