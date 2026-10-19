@@ -20,7 +20,7 @@ Singleton {
     // Group id -> { name, members: [file name, ...], size: { w, h } }. A size
     // above 1x1 shows the group as a large folder.
     property var groups: ({})
-    // Widget id -> { type, size: { w, h }, config: {} }.
+    // Widget id -> { type, size: { w, h }, config: {}, locked?: bool }.
     property var widgets: ({})
     property int iconSize: 64
     property bool autoArrange: false
@@ -85,6 +85,39 @@ Singleton {
         const next = Object.assign({}, widgets);
         next[id] = Object.assign({}, w, { config: Object.assign({}, w.config, patch) });
         setWidgets(next);
+    }
+
+    function isWidgetLocked(id: string): bool {
+        return widgets[id]?.locked === true;
+    }
+
+    function setWidgetLocked(id: string, locked: bool): void {
+        const w = widgets[id];
+        if (!w || (w.locked === true) === locked)
+            return;
+        const next = Object.assign({}, widgets);
+        next[id] = Object.assign({}, w, { locked });
+        setWidgets(next);
+    }
+
+    function setAllWidgetsLocked(locked: bool): void {
+        const next = Object.assign({}, widgets);
+        let changed = false;
+        for (const id in next) {
+            if ((next[id].locked === true) === locked)
+                continue;
+            next[id] = Object.assign({}, next[id], { locked });
+            changed = true;
+        }
+        if (changed)
+            setWidgets(next);
+    }
+
+    function anyWidgetUnlocked(): bool {
+        for (const id in widgets)
+            if (widgets[id].locked !== true)
+                return true;
+        return false;
     }
 
     function setPositions(next: var): void {
@@ -176,7 +209,12 @@ Singleton {
                     nextGroups[g.id] = { name: String(g.name ?? ""), members: g.members.filter(m => typeof m === "string"), size: size(g.size) };
             for (const w of data.widgets ?? [])
                 if (w && typeof w.id === "string" && typeof w.type === "string")
-                    nextWidgets[w.id] = { type: w.type, size: size(w.size), config: w.config && typeof w.config === "object" ? w.config : {} };
+                    nextWidgets[w.id] = {
+                        type: w.type,
+                        size: size(w.size),
+                        config: w.config && typeof w.config === "object" ? w.config : {},
+                        locked: w.locked === true
+                    };
             const prefs = data.prefs ?? {};
             if (iconSizes.indexOf(prefs.iconSize) !== -1)
                 iconSize = prefs.iconSize;
@@ -258,7 +296,13 @@ Singleton {
             groupList.push({ id, name: groups[id].name, members: groups[id].members, size: groups[id].size ?? { w: 1, h: 1 } });
         const widgetList = [];
         for (const id in widgets)
-            widgetList.push({ id, type: widgets[id].type, size: widgets[id].size, config: widgets[id].config });
+            widgetList.push({
+                id,
+                type: widgets[id].type,
+                size: widgets[id].size,
+                config: widgets[id].config,
+                locked: widgets[id].locked === true
+            });
         return JSON.stringify({
             version: 2,
             prefs: { iconSize, autoArrange, sortKey, roundIcons, defaultsSeeded },
