@@ -148,12 +148,14 @@ Variants {
         Repeater {
             id: bgWidgetsRepeater
 
-            model: BackgroundWidgetRegistry.widgets
+            model: BackgroundWidgetRegistry.widgetList
 
             Loader {
                 id: bgWidgetLoader
 
                 required property var modelData
+
+                readonly property int revision: BackgroundWidgetRegistry.revision
 
                 anchors.fill: parent
                 z: modelData.z ?? 4
@@ -162,6 +164,14 @@ Variants {
                 onItemChanged: {
                     win.applyWidgetContext(item);
                     win.widgetUpdateTrigger++;
+                }
+                onRevisionChanged: {
+                    // Widgets read their settings once, when they are created: reload the
+                    // component so a change made in Nexus takes effect without a restart.
+                    active = false;
+                    Qt.callLater(() => {
+                        active = true;
+                    });
                 }
             }
         }
