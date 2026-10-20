@@ -29,10 +29,7 @@ ConnectedRect {
     color: root.highlight ? Colours.tPalette.m3surfaceContainerHigh : Colours.tPalette.m3surfaceContainer
 
     Behavior on color {
-        ColorAnimation {
-            duration: Tokens.anim.durations.expressiveFastEffects
-            easing: Tokens.anim.expressiveFastEffects
-        }
+        CAnim {}
     }
 
     RowLayout {
