@@ -40,6 +40,9 @@ Item {
     // Icon size of a dock item. Derived from the configured item size rather than the
     // delegate's laid-out width, which is still 0 while the delegate is being created.
     readonly property real iconSize: Math.round(configuredItemSize * 0.7 / 2) * 2
+    // The launcher tile is drawn as the list header, so it takes a slot of its own:
+    // the container has to ask for room for it and the pointer maths has to skip it.
+    readonly property bool launcherShown: Config.bar.dock.showLauncher
 
     implicitWidth: bar.isHorizontal ? container.width : container.implicitWidth
     implicitHeight: bar.isHorizontal ? container.implicitHeight : container.height
@@ -55,6 +58,32 @@ Item {
 
     ListModel { id: dockModel }
 
+    // Opens the launcher from the dock. The tile keeps the size of an app icon so
+    // the row stays even, and the logo follows the same source as the bar's own.
+    Component {
+        id: launcherTile
+
+        Item {
+            width: container.itemSize
+            height: container.itemSize
+
+            StateLayer {
+                anchors.fill: parent
+                radius: Tokens.rounding.medium
+                onClicked: {
+                    const visibilities = Visibilities.getForActive();
+                    visibilities.launcher = !visibilities.launcher;
+                }
+            }
+
+            OsIcon {
+                anchors.centerIn: parent
+                bar: root.bar
+                iconSize: Math.round(root.configuredItemSize * 0.62)
+            }
+        }
+    }
+
     function publishMinimizeGeometry(): void {
         const win = QsWindow.window;
         if (!win || listView.width <= 0 || listView.height <= 0)
@@ -64,6 +93,7 @@ Item {
         const origin = listView.mapToItem(null, 0, 0);
         const size = Math.round(container.itemSize);
         const step = container.itemSize + root.spacing;
+        const leading = root.launcherShown ? step : 0;
         const span = horizontal ? listView.width : listView.height;
         const scrolled = horizontal ? listView.contentX : listView.contentY;
 
@@ -72,7 +102,7 @@ Item {
             if (tops.length === 0)
                 continue;
 
-            const offset = Math.max(0, Math.min(i * step - scrolled, span - size));
+            const offset = Math.max(0, Math.min(i * step + leading - scrolled, span - size));
 
             let x = Math.round(horizontal ? origin.x + offset : origin.x);
             let y = Math.round(horizontal ? origin.y : origin.y + offset);
@@ -280,10 +310,10 @@ Item {
     StyledRect {
         id: container
 
-        color: dockModel.count > 0 ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
+        color: __itemCount > 0 ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
         radius: Tokens.rounding.full
 
-        property int __itemCount: dockModel.count
+        property int __itemCount: dockModel.count + (root.launcherShown ? 1 : 0)
 
         property real __computedContentWidth: __itemCount > 0 ? __itemCount * itemSize + (__itemCount - 1) * root.spacing : 0
 
@@ -364,7 +394,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.RightButton
-            enabled: dockModel.count > 0
+            enabled: container.__itemCount > 0
 
             onClicked: mouse => {
                 const popouts = root.bar?.popouts;
@@ -437,6 +467,8 @@ Item {
                 moveDisplaced: Transition {
                     Anim { properties: "x,y"; type: Anim.FastSpatial }
                 }
+
+                header: root.launcherShown ? launcherTile : null
 
                 model: DelegateModel {
                     id: visualModel
@@ -806,11 +838,12 @@ Item {
             return;
         }
 
-        const index = Math.floor((adjustedPos + scrolled) / itemWidthWithSpacing);
+        const leading = root.launcherShown ? 1 : 0;
+        const index = Math.floor((adjustedPos + scrolled) / itemWidthWithSpacing) - leading;
 
         if (index >= 0 && index < modelDataArray.length) {
             bar.popouts.currentName = "dockhover";
-            const centerOffset = index * itemWidthWithSpacing + itemSize / 2 - scrolled;
+            const centerOffset = (index + leading) * itemWidthWithSpacing + itemSize / 2 - scrolled;
             if (centerOffset < 0 || centerOffset > visibleSpan) {
                 bar.popouts.hasCurrent = false;
                 return;
