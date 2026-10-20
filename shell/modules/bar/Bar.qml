@@ -117,17 +117,14 @@ Item {
             const mouseMap = mapToItem(tray.expandIcon, isHorizontal ? pos : tray.implicitWidth / 2, isHorizontal ? tray.implicitHeight / 2 : pos);
             const local = isHorizontal ? tray.layout.mapFromItem(null, pos, 0) : tray.layout.mapFromItem(null, 0, pos);
             const trayItem = tray.layout.childAt(isHorizontal ? local.x : tray.layout.width / 2, isHorizontal ? tray.layout.height / 2 : local.y) as TrayItem;
+            const openable = !!trayItem && (!Config.bar.tray.compact || tray.expanded || TrayRegistry.stateOf(trayItem.key) !== "collapsed");
             if (tray.expandIcon.contains(mouseMap)) {
                 popouts.hasCurrent = false;
                 tray.expanded = true;
-            } else if (!Config.bar.tray.compact || tray.expanded || (trayItem?.alwaysVisible ?? false)) {
-                if (trayItem && trayItem.trayIndex >= 0) {
-                    popouts.currentName = `traymenu${trayItem.trayIndex}`;
-                    popouts.currentCenter = isHorizontal ? trayItem.mapToItem(null, trayItem.implicitWidth / 2, 0).x : trayItem.mapToItem(null, 0, trayItem.implicitHeight / 2).y;
-                    popouts.hasCurrent = true;
-                } else {
-                    popouts.hasCurrent = false;
-                }
+            } else if (openable) {
+                popouts.currentName = `traymenu${trayItem.key}`;
+                popouts.currentCenter = isHorizontal ? trayItem.mapToItem(null, trayItem.implicitWidth / 2, 0).x : trayItem.mapToItem(null, 0, trayItem.implicitHeight / 2).y;
+                popouts.hasCurrent = true;
             } else {
                 popouts.hasCurrent = false;
             }

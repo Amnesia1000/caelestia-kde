@@ -258,9 +258,12 @@ Singleton {
         return name[0].toUpperCase();
     }
 
-    function getTrayIcon(id: string, icon: string): string {
+    // `key` is the stable alias the tray registry keys its settings by; `id` is the
+    // notifier id this launch happens to use, kept so subscriptions written before
+    // aliases existed still match.
+    function getTrayIcon(key: string, icon: string, id: string = ""): string {
         for (const sub of GlobalConfig.bar.tray.iconSubs.values) {
-            if (sub.id !== id)
+            if (sub.id !== key && (!id || sub.id !== id))
                 continue;
             if (sub.image)
                 return Qt.resolvedUrl(sub.image);

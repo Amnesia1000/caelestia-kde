@@ -16,8 +16,7 @@ ColumnLayout {
     required property NexusState nState
     property bool isSubPage
     property bool scrollable: true
-
-    property real scrollReserve: 0
+    property bool scrollLocked: false
     readonly property int cappedWidth: Math.min(Tokens.sizes.nexus.maxContentWidth, width)
     readonly property alias flickable: flickable
     property list<Item> headerActions
@@ -72,7 +71,7 @@ ColumnLayout {
     VerticalFadeFlickable {
         id: flickable
 
-        interactive: root.scrollable
+        interactive: root.scrollable && !root.scrollLocked
         Layout.fillWidth: true
         Layout.fillHeight: true
 
@@ -80,7 +79,7 @@ ColumnLayout {
         topMargin: Tokens.padding.large
         bottomMargin: Tokens.padding.extraLarge
 
-        contentHeight: root.scrollable ? ((root.contentChild?.implicitHeight ?? 0) + root.scrollReserve) : height
+        contentHeight: root.scrollable ? (root.contentChild?.implicitHeight ?? 0) : height
         contentItem.children: [root.contentChild]
     }
 }

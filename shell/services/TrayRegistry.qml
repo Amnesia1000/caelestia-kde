@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.SystemTray
 import Caelestia.Config
+import qs.services
 import qs.utils
 
 Singleton {
@@ -18,46 +19,69 @@ Singleton {
     property var remembered: []
     property var procNames: ({})
     property bool loaded: false
+    property string lastSaved: ""
 
-    readonly property var entries: {
+    // Every icon the shell knows about, running or not, in bar order.
+    readonly property var entries: root.applyOrder(root.merged(), entry => entry.alias).map(entry => ({
+                id: entry.id,
+                alias: entry.alias,
+                title: entry.title,
+                icon: entry.liveIcon || entry.icon || root.fallbackIcon(entry),
+                running: entry.running
+            }))
+
+    // The icons the bar draws, in bar order. Hidden icons are in neither list, so
+    // the bar and the tray popout cannot disagree about which icons exist.
+    readonly property var trayItems: root.applyOrder(SystemTray.items.values.filter(item => item.status !== Status.Passive && root.stateOfItem(item) !== "hidden"), item => root.keyOfItem(item))
+
+    readonly property int collapsedCount: root.trayItems.filter(item => root.stateOfItem(item) === "collapsed").length
+
+    // `remembered` with the running items folded in, keyed by alias. Both the bar
+    // and the settings page read this, so they cannot drift apart.
+    function merged(): var {
+        const now = Date.now();
         const known = new Map(root.remembered.map(entry => [entry.alias ?? entry.id, entry]));
         for (const item of SystemTray.items.values) {
             if (item.status === Status.Passive)
                 continue;
             const alias = root.keyOfItem(item);
-            const entry = known.get(alias);
+            const existing = known.get(alias);
             known.set(alias, {
                 id: item.id,
                 alias: alias,
-                title: root.displayName(item.id, item.title, item.icon) || entry?.title || alias,
-                icon: item.icon || root.stableIcon(entry?.icon) || "",
-                running: true
+                title: root.displayName(item.id, item.title, item.icon) || existing?.title || alias,
+                icon: root.stableIcon(item.icon) || existing?.icon || "",
+                liveIcon: item.icon,
+                running: true,
+                lastSeen: now
             });
         }
-        return root.applyOrder([...known.values()].map(entry => ({
-                    id: entry.id,
-                    alias: entry.alias ?? entry.id,
-                    title: entry.title || entry.alias || entry.id,
-                    icon: entry.icon || root.fallbackIcon(entry),
-                    running: entry.running === true
-                })), entry => entry.alias);
+        return [...known.values()].map(entry => ({
+                id: entry.id,
+                alias: entry.alias ?? entry.id,
+                title: entry.title || entry.alias || entry.id,
+                icon: entry.icon ?? "",
+                liveIcon: entry.running ? (entry.liveIcon ?? "") : "",
+                running: entry.running === true,
+                lastSeen: entry.lastSeen ?? 0
+            }));
     }
 
-    // Passive items are hidden by the protocol and by upstream's bar; TrayItem's
-    // trayIndex and the popout names in popouts/Content.qml both come from this
-    // same filter, so it must match the one there exactly.
-    readonly property var trayItems: root.applyOrder(SystemTray.items.values.filter(i => i.status !== Status.Passive && !GlobalConfig.bar.tray.hiddenIcons.includes(root.keyOfItem(i))), i => root.keyOfItem(i))
-
-    readonly property var trayIndexById: root.trayItems.reduce((acc, item, i) => {
-        acc[root.keyOfItem(item)] = i;
-        return acc;
-    }, {})
+    function persisted(entry: var): var {
+        return {
+            id: entry.id,
+            alias: entry.alias,
+            title: entry.title,
+            icon: entry.icon,
+            lastSeen: entry.lastSeen
+        };
+    }
 
     function keyOfItem(item: var): string {
-        return root.keyOfId(item.id, item.title, item.icon);
+        return root.keyOfId(item.id, item.icon);
     }
 
-    function keyOfId(id: string, title: string, icon: string): string {
+    function keyOfId(id: string, icon: string): string {
         for (const entry of root.remembered) {
             if (entry.id === id)
                 return entry.alias ?? id;
@@ -164,13 +188,22 @@ Singleton {
         return "collapsed";
     }
 
+    function stateOfItem(item: var): string {
+        return root.stateOf(root.keyOfItem(item));
+    }
+
     function setState(key: string, state: string): void {
-        GlobalConfig.bar.tray.alwaysVisible = GlobalConfig.bar.tray.alwaysVisible.filter(entry => entry !== key);
-        GlobalConfig.bar.tray.hiddenIcons = GlobalConfig.bar.tray.hiddenIcons.filter(entry => entry !== key);
-        if (state === "visible")
-            GlobalConfig.bar.tray.alwaysVisible = [...GlobalConfig.bar.tray.alwaysVisible, key];
-        else if (state === "hidden")
-            GlobalConfig.bar.tray.hiddenIcons = [...GlobalConfig.bar.tray.hiddenIcons, key];
+        const always = GlobalConfig.bar.tray.alwaysVisible.filter(entry => entry !== key);
+        const hidden = GlobalConfig.bar.tray.hiddenIcons.filter(entry => entry !== key);
+        GlobalConfig.bar.tray.alwaysVisible = state === "visible" ? [...always, key] : always;
+        GlobalConfig.bar.tray.hiddenIcons = state === "hidden" ? [...hidden, key] : hidden;
+    }
+
+    function setOrder(keys: var): void {
+        const current = GlobalConfig.bar.tray.order;
+        if (keys.length === current.length && keys.every((key, i) => key === current[i]))
+            return;
+        GlobalConfig.bar.tray.order = keys;
     }
 
     function forget(alias: string): void {
@@ -205,23 +238,7 @@ Singleton {
         if (!root.loaded)
             return;
 
-        const now = Date.now();
-        const known = new Map(root.remembered.map(entry => [entry.alias ?? entry.id, entry]));
-        for (const item of SystemTray.items.values) {
-            if (item.status === Status.Passive)
-                continue;
-            const alias = root.keyOfItem(item);
-            const existing = known.get(alias);
-            known.set(alias, {
-                id: item.id,
-                alias: alias,
-                title: root.displayName(item.id, item.title, item.icon) || existing?.title || alias,
-                icon: root.stableIcon(item.icon) || existing?.icon || "",
-                lastSeen: now
-            });
-        }
-
-        const next = root.prune([...known.values()]);
+        const next = root.prune(root.merged().map(root.persisted));
         if (root.sameEntries(next, root.remembered)) {
             for (let i = 0; i < next.length; i++)
                 root.remembered[i].lastSeen = next[i].lastSeen;
@@ -232,16 +249,10 @@ Singleton {
         saveTimer.restart();
     }
 
-    function migrateConfig(): void {
-        const tray = GlobalConfig.bar.tray;
-        const byEntry = new Map();
-        for (const entry of root.remembered)
-            if (entry.alias)
-                byEntry.set(entry.id, entry.alias);
-        const rewrite = list => [...new Set(list.map(id => byEntry.get(id) ?? id))].filter(id => !/^\d+-\d+$/.test(id));
-        tray.alwaysVisible = rewrite(tray.alwaysVisible);
-        tray.hiddenIcons = rewrite(tray.hiddenIcons);
-        tray.order = rewrite(tray.order);
+    // Config rewrites belong to ConfigMigrations; the registry only owns the
+    // alias every entry it remembers, including the ones written before aliases.
+    function migrate(): void {
+        ConfigMigrations.migrateTrayIcons(root.remembered);
         let changed = false;
         const next = root.remembered.map(entry => {
             if (entry.alias)
@@ -261,7 +272,19 @@ Singleton {
         }
     }
 
+    function save(): void {
+        const text = JSON.stringify(root.remembered);
+        if (text === root.lastSaved)
+            return;
+        root.lastSaved = text;
+        fileView.setText(text);
+    }
+
     Component.onCompleted: fileView.reload()
+
+    // Process names arrive after the first record, and they are what most aliases
+    // are made of, so fold the corrected aliases in as soon as they land.
+    onProcNamesChanged: root.record()
 
     Connections {
         function onValuesChanged(): void {
@@ -314,17 +337,20 @@ Singleton {
                 if (Array.isArray(data))
                     parsed = data;
             } catch (e) {
-                console.warn("[TrayRegistry] ignoring an unreadable tray icon file:", e);
+                Logger.log("[TrayRegistry] ignoring an unreadable tray icon file:", e);
             }
             root.remembered = root.prune(root.sanitize(parsed));
             root.loaded = true;
-            root.migrateConfig();
+            root.migrate();
             root.record();
         }
 
+        // A missing file is the first run after the upgrade, which is exactly when
+        // the config still holds raw ids that need rewriting.
         onLoadFailed: {
             root.remembered = [];
             root.loaded = true;
+            root.migrate();
             root.record();
         }
     }
@@ -334,6 +360,6 @@ Singleton {
 
         interval: 400
         repeat: false
-        onTriggered: fileView.setText(JSON.stringify(root.remembered))
+        onTriggered: root.save()
     }
 }

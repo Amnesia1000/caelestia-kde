@@ -18,13 +18,7 @@ ConnectedRect {
     property alias fallbackText: splitButton.fallbackText
     property alias fallbackIcon: splitButton.fallbackIcon
     property alias menuOnTop: splitButton.menuOnTop
-    property bool reorderable: false
     property bool highlight: false
-    property real liftY: 0
-
-    signal reorderStart()
-    signal reorderDrag(real sceneY)
-    signal reorderDrop()
 
     signal selected(item: MenuItem)
 
@@ -32,24 +26,12 @@ ConnectedRect {
     implicitHeight: rowLayout.implicitHeight + rowLayout.anchors.margins * 2
     clip: false
     z: (splitButton.expanded || root.highlight) ? 1 : 0
-    transform: Translate {
-        y: root.liftY
-    }
+    color: root.highlight ? Colours.tPalette.m3surfaceContainerHigh : Colours.tPalette.m3surfaceContainer
 
-    StyledRect {
-        anchors.fill: parent
-        topLeftRadius: root.topLeftRadius
-        topRightRadius: root.topRightRadius
-        bottomLeftRadius: root.bottomLeftRadius
-        bottomRightRadius: root.bottomRightRadius
-        color: Colours.tPalette.m3surfaceContainerHigh
-        opacity: root.highlight ? 1 : 0
-        visible: opacity > 0
-
-        Behavior on opacity {
-            Anim {
-                type: Anim.FastEffects
-            }
+    Behavior on color {
+        ColorAnimation {
+            duration: Tokens.anim.durations.expressiveFastEffects
+            easing: Tokens.anim.expressiveFastEffects
         }
     }
 
@@ -61,45 +43,6 @@ ConnectedRect {
         anchors.leftMargin: Tokens.padding.largeIncreased
         anchors.rightMargin: Tokens.padding.largeIncreased
         spacing: Tokens.spacing.medium
-
-        Loader {
-            Layout.alignment: Qt.AlignVCenter
-            active: root.reorderable
-            visible: active
-
-            sourceComponent: Item {
-                implicitWidth: handleIcon.implicitWidth
-                implicitHeight: handleIcon.implicitHeight
-
-                MaterialIcon {
-                    id: handleIcon
-
-                    text: "drag_indicator"
-                    color: Colours.palette.m3onSurfaceVariant
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.OpenHandCursor
-                    preventStealing: true
-                    drag.target: handleGrab
-                    drag.axis: Drag.YAxis
-                    onPressed: root.reorderStart()
-                    onPositionChanged: mouse => {
-                        if (pressed)
-                            root.reorderDrag(mapToItem(null, mouse.x, mouse.y).y);
-                    }
-                    onReleased: root.reorderDrop()
-                    onCanceled: root.reorderDrop()
-                }
-
-                Item {
-                    id: handleGrab
-
-                    visible: false
-                }
-            }
-        }
 
         Loader {
             Layout.alignment: Qt.AlignVCenter

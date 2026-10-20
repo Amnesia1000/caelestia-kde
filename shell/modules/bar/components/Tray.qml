@@ -23,8 +23,7 @@ StyledRect {
     readonly property int barThickness: Math.round(Tokens.sizes.bar.innerWidth * Math.max(0.6, !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0))
 
     readonly property var trayItems: TrayRegistry.trayItems
-    readonly property int collapsedCount: root.trayItems.filter(i => !GlobalConfig.bar.tray.alwaysVisible.includes(TrayRegistry.keyOfItem(i))).length
-    readonly property bool showArrow: Config.bar.tray.compact && root.collapsedCount > 0
+    readonly property bool showArrow: Config.bar.tray.compact && TrayRegistry.collapsedCount > 0
 
     readonly property real nonAnimHeight: {
         if (isHorizontal)
@@ -110,13 +109,9 @@ StyledRect {
             }
 
             TrayItem {
-                required property int index
-
-                trayIndex: index
                 popouts: root.popouts
                 isHorizontal: root.isHorizontal
-                alwaysVisible: GlobalConfig.bar.tray.alwaysVisible.includes(TrayRegistry.keyOfItem(modelData))
-                visible: root.expanded || !Config.bar.tray.compact || alwaysVisible
+                visible: root.expanded || !Config.bar.tray.compact || TrayRegistry.stateOfItem(modelData) !== "collapsed"
             }
         }
     }
