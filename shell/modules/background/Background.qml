@@ -75,7 +75,7 @@ Variants {
         color: (Config.background.wallpaperEnabled && wallpaperHasBeenUp) ? "black" : "transparent"
         surfaceFormat.opaque: false
         mask: {
-            if (Config.background.wallpaperEnabled || BadApplePlayer.shouldPlay)
+            if (Config.background.wallpaperEnabled)
                 return null;
             if (widgetRegions.length > 0)
                 return compositeWidgetMask;
@@ -136,16 +136,6 @@ Variants {
                 wallpaper: wallpaper
                 z: 2
                 visible: true
-            }
-            Loader {
-                id: badApple
-
-                anchors.fill: parent
-                active: BadApplePlayer.shouldPlay
-                z: 2.5
-                sourceComponent: BadAppleOverlay {
-                    screen: win.modelData
-                }
             }
         }
         DesktopIcons {
