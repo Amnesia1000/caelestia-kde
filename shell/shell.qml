@@ -68,6 +68,8 @@ ShellRoot {
 
     Background {}
 
+    EditModeOverlay {}
+
     Drawers {}
 
     IpcHandler {
