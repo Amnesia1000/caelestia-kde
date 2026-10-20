@@ -16,6 +16,7 @@ Singleton {
     readonly property string path: `${Paths.state}/tray_icons.json`
 
     property var remembered: []
+    property var procNames: ({})
     property bool loaded: false
 
     readonly property var entries: {
@@ -28,16 +29,16 @@ Singleton {
             known.set(alias, {
                 id: item.id,
                 alias: alias,
-                title: item.title || entry?.title || item.id,
-                icon: item.icon || entry?.icon || "",
+                title: root.displayName(item.id, item.title, item.icon) || entry?.title || alias,
+                icon: item.icon || root.stableIcon(entry?.icon) || "",
                 running: true
             });
         }
         return root.applyOrder([...known.values()].map(entry => ({
                     id: entry.id,
                     alias: entry.alias ?? entry.id,
-                    title: entry.title || entry.id,
-                    icon: entry.icon || "",
+                    title: entry.title || entry.alias || entry.id,
+                    icon: entry.icon || root.fallbackIcon(entry),
                     running: entry.running === true
                 })), entry => entry.alias);
     }
@@ -60,10 +61,85 @@ Singleton {
         for (const entry of root.remembered) {
             if (entry.id === id)
                 return entry.alias ?? id;
-            if (entry.alias && id !== entry.id && entry.title && title && entry.title === title && entry.icon === icon)
-                return entry.alias;
         }
+        return root.appKeyOf(id, icon);
+    }
+
+    function pidOfId(id: string): string {
+        const match = /^(\d+)-\d+$/.exec(id);
+        return match ? match[1] : "";
+    }
+
+    function isTransientIcon(icon: string): bool {
+        return icon.startsWith("image://qspixmap/");
+    }
+
+    function stableIcon(icon: string): string {
+        return root.isTransientIcon(icon) ? "" : icon;
+    }
+
+    function themeIconName(icon: string): string {
+        if (!icon.startsWith("image://icon/"))
+            return "";
+        const name = icon.slice("image://icon/".length);
+        return name && !name.includes("/") ? name : "";
+    }
+
+    function prettify(name: string): string {
+        return name.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
+    }
+
+    function appKeyOf(id: string, icon: string): string {
+        const pid = root.pidOfId(id);
+        const comm = pid ? root.procNames[pid] : "";
+        if (comm)
+            return `proc:${comm}`;
+        const iconName = root.themeIconName(icon);
+        if (iconName)
+            return `icon:${iconName}`;
         return id;
+    }
+
+    function displayName(id: string, title: string, icon: string): string {
+        const pid = root.pidOfId(id);
+        const comm = pid ? root.procNames[pid] : "";
+        if (title && title !== id && !/^\d+-\d+$/.test(title))
+            return title;
+        if (comm)
+            return root.prettify(comm);
+        const iconName = root.themeIconName(icon);
+        if (iconName)
+            return root.prettify(iconName);
+        return root.prettify(id);
+    }
+
+    function fallbackIcon(entry: var): string {
+        const alias = String(entry.alias ?? "").replace(/^(proc|icon):/, "");
+        const names = [alias, String(entry.title ?? "")].map(name => name.toLowerCase().replace(/[^a-z0-9.+_-]+/g, "-").replace(/^-+|-+$/g, "")).filter(name => name);
+        for (const name of names) {
+            const path = Quickshell.iconPath(name, "");
+            if (path)
+                return path;
+        }
+        return "";
+    }
+
+    function sanitize(list: var): var {
+        return list.map(entry => ({
+                id: entry.id,
+                alias: entry.alias ?? entry.id,
+                title: entry.title ?? "",
+                icon: root.stableIcon(entry.icon ?? ""),
+                lastSeen: entry.lastSeen ?? 0
+            }));
+    }
+
+    function refreshProcNames(): void {
+        const pids = [...new Set([...SystemTray.items.values].map(item => root.pidOfId(item.id)).filter(pid => pid))];
+        if (pids.length === 0)
+            return;
+        proc.command = ["bash", "-c", `for p in ${pids.join(" ")}; do printf '%s %s\\n' "$p" "$(cat /proc/$p/comm 2>/dev/null)"; done`];
+        proc.running = true;
     }
 
     function applyOrder(list: var, key: var): var {
@@ -105,7 +181,12 @@ Singleton {
 
     function prune(list: var): var {
         const now = Date.now();
-        return list.filter(entry => root.stateOf(entry.alias ?? entry.id) !== "collapsed" || now - (entry.lastSeen ?? 0) < root.unseenTtl);
+        return list.filter(entry => {
+            const alias = entry.alias ?? entry.id;
+            if (/^\d+-\d+$/.test(alias))
+                return false;
+            return root.stateOf(alias) !== "collapsed" || now - (entry.lastSeen ?? 0) < root.unseenTtl;
+        });
     }
 
     function sameEntries(a: var, b: var): bool {
@@ -134,8 +215,8 @@ Singleton {
             known.set(alias, {
                 id: item.id,
                 alias: alias,
-                title: item.title || existing?.title || item.id,
-                icon: item.icon || existing?.icon || "",
+                title: root.displayName(item.id, item.title, item.icon) || existing?.title || alias,
+                icon: root.stableIcon(item.icon) || existing?.icon || "",
                 lastSeen: now
             });
         }
@@ -157,7 +238,7 @@ Singleton {
         for (const entry of root.remembered)
             if (entry.alias)
                 byEntry.set(entry.id, entry.alias);
-        const rewrite = list => [...new Set(list.map(id => byEntry.get(id) ?? id))];
+        const rewrite = list => [...new Set(list.map(id => byEntry.get(id) ?? id))].filter(id => !/^\d+-\d+$/.test(id));
         tray.alwaysVisible = rewrite(tray.alwaysVisible);
         tray.hiddenIcons = rewrite(tray.hiddenIcons);
         tray.order = rewrite(tray.order);
@@ -184,10 +265,39 @@ Singleton {
 
     Connections {
         function onValuesChanged(): void {
+            root.refreshProcNames();
             root.record();
         }
 
         target: SystemTray.items
+    }
+
+    Process {
+        id: proc
+
+        command: []
+
+        stdout: StdioCollector {
+            id: procOut
+        }
+
+        onExited: {
+            const next = Object.assign({}, root.procNames);
+            let changed = false;
+            for (const line of procOut.text.trim().split("\n")) {
+                const space = line.indexOf(" ");
+                if (space <= 0)
+                    continue;
+                const pid = line.slice(0, space);
+                const name = line.slice(space + 1).trim();
+                if (name && next[pid] !== name) {
+                    next[pid] = name;
+                    changed = true;
+                }
+            }
+            if (changed)
+                root.procNames = next;
+        }
     }
 
     FileView {
@@ -206,7 +316,7 @@ Singleton {
             } catch (e) {
                 console.warn("[TrayRegistry] ignoring an unreadable tray icon file:", e);
             }
-            root.remembered = root.prune(parsed);
+            root.remembered = root.prune(root.sanitize(parsed));
             root.loaded = true;
             root.migrateConfig();
             root.record();
