@@ -24,14 +24,16 @@ Item {
     readonly property Item current: (content.item as Content)?.current ?? null
     readonly property bool isDetached: detachedMode.length > 0
     readonly property bool sidebarOpen: popoutState.sidebarOpen
+    // Right-click menus are transient. The type is keyed on currentName so it
+    // survives the close animation; isContextPopout also requires one to be open.
+    readonly property bool currentIsContext: (content.item as Content)?.currentIsContext ?? false
+    readonly property bool isContextPopout: hasCurrent && currentIsContext
     // Popouts excluded from pushing the notification column / sidebar out of the
     // way (Panels.qml) and from visually merging with the sidebar (ContentWindow.qml):
     // hover previews and context menus are transient, so shoving panels around for
     // them feels jittery. The clock popout is deliberately NOT here — the calendar
     // is a real panel-sized popout and displaces notifications like audio/network do.
-    readonly property bool isDockPopout: currentName === "dockhover" || currentName === "dockbgcontext" || currentName === "greeter" || currentName === "activewindow" || currentName === "github" || isContextPopout
-    readonly property bool isContextPopout: hasCurrent && _ctxIsContext
-    property bool _ctxIsContext: false
+    readonly property bool isDockPopout: currentName === "dockhover" || currentName === "greeter" || currentName === "activewindow" || currentName === "github" || currentIsContext
     property alias currentName: popoutState.currentName
     property alias hasCurrent: popoutState.hasCurrent
     property alias dockModel: popoutState.dockModel
@@ -94,17 +96,6 @@ Item {
         sidebarOpen: root.visibilities.sidebar && root.underSidebar
         isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
         onDetachRequested: mode => root.detach(mode)
-    }
-    Binding {
-        when: content.item !== null
-        target: root
-        property: "_ctxIsContext"
-        value: (content.item as Content)?.currentIsContext ?? false
-    }
-    Binding {
-        target: root.visibilities
-        property: "contextPopout"
-        value: root.isContextPopout
     }
     HyprlandFocusGrab {
         active: root.isDetached

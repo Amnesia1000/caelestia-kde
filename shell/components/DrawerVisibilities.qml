@@ -11,8 +11,4 @@ PersistentProperties {
     property bool sidebarSuspended
     property bool overview
     property bool skipLauncherAnim: false
-    property string screenName
-    property bool contextPopout
-
-    reloadableId: ""
 }

@@ -17,7 +17,7 @@ Item {
 
     required property PopoutState popouts
     required property DrawerVisibilities visibilities
-    readonly property Popout currentPopout: content.children.find(c => c.name === popouts.currentName) ?? null
+    readonly property Popout currentPopout: content.children.find(c => c.shouldBeActive) ?? null
     readonly property Item current: currentPopout?.item ?? null
     readonly property bool currentIsContext: currentPopout?.isContext ?? false
 

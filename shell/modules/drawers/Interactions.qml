@@ -18,6 +18,8 @@ CustomMouseArea {
     required property Bar.BarWrapper bar
     required property real borderThickness
     required property bool fullscreen
+    // A context menu on another screen still needs its dismiss click.
+    required property bool capturesDismissClick
     property var focusGrab: null
     // Paired with ContentWindow.hasOpenOverlay: the launcher is open on another
     // screen, so this screen only takes input to dismiss it.
@@ -117,7 +119,7 @@ CustomMouseArea {
     }
 
     anchors.fill: parent
-    acceptedButtons: (fullscreen && !(root.focusGrab && (root.focusGrab.active || popouts.isDetached))) ? Qt.NoButton : Qt.AllButtons
+    acceptedButtons: (fullscreen && !capturesDismissClick && !(root.focusGrab && (root.focusGrab.active || popouts.isDetached))) ? Qt.NoButton : Qt.AllButtons
     hoverEnabled: true
     onPressed: event => {
         dragStart = Qt.point(event.x, event.y);
@@ -128,6 +130,7 @@ CustomMouseArea {
         }
 
         const grabActive = root.focusGrab && (root.focusGrab.active || popouts.isDetached);
+        // Any screen's menu can be the one this click dismisses.
         const menuOpen = Visibilities.contextPopoutOpen;
 
         if (grabActive || menuOpen) {
@@ -151,8 +154,6 @@ CustomMouseArea {
     }
     onContainsMouseChanged: {
         if (!containsMouse) {
-            const menuOpen = popouts.isContextPopout;
-
             if (!osdShortcutActive) {
                 visibilities.osd = false;
                 root.panels.osd.hovered = false;
@@ -164,13 +165,10 @@ CustomMouseArea {
             if (Config.utilities.showOnHover && !utilitiesShortcutActive)
                 visibilities.utilities = false;
 
-            if (!menuOpen && !popoutHideTimer.running)
+            if (!popoutHideTimer.running)
                 popoutHideTimer.start();
-
-            bar.hoverGraceTimer.start();
         } else {
             popoutHideTimer.stop();
-            bar.hoverGraceTimer.stop();
         }
     }
     onPositionChanged: event => {
@@ -187,14 +185,8 @@ CustomMouseArea {
             return;
         }
 
-        if (!visibilities.bar && Config.bar.showOnHover) {
-            if (inBarArea(x, y)) {
-                bar.hoverGraceTimer.stop();
-                bar.pointerInReach = true;
-            } else if (!bar.hoverGraceTimer.running) {
-                bar.hoverGraceTimer.start();
-            }
-        }
+        if (!visibilities.bar && Config.bar.showOnHover)
+            bar.pointerInReach = inBarArea(x, y);
 
         if (pressed && inBarArea(dragStart.x, dragStart.y)) {
             if (bar.position === "left") {
