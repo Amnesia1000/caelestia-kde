@@ -191,6 +191,18 @@ PageBase {
                     }
 
                     TextButton {
+                        visible: raw.type === "group"
+                        text: qsTr("Order")
+                        z: 100
+                        onClicked: {
+                            submenuDialog.sourceList = sourceList;
+                            submenuDialog.sourceIndex = index;
+                            submenuDialog.entry = raw;
+                            submenuDialog.open();
+                        }
+                    }
+
+                    TextButton {
                         visible: raw.type === "custom"
                         text: qsTr("Delete")
                         type: TextButton.Filled
@@ -349,6 +361,24 @@ PageBase {
                     raw: { id: id, type: "custom", label: label, command: cmd, icon: icon, enabled: false }
                 });
                 root.componentMeta[id] = { name: label, icon: icon };
+                root.save();
+            }
+        }
+
+        SubmenuOrderDialog {
+            id: submenuDialog
+
+            property string sourceList: ""
+            property int sourceIndex: -1
+
+            onSaved: children => {
+                const model = root.getModel(submenuDialog.sourceList);
+                if (!model || submenuDialog.sourceIndex < 0 || submenuDialog.sourceIndex >= model.count)
+                    return;
+
+                const raw = model.get(submenuDialog.sourceIndex).raw;
+                raw.children = children;
+                model.setProperty(submenuDialog.sourceIndex, "raw", raw);
                 root.save();
             }
         }

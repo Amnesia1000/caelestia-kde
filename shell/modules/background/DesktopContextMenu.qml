@@ -18,9 +18,8 @@ Controls.Menu {
     property string screenName: ""
     property var itemPool: ({})
     property var entryByKey: ({})
-    // The widget entries live in a submenu, built once and reused across rebuilds.
-    property var widgetRow: null
-    property var widgetRows: ({})
+    // Submenu rows are built once and reused across rebuilds.
+    property var submenuRows: ({})
     readonly property bool iconsEnabled: screenName ? ContextMenuStore.iconsShownOn(screenName) : GlobalConfig.background.desktopIconsEnabled
     readonly property bool iconsShown: (screenName ? GlobalConfig.forScreen(screenName) : GlobalConfig).background.wallpaperEnabled && (screenName ? GlobalConfig.forScreen(screenName) : GlobalConfig).background.desktopIconsEnabled
 
@@ -86,19 +85,18 @@ Controls.Menu {
         execTimer.restart();
     }
 
-    // The widget entries share a submenu instead of taking a row each, so the
-    // menu itself stays as short as it was. Purely hard-coded for now: a menu
-    // entry needs a way to describe its own nested entries.
-    function isWidgetGroupEntry(entry) {
-        return entry.action === "AddWidget" || entry.action === "ToggleWidgetLock" || entry.action === "ToggleWidgetOutlines";
+    // A group entry unfolds into a submenu, so its children keep the order the
+    // menu file gives them instead of taking a row each.
+    function isGroupEntry(entry) {
+        return entry.type === "group" && entry.children && entry.children.length > 0;
     }
 
-    function widgetSubmenuEntry(key, entry) {
-        let item = root.widgetRows[key];
+    function submenuEntry(key, entry) {
+        let item = root.submenuRows[key];
         if (!item) {
             item = menuItemComp.createObject(root);
             item.clicked.connect(() => root.executeEntryByKey(key));
-            root.widgetRows[key] = item;
+            root.submenuRows[key] = item;
         }
 
         if (entry.action === "AddWidget") {
@@ -109,21 +107,18 @@ Controls.Menu {
         } else if (entry.action === "ToggleWidgetLock") {
             item.text = Qt.binding(() => DesktopLayout.anyWidgetUnlocked() ? qsTr("Lock All Widgets") : qsTr("Unlock All Widgets"));
             item.icon = Qt.binding(() => DesktopLayout.anyWidgetUnlocked() ? "lock" : "lock_open");
-        } else {
+            item.visible = true;
+        } else if (entry.action === "ToggleWidgetOutlines") {
             item.text = entry.label;
             item.icon = Qt.binding(() => DesktopLayout.widgetOutlines ? "check_box" : "check_box_outline_blank");
+            item.visible = true;
+        } else {
+            item.text = entry.label;
+            item.icon = entry.icon || "widgets";
+            item.visible = true;
         }
 
         return item;
-    }
-
-    function widgetMenu() {
-        if (!root.widgetRow) {
-            root.widgetRow = menuItemComp.createObject(root);
-            root.widgetRow.text = qsTr("Widgets");
-            root.widgetRow.icon = "widgets";
-        }
-        return root.widgetRow;
     }
 
     function applyEntries(entries, sourceName) {
@@ -133,8 +128,6 @@ Controls.Menu {
             : ContextMenuStore.cloneEntries(entries);
         const newArr = [];
         const nextEntryByKey = {};
-        const widgetEntries = [];
-        let widgetGroupRow = null;
 
         for (let i = 0; i < normalized.length; i++) {
             let entry = normalized[i];
@@ -143,18 +136,31 @@ Controls.Menu {
             let key = (entry.id && entry.id.length > 0) ? entry.id : ("idx_" + i);
             nextEntryByKey[key] = entry;
 
-            if (root.isWidgetGroupEntry(entry)) {
-                // Keeps the position of the first of them, so a reordered store still
-                // decides where the group sits. Adding a widget is always offered
-                // first inside the group.
-                if (!widgetGroupRow) {
-                    widgetGroupRow = root.widgetMenu();
-                    newArr.push(widgetGroupRow);
+            if (root.isGroupEntry(entry)) {
+                const children = [];
+                for (let c = 0; c < entry.children.length; c++) {
+                    const child = entry.children[c];
+                    if (!child || child.enabled === false) continue;
+
+                    const childKey = (child.id && child.id.length > 0) ? child.id : (key + "_" + c);
+                    nextEntryByKey[childKey] = child;
+                    children.push(root.submenuEntry(childKey, child));
                 }
-                if (entry.action === "AddWidget")
-                    widgetEntries.unshift(root.widgetSubmenuEntry(key, entry));
-                else
-                    widgetEntries.push(root.widgetSubmenuEntry(key, entry));
+
+                // A group whose children are all disabled has nothing to unfold.
+                if (children.length === 0) continue;
+
+                let item = root.itemPool[key];
+                if (!item) {
+                    item = menuItemComp.createObject(root);
+                    root.itemPool[key] = item;
+                }
+
+                item.text = entry.label || qsTr("Widgets");
+                item.icon = entry.icon || "widgets";
+                item.visible = true;
+                item.submenu = children;
+                newArr.push(item);
                 continue;
             }
 
@@ -194,9 +200,6 @@ Controls.Menu {
                 delete root.itemPool[k];
             }
         }
-
-        if (widgetGroupRow)
-            widgetGroupRow.submenu = widgetEntries;
 
         root.entryByKey = nextEntryByKey;
         root.dynamicModel = newArr;
