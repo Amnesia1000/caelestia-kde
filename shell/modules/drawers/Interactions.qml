@@ -19,6 +19,9 @@ CustomMouseArea {
     required property real borderThickness
     required property bool fullscreen
     property var focusGrab: null
+    // Paired with ContentWindow.hasOpenOverlay: the launcher is open on another
+    // screen, so this screen only takes input to dismiss it.
+    property bool dismissLauncher: false
     property point dragStart
     property bool dashboardShortcutActive
     property bool osdShortcutActive
@@ -118,6 +121,11 @@ CustomMouseArea {
     hoverEnabled: true
     onPressed: event => {
         dragStart = Qt.point(event.x, event.y);
+
+        if (dismissLauncher) {
+            Visibilities.closeLauncher();
+            return;
+        }
 
         if (root.focusGrab && (root.focusGrab.active || popouts.isDetached)) {
             let inside = false;
