@@ -11,8 +11,12 @@ Item {
 
     required property var bar
 
-    implicitWidth: Math.round(Tokens.font.body.large.pointSize * 1.2)
-    implicitHeight: Math.round(Tokens.font.body.large.pointSize * 1.2)
+    // Size of the glyph. The bar reads it from its label font; the dock overrides
+    // it so the logo matches the size of its tiles.
+    property real iconSize: Math.round(Tokens.font.body.large.pointSize * 1.2)
+
+    implicitWidth: Math.round(iconSize)
+    implicitHeight: Math.round(iconSize)
 
     StateLayer {
         anchors.fill: undefined
@@ -58,8 +62,8 @@ Item {
         id: caelestiaLogo
 
         Logo {
-            implicitWidth: Math.round(Tokens.font.body.large.pointSize * 1.6)
-            implicitHeight: Math.round(Tokens.font.body.large.pointSize * 1.6)
+            implicitWidth: Math.round(root.iconSize * 4 / 3)
+            implicitHeight: Math.round(root.iconSize * 4 / 3)
         }
     }
 
@@ -68,7 +72,7 @@ Item {
 
         ColouredIcon {
             source: SysInfo.osLogo
-            implicitSize: Math.round(Tokens.font.body.large.pointSize * 1.2)
+            implicitSize: Math.round(root.iconSize)
             colour: Colours.palette.m3tertiary
         }
     }
@@ -86,7 +90,7 @@ Item {
 
         ColouredIcon {
             source: SysInfo.osLogo
-            implicitSize: Math.round(Tokens.font.body.large.pointSize * 1.2 * (SysInfo.customLogoSize / 100))
+            implicitSize: Math.round(root.iconSize * (SysInfo.customLogoSize / 100))
             colour: Colours.palette.m3tertiary
         }
     }
@@ -96,8 +100,8 @@ Item {
 
         IconImage {
             source: SysInfo.osLogo
-            implicitWidth: Math.round(Tokens.font.body.large.pointSize * 1.2 * (SysInfo.customLogoSize / 100))
-            implicitHeight: Math.round(Tokens.font.body.large.pointSize * 1.2 * (SysInfo.customLogoSize / 100))
+            implicitWidth: Math.round(root.iconSize * (SysInfo.customLogoSize / 100))
+            implicitHeight: Math.round(root.iconSize * (SysInfo.customLogoSize / 100))
         }
     }
 }
