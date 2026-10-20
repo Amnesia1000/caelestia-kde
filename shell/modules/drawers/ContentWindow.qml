@@ -401,7 +401,20 @@ StyledWindow {
                 scale: overviewWallpaperLayer.bgScale
                 active: overviewWallpaperLayer.active || overviewWallpaperLayer.opacity > 0
                         || (overviewWallpaperLayer.keepAlive && wallpaperLoader.item && !wallpaperLoader.item.isVideo(wallpaperLoader.item.source))
-                sourceComponent: Component { Wallpaper { screen: root.screen; skipTransition: true } }
+                sourceComponent: Component {
+                    Wallpaper {
+                        screen: root.screen
+                        skipTransition: true
+                        source: {
+                            const cur = Wallpapers.current;
+                            if (Images.isVideo(cur)) {
+                                const hifi = Wallpapers.thumbHifi(cur);
+                                return hifi !== "" ? hifi : Wallpapers.getThumbnailHifiPath(cur);
+                            }
+                            return cur;
+                        }
+                    }
+                }
             }
         }
         Item {
@@ -1125,6 +1138,8 @@ StyledWindow {
         }
         Connections {
             function onOpenDesktopContextMenu(x, y, screenName) {
+                if (ContextMenuStore.editMode || Config.background.disableQuickshellDesktop)
+                    return;
                 if (root.screen.name === screenName) {
                     desktopContextMenuAnchor.x = x;
                     desktopContextMenuAnchor.y = y;

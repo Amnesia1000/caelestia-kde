@@ -1,0 +1,32 @@
+{
+  "components": {
+    "wallpaperSelector": {
+      "displayMode": "slices",
+      "enabled": true,
+      "startPosition": "applied"
+    }
+  },
+  "general": {
+    "closeOnSelection": true,
+    "randomRotate": false,
+    "uiScale": 1.4
+  },
+  "paper": {
+    "wallpaperLayer": "background"
+  },
+  "playback": {
+    "fullscreen": true,
+    "maximized": true,
+    "processEnabled": false
+  },
+  "postProcessing": [
+    {
+      "command": "caelestia-color wallpaper -f %thumb% -a %path%",
+      "type": "all"
+    }
+  ],
+  "theme": {
+    "authority": "skwd",
+    "policy": "wallpaper"
+  }
+}

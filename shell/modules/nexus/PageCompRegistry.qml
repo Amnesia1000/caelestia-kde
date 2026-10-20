@@ -46,10 +46,7 @@ QtObject {
                     WallpaperSettingsPage {}
                 }
                 Component {
-                    SlideshowAndOrderPage {}
-                }
-                Component {
-                    VideoWallpapersPage {}
+                    LibraryAndCommunityPage {}
                 }
                 Component {
                     AppearancePage {}
