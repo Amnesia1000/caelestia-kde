@@ -531,7 +531,6 @@ StyledWindow {
     DrawerVisibilities {
         id: visibilities
 
-        screenName: root.screen.name
         onOverviewChanged: {
             if (overview && !GlobalConfig.overview.enabled) {
                 overview = false;
