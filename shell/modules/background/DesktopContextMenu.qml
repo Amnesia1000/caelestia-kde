@@ -18,6 +18,9 @@ Controls.Menu {
     property string screenName: ""
     property var itemPool: ({})
     property var entryByKey: ({})
+    // The widget entries live in a submenu, built once and reused across rebuilds.
+    property var widgetRow: null
+    property var widgetRows: ({})
     readonly property bool iconsEnabled: screenName ? ContextMenuStore.iconsShownOn(screenName) : GlobalConfig.background.desktopIconsEnabled
     readonly property bool iconsShown: (screenName ? GlobalConfig.forScreen(screenName) : GlobalConfig).background.wallpaperEnabled && (screenName ? GlobalConfig.forScreen(screenName) : GlobalConfig).background.desktopIconsEnabled
 
@@ -25,7 +28,7 @@ Controls.Menu {
         let entry = root.entryByKey[key];
         if (!entry) return;
 
-        root.expanded = false;
+        root.close();
 
         // In-shell state changes run right away; anything that opens a window
         // or spawns a process waits for the menu to finish closing.
@@ -83,6 +86,46 @@ Controls.Menu {
         execTimer.restart();
     }
 
+    // The widget entries share a submenu instead of taking a row each, so the
+    // menu itself stays as short as it was. Purely hard-coded for now: a menu
+    // entry needs a way to describe its own nested entries.
+    function isWidgetGroupEntry(entry) {
+        return entry.action === "AddWidget" || entry.action === "ToggleWidgetLock" || entry.action === "ToggleWidgetOutlines";
+    }
+
+    function widgetSubmenuEntry(key, entry) {
+        let item = root.widgetRows[key];
+        if (!item) {
+            item = menuItemComp.createObject(root);
+            item.clicked.connect(() => root.executeEntryByKey(key));
+            root.widgetRows[key] = item;
+        }
+
+        if (entry.action === "AddWidget") {
+            item.text = entry.label;
+            item.icon = entry.icon || "widgets";
+            // Only offered while the desktop shows icons, as it was in the flat menu.
+            item.visible = Qt.binding(() => root.iconsShown);
+        } else if (entry.action === "ToggleWidgetLock") {
+            item.text = Qt.binding(() => DesktopLayout.anyWidgetUnlocked() ? qsTr("Lock All Widgets") : qsTr("Unlock All Widgets"));
+            item.icon = Qt.binding(() => DesktopLayout.anyWidgetUnlocked() ? "lock" : "lock_open");
+        } else {
+            item.text = entry.label;
+            item.icon = Qt.binding(() => DesktopLayout.widgetOutlines ? "check_box" : "check_box_outline_blank");
+        }
+
+        return item;
+    }
+
+    function widgetMenu() {
+        if (!root.widgetRow) {
+            root.widgetRow = menuItemComp.createObject(root);
+            root.widgetRow.text = qsTr("Widgets");
+            root.widgetRow.icon = "widgets";
+        }
+        return root.widgetRow;
+    }
+
     function applyEntries(entries, sourceName) {
         const buildStartedAt = Date.now();
         const normalized = (!entries || entries.length === 0)
@@ -90,6 +133,8 @@ Controls.Menu {
             : ContextMenuStore.cloneEntries(entries);
         const newArr = [];
         const nextEntryByKey = {};
+        const widgetEntries = [];
+        let widgetGroupRow = null;
 
         for (let i = 0; i < normalized.length; i++) {
             let entry = normalized[i];
@@ -97,6 +142,21 @@ Controls.Menu {
 
             let key = (entry.id && entry.id.length > 0) ? entry.id : ("idx_" + i);
             nextEntryByKey[key] = entry;
+
+            if (root.isWidgetGroupEntry(entry)) {
+                // Keeps the position of the first of them, so a reordered store still
+                // decides where the group sits. Adding a widget is always offered
+                // first inside the group.
+                if (!widgetGroupRow) {
+                    widgetGroupRow = root.widgetMenu();
+                    newArr.push(widgetGroupRow);
+                }
+                if (entry.action === "AddWidget")
+                    widgetEntries.unshift(root.widgetSubmenuEntry(key, entry));
+                else
+                    widgetEntries.push(root.widgetSubmenuEntry(key, entry));
+                continue;
+            }
 
             let item = root.itemPool[key];
             if (!item) {
@@ -113,14 +173,6 @@ Controls.Menu {
                 item.text = entry.label;
                 item.icon = entry.icon || "content_paste";
                 item.visible = Qt.binding(() => root.iconsShown && DesktopLayout.clipboardHasFiles);
-            } else if (entry.action === "ToggleWidgetLock") {
-                item.text = Qt.binding(() => DesktopLayout.anyWidgetUnlocked() ? qsTr("Lock All Widgets") : qsTr("Unlock All Widgets"));
-                item.icon = Qt.binding(() => DesktopLayout.anyWidgetUnlocked() ? "lock" : "lock_open");
-                item.visible = true;
-            } else if (entry.action === "ToggleWidgetOutlines") {
-                item.text = entry.label;
-                item.icon = Qt.binding(() => DesktopLayout.widgetOutlines ? "check_box" : "check_box_outline_blank");
-                item.visible = true;
             } else if (entry.action === "AddWidget") {
                 item.text = entry.label;
                 item.icon = entry.icon || "widgets";
@@ -142,6 +194,9 @@ Controls.Menu {
                 delete root.itemPool[k];
             }
         }
+
+        if (widgetGroupRow)
+            widgetGroupRow.submenu = widgetEntries;
 
         root.entryByKey = nextEntryByKey;
         root.dynamicModel = newArr;
