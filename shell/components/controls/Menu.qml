@@ -147,14 +147,6 @@ MouseArea {
         expanded = false;
     }
 
-    Timer {
-        id: closeTimer
-
-        // Matches the time the unfolded panel takes to fold back.
-        interval: Tokens.anim.durations.small
-        onTriggered: root.expanded = false
-    }
-
     onExpandedChanged: {
         if (expanded)
             closeTimer.stop();
@@ -204,6 +196,14 @@ MouseArea {
         Anim {
             type: root.revealHorizontal ? Anim.FastEffects : Anim.DefaultEffects
         }
+    }
+
+    Timer {
+        id: closeTimer
+
+        // Matches the time the unfolded panel takes to fold back.
+        interval: Tokens.anim.durations.small
+        onTriggered: root.expanded = false
     }
 
     NumberAnimation {

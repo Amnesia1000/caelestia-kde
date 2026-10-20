@@ -173,7 +173,8 @@ PageBase {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: Tokens.padding.medium
+                    anchors.leftMargin: Tokens.padding.medium
+                    anchors.rightMargin: Tokens.padding.medium
                     spacing: Tokens.spacing.small
                     visible: !isPlaceholder
 
@@ -190,15 +191,16 @@ PageBase {
                         elide: Text.ElideRight
                     }
 
-                    TextButton {
+                    IconButton {
                         visible: raw.type === "group"
-                        text: qsTr("Order")
+                        icon: "swap_vert"
+                        type: IconButton.Text
                         z: 100
                         onClicked: {
                             submenuDialog.sourceList = sourceList;
                             submenuDialog.sourceIndex = index;
                             submenuDialog.entry = raw;
-                            submenuDialog.open();
+                            submenuDialog.openIn(QsWindow.window, activeDelegate);
                         }
                     }
 

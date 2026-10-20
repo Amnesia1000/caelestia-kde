@@ -15,16 +15,20 @@ Popup {
     id: root
 
     property var entry: null
-    property var rows: []
+    property var target: null
+
+    readonly property real rowsHeight: rowsModel.count > 0 ? rowsModel.count * 44 + (rowsModel.count - 1) * Tokens.spacing.extraSmall : 0
 
     signal saved(var children)
 
-    function move(from, to): void {
-        if (to < 0 || to >= root.rows.length)
-            return;
-        const next = root.rows.slice();
-        next.splice(to, 0, next.splice(from, 1)[0]);
-        root.rows = next;
+    // The page lives inside a Quickshell content window, where Overlay.overlay resolves to
+    // null: the popup is only shown once it belongs to a window, so the caller hands it over,
+    // along with the list it should sit on top of.
+    function openIn(win, target): void {
+        if (win && win.contentItem)
+            parent = win.contentItem;
+        root.target = target || null;
+        open();
     }
 
     width: 340
@@ -33,9 +37,15 @@ Popup {
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-    parent: Overlay.overlay
 
-    x: parent ? Math.round((parent.width - width) / 2) : 0
+    x: {
+        if (!parent)
+            return 0;
+        if (!root.target)
+            return Math.round((parent.width - width) / 2);
+        const centred = root.target.mapToItem(parent, 0, 0).x + (root.target.width - width) / 2;
+        return Math.round(Math.max(8, Math.min(parent.width - width - 8, centred)));
+    }
     y: parent ? Math.round((parent.height - height) / 2) : 0
 
     enter: DialogTransition { }
@@ -43,7 +53,16 @@ Popup {
         exiting: true
     }
 
-    onOpened: root.rows = root.entry && root.entry.children ? JSON.parse(JSON.stringify(root.entry.children)) : []
+    onOpened: {
+        rowsModel.clear();
+        const children = root.entry && root.entry.children ? root.entry.children : [];
+        for (const child of children)
+            rowsModel.append({
+                label: child.label || "",
+                icon: child.icon || "widgets",
+                raw: JSON.stringify(child)
+            });
+    }
 
     background: Item {
         Elevation {
@@ -75,7 +94,7 @@ Popup {
         }
 
         Text {
-            text: qsTr("Drag them nowhere: use the arrows to change the order they unfold in.")
+            text: qsTr("Drag the rows to change the order they unfold in.")
             font: Tokens.font.body.small
             color: Colours.palette.m3onSurfaceVariant
             wrapMode: Text.WordWrap
@@ -83,49 +102,114 @@ Popup {
             Layout.bottomMargin: Tokens.padding.small
         }
 
-        Repeater {
-            model: root.rows
+        ListView {
+            id: list
 
-            delegate: StyledRect {
-                id: rowRow
+            Layout.fillWidth: true
+            Layout.preferredHeight: root.rowsHeight
+            implicitHeight: root.rowsHeight
+            interactive: false
+            spacing: Tokens.spacing.extraSmall
+            model: ListModel {
+                id: rowsModel
+            }
 
-                required property var modelData
+            delegate: Item {
+                id: dragWrapper
+
                 required property int index
+                required property string label
+                required property string icon
 
-                Layout.fillWidth: true
-                implicitHeight: 44
-                radius: Tokens.rounding.medium
-                color: Colours.palette.m3surfaceContainer
+                readonly property bool isDragging: dragArea.drag.active
 
-                RowLayout {
+                width: list.width
+                height: 44
+                z: isDragging ? 100 : 1
+
+                DropArea {
                     anchors.fill: parent
-                    anchors.leftMargin: Tokens.padding.medium
-                    anchors.rightMargin: Tokens.padding.extraSmall
-                    spacing: Tokens.spacing.small
+                    keys: ["subrow"]
+                    onEntered: drag => {
+                        const source = drag.source;
+                        if (!source || source.index === dragWrapper.index)
+                            return;
+                        rowsModel.move(source.index, dragWrapper.index, 1);
+                    }
+                }
 
-                    MaterialIcon {
-                        text: rowRow.modelData.icon || "widgets"
+                StyledRect {
+                    id: rowRect
+
+                    width: dragWrapper.width
+                    height: dragWrapper.height
+                    radius: Tokens.rounding.medium
+                    color: dragWrapper.isDragging ? Colours.layer(Colours.palette.m3surfaceContainerHighest, 2) : Colours.palette.m3surfaceContainer
+
+                    Drag.active: dragArea.drag.active
+                    Drag.source: dragWrapper
+                    Drag.hotSpot.x: width / 2
+                    Drag.hotSpot.y: height / 2
+                    Drag.keys: ["subrow"]
+
+                    states: State {
+                        when: dragArea.drag.active
+
+                        ParentChange { target: rowRect; parent: list.contentItem }
+                        PropertyChanges { target: rowRect; scale: NexusStyle.dragScale }
+                    }
+
+                    MouseArea {
+                        id: dragArea
+
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        drag.target: rowRect
+                        drag.axis: Drag.YAxis
+
+                        onReleased: {
+                            rowRect.x = 0;
+                            rowRect.y = 0;
+                        }
+                    }
+
+                    StateLayer {
+                        anchors.fill: parent
+                        radius: Tokens.rounding.medium
+                        acceptedButtons: Qt.NoButton
                         color: Colours.palette.m3onSurface
+                        opacity: dragArea.containsMouse && !dragWrapper.isDragging ? 0.08 : 0
+
+                        Behavior on opacity {
+                            Anim {
+                                type: Anim.FastEffects
+                            }
+                        }
                     }
 
-                    Text {
-                        Layout.fillWidth: true
-                        text: rowRow.modelData.label || ""
-                        font: Tokens.font.body.small
-                        color: Colours.palette.m3onSurface
-                        elide: Text.ElideRight
-                    }
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: Tokens.padding.medium
+                        anchors.rightMargin: Tokens.padding.medium
+                        spacing: Tokens.spacing.small
 
-                    TextButton {
-                        text: "↑"
-                        enabled: rowRow.index > 0
-                        onClicked: root.move(rowRow.index, rowRow.index - 1)
-                    }
+                        MaterialIcon {
+                            text: dragWrapper.icon
+                            color: Colours.palette.m3onSurface
+                        }
 
-                    TextButton {
-                        text: "↓"
-                        enabled: rowRow.index < root.rows.length - 1
-                        onClicked: root.move(rowRow.index, rowRow.index + 1)
+                        Text {
+                            Layout.fillWidth: true
+                            text: dragWrapper.label
+                            font: Tokens.font.body.small
+                            color: Colours.palette.m3onSurface
+                            elide: Text.ElideRight
+                        }
+
+                        MaterialIcon {
+                            text: "drag_indicator"
+                            color: Colours.palette.m3onSurfaceVariant
+                        }
                     }
                 }
             }
@@ -145,7 +229,10 @@ Popup {
             TextButton {
                 text: qsTr("Save")
                 onClicked: {
-                    root.saved(root.rows);
+                    const children = [];
+                    for (let i = 0; i < rowsModel.count; i++)
+                        children.push(JSON.parse(rowsModel.get(i).raw));
+                    root.saved(children);
                     root.close();
                 }
             }
