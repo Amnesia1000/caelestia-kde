@@ -362,6 +362,19 @@ PageBase {
             Layout.fillWidth: true
 
             visible: root.hasSelection
+            icon: "widgets"
+            text: qsTr("Widgets of this bar")
+            subtext: qsTr("Pick the components it shows")
+            onClicked: {
+                root.nState.barComponentsTarget = root.selectedIndex;
+                root.nState.openSubPage(6);
+            }
+        }
+
+        RowButton {
+            Layout.fillWidth: true
+
+            visible: root.hasSelection
             last: true
             icon: "delete"
             text: qsTr("Remove this bar")

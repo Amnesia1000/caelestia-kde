@@ -236,7 +236,11 @@ PageBase {
             icon: "view_agenda"
             label: qsTr("Toggle & Rearrange")
             status: qsTr("Add, remove or reorder components")
-            onClicked: root.nState.openSubPage(6)
+            onClicked: {
+                // Opened from the taskbar page: always the main bar.
+                root.nState.barComponentsTarget = -1;
+                root.nState.openSubPage(6);
+            }
         }
 
         NavRow {

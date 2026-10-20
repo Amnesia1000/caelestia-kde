@@ -72,6 +72,21 @@ PageBase {
     property string globalDragHoveredList: ""
     readonly property real zonePadding: Tokens.padding.medium
     readonly property real emptyZoneHeight: 72
+
+    // Which bar this page edits: the Extra bars page points it at one of the
+    // extra panels, anything else keeps the main bar. Every read and write
+    // below goes through it, so the page behaves the same for either.
+    readonly property var targetNode: {
+        const target = root.nState.barComponentsTarget;
+        if (target < 0 || target >= GlobalConfig.bar.panels.count)
+            return GlobalConfig.bar;
+        return GlobalConfig.bar.panels.at(target);
+    }
+    readonly property string barName: {
+        if (root.nState.barComponentsTarget < 0)
+            return "";
+        return root.targetNode.name || qsTr("Bar %1").arg(root.nState.barComponentsTarget + 1);
+    }
     property Component panelDelegate: Component {
         Item {
             id: delegateWrapper
@@ -351,7 +366,7 @@ PageBase {
     }
 
     function load(): void {
-        const entries = BarWidgets.entriesOf(Config.bar);
+        const entries = BarWidgets.entriesOf(root.targetNode);
         leftModel.clear();
         middleModel.clear();
         rightModel.clear();
@@ -385,7 +400,7 @@ PageBase {
     }
 
     function resetToDefaults(): void {
-        BarWidgets.resetToDefaults(GlobalConfig.bar);
+        BarWidgets.resetToDefaults(root.targetNode);
         load();
     }
 
@@ -410,18 +425,19 @@ PageBase {
         for (let i = 0; i < libraryModel.count; i++) {
             if (!libraryModel.get(i).isPlaceholder) {
                 const id = libraryModel.get(i).compId;
-                newEntries.push({ id: id, enabled: false, zone: BarWidgets.zoneFor(Config.bar, id) });
+                newEntries.push({ id: id, enabled: false, zone: BarWidgets.zoneFor(root.targetNode, id) });
             }
         }
 
-        BarWidgets.replaceAll(GlobalConfig.bar, newEntries);
+        BarWidgets.replaceAll(root.targetNode, newEntries);
     }
 
-    title: qsTr("Toggle & rearrange")
+    title: root.barName ? qsTr("Toggle & rearrange · %1").arg(root.barName) : qsTr("Toggle & rearrange")
     isSubPage: true
     scrollable: true
 
     Component.onCompleted: load()
+    onTargetNodeChanged: load()
 
     RowLayout {
         anchors.fill: parent
