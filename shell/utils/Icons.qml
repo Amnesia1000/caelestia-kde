@@ -261,7 +261,7 @@ Singleton {
     // `key` is the stable alias the tray registry keys its settings by; `id` is the
     // notifier id this launch happens to use, kept so subscriptions written before
     // aliases existed still match.
-    function getTrayIcon(key: string, icon: string, id: string = ""): string {
+    function getTrayIcon(key: string, icon: string, id = ""): string {
         for (const sub of GlobalConfig.bar.tray.iconSubs.values) {
             if (sub.id !== key && (!id || sub.id !== id))
                 continue;
