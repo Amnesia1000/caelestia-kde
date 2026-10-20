@@ -29,6 +29,10 @@ Item {
         Clipboard.clearHistory();
     }
 
+    function searchTextForMode(mode: string): string {
+        return mode ? `${GlobalConfig.launcher.actionPrefix}${mode} ` : "";
+    }
+
     function triggerSessionCommand(command: list<string>): void {
         root.visibilities.launcher = false;
         if (!SessionManager.exec(command))
@@ -324,7 +328,7 @@ Item {
 
             onTextChanged: {
                 if (root.visibilities.launcher)
-                    root.visibilities.launcherMode = Visibilities.modeForText(text);
+                    Visibilities.launcherMode = Visibilities.modeForText(text);
                 if (!text.startsWith(`${GlobalConfig.launcher.actionPrefix}windows `)) {
                     Windows.isSwitching = false;
                     Kwin.clearHighlight();
@@ -332,29 +336,16 @@ Item {
             }
 
             Component.onCompleted: {
-                if (root.visibilities.launcherInitialSearch) {
-                    text = root.visibilities.launcherInitialSearch;
-                    root.visibilities.launcherInitialSearch = "";
-                }
+                // The launcher may have opened before this content was created.
+                if (root.visibilities.launcher)
+                    text = root.searchTextForMode(Visibilities.launcherMode);
                 forceActiveFocus();
             }
 
             Connections {
-                function onLauncherInitialSearchChanged(): void {
-                    if (!root.visibilities.launcherInitialSearch)
-                        return;
-                    search.text = root.visibilities.launcherInitialSearch;
-                    root.visibilities.launcherInitialSearch = "";
-                }
-
                 function onLauncherChanged(): void {
                     if (root.visibilities.launcher) {
-                        if (root.visibilities.launcherInitialSearch) {
-                            search.text = root.visibilities.launcherInitialSearch;
-                            root.visibilities.launcherInitialSearch = "";
-                        } else if (!root.visibilities.launcherMode) {
-                            search.text = "";
-                        }
+                        search.text = root.searchTextForMode(Visibilities.launcherMode);
                         search.forceActiveFocus();
                     } else {
                         Windows.isSwitching = false;
@@ -372,25 +363,21 @@ Item {
             }
 
             Connections {
+                // A different mode asked for while the panel is already open.
+                function onLauncherOpened(mode: string): void {
+                    if (Visibilities.launcherScreen === root.visibilities)
+                        search.text = root.searchTextForMode(mode);
+                }
+
+                target: Visibilities
+            }
+
+            Connections {
                 function onClosed(): void {
                     search.text = "";
                 }
 
                 target: root.panels.launcher
-            }
-
-            Connections {
-                function onModifierReleased(): void {
-                    if (Windows.isSwitching && root.visibilities.launcher && search.text.startsWith(`${GlobalConfig.launcher.actionPrefix}windows `)) {
-                        const switcherKey = (typeof KeybindsModel !== "undefined" && KeybindsModel.getKey("windowSwitcher")) || "Alt+Tab";
-                        if (!CUtils.isShortcutModifierPressed(switcherKey)) {
-                            Windows.focusSelectedWindow();
-                            root.visibilities.launcher = false;
-                        }
-                    }
-                }
-
-                target: CUtils
             }
         }
 

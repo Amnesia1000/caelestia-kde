@@ -119,13 +119,9 @@ Scope {
         description: qsTr("Toggle launcher, dashboard and osd")
         onPressed: {
             const v = Visibilities.getForActive();
-            if (Visibilities.launcherScreen !== null || v.dashboard || v.osd || v.utilities) {
-                Visibilities.closeLauncher();
-                v.dashboard = v.osd = v.utilities = false;
-            } else {
-                v.dashboard = v.osd = v.utilities = true;
-                Visibilities.openLauncher("");
-            }
+            const open = !(Visibilities.launcherOpen || v.dashboard || v.osd || v.utilities);
+            Visibilities.setDrawer("launcher", open);
+            v.dashboard = v.osd = v.utilities = open;
         }
     }
     // qmllint disable unresolved-type
@@ -281,7 +277,7 @@ Scope {
 
     Connections {
         function onModifierReleased(): void {
-            if (Visibilities.launcherScreen?.launcherMode === "windows") {
+            if (Windows.isSwitching && Visibilities.launcherMode === "windows") {
                 const switcherKey = (typeof KeybindsModel !== "undefined" && KeybindsModel.getKey("windowSwitcher")) || "Alt+Tab";
                 if (!CUtils.isShortcutModifierPressed(switcherKey)) {
                     Windows.focusSelectedWindow();
@@ -301,7 +297,7 @@ Scope {
         description: qsTr("Open window switcher")
         enabled: Config.tabSwitch.enabled
         onPressed: {
-            if (Visibilities.launcherScreen?.launcherMode === "windows") {
+            if (Windows.isSwitching && Visibilities.launcherMode === "windows") {
                 Windows.triggerCycleNext();
             } else {
                 Windows.isSwitching = true;
@@ -319,7 +315,7 @@ Scope {
         description: qsTr("Open window switcher (reverse)")
         enabled: Config.tabSwitch.enabled
         onPressed: {
-            if (Visibilities.launcherScreen?.launcherMode === "windows") {
+            if (Windows.isSwitching && Visibilities.launcherMode === "windows") {
                 Windows.triggerCyclePrev();
             } else {
                 Windows.isSwitching = true;
@@ -463,15 +459,7 @@ Scope {
             if (list().split("\n").includes(drawer)) {
                 if (root.hasFullscreen && ["launcher", "session", "dashboard"].includes(drawer))
                     return;
-                if (drawer === "launcher") {
-                    Visibilities.toggleLauncher("");
-                } else {
-                    const visibilities = Visibilities.getForActive();
-                    if (drawer === "overview")
-                        Visibilities.setOverview(!visibilities.overview);
-                    else
-                        visibilities[drawer] = !visibilities[drawer];
-                }
+                Visibilities.setDrawer(drawer, !Visibilities.drawerOpen(drawer));
                 Logger.mark(`drawer=${drawer} toggled`);
             } else {
                 console.warn(lc, `Drawer "${drawer}" does not exist`);
@@ -481,21 +469,12 @@ Scope {
             if (list().split("\n").includes(drawer)) {
                 if (root.hasFullscreen && ["launcher", "session", "dashboard"].includes(drawer))
                     return;
-                if (drawer === "launcher") {
-                    Visibilities.toggleLauncher("");
-                    return;
-                }
                 if (drawer === "sidebar" && tab !== "") {
                     Visibilities.initialSidebarTab = tab;
-                    const visibilities = Visibilities.getForActive();
-                    visibilities.sidebar = true;
+                    Visibilities.setDrawer("sidebar", true);
                     return;
                 }
-                const visibilities = Visibilities.getForActive();
-                if (drawer === "overview")
-                    Visibilities.setOverview(!visibilities.overview);
-                else
-                    visibilities[drawer] = !visibilities[drawer];
+                Visibilities.setDrawer(drawer, !Visibilities.drawerOpen(drawer));
             } else {
                 console.warn(lc, `Drawer "${drawer}" does not exist`);
             }

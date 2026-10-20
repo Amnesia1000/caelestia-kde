@@ -27,10 +27,17 @@ Singleton {
     property real dragWidth: 0
     property real dragHeight: 0
     property string streamClaim: ""
+    // The launcher is one panel across outputs, so the screen that opened it owns
+    // it. `launcherMode` is the mode it is in: "" for the app grid. The service
+    // seeds both when the launcher opens; the launcher keeps the mode in sync with
+    // its search field.
     property DrawerVisibilities launcherScreen: null
+    property string launcherMode: ""
+    readonly property bool launcherOpen: launcherScreen !== null
 
     signal cycleOverview(bool backwards)
     signal exclusionBoundsChanged(ShellScreen screen)
+    signal launcherOpened(string mode)
 
     function sidebarWidthFor(defaultWidth: real): real {
         return sidebarPinned && sidebarWidth > 0 ? sidebarWidth : defaultWidth;
@@ -50,20 +57,11 @@ Singleton {
     function load(screen: ShellScreen, visibilities: DrawerVisibilities): void {
         screens.set(Kwin.monitorFor(screen), visibilities);
         screens = new Map(screens);
-        visibilities.launcherChanged.connect(() => {
-            if (!visibilities.launcher) {
-                Kwin.clearHighlight();
-                visibilities.launcherMode = "";
-                if (launcherScreen === visibilities)
-                    launcherScreen = null;
-                return;
-            }
-            for (const other of screens.values()) {
-                if (other !== visibilities)
-                    other.launcher = false;
-            }
-            launcherScreen = visibilities;
-        });
+        visibilities.launcherChanged.connect(() => setLauncherOwner(visibilities, visibilities.launcher));
+        // PersistentProperties can restore the launcher as open, before the change
+        // handler above is connected.
+        if (visibilities.launcher)
+            setLauncherOwner(visibilities, true);
         visibilities.overviewChanged.connect(() => {
             if (visibilities.overview)
                 Kwin.clearHighlight();
@@ -72,6 +70,20 @@ Singleton {
             if (visibilities.session)
                 Kwin.clearHighlight();
         });
+    }
+
+    function unload(visibilities: DrawerVisibilities): void {
+        for (const monitor of screens.keys()) {
+            if (screens.get(monitor) !== visibilities)
+                continue;
+            screens.delete(monitor);
+            screens = new Map(screens);
+            break;
+        }
+        // The screen is going away: skip the highlight reset, which needs Kwin to
+        // still be up when the shell is shutting down with it.
+        if (launcherScreen === visibilities)
+            clearLauncherOwner();
     }
 
     function registerBar(screen: ShellScreen, barWrapper: var): void {
@@ -113,20 +125,62 @@ Singleton {
         const v = launcherScreen ?? getForActive();
         if (!v)
             return;
-        v.launcherInitialSearch = mode ? `${GlobalConfig.launcher.actionPrefix}${mode} ` : "";
-        v.launcherMode = mode;
+        // The mode has to be in place first: the launcher applies it to its search
+        // field when it opens.
+        launcherMode = mode;
         v.launcher = true;
+        launcherOpened(mode);
     }
     function closeLauncher(): void {
         if (launcherScreen)
             launcherScreen.launcher = false;
     }
     function toggleLauncher(mode: string): void {
-        if (launcherScreen && (mode === "" || launcherScreen.launcherMode === mode)) {
+        if (launcherOpen && (mode === "" || launcherMode === mode)) {
             closeLauncher();
             return;
         }
         openLauncher(mode);
+    }
+    function drawerOpen(drawer: string): bool {
+        if (drawer === "launcher")
+            return launcherOpen;
+        const v = getForActive();
+        return v ? v[drawer] === true : false;
+    }
+    function setDrawer(drawer: string, open: boolean): void {
+        if (drawer === "launcher") {
+            if (open)
+                openLauncher("");
+            else
+                closeLauncher();
+            return;
+        }
+        if (drawer === "overview") {
+            setOverview(open);
+            return;
+        }
+        const v = getForActive();
+        if (v)
+            v[drawer] = open;
+    }
+    function setLauncherOwner(visibilities: DrawerVisibilities, open: boolean): void {
+        if (!open) {
+            if (launcherScreen !== visibilities)
+                return;
+            Kwin.clearHighlight();
+            clearLauncherOwner();
+            return;
+        }
+        for (const other of screens.values()) {
+            if (other !== visibilities)
+                other.launcher = false;
+        }
+        launcherScreen = visibilities;
+    }
+    function clearLauncherOwner(): void {
+        launcherMode = "";
+        launcherScreen = null;
     }
     function setDrag(address: string, x: real, y: real, w: real, h: real, originScreen: string): void {
         dragAddress = address;
