@@ -51,15 +51,6 @@ PageBase {
             onToggled: BarWidgets.setEnabled(GlobalConfig.bar, "dock", checked)
         }
 
-        ToggleRow {
-            Layout.fillWidth: true
-            text: qsTr("Launcher button")
-            subtext: qsTr("Show a tile at the start of the dock that opens the launcher")
-            reset: ({ node: GlobalConfig.bar.dock, setting: "showLauncher" })
-            checked: Config.bar.dock.showLauncher
-            onToggled: GlobalConfig.bar.dock.showLauncher = checked
-        }
-
         StepperRow {
             Layout.fillWidth: true
             label: qsTr("Icon size")
