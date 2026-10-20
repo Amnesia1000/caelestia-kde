@@ -18,6 +18,8 @@ source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/sc
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/skwd-wall.sh"
 # shellcheck source=scripts/lib/plasma-audio-visualizer.sh
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/plasma-audio-visualizer.sh"
+# shellcheck source=scripts/lib/fonts.sh
+source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/fonts.sh"
 
 darkly_rpm_asset_url() {
     local release_json ver url
@@ -316,6 +318,10 @@ unzip -qo "/tmp/JetBrainsMono.zip" -d "${XDG_DATA_HOME:-$HOME/.local/share}/font
 [[ -f "${XDG_DATA_HOME:-$HOME/.local/share}/fonts/MaterialSymbolsRounded.ttf" ]] || { err "Failed to download Material Symbols font."; FAILED_PKGS+=("Material Symbols font"); }
 
 fc-cache -f
+
+# SDDM runs as its own user and never reads the user's font directory, so the
+# fonts above are mirrored system-wide.
+mirror_login_fonts || FAILED_PKGS+=("Login screen fonts")
 
 info "Installing Darkly KDE Theme from COPR..."
 if [[ "$INSTALL_DARKLY" == "true" ]]; then
