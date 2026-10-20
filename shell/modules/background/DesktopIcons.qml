@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import "desktopicons"
 import "desktopicons/LayoutEngine.js" as Engine
 import QtQuick
+import QtQuick.Effects
 import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Io
@@ -20,6 +21,8 @@ Item {
     // Wallpaper layer, sampled for the frosted cards of large items.
     property Item wallpaper: null
     readonly property point gridOrigin: Qt.point(gridItem.x, gridItem.y)
+    // The wallpaper blurred once for all frosted cards, null when unused.
+    readonly property Item glass: glassLoader.item
 
     readonly property var screenConfig: GlobalConfig.forScreen(screenData.name).background
     readonly property bool iconsEnabled: screenConfig.desktopIconsEnabled
@@ -27,11 +30,38 @@ Item {
     readonly property bool vibrant: screenConfig.materialYouIconsVibrant
     readonly property string desktopDir: Paths.home + "/Desktop"
 
-    readonly property int iconSize: DesktopLayout.iconSize
-    readonly property int cellWidth: iconSize + 36
-    readonly property int cellHeight: iconSize + 56
+    // Multi-monitor scaling and density adaptation
+    readonly property real monitorScale: {
+        const mon = Kwin.monitorFor(screenData);
+        if (mon && mon.scale && mon.scale > 0)
+            return mon.scale;
+        if (screenData && screenData.devicePixelRatio > 0)
+            return screenData.devicePixelRatio;
+        return 1.0;
+    }
+
+    readonly property real resolutionScale: {
+        if (root.width <= 0 || root.height <= 0)
+            return 1.0;
+        const minDim = Math.min(root.width, root.height);
+        if (minDim <= 768)
+            return 0.85;
+        if (minDim <= 900)
+            return 0.92;
+        if (minDim >= 2160 && monitorScale <= 1.0)
+            return 1.5;
+        if (minDim >= 1440 && monitorScale <= 1.0)
+            return 1.25;
+        return 1.0;
+    }
+
+    readonly property real effectiveScale: Math.max(0.75, Math.min(2.0, resolutionScale))
+    readonly property int iconSize: Math.round(DesktopLayout.iconSize * effectiveScale)
+    readonly property int cellWidth: Math.round(iconSize + 36 * effectiveScale)
+    readonly property int cellHeight: Math.round(iconSize + 56 * effectiveScale)
     readonly property int cols: Math.max(1, Math.floor(gridItem.areaWidth / cellWidth))
     readonly property int rows: Math.max(1, Math.floor(gridItem.areaHeight / cellHeight))
+    readonly property bool isPrimaryScreen: Screens.screens.length > 0 && Screens.screens[0].name === screenData.name
     readonly property bool gridReady: gridItem.areaWidth > 0 && gridItem.areaHeight > 0
     readonly property bool folderReady: folderModel.status === FolderListModel.Ready
 
@@ -54,6 +84,10 @@ Item {
     property var previewPositions: null
     property var dropCells: []
     property string mergeKey: ""
+    // The drop plan the preview was last built for. Drag moves arrive for
+    // every pointer motion, and rebuilding the preview re-lays out every tile
+    // and recreates the drop cells, so it only happens when the plan changes.
+    property string previewPlanKey: ""
     property bool dragImageReady: false
     property string pendingDragKey: ""
     property string dragImageKey: ""
@@ -107,6 +141,18 @@ Item {
 
     function isBigKey(key: string): bool {
         return isWidgetKey(key) || (isGroupKey(key) && key in spans);
+    }
+
+    function belongsToThisScreen(pos: var): bool {
+        if (!pos)
+            return false;
+        if (pos.screen && pos.screen === screenData.name)
+            return true;
+        if (!pos.screen && isPrimaryScreen)
+            return true;
+        if (pos.screen && isPrimaryScreen && !Screens.screens.some(s => s.name === pos.screen))
+            return true;
+        return false;
     }
 
     function spanOf(key: string): var {
@@ -287,13 +333,40 @@ Item {
             for (const m of groups[id].members)
                 grouped[m] = true;
         const desired = [];
-        for (const name in files)
-            if (!grouped[name])
-                desired.push(DesktopLayout.fileKey(name));
-        for (const id in groups)
-            desired.push(DesktopLayout.groupKey(id));
-        for (const id in DesktopLayout.widgets)
-            desired.push(DesktopLayout.widgetKey(id));
+        if (iconsEnabled) {
+            for (const name in files) {
+                if (grouped[name])
+                    continue;
+                const key = DesktopLayout.fileKey(name);
+                const pos = DesktopLayout.positions[key];
+                if (pos) {
+                    if (belongsToThisScreen(pos))
+                        desired.push(key);
+                } else if (isPrimaryScreen) {
+                    desired.push(key);
+                }
+            }
+            for (const id in groups) {
+                const key = DesktopLayout.groupKey(id);
+                const pos = DesktopLayout.positions[key];
+                if (pos) {
+                    if (belongsToThisScreen(pos))
+                        desired.push(key);
+                } else if (isPrimaryScreen) {
+                    desired.push(key);
+                }
+            }
+        }
+        for (const id in DesktopLayout.widgets) {
+            const key = DesktopLayout.widgetKey(id);
+            const pos = DesktopLayout.positions[key];
+            if (pos) {
+                if (belongsToThisScreen(pos))
+                    desired.push(key);
+            } else if (isPrimaryScreen) {
+                desired.push(key);
+            }
+        }
 
         const old = DesktopLayout.positions;
         const positions = {};
@@ -345,16 +418,20 @@ Item {
                 newKeys.push(key);
                 continue;
             }
-            positions[key] = cell;
+            positions[key] = Object.assign({}, cell, { screen: screenData.name });
             Engine.markRect(occ, cell, span, key);
         }
 
         const next = DesktopLayout.autoArrange ? arranged(positions, newKeys) : positions;
+        for (const k in next) {
+            if (next[k] && !next[k].screen)
+                next[k] = Object.assign({}, next[k], { screen: screenData.name });
+        }
 
         if (groupsChanged)
             DesktopLayout.setGroups(groups);
         if (!samePositions(next, old))
-            DesktopLayout.setPositions(next);
+            DesktopLayout.setPositions(Object.assign({}, DesktopLayout.positions, next));
 
         // Mirror the top-level keys in the models, keeping existing delegates.
         // Large folders and widgets get their own delegate type.
@@ -386,6 +463,10 @@ Item {
             return;
         const current = contextPositionsTopLevel();
         const next = DesktopLayout.autoArrange ? arranged(current, []) : Engine.fitIntoGrid(current, cols, rows, spans);
+        for (const k in next) {
+            if (next[k])
+                next[k] = Object.assign({}, next[k], { screen: screenData.name });
+        }
         if (!samePositions(next, current))
             DesktopLayout.setPositions(Object.assign({}, DesktopLayout.positions, next));
     }
@@ -402,7 +483,12 @@ Item {
         DesktopLayout.setSortKey(key);
         const current = contextPositionsTopLevel();
         const order = Engine.sortItems(Object.keys(current).map(describe), key).map(i => i.key);
-        DesktopLayout.setPositions(Engine.compact(order, rows, spans));
+        const next = Engine.compact(order, rows, spans);
+        for (const k in next) {
+            if (next[k])
+                next[k] = Object.assign({}, next[k], { screen: screenData.name });
+        }
+        DesktopLayout.setPositions(Object.assign({}, DesktopLayout.positions, next));
         if (!DesktopLayout.autoArrange)
             DesktopLayout.setSortKey("");
     }
@@ -641,7 +727,7 @@ Item {
             delete positions[DesktopLayout.fileKey(n)];
         const gkey = DesktopLayout.groupKey(id);
         if (cell)
-            positions[gkey] = { col: cell.col, row: cell.row };
+            positions[gkey] = { col: cell.col, row: cell.row, screen: screenData.name };
         DesktopLayout.setGroups(groups);
         DesktopLayout.setPositions(positions);
         setSelection([gkey]);
@@ -673,14 +759,14 @@ Item {
         for (const m of g.members) {
             const key = DesktopLayout.fileKey(m);
             const cell = at ? Engine.nearestFree(occ, at.col, at.row, cols, rows) : Engine.firstFree(occ, cols, rows);
-            positions[key] = cell;
+            positions[key] = Object.assign({}, cell, { screen: screenData.name });
             Engine.markRect(occ, cell, { w: 1, h: 1 }, key);
             keys.push(key);
         }
         if (openGroupId === id)
             openGroupId = "";
         DesktopLayout.setGroups(groups);
-        DesktopLayout.setPositions(DesktopLayout.autoArrange ? arranged(positions, []) : positions);
+        DesktopLayout.setPositions(DesktopLayout.autoArrange ? Object.assign(positions, arranged(contextPositionsTopLevel(), [])) : positions);
         Qt.callLater(() => {
             syncEntries();
             setSelection(keys);
@@ -703,7 +789,7 @@ Item {
             delete groups[id];
             delete positions[gkey];
             if (left.length === 1 && groupCell)
-                positions[DesktopLayout.fileKey(left[0])] = groupCell;
+                positions[DesktopLayout.fileKey(left[0])] = Object.assign({}, groupCell, { screen: screenData.name });
             if (openGroupId === id)
                 openGroupId = "";
         }
@@ -712,11 +798,11 @@ Item {
         for (const n of names) {
             const key = DesktopLayout.fileKey(n);
             const c = Engine.nearestFree(occ, from.col, from.row, cols, rows);
-            positions[key] = c;
+            positions[key] = Object.assign({}, c, { screen: screenData.name });
             Engine.markRect(occ, c, { w: 1, h: 1 }, key);
         }
         DesktopLayout.setGroups(groups);
-        DesktopLayout.setPositions(DesktopLayout.autoArrange ? arranged(positions, []) : positions);
+        DesktopLayout.setPositions(DesktopLayout.autoArrange ? Object.assign(positions, arranged(contextPositionsTopLevel(), [])) : positions);
         Qt.callLater(syncEntries);
     }
 
@@ -762,8 +848,17 @@ Item {
         return Engine.planMove(current, [key], key, current[key], cols, rows, s);
     }
 
+    function isKeyLocked(key: string): bool {
+        return isWidgetKey(key) && DesktopLayout.isWidgetLocked(nameOf(key));
+    }
+
     function previewResize(key: string, w: int, h: int): void {
+        if (isKeyLocked(key))
+            return;
         if (!DesktopLayout.positions[key])
+            return;
+        const span = previewSpans?.[key];
+        if (span && span.w === w && span.h === h)
             return;
         const next = resizePlan(key, w, h);
         previewSpans = spansWith(key, w, h);
@@ -777,6 +872,8 @@ Item {
 
     function resizeItem(key: string, w: int, h: int): void {
         endResizePreview();
+        if (isKeyLocked(key))
+            return;
         const pos = DesktopLayout.positions[key];
         if (!pos)
             return;
@@ -801,7 +898,7 @@ Item {
     }
 
     function addWidget(type: string, cell: var): void {
-        const info = widgetCatalog.info(type);
+        const info = widgetCatalog.infoForGrid(type, cols, rows);
         if (!info.type)
             return;
         const id = DesktopLayout.newGroupId();
@@ -810,10 +907,10 @@ Item {
         widgets[id] = { type, size: { w: info.size.w, h: info.size.h }, config: Object.assign({}, info.config ?? {}) };
         const occ = Engine.occupancy(contextPositionsTopLevel(), null, spans);
         const at = cell ? Engine.nearestFree(occ, cell.col, cell.row, cols, rows, info.size) : Engine.firstFree(occ, cols, rows, info.size);
-        const positions = Object.assign({}, DesktopLayout.positions);
-        positions[key] = at;
+        const posWithScreen = Object.assign({}, at, { screen: screenData.name });
+        const positions = Object.assign({}, DesktopLayout.positions, { [key]: posWithScreen });
         DesktopLayout.setWidgets(widgets);
-        DesktopLayout.setPositions(DesktopLayout.autoArrange ? Object.assign(positions, arranged(Object.assign(contextPositionsTopLevel(), { [key]: at }), [])) : positions);
+        DesktopLayout.setPositions(DesktopLayout.autoArrange ? Object.assign(positions, arranged(Object.assign(contextPositionsTopLevel(), { [key]: posWithScreen }), [])) : positions);
         Qt.callLater(() => {
             syncEntries();
             setSelection([key]);
@@ -996,14 +1093,16 @@ Item {
     }
 
     function beginDrag(key: string): void {
-        if (renameActive)
+        if (renameActive || isKeyLocked(key))
             return;
         // The first drag can outrun the async image grab; starting without it flickers.
         if (!dragImageReady && dragImageKey === key) {
             pendingDragKey = key;
             return;
         }
-        const keys = isSelected(key) ? selectedKeys() : [key];
+        const keys = (isSelected(key) ? selectedKeys() : [key]).filter(k => !isKeyLocked(k));
+        if (keys.length === 0)
+            return;
         // For big widgets, adjust the hotSpot to the card's position within the tile.
         let hotSpot = pressPoint;
         if (isBigKey(key)) {
@@ -1083,6 +1182,7 @@ Item {
     }
 
     function clearDropPreview(): void {
+        previewPlanKey = "";
         previewPositions = null;
         dropCells = [];
         mergeKey = "";
@@ -1153,6 +1253,10 @@ Item {
 
     function updateDropPreview(x: real, y: real, internal: bool): void {
         const plan = dropPlan(x, y, internal);
+        const planKey = [internal, plan.mode, plan.target, plan.cell.col, plan.cell.row, plan.place.col, plan.place.row].join(",");
+        if (planKey === previewPlanKey)
+            return;
+        previewPlanKey = planKey;
         mergeKey = plan.mode === "place" || plan.mode === "none" ? "" : plan.target;
         if (plan.mode !== "place") {
             previewPositions = null;
@@ -1224,6 +1328,10 @@ Item {
             return;
         }
         const landed = DesktopLayout.autoArrange ? Engine.planInsert(contextPositionsTopLevel(), keys, plan.place, rows, spans) : Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], plan.place, cols, rows, spans);
+        for (const k of keys) {
+            if (landed[k])
+                landed[k] = Object.assign({}, landed[k], { screen: screenData.name });
+        }
         DesktopLayout.setPositions(Object.assign({}, DesktopLayout.positions, landed));
         if (DesktopLayout.sortKey !== "")
             DesktopLayout.setSortKey("");
@@ -1337,26 +1445,26 @@ Item {
     }
 
     onColsChanged: {
-        if (gridReady)
-            DesktopLayout.seedDefaults(cols, rows);
+        if (gridReady && isPrimaryScreen)
+            DesktopLayout.seedDefaults(cols, rows, screenData.name);
         refitTimer.restart();
     }
     onRowsChanged: {
-        if (gridReady)
-            DesktopLayout.seedDefaults(cols, rows);
+        if (gridReady && isPrimaryScreen)
+            DesktopLayout.seedDefaults(cols, rows, screenData.name);
         refitTimer.restart();
     }
     onFolderReadyChanged: Qt.callLater(syncEntries)
     onGridReadyChanged: {
-        if (gridReady)
-            DesktopLayout.seedDefaults(cols, rows);
+        if (gridReady && isPrimaryScreen)
+            DesktopLayout.seedDefaults(cols, rows, screenData.name);
         Qt.callLater(syncEntries);
     }
 
     Component.onCompleted: {
         DesktopLayout.registerController(screenData.name, root);
-        if (gridReady)
-            DesktopLayout.seedDefaults(cols, rows);
+        if (gridReady && isPrimaryScreen)
+            DesktopLayout.seedDefaults(cols, rows, screenData.name);
     }
     Component.onDestruction: DesktopLayout.unregisterController(screenData.name)
 
@@ -1570,15 +1678,40 @@ wl-paste --no-newline --type text/uri-list`]
         onDropped: drop => root.commitDrop(drop)
     }
 
+    // Frosted glass for the cards of large items: the wallpaper is blurred
+    // once here and each card shows its own part of it. The blur starts at
+    // half size anyway, so the wallpaper is taken at half size too.
+    Loader {
+        id: glassLoader
+
+        anchors.fill: parent
+        visible: false
+        active: !!root.wallpaper && !GameMode.enabled && bigModel.count > 0
+
+        sourceComponent: MultiEffect {
+            source: ShaderEffectSource {
+                sourceItem: root.wallpaper
+                textureSize: Qt.size(Math.ceil(root.width / 2), Math.ceil(root.height / 2))
+            }
+            blurEnabled: true
+            blur: 1
+            blurMax: 48
+            autoPaddingEnabled: false
+        }
+    }
+
     Item {
         id: gridItem
 
-        readonly property int barZone: Visibilities.bars.get(root.screenData.name)?.visualThickness ?? (Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness))
-        readonly property int baseMargin: Tokens.padding.large * 2
-        readonly property int marginLeft: Config.bar.position === "left" ? baseMargin + barZone : baseMargin
-        readonly property int marginRight: Config.bar.position === "right" ? baseMargin + barZone : baseMargin
-        readonly property int marginTop: Config.bar.position === "top" ? baseMargin + barZone : baseMargin
-        readonly property int marginBottom: Config.bar.position === "bottom" ? baseMargin + barZone : baseMargin
+        readonly property var barConfig: GlobalConfig.forScreen(root.screenData.name).bar
+        readonly property bool barEnabled: !Strings.testRegexList(barConfig.excludedScreens, root.screenData.name)
+        readonly property string barPosition: barConfig.position ?? Config.bar.position
+        readonly property int barZone: barEnabled ? (Visibilities.bars.get(root.screenData.name)?.visualThickness ?? (Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness))) : 0
+        readonly property int baseMargin: Math.round(Tokens.padding.large * 2 * root.effectiveScale)
+        readonly property int marginLeft: barPosition === "left" ? baseMargin + barZone : baseMargin
+        readonly property int marginRight: barPosition === "right" ? baseMargin + barZone : baseMargin
+        readonly property int marginTop: barPosition === "top" ? baseMargin + barZone : baseMargin
+        readonly property int marginBottom: barPosition === "bottom" ? baseMargin + barZone : baseMargin
         // Space the cells may use. Only whole cells fit, so the grid is centred in it
         // and the leftover is split between both sides instead of all going right and down.
         readonly property real areaWidth: root.width - marginLeft - marginRight
@@ -1619,8 +1752,8 @@ wl-paste --no-newline --type text/uri-list`]
                 visible: (!isGroup || root.iconsEnabled) && pos !== null
                 width: span.w * root.cellWidth
                 height: span.h * root.cellHeight
-                x: (pos?.col ?? 0) * root.cellWidth
-                y: (pos?.row ?? 0) * root.cellHeight
+                x: Math.max(0, Math.min(root.cols - span.w, pos?.col ?? 0)) * root.cellWidth
+                y: Math.max(0, Math.min(root.rows - span.h, pos?.row ?? 0)) * root.cellHeight
                 z: resizing ? 3 : 0
                 selected: root.selection[key] === true && root.openGroupId === ""
                 focusVisible: root.keyboardActive && root.focusKey === key && root.openGroupId === ""
@@ -1682,8 +1815,8 @@ wl-paste --no-newline --type text/uri-list`]
                 visible: root.iconsEnabled && pos !== null
                 width: root.cellWidth
                 height: root.cellHeight
-                x: (pos?.col ?? 0) * root.cellWidth
-                y: (pos?.row ?? 0) * root.cellHeight
+                x: Math.max(0, Math.min(root.cols - 1, pos?.col ?? 0)) * root.cellWidth
+                y: Math.max(0, Math.min(root.rows - 1, pos?.row ?? 0)) * root.cellHeight
                 z: selected ? 2 : 1
                 iconSize: root.iconSize
                 materialYou: root.materialYou
