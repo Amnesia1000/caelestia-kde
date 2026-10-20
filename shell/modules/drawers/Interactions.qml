@@ -18,6 +18,8 @@ CustomMouseArea {
     required property Bar.BarWrapper bar
     required property real borderThickness
     required property bool fullscreen
+    // A context menu on another screen still needs its dismiss click.
+    required property bool capturesDismissClick
     property var focusGrab: null
     // Paired with ContentWindow.hasOpenOverlay: the launcher is open on another
     // screen, so this screen only takes input to dismiss it.
@@ -117,7 +119,7 @@ CustomMouseArea {
     }
 
     anchors.fill: parent
-    acceptedButtons: (fullscreen && !(root.focusGrab && (root.focusGrab.active || popouts.isDetached))) ? Qt.NoButton : Qt.AllButtons
+    acceptedButtons: (fullscreen && !capturesDismissClick && !(root.focusGrab && (root.focusGrab.active || popouts.isDetached))) ? Qt.NoButton : Qt.AllButtons
     hoverEnabled: true
     onPressed: event => {
         dragStart = Qt.point(event.x, event.y);
@@ -127,7 +129,11 @@ CustomMouseArea {
             return;
         }
 
-        if (root.focusGrab && (root.focusGrab.active || popouts.isDetached)) {
+        const grabActive = root.focusGrab && (root.focusGrab.active || popouts.isDetached);
+        // Any screen's menu can be the one this click dismisses.
+        const menuOpen = Visibilities.contextPopoutOpen;
+
+        if (grabActive || menuOpen) {
             let inside = false;
 
             if (inBarArea(event.x, event.y)) inside = true;
@@ -139,7 +145,10 @@ CustomMouseArea {
             else if (popouts.hasCurrent && inLeftPanel(panels.popoutsWrapper, event.x, event.y)) inside = true;
 
             if (!inside) {
-                root.focusGrab.clear();
+                if (grabActive)
+                    root.focusGrab.clear();
+                if (menuOpen)
+                    Visibilities.closeContextPopouts();
             }
         }
     }
@@ -158,9 +167,6 @@ CustomMouseArea {
 
             if (!popoutHideTimer.running)
                 popoutHideTimer.start();
-
-            if (Config.bar.showOnHover)
-                bar.isHovered = false;
         } else {
             popoutHideTimer.stop();
         }
@@ -179,8 +185,8 @@ CustomMouseArea {
             return;
         }
 
-        if (!visibilities.bar && Config.bar.showOnHover && inBarArea(x, y))
-            bar.isHovered = true;
+        if (!visibilities.bar && Config.bar.showOnHover)
+            bar.pointerInReach = inBarArea(x, y);
 
         if (pressed && inBarArea(dragStart.x, dragStart.y)) {
             if (bar.position === "left") {
@@ -363,6 +369,8 @@ CustomMouseArea {
 
         interval: 150
         onTriggered: {
+            if (popouts.isContextPopout)
+                return;
             if (!popouts.currentName.startsWith("traymenu") || ((popouts.current as StackView)?.depth ?? 0) <= 1) {
                 popouts.hasCurrent = false;
                 bar.closeTray();
