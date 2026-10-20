@@ -18,6 +18,8 @@ source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/sc
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/skwd-wall.sh"
 # shellcheck source=scripts/lib/plasma-audio-visualizer.sh
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/plasma-audio-visualizer.sh"
+# shellcheck source=scripts/lib/fonts.sh
+source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/fonts.sh"
 
 darkly_deb_asset_url() {
     local release_json id ver needle url
@@ -391,25 +393,8 @@ unzip -qo "/tmp/JetBrainsMono.zip" -d "${XDG_DATA_HOME:-$HOME/.local/share}/font
 fc-cache -f
 
 # SDDM runs as its own user and never reads the user's font directory, so the
-# fonts above are mirrored system-wide: otherwise the login screen falls back to
-# fonts without the icons and the nerd font glyphs.
-SYSTEM_FONT_DIR="/usr/share/fonts/caelestia"
-_fonts_dir="${XDG_DATA_HOME:-$HOME/.local/share}/fonts"
-if caelestia_sudo install -d -m 755 "$SYSTEM_FONT_DIR"; then
-    shopt -s nullglob
-    _theme_fonts=("$_fonts_dir"/MaterialSymbolsRounded.ttf "$_fonts_dir"/Rubik-*.ttf "$_fonts_dir"/CaskaydiaCove*.ttf "$_fonts_dir"/JetBrainsMono*.ttf)
-    shopt -u nullglob
-    if [[ ${#_theme_fonts[@]} -gt 0 ]]; then
-        caelestia_sudo install -m 644 "${_theme_fonts[@]}" "$SYSTEM_FONT_DIR/" || { err "Failed to install the login screen fonts system-wide."; FAILED_PKGS+=("Login screen fonts"); }
-        caelestia_sudo fc-cache -f "$SYSTEM_FONT_DIR" >/dev/null 2>&1 || true
-    else
-        err "No login screen fonts found to mirror system-wide."
-        FAILED_PKGS+=("Login screen fonts")
-    fi
-else
-    err "Failed to create $SYSTEM_FONT_DIR."
-    FAILED_PKGS+=("Login screen fonts")
-fi
+# fonts above are mirrored system-wide.
+mirror_login_fonts || FAILED_PKGS+=("Login screen fonts")
 
 info "Installing Darkly KDE Theme from prebuilt package..."
 if [[ "$INSTALL_DARKLY" == "true" ]]; then

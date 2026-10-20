@@ -224,7 +224,7 @@ if copy_user_file "$THEME_CONF_SRC" "$THEME_CONF_DEST" "$MAX_THEME_CONF_BYTES"; 
     chmod 644 "$THEME_CONF_DEST"
     echo "✓ Synced theme.conf"
 else
-    echo "No theme.conf found, leaving existing theme.conf unchanged."
+    echo "No exported theme.conf, keeping the installed one."
 fi
 
 # The shipped theme.conf says Linux, so the system information is written even
