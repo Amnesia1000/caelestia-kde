@@ -751,6 +751,16 @@ echo "$INSTALLED|$LATEST"
         onExited: root.claudeCodeChecking = false
     }
 
+    // The updater runs in the user's own terminal, so the shell never sees its
+    // process exit. Watching the revision file tells us the moment the checkout
+    // moved, which is when the update finished and the page has to stop
+    // offering it without a manual Refresh.
+    FileView {
+        path: `${Quickshell.shellDir}/.current_commit`
+        watchChanges: true
+        onFileChanged: root.reload()
+    }
+
     Timer {
         id: autoCheckTimer
 
