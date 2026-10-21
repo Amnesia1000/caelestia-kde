@@ -105,10 +105,26 @@ StyledWindow {
             bottom: Math.max(bar.position === "bottom" ? bar.implicitHeight : 0, root.borderThickness, panelEdge("bottom"))
         };
     }
-    // Every panel enabled on this screen: the ones spanning a whole edge
-    // thicken the frame there, the rest are drawn as islands over it.
-    readonly property var screenPanels: (GlobalConfig.bar.panels?.values ?? []).filter(panel => panel.enabled !== false
-        && ((panel.screens ?? []).length === 0 || Strings.testRegexList(panel.screens, screen.name)))
+    // Every panel enabled on this screen, with the index it holds in the global
+    // list: the ones spanning a whole edge thicken the frame there, the rest are
+    // drawn as islands over it. The index is what lets a panel open the page
+    // that edits its own widgets.
+    readonly property var screenPanels: {
+        const panels = GlobalConfig.bar.panels?.values ?? [];
+        const shown = [];
+        for (let i = 0; i < panels.length; ++i) {
+            const panel = panels[i];
+            if (panel.enabled === false)
+                continue;
+            if ((panel.screens ?? []).length > 0 && !Strings.testRegexList(panel.screens, screen.name))
+                continue;
+            shown.push({
+                panel,
+                index: i
+            });
+        }
+        return shown;
+    }
     // Islands already keep the bar away from the screen edge, so a panel does
     // the same there; without them a panel hugs the edge and merges with it.
     readonly property int panelInset: GlobalConfig.appearance.islands ? Tokens.spacing.extraLarge : 0
@@ -117,7 +133,8 @@ StyledWindow {
     // reserves space: the exclusion zones only know about full-edge panels.
     readonly property var panelRects: {
         const rects = [];
-        for (const panel of root.screenPanels) {
+        for (const entry of root.screenPanels) {
+            const panel = entry.panel;
             const edge = panel.position ?? "top";
             const horizontal = edge === "top" || edge === "bottom";
             const total = horizontal ? root.width : root.height;
@@ -131,6 +148,7 @@ StyledWindow {
             const thickness = root.panelThickness;
             rects.push({
                 panel,
+                panelIndex: entry.index,
                 edge,
                 horizontal,
                 full,
@@ -1076,6 +1094,7 @@ StyledWindow {
                         anchors.rightMargin: band.horizontal ? bar.padding : 0
 
                         position: band.edge
+                        panelIndex: band.modelData.panelIndex
                         entries: band.modelData.panel.entries
                         screen: root.screen
                         visibilities: root.visibilities

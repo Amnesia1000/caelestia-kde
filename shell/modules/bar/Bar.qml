@@ -27,6 +27,9 @@ Item {
     // their own widget list. The primary bar keeps reading the global config.
     property string position: Config.bar.position
     property var entries: Config.bar.entries
+    // Index of this bar in `bar.panels`, or -1 for the primary bar. Used to open
+    // the page that edits the widgets of the bar that was right clicked.
+    property int panelIndex: -1
     property Item currentHoveredItem: null
 
     readonly property int vPadding: Tokens.padding.large
@@ -93,7 +96,7 @@ Item {
 
         // A context menu stays open while the pointer moves over the bar, so
         // the hover routing below must not take it over or close it.
-        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "mediacontext" || popouts.currentName === "performancecontext" || popouts.currentName === "screencapturecontext" || popouts.currentName === "keepawakecontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext" || popouts.currentName === "elementscontext"))
+        if (popouts.hasCurrent && (popouts.currentName === "clockcontext" || popouts.currentName === "dockcontext" || popouts.currentName === "greetercontext" || popouts.currentName === "statusiconscontext" || popouts.currentName === "workspacescontext" || popouts.currentName === "traycontext" || popouts.currentName === "githubcontext" || popouts.currentName === "weathercontext" || popouts.currentName === "mediacontext" || popouts.currentName === "performancecontext" || popouts.currentName === "screencapturecontext" || popouts.currentName === "keepawakecontext" || popouts.currentName === "osiconcontext" || popouts.currentName === "dockbgcontext" || popouts.currentName === "elementscontext" || popouts.currentName === "barcontext"))
             return;
 
         const ch = getLoaderAt(isHorizontal ? pos : width / 2, isHorizontal ? height / 2 : pos) as WrappedLoader;
@@ -356,6 +359,23 @@ Item {
     Component.onCompleted: Logger.mark("bar-ready")
 
     clip: true
+
+    // Right clicking empty space on a bar opens a small menu, and from there the
+    // page that edits the widgets of that bar: the primary bar for -1, the panel
+    // at its index in `bar.panels` otherwise. Widgets drawn above keep their own
+    // menus.
+    TapHandler {
+        acceptedButtons: Qt.RightButton
+
+        onTapped: eventPoint => {
+            const pos = isHorizontal ? eventPoint.position.x : eventPoint.position.y;
+            popouts.barPanelIndex = root.panelIndex;
+            popouts.currentEdge = root.position;
+            popouts.currentName = "barcontext";
+            popouts.currentCenter = isHorizontal ? root.mapToItem(null, pos, 0).x : root.mapToItem(null, 0, pos).y;
+            popouts.hasCurrent = true;
+        }
+    }
 
     GridLayout {
         id: leftLayout

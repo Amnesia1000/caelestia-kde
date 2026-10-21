@@ -34,6 +34,7 @@ Item {
     property alias hasCurrent: popoutState.hasCurrent
     property alias dockModel: popoutState.dockModel
     property alias tasksModel: popoutState.tasksModel
+    property alias barPanelIndex: popoutState.barPanelIndex
     property real currentCenter
     // The frame edge the current popout grows out of: the bar's own side by
     // default, or the side of the panel band that opened it.

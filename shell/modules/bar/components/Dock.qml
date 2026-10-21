@@ -521,6 +521,13 @@ Item {
 
                 property var modelData: root.modelDataMap[appId] || root.modelDataArray[index]
 
+                HoverHandler {
+                    onHoveredChanged: {
+                        if (hovered)
+                            root.publishTileHover(delegateContainer);
+                    }
+                }
+
                 DropArea {
                     anchors.fill: parent
                     anchors.margins: Tokens.padding.small
@@ -827,35 +834,25 @@ Item {
     function handleHover(relPos: real, isHorizontal: bool): void {
         if (bar.popouts.hasCurrent && bar.popouts.currentName === "dockcontext") return;
 
-        const itemSize = container.itemSize;
-        const itemWidthWithSpacing = itemSize + spacing;
-        const adjustedPos = isHorizontal ? relPos - container.x - padding : relPos - container.y - padding;
-        const scrolled = isHorizontal ? listView.contentX : listView.contentY;
+        // Tiles publish their own hover (see `publishTileHover`), so this only
+        // closes the preview once the pointer leaves the list. The slot
+        // arithmetic that used to live here drifted by one icon as soon as the
+        // launcher header was shown, and the pointer position handed to the bar
+        // doesn't match the tile that is drawn either.
         const visibleSpan = isHorizontal ? listView.width : listView.height;
+        const adjustedPos = isHorizontal ? relPos - container.x - padding : relPos - container.y - padding;
 
-        if (adjustedPos < 0 || adjustedPos > visibleSpan) {
+        if (adjustedPos < 0 || adjustedPos > visibleSpan)
             bar.popouts.hasCurrent = false;
-            return;
-        }
+    }
 
-        const leading = root.launcherShown ? 1 : 0;
-        const index = Math.floor((adjustedPos + scrolled) / itemWidthWithSpacing) - leading;
+    function publishTileHover(tile: Item): void {
+        if (root.isDragging) return;
 
-        if (index >= 0 && index < modelDataArray.length) {
-            bar.popouts.currentName = "dockhover";
-            const centerOffset = (index + leading) * itemWidthWithSpacing + itemSize / 2 - scrolled;
-            if (centerOffset < 0 || centerOffset > visibleSpan) {
-                bar.popouts.hasCurrent = false;
-                return;
-            }
-            const absoluteCenter = isHorizontal
-                ? container.mapToItem(null, padding + centerOffset, 0).x
-                : container.mapToItem(null, 0, padding + centerOffset).y;
-
-            bar.popouts.currentCenter = absoluteCenter;
-            bar.popouts.dockModel = modelDataArray[index];
-            bar.popouts.hasCurrent = true;
-        }
+        bar.popouts.currentName = "dockhover";
+        bar.popouts.currentCenter = bar.isHorizontal ? tile.mapToItem(null, tile.width / 2, 0).x : tile.mapToItem(null, 0, tile.height / 2).y;
+        bar.popouts.dockModel = tile.modelData;
+        bar.popouts.hasCurrent = true;
     }
 
     property var modelDataArray: []

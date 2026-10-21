@@ -8,6 +8,7 @@ QtObject {
     property string selectedClientAddress: ""
     property bool sidebarOpen: false
     property bool isHorizontal: true
+    property int barPanelIndex: -1
 
     signal detachRequested(mode: string)
 }

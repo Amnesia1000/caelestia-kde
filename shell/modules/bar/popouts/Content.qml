@@ -76,6 +76,13 @@ Item {
         }
 
         Popout {
+            name: "barcontext"
+            sourceComponent: BarContext {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             name: "greetercontext"
             previewKey: "greeter"
             sourceComponent: BarComponentContext {
