@@ -128,26 +128,44 @@ StyledWindow {
         if (wantsKeyboard) {
             focusReturn = Kwin.activeWindow?.address ?? "";
             workspaceReturn = Kwin.activeWsId;
+            focusRestore.stop();
             return;
         }
 
         const pending = Kwin.pendingFocusAddress ?? "";
-        const addr = (Kwin.activeWindow?.address ?? "") || focusReturn;
+        const recorded = focusReturn;
         const oldWorkspace = workspaceReturn;
         focusReturn = "";
         workspaceReturn = -1;
 
-        if (pending) {
+        if (!recorded || pending) {
             return;
         }
 
-        const currentWorkspace = Kwin.activeWsId;
-        if (oldWorkspace !== -1 && currentWorkspace !== oldWorkspace) {
+        if (oldWorkspace !== -1 && Kwin.activeWsId !== oldWorkspace) {
             return;
         }
 
-        if (addr)
-            Kwin.focusWindow(addr);
+        focusRestore.recorded = recorded;
+        focusRestore.restart();
+    }
+    Connections {
+        function onActiveWindowChanged(): void {
+            if (Kwin.activeWindow?.address)
+                focusRestore.stop();
+        }
+
+        target: Kwin
+        enabled: focusRestore.running
+    }
+    Timer {
+        id: focusRestore
+
+        property string recorded: ""
+
+        interval: 1000
+        repeat: false
+        onTriggered: Kwin.focusWindow(recorded)
     }
 
     Overview.Anim {
