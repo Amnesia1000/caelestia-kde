@@ -8,6 +8,7 @@
   },
   "general": {
     "closeOnSelection": true,
+    "notifyOnWallpaperChange": false,
     "randomRotate": false,
     "uiScale": 1.4
   },
