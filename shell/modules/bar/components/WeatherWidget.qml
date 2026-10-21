@@ -12,7 +12,12 @@ StyledRect {
 
     required property var popouts
 
-    readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
+        // Set by the bar that hosts the widget: a widget lives in a bar whose
+    // orientation is not necessarily the main bar's.
+    property var bar: null
+
+    readonly property bool isHorizontal: root.bar ? root.bar.isHorizontal : Config.bar.position === "top" || Config.bar.position === "bottom"
+
 
     implicitWidth: isHorizontal ? contentLayout.implicitWidth + Tokens.padding.medium * 2 : Tokens.sizes.bar.innerWidth
     implicitHeight: isHorizontal ? Tokens.sizes.bar.innerWidth : contentLayout.implicitHeight + Tokens.padding.medium * 2

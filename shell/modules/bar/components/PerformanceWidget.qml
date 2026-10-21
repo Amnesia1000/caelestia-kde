@@ -14,7 +14,12 @@ StyledRect {
 
     required property var popouts
 
-    readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
+        // Set by the bar that hosts the widget: a widget lives in a bar whose
+    // orientation is not necessarily the main bar's.
+    property var bar: null
+
+    readonly property bool isHorizontal: root.bar ? root.bar.isHorizontal : Config.bar.position === "top" || Config.bar.position === "bottom"
+
     readonly property string pill: String(Config.bar.performance?.pill ?? "").trim().toLowerCase()
     readonly property string widgetStyle: String(Config.bar.performance?.widgetStyle ?? "classic").trim().toLowerCase()
     readonly property bool widgetShowText: typeof Config.bar.performance !== "undefined" && Config.bar.performance.widgetShowText !== undefined ? Config.bar.performance.widgetShowText : true
@@ -89,6 +94,7 @@ StyledRect {
         id: cpuPill
 
         PerfCpu {
+            bar: root.bar
             showText: root.widgetShowText
             pillStyle: root.widgetPillStyle
         }
@@ -98,6 +104,7 @@ StyledRect {
         id: gpuPill
 
         PerfGpu {
+            bar: root.bar
             showText: root.widgetShowText
             pillStyle: root.widgetPillStyle
         }
@@ -107,6 +114,7 @@ StyledRect {
         id: memoryPill
 
         PerfMemory {
+            bar: root.bar
             showText: root.widgetShowText
             pillStyle: root.widgetPillStyle
         }
@@ -116,6 +124,7 @@ StyledRect {
         id: storagePill
 
         PerfStorage {
+            bar: root.bar
             showText: root.widgetShowText
             pillStyle: root.widgetPillStyle
         }
@@ -125,6 +134,7 @@ StyledRect {
         id: networkPill
 
         PerfNetwork {
+            bar: root.bar
             showText: root.widgetShowText
             pillStyle: root.widgetPillStyle
         }
@@ -134,6 +144,7 @@ StyledRect {
         id: batteryPill
 
         PerfBattery {
+            bar: root.bar
             showText: root.widgetShowText
             pillStyle: root.widgetPillStyle
         }

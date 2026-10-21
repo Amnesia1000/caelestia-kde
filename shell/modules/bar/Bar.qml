@@ -145,8 +145,11 @@ Item {
         } else if (id === "statusIcons") {
             const statusIcons = ch.item as StatusIcons;
             const items = statusIcons.items;
-            const localX = isHorizontal ? items.mapFromItem(null, pos, 0).x : items.width / 2;
-            const localY = isHorizontal ? items.height / 2 : items.mapFromItem(null, 0, pos).y;
+            // `pos` runs along this bar, not across the screen: map it from the
+            // bar itself so the icons of a side panel are hit where they are.
+            const localPos = isHorizontal ? items.mapFromItem(root, pos, root.height / 2) : items.mapFromItem(root, root.width / 2, pos);
+            const localX = localPos.x;
+            const localY = localPos.y;
             statusIcons.hoverPos = isHorizontal ? localX : localY;
 
             if (!Config.bar.popouts.statusIcons) return;
@@ -507,6 +510,7 @@ Item {
                 roleValue: "tray"
                 delegate: WrappedLoader {
                     sourceComponent: Tray {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -546,7 +550,9 @@ Item {
                 roleValue: "updateIndicator"
                 delegate: WrappedLoader {
                     visible: enabled && GlobalConfig.general.checkUpdates
-                    sourceComponent: UpdateIndicator {}
+                    sourceComponent: UpdateIndicator {
+                        bar: root
+                    }
                 }
             }
             DelegateChoice {
@@ -554,6 +560,7 @@ Item {
                 delegate: WrappedLoader {
                     visible: enabled && Cpu.name.length > 0
                     sourceComponent: PerfCpu {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -563,6 +570,7 @@ Item {
                 delegate: WrappedLoader {
                     visible: enabled && Memory.total > 1
                     sourceComponent: PerfMemory {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -572,6 +580,7 @@ Item {
                 delegate: WrappedLoader {
                     visible: enabled && Storage.disks.length > 0
                     sourceComponent: PerfStorage {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -580,6 +589,7 @@ Item {
                 roleValue: "perfNetwork"
                 delegate: WrappedLoader {
                     sourceComponent: PerfNetwork {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -589,6 +599,7 @@ Item {
                 delegate: WrappedLoader {
                     visible: enabled && Gpu.type !== Gpu.None
                     sourceComponent: PerfGpu {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -598,6 +609,7 @@ Item {
                 delegate: WrappedLoader {
                     visible: enabled && UPower.displayDevice.isLaptopBattery
                     sourceComponent: PerfBattery {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -631,6 +643,7 @@ Item {
                 roleValue: "weather"
                 delegate: WrappedLoader {
                     sourceComponent: WeatherWidget {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -639,6 +652,7 @@ Item {
                 roleValue: "performance"
                 delegate: WrappedLoader {
                     sourceComponent: PerformanceWidget {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -647,6 +661,7 @@ Item {
                 roleValue: "shortcuts"
                 delegate: WrappedLoader {
                     sourceComponent: ShortcutsWidget {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -655,6 +670,7 @@ Item {
                 roleValue: "screencapture"
                 delegate: WrappedLoader {
                     sourceComponent: ScreenCaptureWidget {
+                        bar: root
                         popouts: root.popouts
                     }
                 }
@@ -663,6 +679,7 @@ Item {
                 roleValue: "keepawake"
                 delegate: WrappedLoader {
                     sourceComponent: KeepAwakeWidget {
+                        bar: root
                         popouts: root.popouts
                     }
                 }

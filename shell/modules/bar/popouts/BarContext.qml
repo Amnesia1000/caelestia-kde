@@ -25,6 +25,7 @@ ColumnLayout {
     implicitWidth: card.implicitWidth
     spacing: Tokens.spacing.medium * scaleOffset
 
+
     StyledRect {
         id: card
 
@@ -70,15 +71,15 @@ ColumnLayout {
                         const extraBars = target >= 0;
                         const win = WindowFactory.create(null, {
                             initialPageIdx: PageRegistry.indexForKey("panels"),
-                            initialSubPageIdx: extraBars ? 24 : 6
+                            initialSubPageIdx: 6
                         });
                         const apply = () => {
-                            if (win && win.nexus)
+                            if (win && win.nexus) {
                                 win.nexus.nState.barComponentsTarget = target;
+                                win.nexus.nState.backToExtraBars = extraBars;
+                            }
                         };
                         apply();
-                        if (extraBars && win && win.nexus)
-                            win.nexus.nState.openSubPage(6);
                         Qt.callLater(apply);
                     }
                 }

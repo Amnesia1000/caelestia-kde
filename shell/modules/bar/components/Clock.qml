@@ -210,8 +210,31 @@ StyledRect {
             }
         }
 
+        // The colon the horizontal clock shows between hours and minutes, laid
+        // on its side so it reads as a separator in the stacked layout.
+        Row {
+            id: dotsRow
+
+            readonly property int dotSize: Math.max(2, Math.round(root.textSize * 0.13))
+
+            Layout.alignment: Qt.AlignHCenter
+            Layout.topMargin: -Math.round(parent.spacing * 0.5)
+            spacing: Math.max(3, Math.round(root.textSize * 0.18))
+
+            Repeater {
+                model: 2
+
+                Rectangle {
+                    width: dotsRow.dotSize
+                    height: dotsRow.dotSize
+                    radius: width / 2
+                    color: root.colour
+                }
+            }
+        }
+
         StyledText {
-            Layout.topMargin: -parent.spacing - 4
+            Layout.topMargin: -Math.round(parent.spacing * 0.5)
             Layout.alignment: Qt.AlignHCenter
             text: Time.minuteStr
             font: root.fontFor(text, minMetrics.width)
