@@ -35,6 +35,33 @@ Item {
         root.close();
     }
 
+    function currentFlickable(): var {
+        let item = pages.currentItem;
+        while (item) {
+            if (item.flickable !== undefined)
+                return item.flickable;
+            item = item.currentItem ?? null;
+        }
+        return null;
+    }
+
+    function scrollCurrentPage(event: var): void {
+        const f = root.currentFlickable();
+        if (!f || !f.interactive)
+            return;
+
+        // The page already handles the wheel when the cursor is over it.
+        const pos = f.mapFromItem(root, event.x, event.y);
+        if (pos.x >= 0 && pos.y >= 0 && pos.x <= f.width && pos.y <= f.height)
+            return;
+
+        const maxY = Math.max(0, f.contentHeight - f.height);
+        if (maxY <= 0)
+            return;
+
+        f.contentY = Math.max(0, Math.min(maxY, f.contentY - event.angleDelta.y));
+    }
+
     implicitWidth: implicitHeight * Tokens.sizes.nexus.ratio
     implicitHeight: nState.screen.height * Tokens.sizes.nexus.heightMult
 
@@ -74,6 +101,8 @@ Item {
     }
 
     Pages {
+        id: pages
+
         anchors.left: navPane.right
         anchors.right: parent.right
         anchors.top: parent.top
@@ -82,5 +111,16 @@ Item {
         anchors.margins: Tokens.padding.extraLarge
 
         nState: nState
+    }
+
+    // The page margins around the content are outside the page flickable, so
+    // the wheel did nothing there. Forward it to the current page.
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+
+        onWheel: event => {
+            root.scrollCurrentPage(event);
+            event.accepted = true;
+        }
     }
 }

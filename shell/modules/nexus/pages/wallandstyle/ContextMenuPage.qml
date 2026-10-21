@@ -420,6 +420,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: activeModel
                     clip: true
+                    interactive: contentHeight > height
 
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
@@ -515,6 +516,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: libraryModel
                     clip: true
+                    interactive: contentHeight > height
 
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
