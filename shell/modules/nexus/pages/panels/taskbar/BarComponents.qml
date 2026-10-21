@@ -400,7 +400,12 @@ PageBase {
     }
 
     function resetToDefaults(): void {
-        BarWidgets.resetToDefaults(root.targetNode);
+        // The main bar goes back to the schema's own defaults; a panel keeps its
+        // own entry list, which is the node the editor is pointed at.
+        if (root.targetNode === GlobalConfig.bar)
+            BarWidgets.resetToDefaults(GlobalConfig.bar);
+        else
+            BarWidgets.resetToDefaults(root.targetNode);
         load();
     }
 
@@ -425,7 +430,11 @@ PageBase {
         for (let i = 0; i < libraryModel.count; i++) {
             if (!libraryModel.get(i).isPlaceholder) {
                 const id = libraryModel.get(i).compId;
-                newEntries.push({ id: id, enabled: false, zone: BarWidgets.zoneFor(root.targetNode, id) });
+                newEntries.push({
+                    id: id,
+                    enabled: false,
+                    zone: root.targetNode === GlobalConfig.bar ? BarWidgets.zoneFor(Config.bar, id) : BarWidgets.zoneFor(root.targetNode, id)
+                });
             }
         }
 

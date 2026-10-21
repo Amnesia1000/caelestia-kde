@@ -227,7 +227,7 @@ StyledRect {
                 Rectangle {
                     width: dotsRow.dotSize
                     height: dotsRow.dotSize
-                    radius: width / 2
+                    radius: Tokens.rounding.full
                     color: root.colour
                 }
             }
