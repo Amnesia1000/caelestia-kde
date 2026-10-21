@@ -36,10 +36,22 @@ Singleton {
     readonly property string visualizerProfile: Config.background.visualiser.profile
     readonly property bool visualizerAutoHide: Config.background.visualiser.autoHide
     readonly property bool visualizerHideOnAllMonitors: Config.background.visualiser.hideOnAllMonitors
+    readonly property bool isPlayerPlaying: {
+        if (Players.active?.isPlaying)
+            return true;
+        const list = Players.list;
+        for (let i = 0; i < list.length; i++) {
+            if (list[i]?.isPlaying)
+                return true;
+        }
+        return false;
+    }
     readonly property bool windowHidesVisualizer: (Kwin.windowList, Kwin.activeWsId, Kwin.activeByOutput, Kwin.windowHidesDesktopWidgets(root.primaryScreen ? root.primaryScreen.name : "", visualizerHideOnAllMonitors))
     readonly property bool gameModeSuppressesVisualizer: GameMode.enabled && GlobalConfig.utilities.gameMode.disableVisualizer
-    readonly property bool visualizerEffectiveEnabled: visualizerEnabled && root.hasVisualizer && !gameModeSuppressesVisualizer && (!visualizerAutoHide || !windowHidesVisualizer)
+    readonly property bool visualizerBaseConditions: visualizerEnabled && root.hasVisualizer && !gameModeSuppressesVisualizer && (!visualizerAutoHide || !windowHidesVisualizer)
+    readonly property bool visualizerEffectiveEnabled: visualizerBaseConditions && debouncedPlayerPlaying
 
+    property bool debouncedPlayerPlaying: false
     property bool hasVisualizer: false
     property bool visualizerActive: false
     property bool ready: false
@@ -49,8 +61,9 @@ Singleton {
         if (!primaryScreen)
             return null;
 
+        const isSingle = root.visualizerProfile === "single";
         const centerGap = Math.round(root.screenWidth * (224 / 1920));
-        const visW = Math.floor((root.usableWidth - centerGap) / 2);
+        const visW = isSingle ? Math.round(root.usableWidth) : Math.floor((root.usableWidth - centerGap) / 2);
         const visH = Math.round(root.usableHeight * (416 / 1080));
         const rawY = Math.round(root.screenHeight - root.bottomExclusion - visH);
         // Ensure visualizer is strictly clamped near the bottom edge
@@ -227,10 +240,31 @@ Singleton {
     onUsableWidthChanged: scheduleSync()
     onUsableHeightChanged: scheduleSync()
 
+    onIsPlayerPlayingChanged: {
+        if (isPlayerPlaying) {
+            playerStopTimer.stop();
+            debouncedPlayerPlaying = true;
+        } else {
+            if (!ready) {
+                debouncedPlayerPlaying = false;
+            } else {
+                playerStopTimer.restart();
+            }
+        }
+    }
+
+    onVisualizerBaseConditionsChanged: {
+        if (!visualizerBaseConditions) {
+            playerStopTimer.stop();
+            if (!isPlayerPlaying)
+                debouncedPlayerPlaying = false;
+        }
+    }
+
     onVisualizerEffectiveEnabledChanged: {
         if (!ready)
             return;
-        visualizerStateTimer.restart();
+        updateVisualizerState();
     }
 
     onVisualizerProfileChanged: {
@@ -243,8 +277,9 @@ Singleton {
     Component.onCompleted: {
         Qt.callLater(() => {
             root.ready = true;
+            root.debouncedPlayerPlaying = root.isPlayerPlaying;
             root.visualizerActive = root.visualizerEffectiveEnabled;
-            if (root.visualizerAutoHide && !root.visualizerEffectiveEnabled && root.visualizerEnabled) {
+            if (!root.visualizerEffectiveEnabled && root.visualizerEnabled) {
                 root.disableWidget("visualizer");
             } else if (root.visualizerEffectiveEnabled) {
                 root.scheduleSync();
@@ -253,11 +288,11 @@ Singleton {
     }
 
     Timer {
-        id: visualizerStateTimer
+        id: playerStopTimer
 
-        interval: 100
+        interval: 1000
         repeat: false
-        onTriggered: root.updateVisualizerState()
+        onTriggered: root.debouncedPlayerPlaying = false
     }
 
     Connections {

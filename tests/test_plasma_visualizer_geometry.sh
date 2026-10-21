@@ -118,8 +118,8 @@ def compute_default_geoms(screen_w, screen_h, applet_count):
     vis_x1 = 0.0
     vis_x2 = float(screen_w - vis_w)
     if applet_count == 1:
-        single_w = round(screen_w * (848.0 / 1920.0))
-        single_x = round((screen_w - single_w) / 2.0)
+        single_w = float(screen_w)
+        single_x = 0.0
         return [(single_x, vis_y, single_w, vis_h)]
     return [(vis_x1, vis_y, vis_w, vis_h), (vis_x2, vis_y, vis_w, vis_h)]
 
@@ -127,8 +127,9 @@ geoms = compute_default_geoms(1920.0, 1080.0, 1)
 assert len(geoms) == 1
 g = geoms[0]
 
+assert g[0] == 0.0, "Single visualizer must start at x=0"
+assert g[2] == 1920.0, "Single visualizer must span complete width"
 assert g[1] + g[3] == 1080.0, "Single visualizer must be flush with bottom"
-assert abs((1920.0 - g[2]) / 2.0 - g[0]) <= 1.0, "Single visualizer must be centered horizontally"
 
 print("ok")
 EOF
@@ -263,6 +264,17 @@ test_visualizer_sh_entrypoint_and_fallbacks() {
         "visualizer.sh must define fallback CONFIG_DIR"
     assert_file_contains "$vis_sh" 'exec bash "$_MAIN_SCRIPT" visualizer "$@"' \
         "visualizer.sh must support direct CLI execution"
+}
+
+test_visualizer_effective_enabled_player_condition() {
+    assert_file_contains "$WIDGETS_QML" "readonly property bool isPlayerPlaying:" \
+        "PlasmaWidgets.qml must define isPlayerPlaying condition"
+    assert_file_contains "$WIDGETS_QML" "readonly property bool visualizerBaseConditions:" \
+        "PlasmaWidgets.qml must define visualizerBaseConditions for instant hiding"
+    assert_file_contains "$WIDGETS_QML" "visualizerBaseConditions && debouncedPlayerPlaying" \
+        "visualizerEffectiveEnabled must require base conditions and debouncedPlayerPlaying"
+    assert_file_contains "$WIDGETS_QML" "id: playerStopTimer" \
+        "PlasmaWidgets.qml must have dedicated playerStopTimer"
 }
 
 run_tests

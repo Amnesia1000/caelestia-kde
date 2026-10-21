@@ -8,6 +8,7 @@
   },
   "general": {
     "closeOnSelection": true,
+    "notifyOnWallpaperChange": false,
     "randomRotate": false,
     "uiScale": 1.4
   },
@@ -21,7 +22,7 @@
   },
   "postProcessing": [
     {
-      "command": "caelestia-color wallpaper -f %thumb% -a %path%",
+      "command": "PATH=$HOME/.local/bin:$PATH caelestia-color wallpaper -f %thumb% -a %path%",
       "type": "all"
     }
   ],

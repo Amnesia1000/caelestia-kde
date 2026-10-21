@@ -365,8 +365,8 @@ for appletsrc in candidate_files:
         vis_x1 = 0.0
         vis_x2 = float(screen_w - vis_w)
         if applet_count == 1:
-            single_w = round(screen_w * (848.0 / 1920.0))
-            single_x = round((screen_w - single_w) / 2.0)
+            single_w = float(screen_w)
+            single_x = 0.0
             return [(single_x, vis_y, single_w, vis_h)]
         return [(vis_x1, vis_y, vis_w, vis_h), (vis_x2, vis_y, vis_w, vis_h)]
 
@@ -540,8 +540,8 @@ def compute_default_geoms(screen_w, screen_h, applet_count):
     vis_x1 = 0.0
     vis_x2 = float(screen_w - vis_w)
     if applet_count == 1:
-        single_w = round(screen_w * (848.0 / 1920.0))
-        single_x = round((screen_w - single_w) / 2.0)
+        single_w = float(screen_w)
+        single_x = 0.0
         return [(single_x, vis_y, single_w, vis_h)]
     return [(vis_x1, vis_y, vis_w, vis_h), (vis_x2, vis_y, vis_w, vis_h)]
 
