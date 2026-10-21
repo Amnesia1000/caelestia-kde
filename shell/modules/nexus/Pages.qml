@@ -10,6 +10,7 @@ Item {
 
     property int lastPageIdx
     property int animOff
+    readonly property int animMovement: Tokens.padding.extraExtraLarge * 2
     property Item currentItem
     property int loadGeneration: 0
 
@@ -62,7 +63,7 @@ Item {
     Connections {
         function onCurrentPageIdxChanged(): void {
             switchAnim.complete();
-            root.animOff = root.Tokens.padding.extraLarge * (root.nState.currentPageIdx > root.lastPageIdx ? 1 : -1);
+            root.animOff = root.animMovement * (root.nState.currentPageIdx > root.lastPageIdx ? 1 : -1);
             switchAnim.start();
             root.lastPageIdx = root.nState.currentPageIdx;
         }
