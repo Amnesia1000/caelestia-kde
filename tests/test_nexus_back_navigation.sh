@@ -56,4 +56,11 @@ test_a_search_result_for_the_main_page_returns_to_its_root() {
         "goToSubPage should route main-page hits through goToPage"
 }
 
+test_a_shortcut_without_a_key_keeps_its_default() {
+    assert_file_contains "$SHELL/components/misc/CustomShortcut.qml" 'property var key' \
+        "an unset key should stay undefined instead of defaulting to an empty string"
+    assert_file_contains "$SHELL/components/misc/CustomShortcut.qml" 'when: root.key !== undefined' \
+        "the key should only be assigned when a caller supplies one"
+}
+
 run_tests
