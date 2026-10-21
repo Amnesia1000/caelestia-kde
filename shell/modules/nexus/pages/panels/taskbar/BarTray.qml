@@ -12,31 +12,8 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    function stateLabel(state: string): string {
-        switch (state) {
-        case "visible":
-            return qsTr("Always visible");
-        case "hidden":
-            return qsTr("Hidden");
-        default:
-            return qsTr("Collapse");
-        }
-    }
-
-    function stateIcon(state: string): string {
-        switch (state) {
-        case "visible":
-            return "push_pin";
-        case "hidden":
-            return "visibility_off";
-        default:
-            return "expand_more";
-        }
-    }
-
     title: qsTr("Tray")
     isSubPage: true
-    scrollLocked: orderList.dragging
 
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
@@ -83,110 +60,80 @@ PageBase {
             Layout.fillWidth: true
             Layout.leftMargin: Tokens.padding.small
             visible: !Config.bar.tray.compact
-            text: qsTr("Collapsing is off, so every icon already stays on the bar. These choices apply once Compact is on.")
+            text: qsTr("Every icon stays on the bar while Compact is off, so Collapse applies once it is on.")
             color: Colours.palette.m3onSurfaceVariant
             font: Tokens.font.label.small
             wrapMode: Text.WordWrap
         }
 
-        TrayOrderList {
-            id: orderList
+        ListEditor {
+            id: icons
 
-            entries: TrayRegistry.entries
-            onMoved: keys => TrayRegistry.setOrder(keys)
+            function labelFor(item: var): string {
+                return item.title;
+            }
 
-            delegate: Item {
-                id: slot
+            function subtextFor(item: var): string {
+                return item.running ? item.id : qsTr("Not running");
+            }
 
-                required property int index
-                required property string trayId
-                required property string trayKey
-                required property string title
-                required property string trayIcon
-                required property bool running
+            function iconFor(item: var): string {
+                return Icons.getTrayIcon(item.key, item.icon);
+            }
 
-                width: orderList.width
-                height: row.implicitHeight
-                z: orderList.dragIndex === slot.index ? 1 : 0
-                transform: Translate {
-                    y: orderList.dragIndex === slot.index ? orderList.dragTop - slot.y : 0
-                }
+            z: 1
+            first: true
+            values: TrayRegistry.entries
+            allowRemove: false
+            allowToggle: false
+            trailingComponent: stateButton
 
-                SelectRow {
-                    id: row
+            onItemMoved: (from, to) => TrayRegistry.move(from, to)
 
-                    anchors.fill: parent
-                    highlight: orderList.dragIndex === slot.index
-                    first: slot.index === 0
-                    last: slot.index === orderList.count - 1
-                    label: slot.title
-                    subtext: slot.running ? slot.trayId : qsTr("%1 (not running)").arg(slot.trayId)
-                    icon: Icons.getTrayIcon(slot.trayKey, slot.trayIcon, slot.trayId)
-                    active: menuItems.find(item => item.value === TrayRegistry.stateOf(slot.trayKey)) ?? null
-                    fallbackText: root.stateLabel(TrayRegistry.stateOf(slot.trayKey))
-                    fallbackIcon: root.stateIcon(TrayRegistry.stateOf(slot.trayKey))
-                    menuOnTop: slot.index === orderList.count - 1
-                    onSelected: item => {
-                        if (item.value === "forget")
-                            TrayRegistry.forget(slot.trayKey);
-                        else
-                            TrayRegistry.setState(slot.trayKey, item.value);
-                    }
+            Component {
+                id: stateButton
+
+                SplitButton {
+                    property var modelData: ({})
+                    property bool isLast: false
+
+                    readonly property string trayState: TrayRegistry.stateOf(modelData.key)
+
+                    type: SplitButton.Tonal
+                    menuOnTop: isLast
+                    active: menuItems.find(entry => entry.value === trayState) ?? null
+                    fallbackText: TrayRegistry.stateLabel(trayState)
+                    fallbackIcon: TrayRegistry.stateIcon(trayState)
 
                     menuItems: [
                         MenuItem {
-                            text: root.stateLabel("visible")
-                            icon: root.stateIcon("visible")
+                            text: TrayRegistry.stateLabel("visible")
+                            icon: TrayRegistry.stateIcon("visible")
                             value: "visible"
                         },
                         MenuItem {
-                            text: root.stateLabel("collapsed")
-                            icon: root.stateIcon("collapsed")
+                            text: TrayRegistry.stateLabel("collapsed")
+                            icon: TrayRegistry.stateIcon("collapsed")
                             value: "collapsed"
                         },
                         MenuItem {
-                            text: root.stateLabel("hidden")
-                            icon: root.stateIcon("hidden")
+                            text: TrayRegistry.stateLabel("hidden")
+                            icon: TrayRegistry.stateIcon("hidden")
                             value: "hidden"
                         },
                         MenuItem {
-                            visible: !slot.running
+                            visible: !modelData.running
                             text: qsTr("Forget")
                             icon: "delete"
                             value: "forget"
                         }
                     ]
-                }
 
-                Item {
-                    id: grip
-
-                    width: gripIcon.implicitWidth + Tokens.padding.small
-                    height: slot.height
-                    anchors.left: parent.left
-                    anchors.leftMargin: Tokens.padding.small / 4
-
-                    MaterialIcon {
-                        id: gripIcon
-
-                        anchors.left: parent.left
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: "drag_indicator"
-                        fontStyle: Tokens.font.icon.small
-                        color: Colours.palette.m3onSurfaceVariant
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        preventStealing: true
-                        cursorShape: Qt.OpenHandCursor
-                        onPressed: mouse => orderList.press(slot.trayKey, grip.mapToItem(null, mouse.x, mouse.y).y)
-                        onPositionChanged: mouse => {
-                            if (pressed)
-                                orderList.drag(grip.mapToItem(null, mouse.x, mouse.y).y);
-                        }
-                        onReleased: orderList.release()
-                        onCanceled: orderList.release()
+                    menu.onItemSelected: item => {
+                        if (item.value === "forget")
+                            TrayRegistry.forget(modelData.key);
+                        else
+                            TrayRegistry.setState(modelData.key, item.value);
                     }
                 }
             }
@@ -195,7 +142,7 @@ PageBase {
         StyledText {
             Layout.fillWidth: true
             Layout.leftMargin: Tokens.padding.small
-            visible: orderList.count === 0
+            visible: icons.count === 0
             text: qsTr("No tray icons have been seen yet.")
             color: Colours.palette.m3onSurfaceVariant
             font: Tokens.font.label.small
@@ -204,7 +151,7 @@ PageBase {
         StyledText {
             Layout.fillWidth: true
             Layout.leftMargin: Tokens.padding.small
-            visible: orderList.count > 1
+            visible: icons.count > 1
             text: qsTr("Drag a row to change the order")
             color: Colours.palette.m3onSurfaceVariant
             font: Tokens.font.label.small

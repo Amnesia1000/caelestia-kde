@@ -426,7 +426,7 @@ Item {
 
         Repeater {
             model: ScriptModel {
-                values: SystemTray.items.values.filter(i => i.hasMenu && i.status !== Status.Passive && QsServices.TrayRegistry.stateOfItem(i) !== "hidden")
+                values: QsServices.TrayRegistry.trayItems.filter(item => item.hasMenu)
             }
 
             Popout {
@@ -434,7 +434,7 @@ Item {
 
                 required property SystemTrayItem modelData
 
-                name: `traymenu${QsServices.TrayRegistry.keyOfItem(modelData)}`
+                name: QsServices.TrayRegistry.popoutNameOf(modelData)
                 previewKey: "trayMenu"
                 sourceComponent: trayMenuComp
 

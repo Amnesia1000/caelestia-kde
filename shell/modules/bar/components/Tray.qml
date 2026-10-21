@@ -22,7 +22,6 @@ StyledRect {
     readonly property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
     readonly property int barThickness: Math.round(Tokens.sizes.bar.innerWidth * Math.max(0.6, !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0))
 
-    readonly property var trayItems: TrayRegistry.trayItems
     readonly property bool showArrow: Config.bar.tray.compact && TrayRegistry.collapsedCount > 0
 
     readonly property real nonAnimHeight: {
@@ -37,6 +36,17 @@ StyledRect {
             return barThickness;
         const arrow = root.showArrow ? expandIcon.implicitWidth + (layout.implicitWidth > 0 ? spacing : 0) : 0;
         return layout.implicitWidth + arrow + padding * 2;
+    }
+
+    // Hit test for the bar's hover routing: the positioner owns the layout, so it
+    // also owns which icon sits under a bar coordinate.
+    function itemAt(pos: real): TrayItem {
+        const local = isHorizontal ? layout.mapFromItem(null, pos, 0) : layout.mapFromItem(null, 0, pos);
+        return layout.childAt(isHorizontal ? local.x : layout.width / 2, isHorizontal ? layout.height / 2 : local.y) as TrayItem;
+    }
+
+    function arrowHit(pos: real): bool {
+        return !!expandIcon.item && expandIcon.contains(mapToItem(expandIcon, isHorizontal ? pos : implicitWidth / 2, isHorizontal ? implicitHeight / 2 : pos));
     }
 
     clip: true
@@ -105,13 +115,13 @@ StyledRect {
             id: items
 
             model: ScriptModel {
-                values: root.trayItems
+                values: TrayRegistry.trayItems
             }
 
             TrayItem {
                 popouts: root.popouts
                 isHorizontal: root.isHorizontal
-                visible: root.expanded || !Config.bar.tray.compact || TrayRegistry.stateOfItem(modelData) !== "collapsed"
+                visible: root.expanded || !Config.bar.tray.compact || !TrayRegistry.isCollapsed(modelData)
             }
         }
     }

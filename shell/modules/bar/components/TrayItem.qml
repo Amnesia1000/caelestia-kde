@@ -16,6 +16,7 @@ Item {
     property var popouts
     property bool isHorizontal: false
     readonly property string key: TrayRegistry.keyOfItem(root.modelData)
+    readonly property string popoutName: TrayRegistry.popoutNameOf(root.modelData)
     readonly property bool hasMenuEntries: menuOpener.children.values.some(entry => !entry.isSeparator)
 
     implicitWidth: Tokens.font.body.small.pointSize * 2
@@ -39,7 +40,7 @@ Item {
             } else if (event.button === Qt.MiddleButton || !root.hasMenuEntries || !root.popouts) {
                 root.modelData.secondaryActivate();
             } else {
-                root.popouts.currentName = `traymenu${root.key}`;
+                root.popouts.currentName = root.popoutName;
                 root.popouts.currentCenter = root.isHorizontal
                     ? root.mapToItem(null, root.implicitWidth / 2, 0).x
                     : root.mapToItem(null, 0, root.implicitHeight / 2).y;
@@ -58,7 +59,7 @@ Item {
         id: icon
 
         anchors.fill: parent
-        source: Icons.getTrayIcon(root.key, root.modelData.icon, root.modelData.id)
+        source: Icons.getTrayIcon(root.key, root.modelData.icon)
         colour: Colours.palette.m3secondary
         layer.enabled: Config.bar.tray.recolour
     }

@@ -3,137 +3,116 @@ set -uo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-REGISTRY="$REPO_ROOT/shell/services/TrayRegistry.qml"
-MIGRATIONS="$REPO_ROOT/shell/services/ConfigMigrations.qml"
-CONTENT="$REPO_ROOT/shell/modules/bar/popouts/Content.qml"
+SERVICES="$REPO_ROOT/shell/services"
+REGISTRY="$SERVICES/TrayRegistry.qml"
+MIGRATIONS="$SERVICES/ConfigMigrations.qml"
+ICONS="$REPO_ROOT/shell/utils/Icons.qml"
 BAR="$REPO_ROOT/shell/modules/bar/Bar.qml"
+CONTENT="$REPO_ROOT/shell/modules/bar/popouts/Content.qml"
+PAGE="$REPO_ROOT/shell/modules/nexus/pages/panels/taskbar/BarTray.qml"
+LIST_EDITOR="$REPO_ROOT/shell/modules/nexus/common/ListEditor.qml"
+PAGE_BASE="$REPO_ROOT/shell/modules/nexus/common/PageBase.qml"
+SELECT_ROW="$REPO_ROOT/shell/modules/nexus/common/SelectRow.qml"
 
-test_popouts_are_named_by_the_stable_alias() {
-    assert_file_not_contains "$REGISTRY" "trayIndexById" "the registry must not publish positional indices"
-    assert_file_not_contains "$CONTENT" "trayIndexById" "the popout name must not be an index"
-    assert_file_not_contains "$BAR" "trayIndex" "the bar must not resolve tray icons by index"
-    assert_file_contains "$CONTENT" 'traymenu${QsServices.TrayRegistry.keyOfItem(modelData)}' "the popout name is the alias"
+# The tray rules that do not need Qt live in a .pragma library file
+# (shell/services/trayicons.js). drive_tray_icons evaluates it the way QML does and
+# runs the given script with node's assert.
+drive_tray_icons() {
+    TRAY_ICONS_DIR="$SERVICES" node -e '
+const fs = require("fs");
+const assert = require("assert");
+const src = fs.readFileSync(process.env.TRAY_ICONS_DIR + "/trayicons.js", "utf8").replace(/^\.pragma library$/m, "");
+const names = [...src.matchAll(/^(?:function|var) (\w+)/gm)].map(m => m[1]);
+const Icons = new Function(src + "\nreturn {" + names.join(",") + "};")();
+'"$1"'
+console.log("ok");' 2>&1
 }
 
-test_the_registry_merges_live_icons_once() {
-    assert_file_contains "$REGISTRY" "root.applyOrder(root.merged()" "the settings list reads the shared merge"
-    assert_file_contains "$REGISTRY" "root.prune(root.merged()" "the saved list reads the shared merge"
-    assert_file_contains "$REGISTRY" "root.stateOfItem(item)" "the bar list reads visibility from one place"
+check_tray_icons() {
+    local message="$1" script="$2" out
+    out="$(drive_tray_icons "$script")"
+    [[ "$out" == "ok" ]] || fail_with_output "$message" "$out"
 }
 
-test_the_config_rewrite_lives_in_the_migrations() {
-    assert_file_contains "$MIGRATIONS" "function migrateTrayIcons(entries" "config rewrites belong to ConfigMigrations"
-    assert_file_contains "$REGISTRY" "ConfigMigrations.migrateTrayIcons(root.remembered)" "the registry hands its aliases over"
-
-    local calls
-    calls="$(grep -cF 'root.migrate();' "$REGISTRY")"
-    assert_eq "2" "$calls" "both load paths migrate, including the missing-file first run"
+test_pid_comes_out_of_the_notifier_id() {
+    check_tray_icons "notifier ids start with the pid" '
+assert.strictEqual(Icons.pidOf("2652-9"), "2652");
+assert.strictEqual(Icons.pidOf("firefox"), "");
+assert.strictEqual(Icons.pidOf(""), "");
+'
 }
 
-test_the_registry_resolves_and_orders_icons() {
-    if ! command -v node >/dev/null 2>&1; then
-        skip_test "node is not available"
-        return 0
-    fi
-
-    local harness
-    harness="$(mktemp "${TMPDIR:-/tmp}/caelestia-trayregistry.XXXXXX.mjs")"
-    cat > "$harness" <<'EOF'
-import { readFileSync } from "node:fs";
-
-const src = readFileSync(process.argv[2], "utf8");
-
-function sliceBalanced(from, open, close) {
-    let depth = 0;
-    for (let i = from; i < src.length; i++) {
-        if (src[i] === open) depth++;
-        else if (src[i] === close && --depth === 0) return src.slice(from, i + 1);
-    }
-    throw new Error("unbalanced " + open);
+test_aliases_name_the_app_rather_than_the_notifier() {
+    check_tray_icons "aliases must survive a new notifier id" '
+assert.strictEqual(Icons.keyOf("2407-1", "", "firefox"), "proc:firefox", "a known process names the app");
+assert.strictEqual(Icons.keyOf("2407-1", "image://icon/firefox", ""), "icon:firefox", "no process name falls back to the theme icon");
+assert.strictEqual(Icons.keyOf("2407-1", "image://qspixmap/abc", ""), "2407-1", "a pixmap names nothing, so the id stays");
+assert.strictEqual(Icons.keyOf("2407-1", "", ""), "2407-1", "an icon with no name keeps its id");
+assert.strictEqual(Icons.keyOf("2407-1", "image://icon/a/absolute/path", "kitty"), "proc:kitty", "a process name wins over a path-like icon");
+'
 }
 
-function stripTypes(header) {
-    return header
-        .replace(/\)\s*:\s*[A-Za-z_][\w<>.\[\]|]*\s*$/, ") ")
-        .replace(/([(,\s])([A-Za-z_]\w*)\s*:\s*[A-Za-z_][\w<>.\[\]|]*/g, "$1$2");
+test_labels_are_readable() {
+    check_tray_icons "row labels come from the alias" '
+assert.strictEqual(Icons.labelOf("proc:kitty-terminal"), "kitty terminal");
+assert.strictEqual(Icons.labelOf("icon:org_kde_plasma"), "org kde plasma");
+assert.strictEqual(Icons.labelOf("2407-1"), "2407-1", "a raw id is not prettified");
+assert.strictEqual(Icons.iconNameOf("proc:kitty-terminal"), "kitty-terminal");
+'
 }
 
-function extractFunction(name) {
-    const marker = "function " + name + "(";
-    const start = src.indexOf(marker);
-    if (start === -1) throw new Error(name + " not found");
-    const text = sliceBalanced(start, "{", "}");
-    const brace = text.indexOf("{");
-    return stripTypes(text.slice(0, brace)) + text.slice(brace);
+test_hidden_wins_over_pinned() {
+    check_tray_icons "state precedence is hidden > visible > collapsed" '
+assert.strictEqual(Icons.stateOf("a", ["a"], ["a"]), "hidden");
+assert.strictEqual(Icons.stateOf("a", [], ["a"]), "visible");
+assert.strictEqual(Icons.stateOf("a", ["b"], ["c"]), "collapsed");
+'
 }
 
-const config = { bar: { tray: { order: [], hiddenIcons: [], alwaysVisible: [] } } };
-const root = { remembered: [], procNames: {}, unseenTtl: 30 * 24 * 60 * 60 * 1000 };
+test_listed_keys_come_first_in_listed_order() {
+    check_tray_icons "the saved order leads and the rest keeps registration order" '
+const rows = [{ key: "a" }, { key: "b" }, { key: "c" }];
+assert.deepStrictEqual(Icons.ordered(rows, ["c", "a"]).map(row => row.key), ["c", "a", "b"]);
+assert.deepStrictEqual(Icons.ordered(rows, []).map(row => row.key), ["a", "b", "c"], "an empty order keeps registration order");
+assert.deepStrictEqual(Icons.ordered(rows, ["gone", "b"]).map(row => row.key), ["b", "a", "c"], "keys the order does not know are skipped");
+assert.deepStrictEqual(Icons.ordered([], ["a"]), [], "no rows need no order");
+'
+}
 
-const names = ["pidOfId", "themeIconName", "appKeyOf", "keyOfId", "stateOf", "applyOrder", "prune"];
-Object.assign(root, new Function("root", "GlobalConfig",
-    names.map(extractFunction).join("\n") + "\nreturn {" + names.join(", ") + "};")(root, config));
+test_the_bar_and_the_popout_read_one_list() {
+    assert_file_contains "$REGISTRY" "readonly property var trayItems" "the registry publishes the bar's icons"
+    assert_file_contains "$CONTENT" "TrayRegistry.trayItems" "the tray popout reads the bar's icons"
+    assert_file_not_contains "$CONTENT" "SystemTray.items.values.filter" "the popout must not re-derive which icons exist"
+    assert_file_not_contains "$BAR" "tray.layout.childAt" "the bar must not reach into the tray's layout"
+    assert_file_contains "$BAR" "tray.itemAt(pos)" "the tray owns its own hit test"
+}
 
-const eq = (actual, expected, msg) => {
-    if (JSON.stringify(actual) !== JSON.stringify(expected)) {
-        console.error("FAIL:", msg);
-        console.error("  actual:  ", JSON.stringify(actual));
-        console.error("  expected:", JSON.stringify(expected));
-        process.exit(1);
-    }
-};
+test_popout_names_have_one_definition() {
+    assert_file_contains "$REGISTRY" "function popoutName(key: string): string" "the popout name prefix lives in the registry"
+    assert_file_not_contains "$BAR" "traymenu" "the bar must not rebuild the popout name"
+    assert_file_contains "$BAR" "trayItem.popoutName" "the bar asks the icon for its popout name"
+    assert_file_contains "$CONTENT" "TrayRegistry.popoutNameOf" "the popout names itself through the registry"
+}
 
-config.bar.tray.order = ["c", "a"];
-eq(root.applyOrder(["a", "b", "c"], key => key), ["c", "a", "b"], "listed icons come first, in listed order");
+test_the_reorder_list_is_the_shared_one() {
+    assert_file_missing "$REPO_ROOT/shell/modules/nexus/pages/panels/taskbar/TrayOrderList.qml" "the tray must reuse the shared reorder list"
+    assert_file_contains "$PAGE" "ListEditor {" "the tray page reorders with the shared list editor"
+    assert_file_contains "$LIST_EDITOR" "property Component trailingComponent" "the shared list editor carries the extra control"
+    assert_file_not_contains "$PAGE_BASE" "scrollLocked" "pages must not grow drag-specific scroll modes"
+    assert_file_not_contains "$SELECT_ROW" "highlight" "the shared select row must not grow drag-specific modes"
+}
 
-config.bar.tray.order = [];
-eq(root.applyOrder(["a", "b"], key => key), ["a", "b"], "an empty order keeps registration order");
+test_a_single_identity_reads_icon_substitutions() {
+    assert_file_contains "$ICONS" "function getTrayIcon(key: string, icon: string): string" "icon substitutions are keyed by the alias alone"
+    assert_file_contains "$MIGRATIONS" "function migrateTrayIcons(aliases: var): void" "the config rewrite maps ids to aliases"
+    assert_file_contains "$MIGRATIONS" "sub.id = aliases[sub.id]" "icon substitutions are rewritten with the lists"
+    assert_file_contains "$REGISTRY" "ConfigMigrations.migrateTrayIcons(aliases)" "the registry hands its aliases over"
+}
 
-config.bar.tray.order = ["gone", "b"];
-eq(root.applyOrder(["a", "b"], key => key), ["b", "a"], "keys the order does not know are skipped");
-config.bar.tray.order = [];
-
-root.remembered = [{ id: "2407-1", alias: "proc:firefox", title: "", icon: "", lastSeen: 1 }];
-eq(root.keyOfId("2407-1", ""), "proc:firefox", "a re-launched notifier reuses its alias");
-
-root.remembered = [];
-root.procNames = { "2652": "firefox" };
-eq(root.keyOfId("2652-9", ""), "proc:firefox", "an unseen notifier folds onto its process name");
-
-root.procNames = {};
-eq(root.keyOfId("9999-1", "image://icon/firefox"), "icon:firefox", "no process name falls back to the theme icon");
-eq(root.keyOfId("9999-1", "image://qspixmap/abc"), "9999-1", "a pixmap icon names nothing, so the id stays");
-
-const now = Date.now();
-const day = 24 * 60 * 60 * 1000;
-const entries = [
-    { alias: "proc:new", lastSeen: now },
-    { alias: "proc:old", lastSeen: now - 40 * day }
-];
-
-config.bar.tray.hiddenIcons = [];
-config.bar.tray.alwaysVisible = [];
-eq(root.prune(entries).map(entry => entry.alias), ["proc:new"], "collapsed icons unseen for a month are dropped");
-
-config.bar.tray.alwaysVisible = ["proc:old"];
-eq(root.prune(entries).map(entry => entry.alias), ["proc:new", "proc:old"], "a pinned icon is never dropped");
-config.bar.tray.alwaysVisible = [];
-
-eq(root.prune([{ alias: "2407-1", lastSeen: now }]).length, 0, "a launch id never becomes an entry");
-
-config.bar.tray.hiddenIcons = ["proc:new"];
-eq(root.stateOf("proc:new"), "hidden", "hidden wins over the other states");
-eq(root.stateOf("proc:other"), "collapsed", "anything unset collapses");
-
-console.log("tray registry: all harness cases passed");
-EOF
-
-    if ! timeout 15 node "$harness" "$REGISTRY"; then
-        rm -f "$harness"
-        fail "the tray registry harness failed"
-        return 0
-    fi
-    rm -f "$harness"
+test_config_is_the_only_store() {
+    assert_file_not_contains "$REGISTRY" "FileView" "tray settings live in config, not in a second file"
+    assert_file_not_contains "$REGISTRY" "unseenTtl" "there is nothing to expire"
+    assert_file_contains "$REGISTRY" "GlobalConfig.bar.tray.order" "the bar order is the saved order"
 }
 
 run_tests
