@@ -61,8 +61,9 @@ Singleton {
         if (!primaryScreen)
             return null;
 
+        const isSingle = root.visualizerProfile === "single";
         const centerGap = Math.round(root.screenWidth * (224 / 1920));
-        const visW = Math.floor((root.usableWidth - centerGap) / 2);
+        const visW = isSingle ? Math.round(root.usableWidth) : Math.floor((root.usableWidth - centerGap) / 2);
         const visH = Math.round(root.usableHeight * (416 / 1080));
         const rawY = Math.round(root.screenHeight - root.bottomExclusion - visH);
         // Ensure visualizer is strictly clamped near the bottom edge
