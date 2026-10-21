@@ -265,4 +265,15 @@ test_visualizer_sh_entrypoint_and_fallbacks() {
         "visualizer.sh must support direct CLI execution"
 }
 
+test_visualizer_effective_enabled_player_condition() {
+    assert_file_contains "$WIDGETS_QML" "readonly property bool isPlayerPlaying:" \
+        "PlasmaWidgets.qml must define isPlayerPlaying condition"
+    assert_file_contains "$WIDGETS_QML" "readonly property bool visualizerBaseConditions:" \
+        "PlasmaWidgets.qml must define visualizerBaseConditions for instant hiding"
+    assert_file_contains "$WIDGETS_QML" "visualizerBaseConditions && debouncedPlayerPlaying" \
+        "visualizerEffectiveEnabled must require base conditions and debouncedPlayerPlaying"
+    assert_file_contains "$WIDGETS_QML" "id: playerStopTimer" \
+        "PlasmaWidgets.qml must have dedicated playerStopTimer"
+}
+
 run_tests
