@@ -450,11 +450,51 @@ StyledWindow {
         PanelBg {
             id: contextMenuBg
 
+            // Squared off while the panel beside it shares one of its edges, so that
+            // the two meet on a single straight line instead of leaving a notch.
+            readonly property bool attachedTop: contextSubmenuBg.attachedTop
+            readonly property bool attachedBottom: contextSubmenuBg.attachedBottom
+
             panel: desktopContextMenu.backgroundItem
             // Stay up while the closing animation runs, not just while expanded.
             visible: desktopContextMenu.visible && panel.width > 0
             x: panel.x
             y: panel.y
+            // Held out of the fusion: blended together, the edges the two panels share
+            // swell where they meet, which reads as a bump on an otherwise straight line.
+            exclude: contextSubmenuBg.seamed ? [contextSubmenuBg] : []
+            topRightRadius: attachedTop && contextSubmenuBg.opensRight ? 0 : radius
+            topLeftRadius: attachedTop && !contextSubmenuBg.opensRight ? 0 : radius
+            bottomRightRadius: attachedBottom && contextSubmenuBg.opensRight ? 0 : radius
+            bottomLeftRadius: attachedBottom && !contextSubmenuBg.opensRight ? 0 : radius
+        }
+        PanelBg {
+            id: contextSubmenuBg
+
+            // The entries a row unfolds sit flush against the menu and share its
+            // backdrop, so the two read as one surface. The corners on the edge they
+            // share are squared off, so the junction is a plain right angle and the
+            // outer line stays straight.
+            // qmllint disable missing-property
+            readonly property bool attachedTop: seamed && desktopContextMenu.submenuPanel.flushTop
+            readonly property bool attachedBottom: seamed && desktopContextMenu.submenuPanel.flushBottom
+            readonly property bool opensRight: !seamed || desktopContextMenu.submenuPanel.opensRight
+            // qmllint enable missing-property
+            // Stays on while the panel is still on screen, its closing animation
+            // included: the corners flipping back mid-animation would show the two
+            // fused again, with the bump that comes with it.
+            readonly property bool seamed: desktopContextMenu.submenuOpen || desktopContextMenu.submenuPanel.hScale > 0
+
+            panel: desktopContextMenu.submenuPanel
+            visible: desktopContextMenu.visible && panel.width > 0
+            x: panel.x
+            y: panel.y
+            exclude: seamed ? [contextMenuBg] : []
+            excludeCorners: seamed ? [contextMenuBg] : []
+            topLeftRadius: opensRight ? 0 : radius
+            bottomLeftRadius: opensRight ? 0 : radius
+            topRightRadius: opensRight ? radius : 0
+            bottomRightRadius: opensRight ? radius : 0
         }
         PanelBg {
             id: popoutBg
