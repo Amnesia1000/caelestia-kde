@@ -82,9 +82,6 @@ StyledWindow {
 
     readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || (panels.popouts.hasCurrent && !panels.popouts.isDockPopout)
 
-    property string focusReturn: ""
-    property int workspaceReturn: -1
-
     onHasFullscreenChanged: {
         if (!hasFullscreen)
             return;
@@ -124,30 +121,9 @@ StyledWindow {
                 visibilities.sidebar = true;
         }
     }
-    onWantsKeyboardChanged: {
-        if (wantsKeyboard) {
-            focusReturn = Kwin.activeWindow?.address ?? "";
-            workspaceReturn = Kwin.activeWsId;
-            return;
-        }
 
-        const pending = Kwin.pendingFocusAddress ?? "";
-        const addr = (Kwin.activeWindow?.address ?? "") || focusReturn;
-        const oldWorkspace = workspaceReturn;
-        focusReturn = "";
-        workspaceReturn = -1;
-
-        if (pending) {
-            return;
-        }
-
-        const currentWorkspace = Kwin.activeWsId;
-        if (oldWorkspace !== -1 && currentWorkspace !== oldWorkspace) {
-            return;
-        }
-
-        if (addr)
-            Kwin.focusWindow(addr);
+    FocusReturn {
+        active: root.wantsKeyboard
     }
 
     Overview.Anim {
