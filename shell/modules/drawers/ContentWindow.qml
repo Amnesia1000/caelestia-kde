@@ -53,7 +53,7 @@ StyledWindow {
     // file dialogs is up): take input only over the panels, not the whole screen,
     // so clicks outside reach other windows instead of closing the sidebar.
     readonly property bool sidebarPassthrough: visibilities.sidebar && (Visibilities.sidebarPinned || Visibilities.openDialogs > 0)
-        && !(transientOverlayOpen || (panels.popouts.currentName.startsWith("traymenu") && (panels.popouts.current as StackView)?.depth > 1))
+        && !(transientOverlayOpen || (TrayRegistry.isTrayPopout(panels.popouts.currentName) && (panels.popouts.current as StackView)?.depth > 1))
     property real fsTransitionProg: hasFullscreen ? 1 : 0
     readonly property real sdfBorderOffset: 2 * fsTransitionProg
     readonly property real overviewBorderThickness: Math.min(root.width, root.height) * 0.15
@@ -201,7 +201,7 @@ StyledWindow {
     QtObject {
         id: focusGrabState
 
-        property bool active: (visibilities.launcher && Config.launcher.enabled) || (visibilities.session && Config.session.enabled) || (visibilities.sidebar && Config.sidebar.enabled) || (!Config.dashboard.showOnHover && visibilities.dashboard && Config.dashboard.enabled) || (!Config.utilities.showOnHover && visibilities.utilities && Config.utilities.enabled) || (panels.popouts.currentName.startsWith("traymenu") && (panels.popouts.current as StackView)?.depth > 1)
+        property bool active: (visibilities.launcher && Config.launcher.enabled) || (visibilities.session && Config.session.enabled) || (visibilities.sidebar && Config.sidebar.enabled) || (!Config.dashboard.showOnHover && visibilities.dashboard && Config.dashboard.enabled) || (!Config.utilities.showOnHover && visibilities.utilities && Config.utilities.enabled) || (TrayRegistry.isTrayPopout(panels.popouts.currentName) && (panels.popouts.current as StackView)?.depth > 1)
 
         function clear() {
             visibilities.launcher = false;

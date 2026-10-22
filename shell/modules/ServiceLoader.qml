@@ -24,6 +24,7 @@ Scope {
             Weather.reload();
             WorkspaceTrackerGuard;
             PlasmaWidgets;
+            TrayRegistry;
 
             if (GlobalConfig.utilities.vpn.enabled)
                 VPN;
