@@ -43,7 +43,7 @@ render_primary() {
     if [[ "$kind" == "json" ]]; then
         python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["colors"]["primary"]["dark"]["color"].lstrip("#"))' "$source"
     else
-        printf '92cef5'
+        printf '%s' "${STUB_PRIMARY:-92cef5}"
     fi
 }
 
@@ -71,7 +71,7 @@ awk '
         "background": "101417",
         "onSurface": "dfe6ed",
         "surface": "0a0f12",
-        "primary": "92cef5",
+        "primary": "${STUB_PRIMARY:-92cef5}",
         "onPrimary": "0c3953",
         "term0": "333a40"
     }
@@ -715,7 +715,7 @@ test_the_palette_reaches_the_desktop() {
         "and so is Plasma deriving one from the wallpaper"
 }
 
-test_a_dynamic_scheme_selection_text_reads_on_its_background() {
+test_a_dynamic_scheme_selection_text_is_black_on_a_light_bar() {
     setup_sandbox
     run_color wallpaper -f "$(wallpaper_image one.png)"
     assert_status 0 "$STATUS" "setting a wallpaper should succeed"
@@ -723,8 +723,22 @@ test_a_dynamic_scheme_selection_text_reads_on_its_background() {
     local plasma="$XDG_DATA_HOME/color-schemes/Matugen.colors"
     assert_contains "$(cat "$plasma")" "BackgroundNormal=#92cef5" \
         "the selection background carries the palette's primary"
-    assert_contains "$(cat "$plasma")" "ForegroundNormal=#0c3953" \
-        "the selection text is the palette's on-primary, not the light fixed colour"
+    assert_contains "$(cat "$plasma")" "ForegroundNormal=#000000" \
+        "on a light bar the selection text is black, not the light fixed colour nor a tint of the primary"
+}
+
+test_a_dynamic_scheme_selection_text_is_white_on_a_dark_bar() {
+    setup_sandbox
+    export STUB_PRIMARY=1a2b3c
+    run_color wallpaper -f "$(wallpaper_image one.png)"
+    unset STUB_PRIMARY
+    assert_status 0 "$STATUS" "setting a wallpaper should succeed"
+
+    local plasma="$XDG_DATA_HOME/color-schemes/Matugen.colors"
+    assert_contains "$(cat "$plasma")" "BackgroundNormal=#1a2b3c" \
+        "the selection background carries the dark primary"
+    assert_contains "$(cat "$plasma")" "ForegroundNormal=#ffffff" \
+        "on a dark bar the selection text flips to white instead of staying black"
 }
 
 test_a_named_scheme_selection_text_is_the_template_s_own() {
@@ -750,6 +764,17 @@ test_the_applied_name_rotates_so_a_change_is_an_apply() {
     assert_eq "$(cat "$XDG_DATA_HOME/color-schemes/Matugen.colors")" \
         "$(cat "$XDG_DATA_HOME/color-schemes/Matugen Alt.colors")" \
         "both names carry the palette that was just generated"
+}
+
+test_the_name_not_applied_is_refreshed_too() {
+    setup_sandbox
+    run_color wallpaper -f "$(wallpaper_image one.png)"
+    assert_status 0 "$STATUS" "the first change should succeed"
+
+    assert_contains "$(cat "$KDE_CALLS")" "apply Matugen" "the first change applies Matugen"
+    assert_eq "$(cat "$XDG_DATA_HOME/color-schemes/Matugen.colors")" \
+        "$(cat "$XDG_DATA_HOME/color-schemes/Matugen Alt.colors")" \
+        "the name that is not applied is refreshed too, so it cannot lag a change behind"
 }
 
 test_konsole_gets_a_scheme_in_its_own_format() {
