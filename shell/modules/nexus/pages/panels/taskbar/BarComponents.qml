@@ -103,6 +103,10 @@ PageBase {
                 return "library";
             }
             readonly property bool isDraggingThis: activeDragArea.drag.active
+            // Where the tile sat in the page content when the drag began, so
+            // reparenting it to the content item does not move it.
+            property real dragStartX: 0
+            property real dragStartY: 0
 
             width: ListView.view ? ListView.view.width : 0
             height: (root.isGlobalDragging && root.globalDragSourceList === sourceList && root.globalDragCompId === compId && root.globalDragHoveredList !== sourceList) ? 0 : 50
@@ -112,21 +116,28 @@ PageBase {
             Behavior on height { Anim { type: Anim.FastSpatial } }
 
             DropArea {
-                anchors.fill: parent
-                keys: ["component"]
-                onEntered: drag => {
+                function handleDrag(drag): void {
                     let sourceItem = drag.source;
                     if (!sourceItem) return;
+
+                    root.globalDragHoveredList = sourceList;
 
                     let to = delegateWrapper.index;
                     let targetModel = root.getModel(sourceList);
                     if (!targetModel) return;
 
                     if (sourceItem.sourceList === sourceList) {
-                        let from = root.findItemIndex(targetModel, root.globalDragCompId);
-                        if (from !== -1 && to !== -1 && from !== to) {
-                            targetModel.move(from, to, 1);
-                        }
+                        // Use the middle of the tile as the insertion point, so
+                        // the gap follows the cursor instead of only opening
+                        // once the cursor sits on top of another tile.
+                        const from = root.findItemIndex(targetModel, root.globalDragCompId);
+                        if (from === -1) return;
+
+                        const belowMiddle = drag.y > delegateWrapper.height / 2;
+                        const insertAt = to + (belowMiddle ? 1 : 0);
+                        let target = from < insertAt ? insertAt - 1 : insertAt;
+                        target = Math.max(0, Math.min(targetModel.count - 1, target));
+                        if (target !== from) targetModel.move(from, target, 1);
                     } else {
                         let phIndex = -1;
                         for (let i = 0; i < targetModel.count; i++) {
@@ -140,6 +151,12 @@ PageBase {
                         }
                     }
                 }
+
+                anchors.fill: parent
+                keys: ["component"]
+
+                onEntered: drag => handleDrag(drag)
+                onPositionChanged: drag => handleDrag(drag)
             }
 
             ConnectedRect {
@@ -161,7 +178,12 @@ PageBase {
                 states: State {
                     when: activeDragArea.drag.active
 
-                    ParentChange { target: activeDelegate; parent: root.flickable.contentItem }
+                    ParentChange {
+                        target: activeDelegate
+                        parent: root.flickable.contentItem
+                        x: delegateWrapper.dragStartX
+                        y: delegateWrapper.dragStartY
+                    }
                     PropertyChanges { target: activeDelegate; scale: NexusStyle.dragScale }
                 }
 
@@ -178,6 +200,9 @@ PageBase {
                     enabled: !isPlaceholder
 
                     onPressed: {
+                        const start = activeDelegate.mapToItem(root.flickable.contentItem, 0, 0);
+                        delegateWrapper.dragStartX = start.x;
+                        delegateWrapper.dragStartY = start.y;
                         root.globalDragCompId = compId;
                         root.globalDragSourceList = sourceList;
                         root.globalDragHoveredList = sourceList;
@@ -520,6 +545,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: leftModel
                     clip: true
+                    interactive: contentHeight > height
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
@@ -575,6 +601,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: middleModel
                     clip: true
+                    interactive: contentHeight > height
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
@@ -630,6 +657,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: rightModel
                     clip: true
+                    interactive: contentHeight > height
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
@@ -723,6 +751,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: libraryModel
                     clip: true
+                    interactive: contentHeight > height
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate

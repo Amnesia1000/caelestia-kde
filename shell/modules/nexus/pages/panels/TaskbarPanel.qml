@@ -239,7 +239,7 @@ PageBase {
             onClicked: {
                 // Opened from the taskbar page: always the main bar.
                 root.nState.barComponentsTarget = -1;
-                root.nState.openSubPage(6);
+                root.nState.openSubPage("barComponents");
             }
         }
 
@@ -261,7 +261,7 @@ PageBase {
             icon: "view_week"
             label: qsTr("Extra bars")
             status: GlobalConfig.bar.panels.count === 0 ? qsTr("Add bars on other edges, or more than one per edge") : qsTr("%1 configured").arg(GlobalConfig.bar.panels.count)
-            onClicked: root.nState.openSubPage(24)
+            onClicked: root.nState.openSubPage("extraBars")
         }
 
         SectionHeader {

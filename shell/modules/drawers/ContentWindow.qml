@@ -53,7 +53,7 @@ StyledWindow {
     // file dialogs is up): take input only over the panels, not the whole screen,
     // so clicks outside reach other windows instead of closing the sidebar.
     readonly property bool sidebarPassthrough: visibilities.sidebar && (Visibilities.sidebarPinned || Visibilities.openDialogs > 0)
-        && !(transientOverlayOpen || (panels.popouts.currentName.startsWith("traymenu") && (panels.popouts.current as StackView)?.depth > 1))
+        && !(transientOverlayOpen || (TrayRegistry.isTrayPopout(panels.popouts.currentName) && (panels.popouts.current as StackView)?.depth > 1))
     property real fsTransitionProg: hasFullscreen ? 1 : 0
     readonly property real sdfBorderOffset: 2 * fsTransitionProg
     readonly property real overviewBorderThickness: Math.min(root.width, root.height) * 0.15
@@ -83,9 +83,6 @@ StyledWindow {
     }
 
     readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || (panels.popouts.hasCurrent && !panels.popouts.isDockPopout)
-
-    property string focusReturn: ""
-    property int workspaceReturn: -1
 
     onHasFullscreenChanged: {
         if (!hasFullscreen)
@@ -126,30 +123,9 @@ StyledWindow {
                 visibilities.sidebar = true;
         }
     }
-    onWantsKeyboardChanged: {
-        if (wantsKeyboard) {
-            focusReturn = Kwin.activeWindow?.address ?? "";
-            workspaceReturn = Kwin.activeWsId;
-            return;
-        }
 
-        const pending = Kwin.pendingFocusAddress ?? "";
-        const addr = (Kwin.activeWindow?.address ?? "") || focusReturn;
-        const oldWorkspace = workspaceReturn;
-        focusReturn = "";
-        workspaceReturn = -1;
-
-        if (pending) {
-            return;
-        }
-
-        const currentWorkspace = Kwin.activeWsId;
-        if (oldWorkspace !== -1 && currentWorkspace !== oldWorkspace) {
-            return;
-        }
-
-        if (addr)
-            Kwin.focusWindow(addr);
+    FocusReturn {
+        active: root.wantsKeyboard
     }
 
     Overview.Anim {
@@ -205,7 +181,7 @@ StyledWindow {
     QtObject {
         id: focusGrabState
 
-        property bool active: (visibilities.launcher && Config.launcher.enabled) || (visibilities.session && Config.session.enabled) || (visibilities.sidebar && Config.sidebar.enabled) || (!Config.dashboard.showOnHover && visibilities.dashboard && Config.dashboard.enabled) || (!Config.utilities.showOnHover && visibilities.utilities && Config.utilities.enabled) || (panels.popouts.currentName.startsWith("traymenu") && (panels.popouts.current as StackView)?.depth > 1)
+        property bool active: (visibilities.launcher && Config.launcher.enabled) || (visibilities.session && Config.session.enabled) || (visibilities.sidebar && Config.sidebar.enabled) || (!Config.dashboard.showOnHover && visibilities.dashboard && Config.dashboard.enabled) || (!Config.utilities.showOnHover && visibilities.utilities && Config.utilities.enabled) || (TrayRegistry.isTrayPopout(panels.popouts.currentName) && (panels.popouts.current as StackView)?.depth > 1)
 
         function clear() {
             visibilities.launcher = false;

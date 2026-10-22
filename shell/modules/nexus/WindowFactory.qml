@@ -14,21 +14,25 @@ Singleton {
 
     property var openWindow: null
 
-    readonly property int extraBarsSubPageIdx: 24
-    readonly property int barComponentsSubPageIdx: 6
-
     function create(parent: Item, props: var): var {
         props = props || {};
         if (root.openWindow) {
             const win = root.openWindow;
-            if (props.initialPageIdx !== undefined)
-                win.nexus.nState.goToSubPage(props.initialPageIdx, props.initialSubPageIdx ?? -1);
+            if (props.initialPageIdx !== undefined) {
+                const pageIdx = typeof props.initialPageIdx === "string"
+                    ? PageRegistry.indexForKey(props.initialPageIdx)
+                    : props.initialPageIdx;
+                win.nexus.nState.goToSubPage(pageIdx, props.initialSubPageIdx ?? -1);
+            }
             win.visible = true;
             win.raise();
             Logger.mark("nexus=reused");
             return win;
         }
-        const win = nexusComp.createObject(parent ?? dummy, props);
+        const resolvedProps = Object.assign({}, props);
+        if (typeof resolvedProps.initialPageIdx === "string")
+            resolvedProps.initialPageIdx = PageRegistry.indexForKey(resolvedProps.initialPageIdx);
+        const win = nexusComp.createObject(parent ?? dummy, resolvedProps);
         root.openWindow = win;
         Logger.mark("nexus=created");
         return win;
@@ -40,7 +44,7 @@ Singleton {
     }
     function openBarComponents(target: int): void {
         const win = root.create(null, {
-            initialPageIdx: PageRegistry.indexForKey("panels")
+            initialPageIdx: "panels"
         });
 
         if (!win || !win.nexus)
@@ -50,9 +54,9 @@ Singleton {
         nState.barComponentsTarget = target;
 
         if (target >= 0)
-            nState.openSubPage(root.extraBarsSubPageIdx);
+            nState.openSubPage("extraBars");
 
-        nState.openSubPage(root.barComponentsSubPageIdx);
+        nState.openSubPage("barComponents");
     }
 
     QtObject {
@@ -68,7 +72,7 @@ Singleton {
             property alias nexus: nexus
 
             property int initialPageIdx: 0
-            property int initialSubPageIdx: -1
+            property var initialSubPageIdx: -1
 
             function raise(): void {
                 const pageTitles = PageRegistry.pages.map(p => p.label);

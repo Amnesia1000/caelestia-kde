@@ -325,7 +325,7 @@ CustomMouseArea {
         } else {
             bar.resetHover();
             barPanels.resetHover();
-            if ((!popouts.currentName.startsWith("traymenu") || (Config.bar.popouts.tray && ((popouts.current as StackView)?.depth ?? 0) <= 1)) && !inLeftPanel(panels.popoutsWrapper, x, y)) {
+            if ((!TrayRegistry.isTrayPopout(popouts.currentName) || (Config.bar.popouts.tray && ((popouts.current as StackView)?.depth ?? 0) <= 1)) && !inLeftPanel(panels.popoutsWrapper, x, y)) {
                 if (!popoutHideTimer.running) popoutHideTimer.start();
             } else {
                 popoutHideTimer.stop();
@@ -398,7 +398,7 @@ CustomMouseArea {
         onTriggered: {
             if (popouts.isContextPopout)
                 return;
-            if (!popouts.currentName.startsWith("traymenu") || ((popouts.current as StackView)?.depth ?? 0) <= 1) {
+            if (!TrayRegistry.isTrayPopout(popouts.currentName) || ((popouts.current as StackView)?.depth ?? 0) <= 1) {
                 popouts.hasCurrent = false;
                 bar.closeTray();
             }

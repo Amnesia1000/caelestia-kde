@@ -21,11 +21,6 @@ Item {
     readonly property Item current: currentPopout?.item ?? null
     readonly property bool currentIsContext: currentPopout?.isContext ?? false
 
-    readonly property var trayItemsToIndices: SystemTray.items.values.filter(i => i.status !== Status.Passive && !GlobalConfig.bar.tray.hiddenIcons.includes(i.id)).reduce((acc, item, i) => {
-        acc[item.id] = i;
-        return acc;
-    }, {})
-
     readonly property real contentMargin: Tokens.padding.large * (currentPopout?.item?.scaleOffset ?? 1.0)
     readonly property real availableWidth: Math.max(0, ((QsWindow.window as QsWindow)?.screen?.width ?? 0) - contentMargin * 2 - Tokens.padding.extraLargeIncreased * (currentPopout?.item?.scaleOffset ?? 1.0))
     readonly property real availableHeight: Math.max(0, ((QsWindow.window as QsWindow)?.screen?.height ?? 0) - contentMargin * 2 - Tokens.padding.extraLargeIncreased * (currentPopout?.item?.scaleOffset ?? 1.0))
@@ -455,7 +450,7 @@ Item {
 
         Repeater {
             model: ScriptModel {
-                values: SystemTray.items.values.filter(i => i.hasMenu && i.status !== Status.Passive && !GlobalConfig.bar.tray.hiddenIcons.includes(i.id))
+                values: QsServices.TrayRegistry.trayItems.filter(item => item.hasMenu)
             }
 
             Popout {
@@ -463,7 +458,7 @@ Item {
 
                 required property SystemTrayItem modelData
 
-                name: `traymenu${root.trayItemsToIndices[modelData.id]}`
+                name: QsServices.TrayRegistry.popoutNameOf(modelData)
                 previewKey: "trayMenu"
                 sourceComponent: trayMenuComp
 

@@ -310,7 +310,7 @@ PageBase {
             subtext: qsTr("Pick the components it shows")
             onClicked: {
                 root.nState.barComponentsTarget = root.selectedIndex;
-                root.nState.openSubPage(6);
+                root.nState.openSubPage("barComponents");
             }
         }
 

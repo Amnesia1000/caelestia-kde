@@ -77,7 +77,7 @@ Item {
                 const loader = rep.itemAt(i) as WrappedLoader;
                 if (loader?.enabled && loader.id === "tray") {
                     const tray = loader.item as Tray;
-                    if (tray && (Config.bar.popouts.tray || !tray.pinned)) {
+                    if (tray) {
                         tray.expanded = false;
                         tray.pinned = false;
                     }
@@ -102,12 +102,16 @@ Item {
         }
         currentHoveredItem = ch ? ch.item : null;
 
-        if (ch?.id !== "tray")
-            closeTray();
+        if (ch?.id === "tray") {
+            closeTrayTimer.stop();
+        } else if (!popouts.hasCurrent || !TrayRegistry.isTrayPopout(popouts.currentName)) {
+            if (!closeTrayTimer.running)
+                closeTrayTimer.restart();
+        }
 
         if (!ch) {
             if (popouts.hasCurrent && (popouts.currentName === "dockhover" || popouts.currentName === "greeter")) return;
-            if (!Config.bar.popouts.tray && popouts.currentName.startsWith("traymenu")) return;
+            if (!Config.bar.popouts.tray && TrayRegistry.isTrayPopout(popouts.currentName)) return;
             popouts.hasCurrent = false;
             return;
         }
@@ -120,22 +124,15 @@ Item {
             return;
         } else if (id === "tray" && Config.bar.popouts.tray && !visibilities.sidebar) {
             const tray = ch.item as Tray;
-            const mouseMap = mapToItem(tray.expandIcon, isHorizontal ? pos : tray.implicitWidth / 2, isHorizontal ? tray.implicitHeight / 2 : pos);
-            if (!Config.bar.tray.compact || (tray.expanded && !tray.expandIcon.contains(mouseMap))) {
-                const traySize = isHorizontal ? tray.layout.implicitWidth : tray.layout.implicitHeight;
-                const localX = isHorizontal ? tray.layout.mapFromItem(null, pos, 0).x : tray.layout.mapFromItem(null, 0, pos).y;
-                const index = Math.floor((localX / (traySize + Tokens.spacing.small)) * tray.items.count);
-                const trayItem = tray.items.itemAt(index);
-                if (trayItem && localX >= 0 && localX <= traySize) {
-                    popouts.currentName = `traymenu${index}`;
-                    popouts.currentCenter = isHorizontal ? trayItem.mapToItem(null, trayItem.implicitWidth / 2, 0).x : trayItem.mapToItem(null, 0, trayItem.implicitHeight / 2).y;
-                    popouts.hasCurrent = true;
-                } else {
-                    popouts.hasCurrent = false;
-                }
-            } else {
+            if (tray.arrowHit(pos)) {
                 popouts.hasCurrent = false;
-                tray.expanded = true;
+            } else {
+                const trayItem = tray.itemAt(pos);
+                popouts.hasCurrent = !!trayItem;
+                if (trayItem) {
+                    popouts.currentName = trayItem.popoutName;
+                    popouts.currentCenter = isHorizontal ? trayItem.mapToItem(null, trayItem.implicitWidth / 2, 0).x : trayItem.mapToItem(null, 0, trayItem.implicitHeight / 2).y;
+                }
             }
         } else if (id === "statusIcons") {
             const statusIcons = ch.item as StatusIcons;
@@ -368,6 +365,12 @@ Item {
             popouts.currentCenter = isHorizontal ? root.mapToItem(null, pos, 0).x : root.mapToItem(null, 0, pos).y;
             popouts.hasCurrent = true;
         }
+    }
+    Timer {
+        id: closeTrayTimer
+
+        interval: 400
+        onTriggered: root.closeTray()
     }
 
     GridLayout {
