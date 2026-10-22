@@ -55,7 +55,7 @@ Item {
     readonly property bool keptOpen: Config.bar.persistent && !dodging
     readonly property int exclusiveZone: !disabled && !dodgeEnabled && (Config.bar.persistent || visibilities.bar) ? contentWidth : Config.border.thickness
     readonly property int visualThickness: !disabled && (Config.bar.persistent || visibilities.bar) ? contentWidth : Config.border.thickness
-    readonly property bool shouldBeVisible: !fullscreen && !disabled && !visibilities.overview && (keptOpen || visibilities.bar || hovered || popouts.isContextPopout)
+    readonly property bool shouldBeVisible: !fullscreen && !disabled && !visibilities.overview && (keptOpen || visibilities.bar || hovered || popouts.hasCurrent || visibilities.launcher)
     // Written by Interactions from the pointer position: a collapsed bar is
     // invisible and cannot report hover itself, so its reach is computed instead.
     // The timer only covers reports that go stale because no further pointer
