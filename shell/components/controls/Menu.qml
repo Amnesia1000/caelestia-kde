@@ -37,14 +37,11 @@ MouseArea {
     property bool rightClickReposition: false
     property real maxHeight: 320
     readonly property alias backgroundItem: menu
-    // The entries a row unfolds; drawn behind it like the main panel.
     readonly property alias submenuPanel: submenu
     property bool transparentBackground: false
     // Unfold sideways from the anchor with a short, non-overshooting curve
     // instead of dropping down.
     property bool revealHorizontal: false
-    // Row that unfolded its entries, the entries it holds, and whether they are
-    // shown. The row is kept while folding so the panel does not jump.
     property var submenuRow: null
     property var submenuItems: []
     property bool submenuOpen: false
@@ -90,8 +87,6 @@ MouseArea {
         revealIn.start();
     }
 
-    // Unfolds the entries a row carries, replacing whatever was unfolded before.
-    // The panel is placed once the new entries have a size to fit.
     function openSubmenu(row: Item, entries: var): void {
         closeTimer.stop();
         submenuRow = row;
@@ -105,16 +100,9 @@ MouseArea {
         if (!row || !submenu)
             return;
         const panelRight = menu.x + menu.implicitWidth;
-        // The two panels are drawn separately, so their antialiasing would leave a
-        // hairline of background along the seam: they overlap by a pixel or two to
-        // cover it.
         const overlap = Tokens.padding.extraSmall / 2;
         submenu.opensRight = panelRight + submenu.implicitWidth <= root.width;
         submenu.x = submenu.opensRight ? panelRight - overlap : menu.x - submenu.implicitWidth + overlap;
-        // The row the menu unfolds at its first or last position sits on one of the
-        // menu's own edges: the panel lines up with it and squares off the corner
-        // they share, so the two read as one surface. Any other row hangs beside the
-        // menu with both of its inner corners rounded.
         const rowTop = row.mapToItem(root, 0, 0).y;
         const rowBottom = rowTop + row.height;
         const panelBottom = menu.y + menu.implicitHeight;
@@ -132,11 +120,10 @@ MouseArea {
         submenuOpen = false;
     }
 
-    // Closes the menu along with the entries it unfolds. The panel folds back
-    // first and the menu follows once it is gone, so the two read as closing
-    // right to left instead of vanishing together.
     function close(): void {
         if (!expanded)
+            return;
+        if (closeTimer.running)
             return;
         if (submenuOpen) {
             closeSubmenu();
@@ -148,8 +135,12 @@ MouseArea {
     }
 
     onExpandedChanged: {
-        if (expanded)
+        if (expanded) {
             closeTimer.stop();
+        } else {
+            submenuRow = null;
+            submenuItems = [];
+        }
         if (!revealHorizontal)
             return;
         revealIn.stop();
@@ -201,7 +192,6 @@ MouseArea {
     Timer {
         id: closeTimer
 
-        // Matches the time the unfolded panel takes to fold back.
         interval: Tokens.anim.durations.small
         onTriggered: root.expanded = false
     }
@@ -344,18 +334,11 @@ MouseArea {
         }
     }
 
-    // A row with its own entries unfolds them beside the menu. One extra level is
-    // all the context menu needs, so the panel is a sibling of the menu instead
-    // of a menu of its own.
     Elevation {
         id: submenu
 
-        // Towards the row's right, or its left when the panel would run past
-        // the edge of the screen. Set when the panel is placed.
         property bool opensRight: true
         property real hScale: root.submenuOpen ? 1 : 0
-        // Whether the panel shares the menu's top or bottom edge, in which case it is
-        // drawn as an extension of it and squared off where the two meet.
         property bool flushTop: false
         property bool flushBottom: false
 
@@ -371,8 +354,6 @@ MouseArea {
         clip: true
         visible: hScale > 0.01
 
-        // The menu keeps repositioning itself while its content grows, so the
-        // panel follows it instead of being placed once.
         Connections {
             function onXChanged(): void {
                 root.positionSubmenu();
@@ -382,8 +363,6 @@ MouseArea {
                 root.positionSubmenu();
             }
 
-            // The panel is measured after it is first shown, and the entries after
-            // that: place it again once either size settles.
             function onImplicitWidthChanged(): void {
                 root.positionSubmenu();
             }
@@ -422,8 +401,6 @@ MouseArea {
         }
 
         StyledRect {
-            // Grows to the right, or keeps its content pinned to the right edge
-            // while unfolding leftwards.
             x: submenu.opensRight ? 0 : submenu.width - submenu.implicitWidth
             width: submenu.implicitWidth
             height: submenu.implicitHeight
@@ -467,8 +444,6 @@ MouseArea {
         }
     }
 
-    // One row for both lists: the menu and the entries it unfolds look the same
-    // and only differ in where they sit.
     Component {
         id: rowComp
 
@@ -477,12 +452,8 @@ MouseArea {
 
             required property int index
             required property MenuItem modelData
-            // The submenu rows behave like plain entries: they neither unfold
-            // anything nor close the panel on hover.
             readonly property bool inSubmenu: parent === submenuColumn
-            // A row with its own entries unfolds them instead of acting.
             // The entries are this module's MenuItem, which qmllint resolves to
-            // the Controls type of the same name.
             // qmllint disable missing-property
             readonly property var entries: modelData?.submenu ?? []
             // qmllint enable missing-property
@@ -491,8 +462,6 @@ MouseArea {
             readonly property int firstIndex: inSubmenu ? root.submenuFirstVisibleIndex : root.firstVisibleIndex
             readonly property int lastIndex: inSubmenu ? root.submenuLastVisibleIndex : root.lastVisibleIndex
 
-            // Qualified: with the delegate declared outside the Repeater, the
-            // bare model context property is not ready while bindings are built.
             visible: item.modelData ? item.modelData.visible : false
 
             Layout.fillWidth: true
@@ -519,8 +488,6 @@ MouseArea {
 
                 color: Colours.palette.m3onSurface
                 disabled: !root.expanded
-                // Hovering unfolds the entries of a row, and folds whatever was
-                // open when another row takes over.
                 onContainsMouseChanged: {
                     if (!containsMouse || item.inSubmenu)
                         return;
@@ -564,8 +531,6 @@ MouseArea {
                 Loader {
                     asynchronous: true
                     Layout.alignment: Qt.AlignVCenter
-                    // A row that unfolds a submenu always gets an arrow, so the
-                    // nested entries are discoverable.
                     active: item.modelData?.trailingIcon.length > 0 || item.hasSubmenu
                     visible: active
 

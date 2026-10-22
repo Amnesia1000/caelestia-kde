@@ -198,7 +198,6 @@ PageBase {
                         z: 100
                         onClicked: {
                             submenuDialog.sourceList = sourceList;
-                            submenuDialog.sourceIndex = index;
                             submenuDialog.entry = raw;
                             submenuDialog.openIn(QsWindow.window, activeDelegate);
                         }
@@ -371,16 +370,26 @@ PageBase {
             id: submenuDialog
 
             property string sourceList: ""
-            property int sourceIndex: -1
 
             onSaved: children => {
                 const model = root.getModel(submenuDialog.sourceList);
-                if (!model || submenuDialog.sourceIndex < 0 || submenuDialog.sourceIndex >= model.count)
+                if (!model || !submenuDialog.entry)
                     return;
 
-                const raw = model.get(submenuDialog.sourceIndex).raw;
+                const id = submenuDialog.entry.id;
+                let index = -1;
+                for (let i = 0; i < model.count; i++) {
+                    if (model.get(i).raw?.id === id) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index < 0)
+                    return;
+
+                const raw = model.get(index).raw;
                 raw.children = children;
-                model.setProperty(submenuDialog.sourceIndex, "raw", raw);
+                model.setProperty(index, "raw", raw);
                 root.save();
             }
         }

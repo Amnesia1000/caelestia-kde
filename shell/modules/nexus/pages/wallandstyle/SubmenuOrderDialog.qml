@@ -21,9 +21,6 @@ Popup {
 
     signal saved(var children)
 
-    // The page lives inside a Quickshell content window, where Overlay.overlay resolves to
-    // null: the popup is only shown once it belongs to a window, so the caller hands it over,
-    // along with the list it should sit on top of.
     function openIn(win, target): void {
         if (win && win.contentItem)
             parent = win.contentItem;

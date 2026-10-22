@@ -52,9 +52,6 @@ Singleton {
         return action === "AddWidget" || action === "ToggleWidgetLock" || action === "ToggleWidgetOutlines";
     }
 
-    // The widget actions used to be rows of their own. They share a submenu now,
-    // so a menu file written before that is folded into a single group, and the
-    // children keep the order the old rows had.
     function migrateEntries(entries) {
         const result = [];
         let group = null;
@@ -100,7 +97,7 @@ Singleton {
                 continue;
 
             const def = defaults.find(d => d.action === child.action);
-            child.id = child.id || def.id;
+            child.id = child.id || (def ? def.id : child.action);
             child.label = def ? def.label : child.label;
             child.icon = def ? def.icon : child.icon;
             child.type = "default";
@@ -109,7 +106,6 @@ Singleton {
             children.push(child);
         }
 
-        // An action added since the file was written is appended so it still shows up.
         for (let i = 0; i < defaults.length; i++) {
             if (!seen.includes(defaults[i].action))
                 children.push(defaults[i]);

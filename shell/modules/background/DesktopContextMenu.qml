@@ -18,7 +18,6 @@ Controls.Menu {
     property string screenName: ""
     property var itemPool: ({})
     property var entryByKey: ({})
-    // Submenu rows are built once and reused across rebuilds.
     property var submenuRows: ({})
     readonly property bool iconsEnabled: screenName ? ContextMenuStore.iconsShownOn(screenName) : GlobalConfig.background.desktopIconsEnabled
     readonly property bool iconsShown: (screenName ? GlobalConfig.forScreen(screenName) : GlobalConfig).background.wallpaperEnabled && (screenName ? GlobalConfig.forScreen(screenName) : GlobalConfig).background.desktopIconsEnabled
@@ -85,8 +84,6 @@ Controls.Menu {
         execTimer.restart();
     }
 
-    // A group entry unfolds into a submenu, so its children keep the order the
-    // menu file gives them instead of taking a row each.
     function isGroupEntry(entry) {
         return entry.type === "group" && entry.children && entry.children.length > 0;
     }
@@ -102,7 +99,6 @@ Controls.Menu {
         if (entry.action === "AddWidget") {
             item.text = entry.label;
             item.icon = entry.icon || "widgets";
-            // Only offered while the desktop shows icons, as it was in the flat menu.
             item.visible = Qt.binding(() => root.iconsShown);
         } else if (entry.action === "ToggleWidgetLock") {
             item.text = Qt.binding(() => DesktopLayout.anyWidgetUnlocked() ? qsTr("Lock All Widgets") : qsTr("Unlock All Widgets"));
@@ -128,6 +124,7 @@ Controls.Menu {
             : ContextMenuStore.cloneEntries(entries);
         const newArr = [];
         const nextEntryByKey = {};
+        const nextSubmenuKeys = {};
 
         for (let i = 0; i < normalized.length; i++) {
             let entry = normalized[i];
@@ -144,10 +141,10 @@ Controls.Menu {
 
                     const childKey = (child.id && child.id.length > 0) ? child.id : (key + "_" + c);
                     nextEntryByKey[childKey] = child;
+                    nextSubmenuKeys[childKey] = true;
                     children.push(root.submenuEntry(childKey, child));
                 }
 
-                // A group whose children are all disabled has nothing to unfold.
                 if (children.length === 0) continue;
 
                 let item = root.itemPool[key];
@@ -198,6 +195,12 @@ Controls.Menu {
             if (!nextEntryByKey.hasOwnProperty(k)) {
                 root.itemPool[k].destroy();
                 delete root.itemPool[k];
+            }
+        }
+        for (const k in root.submenuRows) {
+            if (!nextSubmenuKeys.hasOwnProperty(k)) {
+                root.submenuRows[k].destroy();
+                delete root.submenuRows[k];
             }
         }
 
