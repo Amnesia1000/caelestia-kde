@@ -36,7 +36,8 @@ Item {
     readonly property int labelLines: root.shrunk ? 3 : 2
     // The icon takes whatever height is left once the label has its lines, so
     // a large font or a long name can no longer push the block past the tile.
-    readonly property int labelHeight: Math.round(nameMetrics.height * root.labelLines)
+    readonly property int lineHeight: Math.max(1, Math.round(nameMetrics.height))
+    readonly property int labelHeight: root.lineHeight * root.labelLines
     readonly property int baseIconSize: Math.min(Math.round(root.implicitWidth * 0.5), Math.max(16, root.implicitHeight - root.labelHeight - Tokens.spacing.extraSmall * 2))
 
     implicitWidth: Tokens.sizes.launcher.browseTileWidth
@@ -109,7 +110,7 @@ Item {
                 id: content
 
                 anchors.horizontalCenter: parent.horizontalCenter
-                y: (page.height - height) / 2
+                y: Tokens.spacing.extraSmall
                 spacing: Tokens.spacing.extraSmall
 
                 Item {
@@ -142,18 +143,17 @@ Item {
 
                     anchors.horizontalCenter: parent.horizontalCenter
                     clip: true
-                    implicitWidth: name.width
-                    implicitHeight: name.implicitHeight
+                    implicitWidth: root.implicitWidth
 
-                    Behavior on implicitHeight {
-                        Anim {
-                            type: Anim.FastSpatial
-                        }
-                    }
+                    // Fixed room for both lines, so every tile keeps its icon at the
+                    // same height whether the name needs one line or two.
+                    implicitHeight: root.labelHeight
 
                     NameLabel {
                         id: name
 
+                        anchors.top: parent.top
+                        anchors.horizontalCenter: parent.horizontalCenter
                         maxLines: root.labelLines
                     }
                 }
