@@ -500,6 +500,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: leftModel
                     clip: true
+                    interactive: contentHeight > height
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
@@ -555,6 +556,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: middleModel
                     clip: true
+                    interactive: contentHeight > height
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
@@ -610,6 +612,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: rightModel
                     clip: true
+                    interactive: contentHeight > height
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
@@ -703,6 +706,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: libraryModel
                     clip: true
+                    interactive: contentHeight > height
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     delegate: root.panelDelegate
