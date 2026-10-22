@@ -73,7 +73,7 @@ Item {
                 const loader = rep.itemAt(i) as WrappedLoader;
                 if (loader?.enabled && loader.id === "tray") {
                     const tray = loader.item as Tray;
-                    if (tray && (Config.bar.popouts.tray || !tray.pinned)) {
+                    if (tray) {
                         tray.expanded = false;
                         tray.pinned = false;
                     }
@@ -96,8 +96,12 @@ Item {
         }
         currentHoveredItem = ch ? ch.item : null;
 
-        if (ch?.id !== "tray")
-            closeTray();
+        if (ch?.id === "tray") {
+            closeTrayTimer.stop();
+        } else if (!popouts.hasCurrent || !TrayRegistry.isTrayPopout(popouts.currentName)) {
+            if (!closeTrayTimer.running)
+                closeTrayTimer.restart();
+        }
 
         if (!ch) {
             if (popouts.hasCurrent && (popouts.currentName === "dockhover" || popouts.currentName === "greeter")) return;
@@ -116,7 +120,6 @@ Item {
             const tray = ch.item as Tray;
             if (tray.arrowHit(pos)) {
                 popouts.hasCurrent = false;
-                tray.expanded = true;
             } else {
                 const trayItem = tray.itemAt(pos);
                 popouts.hasCurrent = !!trayItem;
@@ -342,6 +345,13 @@ Item {
     Component.onCompleted: Logger.mark("bar-ready")
 
     clip: true
+
+    Timer {
+        id: closeTrayTimer
+
+        interval: 400
+        onTriggered: root.closeTray()
+    }
 
     GridLayout {
         id: leftLayout

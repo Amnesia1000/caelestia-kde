@@ -46,7 +46,12 @@ StyledRect {
     }
 
     function arrowHit(pos: real): bool {
-        return !!expandIcon.item && expandIcon.contains(mapToItem(expandIcon, isHorizontal ? pos : implicitWidth / 2, isHorizontal ? implicitHeight / 2 : pos));
+        if (!expandIcon.item)
+            return false;
+        const local = isHorizontal ? expandIcon.mapFromItem(null, pos, 0) : expandIcon.mapFromItem(null, 0, pos);
+        const coord = isHorizontal ? local.x : local.y;
+        const size = isHorizontal ? expandIcon.width : expandIcon.height;
+        return coord >= -root.spacing && coord <= size + root.padding;
     }
 
     clip: true
@@ -129,20 +134,27 @@ StyledRect {
     Loader {
         id: expandIcon
 
-        asynchronous: true
-
         anchors.horizontalCenter: isHorizontal ? undefined : parent.horizontalCenter
         anchors.verticalCenter: isHorizontal ? parent.verticalCenter : undefined
         anchors.bottom: isHorizontal ? undefined : parent.bottom
         anchors.right: isHorizontal ? parent.right : undefined
+        anchors.bottomMargin: isHorizontal ? 0 : root.padding
+        anchors.rightMargin: isHorizontal ? root.padding : 0
 
         active: root.showArrow
 
         sourceComponent: Item {
-            implicitWidth: isHorizontal ? (expandIconInner.implicitWidth - Tokens.padding.small * 2) : expandIconInner.implicitWidth
-            implicitHeight: isHorizontal ? expandIconInner.implicitHeight : (expandIconInner.implicitHeight - Tokens.padding.small * 2)
+            id: arrowContainer
+
+            readonly property real iconDimension: Math.max(expandIconInner.implicitWidth, expandIconInner.implicitHeight)
+
+            implicitWidth: iconDimension
+            implicitHeight: iconDimension
 
             TapHandler {
+                margin: root.padding
+                cursorShape: Qt.PointingHandCursor
+
                 onTapped: {
                     root.pinned = !root.pinned;
                     root.expanded = root.pinned;
@@ -152,29 +164,12 @@ StyledRect {
             MaterialIcon {
                 id: expandIconInner
 
-                anchors.horizontalCenter: isHorizontal ? undefined : parent.horizontalCenter
-                anchors.verticalCenter: isHorizontal ? parent.verticalCenter : undefined
-                anchors.bottom: isHorizontal ? undefined : parent.bottom
-                anchors.right: isHorizontal ? parent.right : undefined
-                anchors.bottomMargin: isHorizontal ? 0 : (Config.bar.tray.background ? Tokens.padding.extraSmall : -Tokens.padding.extraSmall)
-                anchors.rightMargin: isHorizontal ? (Config.bar.tray.background ? Tokens.padding.extraSmall : -Tokens.padding.extraSmall) : 0
+                anchors.centerIn: parent
                 text: "expand_less"
                 fontStyle: Tokens.font.icon.large
                 rotation: isHorizontal ? (root.expanded ? 270 : 90) : (root.expanded ? 180 : 0)
 
                 Behavior on rotation {
-                    Anim {}
-                }
-
-                Behavior on anchors.bottomMargin {
-                    enabled: !isHorizontal
-
-                    Anim {}
-                }
-
-                Behavior on anchors.rightMargin {
-                    enabled: isHorizontal
-
                     Anim {}
                 }
             }
