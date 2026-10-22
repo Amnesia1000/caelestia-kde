@@ -5,9 +5,6 @@ import QtQuick.Layouts
 import Quickshell
 import Caelestia.Config
 import qs.components
-import qs.components.controls
-import qs.services
-import qs.utils
 import qs.modules.nexus
 
 ColumnLayout {
@@ -17,9 +14,8 @@ ColumnLayout {
 
     property real scaleOffset: 1.0
     property real fontScale: 1.0
-    property bool _isSidebarOpen: false
 
-    readonly property bool isPanel: root.popouts.barPanelIndex >= 0
+    readonly property bool isPanel: root.popouts.panelIndex >= 0
 
     width: card.implicitWidth
     implicitWidth: card.implicitWidth
@@ -59,28 +55,9 @@ ColumnLayout {
                     radius: editRow.radius
 
                     onClicked: {
-                        const target = root.popouts.barPanelIndex;
+                        const target = root.popouts.panelIndex;
                         root.popouts.hasCurrent = false;
-                        // `barComponentsTarget` lives on the state of the Nexus
-                        // window, not on the type, so it has to be set through
-                        // the window this call opens.
-                        //
-                        // A panel is edited from the extra bars list, so that
-                        // page is stacked under the editor and Back returns to
-                        // it instead of the main panels page.
-                        const extraBars = target >= 0;
-                        const win = WindowFactory.create(null, {
-                            initialPageIdx: PageRegistry.indexForKey("panels"),
-                            initialSubPageIdx: 6
-                        });
-                        const apply = () => {
-                            if (win && win.nexus) {
-                                win.nexus.nState.barComponentsTarget = target;
-                                win.nexus.nState.backToExtraBars = extraBars;
-                            }
-                        };
-                        apply();
-                        Qt.callLater(apply);
+                        WindowFactory.openBarComponents(target);
                     }
                 }
 

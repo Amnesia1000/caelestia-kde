@@ -73,18 +73,18 @@ PageBase {
     readonly property real zonePadding: Tokens.padding.medium
     readonly property real emptyZoneHeight: 72
 
-    // Which bar this page edits: the Extra bars page points it at one of the
-    // extra panels, anything else keeps the main bar. Every read and write
-    // below goes through it, so the page behaves the same for either.
     readonly property var targetNode: {
         const target = root.nState.barComponentsTarget;
+
         if (target < 0 || target >= GlobalConfig.bar.panels.count)
             return GlobalConfig.bar;
+
         return GlobalConfig.bar.panels.at(target);
     }
     readonly property string barName: {
         if (root.nState.barComponentsTarget < 0)
             return "";
+
         return root.targetNode.name || qsTr("Bar %1").arg(root.nState.barComponentsTarget + 1);
     }
     property Component panelDelegate: Component {
@@ -400,12 +400,7 @@ PageBase {
     }
 
     function resetToDefaults(): void {
-        // The main bar goes back to the schema's own defaults; a panel keeps its
-        // own entry list, which is the node the editor is pointed at.
-        if (root.targetNode === GlobalConfig.bar)
-            BarWidgets.resetToDefaults(GlobalConfig.bar);
-        else
-            BarWidgets.resetToDefaults(root.targetNode);
+        BarWidgets.resetToDefaults(root.targetNode);
         load();
     }
 
@@ -433,7 +428,7 @@ PageBase {
                 newEntries.push({
                     id: id,
                     enabled: false,
-                    zone: root.targetNode === GlobalConfig.bar ? BarWidgets.zoneFor(Config.bar, id) : BarWidgets.zoneFor(root.targetNode, id)
+                    zone: BarWidgets.zoneFor(root.targetNode, id)
                 });
             }
         }

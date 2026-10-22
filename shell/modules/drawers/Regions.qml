@@ -10,21 +10,15 @@ Region {
 
     required property Bar.BarWrapper bar
     required property Panels panels
-    required property var frameEdges
+    required property FrameEdges frameEdges
     required property var win
-    required property var partialPanelStrips
+    required property var panelStrips
     readonly property real borderThickness: Config.border.thickness
     readonly property real clampedThickness: Config.border.clampedThickness
-    readonly property real barLeftWidth: bar.position === "left" ? bar.clampedThickness : clampedThickness
-    readonly property real barRightWidth: bar.position === "right" ? bar.clampedThickness : clampedThickness
-    readonly property real barTopHeight: bar.position === "top" ? bar.clampedThickness : clampedThickness
-    readonly property real barBottomHeight: bar.position === "bottom" ? bar.clampedThickness : clampedThickness
-    // The interactive region is the screen minus the frame edge, where the
-    // frame edge is the bar/panel band when one sits there.
-    readonly property real leftEdge: Math.max(root.frameEdges.left, barLeftWidth)
-    readonly property real rightEdge: Math.max(root.frameEdges.right, barRightWidth)
-    readonly property real topEdge: Math.max(root.frameEdges.top, barTopHeight)
-    readonly property real bottomEdge: Math.max(root.frameEdges.bottom, barBottomHeight)
+    readonly property real leftEdge: Math.max(root.frameEdges.left, root.clampedThickness)
+    readonly property real rightEdge: Math.max(root.frameEdges.right, root.clampedThickness)
+    readonly property real topEdge: Math.max(root.frameEdges.top, root.clampedThickness)
+    readonly property real bottomEdge: Math.max(root.frameEdges.bottom, root.clampedThickness)
     // A closed panel's input region must be at least as deep as its hover trigger,
     // otherwise the pointer never reaches the area Interactions tests against.
 
@@ -81,34 +75,9 @@ Region {
         panel: root.panels.popoutsWrapper
         width: panel.width * (1 - root.panels.popoutsWrapper.offsetScale)
     }
-    // A full-edge panel thickens the frame, so its band already sits inside
-    // the part of the screen this region keeps interactive. A partial panel
-    // does not, so it punches its own cutout. Regions only take Region
-    // children, so the slots are declared here and bound to the list; the
-    // spare ones collapse to nothing.
-    PanelCutout {
-        rect: root.partialPanelStrips[0] ?? null
-    }
-    PanelCutout {
-        rect: root.partialPanelStrips[1] ?? null
-    }
-    PanelCutout {
-        rect: root.partialPanelStrips[2] ?? null
-    }
-    PanelCutout {
-        rect: root.partialPanelStrips[3] ?? null
-    }
-    PanelCutout {
-        rect: root.partialPanelStrips[4] ?? null
-    }
-    PanelCutout {
-        rect: root.partialPanelStrips[5] ?? null
-    }
-    PanelCutout {
-        rect: root.partialPanelStrips[6] ?? null
-    }
-    PanelCutout {
-        rect: root.partialPanelStrips[7] ?? null
+    Region {
+        intersection: Intersection.Subtract
+        regions: root.panelStrips
     }
     Region {
         x: 0; y: 0
@@ -142,15 +111,6 @@ Region {
         y: panel.y + root.panels.topMargin
         width: panel.width
         height: panel.height
-        intersection: Intersection.Subtract
-    }
-    component PanelCutout: Region {
-        required property var rect
-
-        x: rect ? rect.x : 0
-        y: rect ? rect.y : 0
-        width: rect ? rect.width : 0
-        height: rect ? rect.height : 0
         intersection: Intersection.Subtract
     }
     Config.screen: win.screen.name

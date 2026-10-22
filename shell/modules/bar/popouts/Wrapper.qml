@@ -38,14 +38,10 @@ Item {
     property alias hasCurrent: popoutState.hasCurrent
     property alias dockModel: popoutState.dockModel
     property alias tasksModel: popoutState.tasksModel
-    property alias barPanelIndex: popoutState.barPanelIndex
     property real currentCenter
-    // The frame edge the current popout grows out of: the bar's own side by
-    // default, or the side of the panel band that opened it.
-    property string currentEdge: Config.bar.position
-    // How much further from the frame edge the popout starts: a panel that only
-    // covers part of its edge is thin, so its popouts start at its inner side.
-    property real currentInset: 0
+    property alias edge: popoutState.edge
+    property alias inset: popoutState.inset
+    property alias panelIndex: popoutState.panelIndex
     // Set by ClipWrapper: whether the current bar item sits under the sidebar,
     // which can be narrower than the bar's right side now that it is resizable.
     property bool underSidebar: true
@@ -75,6 +71,9 @@ Item {
         hasCurrent = false;
         detachedMode = "";
     }
+    function setOrigin(edge: string, inset: real, panelIndex: int): void {
+        popoutState.setOrigin(edge, inset, panelIndex);
+    }
 
     implicitWidth: nonAnimWidth
     implicitHeight: nonAnimHeight
@@ -101,7 +100,6 @@ Item {
         // Only attach to the sidebar when the popout would open below it anyway;
         // otherwise it would end up away from the item that opened it.
         sidebarOpen: root.visibilities.sidebar && root.underSidebar
-        isHorizontal: root.currentEdge === "top" || root.currentEdge === "bottom"
         onDetachRequested: mode => root.detach(mode)
     }
     HyprlandFocusGrab {

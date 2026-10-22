@@ -49,16 +49,7 @@ ColumnLayout {
                     isRound: true
                     inactiveColour: Colours.tPalette.m3surfaceContainerHigh
                     inactiveOnColour: Colours.palette.m3onSurfaceVariant
-                    onClicked: {
-                        const nState = root.nState;
-                        nState.closeSubPage();
-                        // The editor reached from a bar's menu was opened without
-                        // the extra bars list under it, so Back goes there now.
-                        if (nState.backToExtraBars) {
-                            nState.backToExtraBars = false;
-                            nState.goToSubPage(PageRegistry.indexForKey("panels"), 24);
-                        }
-                    }
+                    onClicked: root.nState.closeSubPage()
                 }
             }
 

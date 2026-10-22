@@ -14,6 +14,9 @@ Singleton {
 
     property var openWindow: null
 
+    readonly property int extraBarsSubPageIdx: 24
+    readonly property int barComponentsSubPageIdx: 6
+
     function create(parent: Item, props: var): var {
         props = props || {};
         if (root.openWindow) {
@@ -34,6 +37,22 @@ Singleton {
     function close(): void {
         if (root.openWindow)
             root.openWindow.destroy();
+    }
+    function openBarComponents(target: int): void {
+        const win = root.create(null, {
+            initialPageIdx: PageRegistry.indexForKey("panels")
+        });
+
+        if (!win || !win.nexus)
+            return;
+
+        const nState = win.nexus.nState;
+        nState.barComponentsTarget = target;
+
+        if (target >= 0)
+            nState.openSubPage(root.extraBarsSubPageIdx);
+
+        nState.openSubPage(root.barComponentsSubPageIdx);
     }
 
     QtObject {

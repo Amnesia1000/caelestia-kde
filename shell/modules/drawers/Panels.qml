@@ -28,7 +28,7 @@ Item {
     // Per-side frame thickness, supplied by ContentWindow. The panels live
     // inside the frame, so their insets follow it directly instead of
     // recomputing it from the bar.
-    required property var frameEdges
+    required property FrameEdges frameEdges
     property var overviewAnimConfig
     readonly property alias osd: osd
     readonly property alias osdWrapper: osdWrapper

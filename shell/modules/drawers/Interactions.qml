@@ -16,9 +16,7 @@ CustomMouseArea {
     required property DrawerVisibilities visibilities
     required property Panels panels
     required property Bar.BarWrapper bar
-    // Bands of the full-edge panels; the pointer interactions are routed to the
-    // band under the cursor exactly like they are routed to the bar.
-    required property var barPanels
+    required property PanelLayer barPanels
     required property real borderThickness
     required property bool fullscreen
     // A context menu on another screen still needs its dismiss click.
@@ -32,13 +30,15 @@ CustomMouseArea {
     property bool osdShortcutActive
     property bool utilitiesShortcutActive
     readonly property bool isBarHorizontal: bar.isHorizontal
-    // Uses clampedThickness rather than the raw implicit size so the bar stays
-    // reachable when the border thickness is set to 0 (the collapsed bar is 0px wide).
 
-    // The band under the given point, so the pointer interactions can reach
-    // the full-edge panels exactly like they reach the bar.
-    function barPanelAt(x: real, y: real): var {
-        return barPanels ? barPanels.bandAt(x, y) : null;
+    function inwardDistance(edge: string, dragX: real, dragY: real): real {
+        if (edge === "left")
+            return dragX;
+        if (edge === "right")
+            return -dragX;
+        if (edge === "top")
+            return dragY;
+        return -dragY;
     }
     function inBarArea(x: real, y: real): bool {
         if (bar.position === "left")
@@ -125,7 +125,7 @@ CustomMouseArea {
         if (fullscreen)
             return;
 
-        const band = barPanelAt(event.x, event.y);
+        const band = barPanels.bandAt(event.x, event.y);
 
         if (band) {
             band.handleWheel(event.x, event.y, event.angleDelta);
@@ -152,7 +152,7 @@ CustomMouseArea {
         if (grabActive || menuOpen) {
             let inside = false;
 
-            if (barPanelAt(event.x, event.y) || inBarArea(event.x, event.y)) inside = true;
+            if (barPanels.bandAt(event.x, event.y) || inBarArea(event.x, event.y)) inside = true;
             else if (visibilities.launcher && inBottomPanel(panels.launcher, event.x, event.y, false, Config.launcher.hoverThickness, Config.launcher.hoverWidth) && withinPanelWidth(panels.launcher, event.x, event.y)) inside = true;
             else if (visibilities.session && inRightPanel(panels.sessionWrapper, event.x, event.y)) inside = true;
             else if (visibilities.sidebar && inRightPanel(panels.sidebar, event.x, event.y)) inside = true;
@@ -207,13 +207,12 @@ CustomMouseArea {
         // The band under the pointer owns the popouts opened from it, so a
         // popout a widget reveals on hover grows out of the same edge a clicked
         // one would; back over the bar the frame edge is the bar's own side.
-        const hoverBand = barPanelAt(x, y);
+        const hoverBand = barPanels.bandAt(x, y);
 
         if (hoverBand) {
-            hoverBand.applyPopoutContext();
+            hoverBand.setOrigin();
         } else if (inBarArea(x, y)) {
-            popouts.currentEdge = bar.position;
-            popouts.currentInset = 0;
+            popouts.setOrigin(bar.position, 0, -1);
         }
 
         if (!visibilities.bar && Config.bar.showOnHover)
@@ -221,31 +220,15 @@ CustomMouseArea {
 
         // The panels that do not stay on screen reveal themselves from the
         // strip they keep at their edge: on hover, or on a drag from it.
-        if (barPanels)
-            barPanels.updateReveal(x, y, pressed, dragStart, dragX, dragY);
+        barPanels.updateReveal(x, y, pressed, dragStart, dragX, dragY);
 
         if (pressed && inBarArea(dragStart.x, dragStart.y)) {
-            if (bar.position === "left") {
-                if (dragX > Config.bar.dragThreshold)
-                    visibilities.bar = true;
-                else if (dragX < -Config.bar.dragThreshold)
-                    visibilities.bar = false;
-            } else if (bar.position === "right") {
-                if (dragX < -Config.bar.dragThreshold)
-                    visibilities.bar = true;
-                else if (dragX > Config.bar.dragThreshold)
-                    visibilities.bar = false;
-            } else if (bar.position === "top") {
-                if (dragY > Config.bar.dragThreshold)
-                    visibilities.bar = true;
-                else if (dragY < -Config.bar.dragThreshold)
-                    visibilities.bar = false;
-            } else if (bar.position === "bottom") {
-                if (dragY < -Config.bar.dragThreshold)
-                    visibilities.bar = true;
-                else if (dragY > Config.bar.dragThreshold)
-                    visibilities.bar = false;
-            }
+            const inward = root.inwardDistance(bar.position, dragX, dragY);
+
+            if (inward > Config.bar.dragThreshold)
+                visibilities.bar = true;
+            else if (inward < -Config.bar.dragThreshold)
+                visibilities.bar = false;
         }
 
         if (panels.sidebar.offsetScale === 1) {
@@ -329,7 +312,7 @@ CustomMouseArea {
                 visibilities.dashboard = false;
         }
 
-        const band = barPanelAt(x, y);
+        const band = barPanels.bandAt(x, y);
 
         if (band) {
             band.checkPopout(x, y);

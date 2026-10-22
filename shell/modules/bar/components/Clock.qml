@@ -14,7 +14,7 @@ StyledRect {
 
     // A panel on a vertical edge lays the clock out vertically: the bar it
     // lives in knows its own side, the primary bar falls back to the config.
-    readonly property bool isHorizontal: root.bar ? root.bar.isHorizontal : Config.bar.position === "top" || Config.bar.position === "bottom"
+    property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
     readonly property real rawScale: !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0
     readonly property real scaleFactor: rawScale < 1.0 ? Math.sqrt(Math.max(0.1, rawScale)) : rawScale
     readonly property int barThickness: Math.round(Tokens.sizes.bar.innerWidth * scaleFactor)

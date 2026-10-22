@@ -28,11 +28,6 @@ QtObject {
     // indexes `bar.panels`.
     property int barComponentsTarget: -1
 
-    // Set when the editor was opened straight from a bar's context menu: its
-    // Back button then goes to the extra bars list, which is not stacked under
-    // it, instead of the main panels page.
-    property bool backToExtraBars: false
-
     signal close
     signal subPageOpened(idx: int)
     signal subPageClosed
@@ -71,6 +66,5 @@ QtObject {
         subPageIdxStack.length = 0;
         pendingSubPageIdx = -1;
         barComponentsTarget = -1;
-        backToExtraBars = false;
     }
 }

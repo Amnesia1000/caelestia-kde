@@ -16,7 +16,7 @@ Variants {
             screen: scope.modelData
             bar: content.bar
             visibilities: content.visibilities
-            panelReservations: content.panelReservations
+            reservations: content.panelReservations
         }
 
         ContentWindow {

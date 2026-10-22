@@ -5,154 +5,73 @@ import QtQuick.Layouts
 import Quickshell
 import Caelestia.Config
 import qs.components.controls
-import qs.utils
 import qs.modules.nexus.common
 
 PageBase {
     id: root
 
-    // The main bar keeps its own edge and a bar per edge is all that fits, so
-    // the edges a bar can be put on are the ones nothing is sitting on.
     readonly property list<string> allEdges: ["top", "bottom", "left", "right"]
     readonly property bool hasSelection: root.selectedIndex >= 0 && root.selectedIndex < GlobalConfig.bar.panels.count
     readonly property var selectedPanel: root.hasSelection ? GlobalConfig.bar.panels.at(root.selectedIndex) : null
+    readonly property var alignItems: root.itemsOf(alignInstantiator)
+    readonly property var positionItems: root.itemsOf(edgeInstantiator)
+    readonly property var screenItems: root.itemsOf(screenInstantiator)
+    readonly property var addableEdges: root.allEdges.map(edge => ({
+        id: edge,
+        label: root.edgeLabel(edge)
+    }))
+    readonly property var screenModel: [{
+        name: "",
+        label: qsTr("All screens")
+    }].concat(Quickshell.screens.map(s => ({
+        name: s.name,
+        label: s.name
+    })))
 
-    readonly property var alignItems: root.buildAlignItems()
-    readonly property var positionItems: root.edgeItems(root.selectedPanel?.position ?? "")
-    readonly property var addableEdges: root.edgeDialogItems()
-    readonly property var screenItems: root.buildScreenItems()
+    property int selectedIndex: 0
+    property real lengthDraft: -1
 
-    readonly property Component menuItemComp: Component {
-        MenuItem {}
-    }
-
-    // The length is written once the stepping stops, so dragging the control
-    // does not rewrite the config on every step.
     readonly property Timer lengthTimer: Timer {
         interval: 250
 
         onTriggered: {
             if (root.lengthDraft >= 0 && root.selectedPanel)
                 root.selectedPanel.lengthPercent = Math.round(root.lengthDraft);
+
             root.lengthDraft = -1;
         }
     }
 
-    property int selectedIndex: 0
-    property real lengthDraft: -1
-
-    function buildAlignItems(): var {
-        const values = ["start", "center", "end"];
+    function itemsOf(instantiator: var): var {
         const items = [];
-        for (let i = 0; i < values.length; ++i) {
-            const value = values[i];
-            items.push(root.menuItemComp.createObject(root, {
-                value: value,
-                text: root.alignLabel(value)
-            }));
-        }
+
+        for (let i = 0; i < instantiator.count; ++i)
+            items.push(instantiator.objectAt(i));
 
         return items;
     }
-
     function alignLabel(align: string): string {
-        switch (align) {
-        case "start":
+        if (align === "start")
             return qsTr("Start");
-        case "end":
+        if (align === "end")
             return qsTr("End");
-        }
-
         return qsTr("Center");
     }
-
     function edgeLabel(edge: string): string {
-        switch (edge) {
-        case "top":
+        if (edge === "top")
             return qsTr("Top");
-        case "bottom":
+        if (edge === "bottom")
             return qsTr("Bottom");
-        case "left":
+        if (edge === "left")
             return qsTr("Left");
-        case "right":
+        if (edge === "right")
             return qsTr("Right");
-        }
-
         return edge;
     }
-
-    function edgesInUse(): var {
-        const used = [GlobalConfig.bar.position];
-        for (let i = 0; i < GlobalConfig.bar.panels.count; ++i) {
-            const panel = GlobalConfig.bar.panels.at(i);
-            if (panel)
-                used.push(panel.position);
-        }
-
-        return used;
-    }
-
-    function freeEdges(keep: string): var {
-        const used = root.edgesInUse();
-        const free = [];
-        for (let i = 0; i < root.allEdges.length; ++i) {
-            const edge = root.allEdges[i];
-            if (edge === keep || used.indexOf(edge) === -1)
-                free.push(edge);
-        }
-
-        return free;
-    }
-
-    function edgeItems(keep: string): var {
-        const edges = root.freeEdges(keep);
-        const items = [];
-        for (let i = 0; i < edges.length; ++i) {
-            items.push(root.menuItemComp.createObject(root, {
-                value: edges[i],
-                text: root.edgeLabel(edges[i])
-            }));
-        }
-
-        return items;
-    }
-
-    // DialogSelectButton reads `id` and `label` off each entry, not `value`
-    // and `text` the way a SelectRow does.
-    function edgeDialogItems(): var {
-        const free = root.freeEdges("");
-        const items = [];
-        for (let i = 0; i < free.length; ++i) {
-            items.push({
-                id: free[i],
-                label: root.edgeLabel(free[i])
-            });
-        }
-
-        return items;
-    }
-
-    function buildScreenItems(): var {
-        const items = [root.menuItemComp.createObject(root, {
-            value: "",
-            text: qsTr("All screens")
-        })];
-        const screens = Quickshell.screens;
-        for (let i = 0; i < screens.length; ++i) {
-            items.push(root.menuItemComp.createObject(root, {
-                value: screens[i].name,
-                text: screens[i].name
-            }));
-        }
-
-        return items;
-    }
-
     function itemFor(items: var, value: string): MenuItem {
-        for (let i = 0; i < items.length; ++i) {
+        for (let i = 0; i < items.length; ++i)
             if (items[i].value === value)
                 return items[i];
-        }
 
         return items.length > 0 ? items[0] : null;
     }
@@ -190,6 +109,43 @@ PageBase {
 
     onSelectedIndexChanged: root.lengthDraft = -1
 
+    Instantiator {
+        id: alignInstantiator
+
+        model: ["start", "center", "end"]
+
+        delegate: MenuItem {
+            required property string modelData
+
+            value: modelData
+            text: root.alignLabel(modelData)
+        }
+    }
+    Instantiator {
+        id: edgeInstantiator
+
+        model: root.allEdges
+
+        delegate: MenuItem {
+            required property string modelData
+
+            value: modelData
+            text: root.edgeLabel(modelData)
+        }
+    }
+    Instantiator {
+        id: screenInstantiator
+
+        model: root.screenModel
+
+        delegate: MenuItem {
+            required property var modelData
+
+            value: modelData.name
+            text: modelData.label
+        }
+    }
+
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
@@ -224,7 +180,6 @@ PageBase {
         DialogSelectButton {
             rootParent: root.flickable
 
-            visible: root.addableEdges.length > 0
             icon: "add"
             label: qsTr("Add bar")
             header: qsTr("Which edge?")
@@ -234,17 +189,6 @@ PageBase {
                 if (selectedItem)
                     root.addBar(selectedItem);
             }
-        }
-
-        RowButton {
-            Layout.fillWidth: true
-
-            visible: root.addableEdges.length === 0
-            first: GlobalConfig.bar.panels.count === 0
-            last: true
-            icon: "info"
-            text: qsTr("Every edge has a bar")
-            subtext: qsTr("Move or remove one to free an edge")
         }
 
         SectionHeader {
@@ -272,7 +216,6 @@ PageBase {
 
             visible: root.hasSelection
             label: qsTr("Position")
-            subtext: qsTr("Only the edges without a bar are offered")
             menuItems: root.positionItems
             active: root.itemFor(root.positionItems, root.selectedPanel?.position ?? "")
             onSelected: item => {

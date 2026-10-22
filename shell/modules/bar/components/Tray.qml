@@ -20,11 +20,7 @@ StyledRect {
     property bool expanded
     property bool pinned: false
     property var popouts
-    // Set by the bar that hosts the widget: a widget lives in a bar whose
-    // orientation is not necessarily the main bar's.
-    property var bar: null
-
-    readonly property bool isHorizontal: root.bar ? root.bar.isHorizontal : Config.bar.position === "top" || Config.bar.position === "bottom"
+    property bool isHorizontal: Config.bar.position === "top" || Config.bar.position === "bottom"
     readonly property int barThickness: Math.round(Tokens.sizes.bar.innerWidth * Math.max(0.6, !isNaN(Config.bar.scale) ? Config.bar.scale : 1.0))
 
     readonly property real nonAnimHeight: {

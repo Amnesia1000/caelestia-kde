@@ -17,20 +17,14 @@ Item {
     required property DrawerVisibilities visibilities
 
     readonly property alias content: content
-    readonly property bool isHorizontal: bar.isHorizontal
-    // A popout grows along the axis of the edge it comes out of, which is not
-    // always the bar's own axis: a panel can put a vertical edge on a screen
-    // whose bar is horizontal.
-    readonly property bool verticalEdge: root.edge === "left" || root.edge === "right"
-    // The frame edge the popout grows out of: the bar's own side by default,
-    // or the side of the panel band that opened it.
-    readonly property string edge: content.currentEdge
+    readonly property string edge: content.edge
+    readonly property bool horizontalEdge: root.edge === "top" || root.edge === "bottom"
     property real offsetScale: content.isDetached || content.hasCurrent ? 0 : 1
     // Where x is heading; x itself animates towards it.
     readonly property real targetX: {
         if (content.isDetached)
             return (parent.width - content.nonAnimWidth) / 2;
-        if (!root.verticalEdge) {
+        if (root.horizontalEdge) {
             if (content.sidebarOpen && !content.isDockPopout)
                 return parent.width - content.nonAnimWidth;
 
@@ -44,24 +38,24 @@ Item {
             return Math.max(off, 0);
         }
         if (root.edge === "right")
-            return parent.width - implicitWidth - content.currentInset;
-        return content.currentInset;
+            return parent.width - implicitWidth - content.inset;
+        return content.inset;
     }
 
     visible: width > 0 && height > 0
     clip: true
 
-    implicitWidth: root.verticalEdge ? content.implicitWidth * (1 - offsetScale) : content.implicitWidth
-    implicitHeight: root.verticalEdge ? content.implicitHeight : content.implicitHeight * (1 - offsetScale)
+    implicitWidth: !root.horizontalEdge ? content.implicitWidth * (1 - offsetScale) : content.implicitWidth
+    implicitHeight: !root.horizontalEdge ? content.implicitHeight : content.implicitHeight * (1 - offsetScale)
 
     x: targetX
     y: {
         if (content.isDetached)
             return (parent.height - content.nonAnimHeight) / 2;
-        if (!root.verticalEdge) {
+        if (root.horizontalEdge) {
             if (root.edge === "bottom")
-                return parent.height - implicitHeight - content.currentInset;
-            return content.currentInset;
+                return parent.height - implicitHeight - content.inset;
+            return content.inset;
         }
 
         const off = content.currentCenter - parent.topMargin - content.nonAnimHeight / 2;
@@ -76,7 +70,7 @@ Item {
     }
 
     Behavior on x {
-        enabled: content.isDetached || !root.verticalEdge
+        enabled: content.isDetached || root.horizontalEdge
 
         Anim {
             duration: content.animLength
@@ -85,7 +79,7 @@ Item {
     }
 
     Behavior on y {
-        enabled: content.isDetached || (root.verticalEdge && root.offsetScale < 1)
+        enabled: content.isDetached || (!root.horizontalEdge && root.offsetScale < 1)
 
         Anim {
             duration: content.animLength
@@ -99,7 +93,7 @@ Item {
         screen: root.screen
         offsetScale: root.offsetScale
         visibilities: root.visibilities
-        underSidebar: !root.isHorizontal || content.currentCenter - root.parent.leftMargin >= root.parent.width - Visibilities.sidebarWidthFor(Tokens.sizes.sidebar.width)
+        underSidebar: !bar.isHorizontal || content.currentCenter - root.parent.leftMargin >= root.parent.width - Visibilities.sidebarWidthFor(Tokens.sizes.sidebar.width)
 
         anchors.leftMargin: root.edge === "left" ? (-implicitWidth - 5) * root.offsetScale : 0
         anchors.rightMargin: root.edge === "right" ? (-implicitWidth - 5) * root.offsetScale : 0

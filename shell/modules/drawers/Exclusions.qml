@@ -17,7 +17,7 @@ Scope {
     // Frame thickness each full-edge panel takes on its side (the panel edges of
     // the content window). It is reserved even while the panels are collapsed,
     // so opening the overview does not resize the maximised windows.
-    required property var panelReservations
+    required property FrameEdges reservations
 
     // A pinned sidebar reserves its width so maximised windows sit beside it
     // rather than under it. It stays reserved while hidden for a fullscreen window
@@ -33,21 +33,15 @@ Scope {
     // Every side reserves whichever is larger: the bar (or the plain border) plus
     // the pinned sidebar, or the full-edge panels sitting on that side.
     readonly property int leftExclusion: Math.max((root.bar.position === "left" ? root.bar.exclusiveZone : Config.border.thickness)
-        + (root.reserveSidebar && root.bar.position === "right" ? root.sidebarWidth : 0), root.panelReservation("left"))
-    readonly property int topExclusion: Math.max(root.bar.position === "top" ? root.bar.exclusiveZone : Config.border.thickness, root.panelReservation("top"))
+        + (root.reserveSidebar && root.bar.position === "right" ? root.sidebarWidth : 0), root.reservations.left)
+    readonly property int topExclusion: Math.max(root.bar.position === "top" ? root.bar.exclusiveZone : Config.border.thickness, root.reservations.top)
     readonly property int rightExclusion: Math.max((root.bar.position === "right" ? root.bar.exclusiveZone : Config.border.thickness)
-        + (root.reserveSidebar && root.bar.position !== "right" ? root.sidebarWidth : 0), root.panelReservation("right"))
-    readonly property int bottomExclusion: Math.max(root.bar.position === "bottom" ? root.bar.exclusiveZone : Config.border.thickness, root.panelReservation("bottom"))
+        + (root.reserveSidebar && root.bar.position !== "right" ? root.sidebarWidth : 0), root.reservations.right)
+    readonly property int bottomExclusion: Math.max(root.bar.position === "bottom" ? root.bar.exclusiveZone : Config.border.thickness, root.reservations.bottom)
 
     readonly property real usableWidth: Math.max(100, root.screen.width - leftExclusion - rightExclusion)
     readonly property real usableHeight: Math.max(100, root.screen.height - topExclusion - bottomExclusion)
     readonly property rect usableArea: Qt.rect(leftExclusion, topExclusion, usableWidth, usableHeight)
-
-    // The space the full-edge panels take on the given side, besides the plain
-    // border the frame always keeps.
-    function panelReservation(side: string): real {
-        return root.panelReservations ? (root.panelReservations[side] ?? 0) : 0;
-    }
 
     onLeftExclusionChanged: Visibilities.notifyExclusionBoundsChanged(root.screen)
     onTopExclusionChanged: Visibilities.notifyExclusionBoundsChanged(root.screen)
