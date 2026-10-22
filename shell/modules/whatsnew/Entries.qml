@@ -1,3 +1,5 @@
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import Quickshell
 
@@ -6,170 +8,26 @@ QtObject {
 
     readonly property var list: [
         {
-            "id": "terminal_package_updater",
-            "revision": 32,
-            "icon": "terminal",
-            "title": qsTr("Terminal Updates"),
-            "description": qsTr("The system package updater is now configured to launch inside your preferred user terminal emulator, with an automatic fallback to Konsole.")
+            "id": "shimeji-cat",
+            "revision": 62,
+            "icon": "pets",
+            "title": qsTr("Shimeji Cat update"),
+            "settingsPage": "plugins",
+            "description": qsTr("Multiple Shimeji Cats can now be summoned at once. Also a fix regarding the cat hiding when clicking desktop has been pushed. Update from plugin store to access new features!")
         },
         {
-            "id": "builtin_uninstaller",
-            "revision": 33,
-            "icon": "delete_forever",
-            "title": qsTr("Built-in Uninstaller"),
-            "description": qsTr("A safe uninstaller action has been added directly to the About page in settings, providing a clean way to remove the shell and its owned resources.")
-        },
-        {
-            "id": "follow_system_font",
-            "revision": 34,
-            "icon": "font_download",
-            "title": qsTr("System Font Integration"),
-            "description": qsTr("A new option allows the shell to automatically follow your system-wide KDE font settings, rather than using a static default font.")
-        },
-        {
-            "id": "yaml_config_export",
-            "revision": 35,
-            "icon": "file_download",
-            "title": qsTr("Export Configuration"),
-            "description": qsTr("You can now export your complete shell configuration to a YAML file, providing a lossless backup of all your settings and preferences.")
-        },
-        {
-            "id": "per_setting_reset_buttons",
-            "revision": 36,
-            "icon": "settings_backup_restore",
-            "title": qsTr("Setting Reset Buttons"),
-            "description": qsTr("Added persistent, inline reset buttons across Nexus settings pages, allowing you to instantly restore individual sliders, steppers, and toggles to their default values.")
-        },
-        {
-            "id": "quick_toggles_reordering",
-            "revision": 37,
-            "icon": "toggle_on",
-            "title": qsTr("Quick Toggles Overhaul"),
-            "description": qsTr("Complete visual and functional overhaul of Quick Toggles. Supports custom order, multiple layouts, settings shortcut, and more.")
-        },
-        {
-            "id": "desktop_icons_rework",
-            "revision": 38,
+            "id": "desktop_multimonitor",
+            "revision": 63,
             "icon": "desktop_windows",
-            "title": qsTr("Interactive Desktop Icons"),
-            "description": qsTr("A complete overhaul of desktop icons adding support for rectangle multi-selection, keyboard navigation, grid auto-alignment, grouping, and drag-and-drop.")
+            "title": qsTr("Multi-Monitor Desktop Support"),
+            "description": qsTr("Desktop icons and widgets now fully support multi-monitor setups with screen-aware positioning. Each connected display maintains its own grid layout and arrangement independently, ensuring widgets and icons stay pinned to their designated monitor across display reconnections and resolution changes without overlapping or shifting between screens.")
         },
         {
-            "id": "sidebar_default_tab",
-            "revision": 39,
-            "icon": "tab",
-            "title": qsTr("Sidebar Startup Tab"),
-            "description": qsTr("The sidebar can now be configured to open on the last-used tab, or to always open on a specific default tab of your choice.")
-        },
-        {
-            "id": "desktop_elements_offsets",
-            "revision": 40,
-            "icon": "tune",
-            "title": qsTr("Desktop Elements Fine-Tuning"),
-            "description": qsTr("Added configurable fine X and Y position offsets for the desktop clock and desktop lyrics, allowing precise placement of elements on your wallpaper.")
-        },
-        {
-            "id": "wifi_hotspot",
-            "revision": 41,
-            "icon": "wifi_tethering",
-            "title": qsTr("Wi-Fi Hotspot"),
-            "description": qsTr("A built-in Wi-Fi hotspot toggle switch has been added to the quick toggles and network popout, complete with auto-refresh state monitoring.")
-        },
-        {
-            "id": "brightness_osd_dimming",
-            "revision": 42,
-            "icon": "brightness_medium",
-            "title": qsTr("Advanced Brightness Control"),
-            "description": qsTr("The Brightness OSD now perfectly synchronizes with KWin state during slider drags, and supports reading and displaying software dimming multipliers.")
-        },
-        {
-            "id": "audio_visualizer_enhancements",
-            "revision": 43,
-            "icon": "equalizer",
-            "title": qsTr("Audio Visualizer Enhancements"),
-            "description": qsTr("The audio visualizer now allows you to choose the capture source (System Audio Output vs Microphone Input), and features configurable side widths and margin size scaling.")
-        },
-        {
-            "id": "dock_ungrouped_windows",
-            "revision": 44,
-            "icon": "grid_view",
-            "title": qsTr("Ungrouped Dock Icons"),
-            "description": qsTr("An option has been added to the Dock to display separate, ungrouped icon tiles for each individual window instance instead of grouping them by application.")
-        },
-        {
-            "id": "bar_item_settings_links",
-            "revision": 45,
-            "icon": "settings_applications",
-            "title": qsTr("Bar Item Settings Links"),
-            "description": qsTr("Right-clicking specific bar items (such as the OS Icon, Power Button, and Show Desktop) now instantly opens their respective configuration pages in Nexus settings.")
-        },
-        {
-            "id": "app_browser_layouts",
-            "revision": 46,
-            "icon": "apps",
-            "title": qsTr("App Browser Layouts"),
-            "description": qsTr("The launcher now supports multiple app browser layouts. Choose between the standard categorized Grid, a Simple list, or a Compact list view via configuration.")
-        },
-        {
-            "id": "dashboard_hourly_weather",
-            "revision": 47,
-            "icon": "partly_cloudy_day",
-            "title": qsTr("Hourly Weather Forecast"),
-            "description": qsTr("The Weather tab in the dashboard now includes an hourly forecast alongside the existing daily weather predictions.")
-        },
-        {
-            "id": "pinned_sidebar",
-            "revision": 48,
-            "icon": "vertical_split",
-            "title": qsTr("Pinned Sidebar"),
-            "description": qsTr("The sidebar can now be pinned to stay open, reserving screen workarea space so windows don't overlap it. You can resize it dynamically by dragging its edge.")
-        },
-        {
-            "id": "unified_capture_card",
-            "revision": 49,
-            "icon": "screenshot_monitor",
-            "title": qsTr("Unified Capture Card"),
-            "description": qsTr("Screen recording and screenshots are now combined into a single Capture Card in the utilities drawer. It provides quick access to fullscreen, active window, region snip, OCR, image search, and a history of saved captures.")
-        },
-        {
-            "id": "dock_app_shortcuts",
-            "revision": 50,
-            "icon": "keyboard",
-            "title": qsTr("Dock App Shortcuts"),
-            "description": qsTr("You can now use keyboard shortcuts (like Meta + 1 through 9) to quickly focus or launch your pinned applications from the dock. Requires setting up the shortcuts in the Shortcut Manager.")
-        },
-        {
-            "id": "new_bar_components",
-            "revision": 51,
-            "icon": "widgets",
-            "title": qsTr("Bar Widgets"),
-            "settingsPage": "panels",
-            "settingsSubPage": 6,
-            "description": qsTr("The Bar now features a full-featured media widget with cover art, live CAVA visualization, quick actions, and a complete popout player.")
-        },
-        {
-            "id": "dashboard_notes_editors",
-            "revision": 52,
-            "icon": "edit_document",
-            "title": qsTr("Note Types & Editors"),
-            "description": qsTr("The Dashboard Notes tab now supports dedicated editors for different note types, including Plain Text, Markdown, and Checklists, allowing for richer note-taking right from the dashboard.")
-        },
-        {
-            "id": "desktop_widgets_folders",
-            "revision": 53,
-            "icon": "widgets",
-            "title": qsTr("Desktop Widgets & Large Folders"),
-            "description": qsTr("You can now place interactive widgets and expandable large folders directly onto the desktop grid for quick access to tools and files."),
-            "mediaUrl": "desktop_widgets_folder.png"
-        },
-        {
-            "id": "quick_share",
-            "revision": 54,
-            "icon": "share",
-            "title": qsTr("Quick Share (Nearby Share)"),
-            "settingsPage": "utilities",
-            "settingsSubPage": 7,
-            "description": qsTr("Receive and send files natively via the Nearby Share protocol. Quick Share features a background transfer service, interactive notifications, a quick toggle switch, and a dedicated utilities card for transfer tracking.")
+            "id": "desktop_widget_locking",
+            "revision": 64,
+            "icon": "lock",
+            "title": qsTr("Widget Locking & Outlines"),
+            "description": qsTr("Desktop widgets can now be locked individually or altogether directly from their context menus, preventing accidental dragging or resizing while interacting with them. In addition, a new widget outlines toggle highlights widget boundaries on your wallpaper, making it effortless to locate empty or conditionally hidden widgets across your desktop.")
         }
     ]
 

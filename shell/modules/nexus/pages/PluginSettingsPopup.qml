@@ -11,24 +11,73 @@ import qs.modules.nexus.common
 Popup {
     id: root
 
-    parent: Overlay.overlay
-    x: Math.round((parent.width - width) / 2)
-    y: Math.round((parent.height - height) / 2)
-    width: 450
-    modal: true
-    dim: true
-
     property string pluginId: ""
 
-    property var settingsSchema: []
+    property var settingsSchema: PluginLoader.settingsSchemaFor(root.pluginId)
 
     property string pluginName: ""
 
-    Settings {
-        id: pSettings
+    // The settings file is read once when the popup opens: `Settings.value()` is a plain
+    // function, so binding a control straight to it never updates after a write. Keeping
+    // the values here lets the controls follow what the user just changed.
+    property var values: ({})
 
-        category: "Plugin_" + root.pluginId
+    property bool dirty: false
+
+    function openIn(win) {
+        if (win && win.contentItem)
+            parent = win.contentItem;
+
+        open();
     }
+
+    function defaultFor(field) {
+        if (field.default !== undefined)
+            return field.default;
+        if (field.type === "toggle")
+            return false;
+        if (field.type === "text")
+            return "";
+        return 0;
+    }
+
+    function loadValues() {
+        const next = {};
+        for (const field of root.settingsSchema ?? [])
+            next[field.id] = pSettings.value(field.id, root.defaultFor(field));
+        root.values = next;
+        root.dirty = false;
+    }
+
+    function valueOf(id, fallback) {
+        return root.values[id] !== undefined ? root.values[id] : fallback;
+    }
+
+    function setValue(id, value) {
+        pSettings.setValue(id, value);
+        const next = Object.assign({}, root.values);
+        next[id] = value;
+        root.values = next;
+        root.dirty = true;
+    }
+
+    // Restores the widgets the plugin contributes with the values just written, so the
+    // change is visible without restarting the shell.
+    function apply() {
+        if (!root.dirty)
+            return;
+
+        pSettings.sync();
+        PluginLoader.applySettings(root.pluginId);
+        root.dirty = false;
+    }
+
+    x: parent ? Math.round((parent.width - width) / 2) : 0
+    y: parent ? Math.round((parent.height - height) / 2) : 0
+    width: 450
+    modal: true
+    dim: true
+    onOpened: root.loadValues()
 
     background: Rectangle {
         color: Colours.palette.m3surface
@@ -39,6 +88,12 @@ Popup {
 
     contentItem: ColumnLayout {
         spacing: Tokens.spacing.large
+
+        Settings {
+            id: pSettings
+
+            category: "Plugin_" + root.pluginId
+        }
 
         StyledText {
             text: root.pluginName + " " + qsTr("Settings")
@@ -72,17 +127,37 @@ Popup {
                             model: delegateRow.modelData.options
                             delegate: TextButton {
                                 required property string modelData
+                                property string currentVal: root.valueOf(delegateRow.modelData.id, delegateRow.modelData.default)
 
                                 text: modelData
-
-                                property string currentVal: root.visible ? pSettings.value(delegateRow.modelData.id, delegateRow.modelData.default) : ""
                                 enabled: currentVal !== modelData
-                                onClicked: {
-                                    pSettings.setValue(delegateRow.modelData.id, modelData);
-                                    currentVal = modelData;
-                                }
+                                onClicked: root.setValue(delegateRow.modelData.id, modelData)
                             }
                         }
+                    }
+
+                    StyledSwitch {
+                        visible: delegateRow.modelData.type === "toggle"
+                        checked: root.valueOf(delegateRow.modelData.id, root.defaultFor(delegateRow.modelData))
+                        onToggled: root.setValue(delegateRow.modelData.id, checked)
+                    }
+
+                    StyledTextField {
+                        visible: delegateRow.modelData.type === "text"
+                        Layout.preferredWidth: 180
+                        text: root.valueOf(delegateRow.modelData.id, root.defaultFor(delegateRow.modelData))
+                        placeholderText: delegateRow.modelData.placeholder ?? ""
+                        onEditingFinished: root.setValue(delegateRow.modelData.id, text)
+                    }
+
+                    CustomSpinBox {
+                        visible: delegateRow.modelData.type === "number"
+                        Layout.preferredWidth: 140
+                        min: delegateRow.modelData.min ?? 0
+                        max: delegateRow.modelData.max ?? 100
+                        step: delegateRow.modelData.step ?? 1
+                        value: Number(root.valueOf(delegateRow.modelData.id, root.defaultFor(delegateRow.modelData)))
+                        onValueModified: v => root.setValue(delegateRow.modelData.id, v)
                     }
                 }
             }
@@ -93,7 +168,10 @@ Popup {
             Item { Layout.fillWidth: true }
             TextButton {
                 text: qsTr("Done")
-                onClicked: root.close()
+                onClicked: {
+                    root.apply();
+                    root.close();
+                }
             }
         }
     }

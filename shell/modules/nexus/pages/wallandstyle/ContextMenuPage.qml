@@ -42,6 +42,10 @@ PageBase {
 
             property string sourceList: delegateWrapper.ListView.view.model === activeModel ? "active" : "library"
             property bool isDraggingThis: activeDragArea.drag.active
+            // Where the tile sat in the page content when the drag began, so
+            // reparenting it to the content item does not move it.
+            property real dragStartX: 0
+            property real dragStartY: 0
 
             z: isDraggingThis ? 100 : 1
             width: ListView.view.width
@@ -55,31 +59,51 @@ PageBase {
             }
 
             DropArea {
-                anchors.fill: parent
-                keys: ["component"]
-                onEntered: drag => {
+                function handleDrag(drag): void {
                     let sourceItem = drag.source;
                     if (!sourceItem) return;
 
-                    let from = -1;
+                    root.globalDragHoveredList = sourceList;
+
                     let to = delegateWrapper.index;
                     let targetModel = root.getModel(sourceList);
+                    if (!targetModel) return;
 
+                    let from = -1;
                     if (sourceItem.sourceList === sourceList) {
                         from = root.globalDragSourceIndex;
                     } else {
                         for (let i = 0; i < targetModel.count; i++) {
-                            if (targetModel.get(i).isPlaceholder) { from = i; break; }
+                            if (targetModel.get(i).isPlaceholder) {
+                                from = i;
+                                break;
+                            }
                         }
                     }
+                    if (from === -1 || to === -1) return;
 
-                    if (from !== -1 && to !== -1 && from !== to) {
-                        targetModel.move(from, to, 1);
-                        if (sourceItem.sourceList === sourceList) {
-                            root.globalDragSourceIndex = to;
+                    if (sourceItem.sourceList === sourceList) {
+                        // Use the middle of the tile as the insertion point, so
+                        // the gap follows the cursor instead of only opening
+                        // once the cursor sits on top of another tile.
+                        const belowMiddle = drag.y > delegateWrapper.height / 2;
+                        const insertAt = to + (belowMiddle ? 1 : 0);
+                        let target = from < insertAt ? insertAt - 1 : insertAt;
+                        target = Math.max(0, Math.min(targetModel.count - 1, target));
+                        if (target !== from) {
+                            targetModel.move(from, target, 1);
+                            root.globalDragSourceIndex = target;
                         }
+                    } else if (from !== to) {
+                        targetModel.move(from, to, 1);
                     }
                 }
+
+                anchors.fill: parent
+                keys: ["component"]
+
+                onEntered: drag => handleDrag(drag)
+                onPositionChanged: drag => handleDrag(drag)
             }
 
             StyledRect {
@@ -102,7 +126,12 @@ PageBase {
                 states: State {
                     when: activeDragArea.drag.active
 
-                    ParentChange { target: activeDelegate; parent: root.flickable.contentItem }
+                    ParentChange {
+                        target: activeDelegate
+                        parent: root.flickable.contentItem
+                        x: delegateWrapper.dragStartX
+                        y: delegateWrapper.dragStartY
+                    }
                     PropertyChanges { target: activeDelegate; scale: NexusStyle.dragScale }
                 }
 
@@ -116,6 +145,11 @@ PageBase {
 
                     onPressed: {
                         if (isPlaceholder) return;
+
+                        const start = activeDelegate.mapToItem(root.flickable.contentItem, 0, 0);
+                        delegateWrapper.dragStartX = start.x;
+                        delegateWrapper.dragStartY = start.y;
+
                         root.isGlobalDragging = true;
                         root.globalDragSourceList = sourceList;
                         root.globalDragSourceIndex = index;
@@ -216,6 +250,7 @@ PageBase {
         "add_widget": { icon: "widgets", name: qsTr("Add Widget") },
         "arrange_icons": { icon: "sort", name: qsTr("Arrange Icons") },
         "toggle_desktop_icons": { icon: "desktop_windows", name: qsTr("Desktop Icons") },
+        "enter_edit_mode": { icon: "edit", name: qsTr("Enter edit mode") },
         "wallpaper_style": { icon: "wallpaper", name: qsTr("Wallpaper & style") },
         "next_wallpaper": { icon: "skip_next", name: qsTr("Next Wallpaper") },
         "system_settings": { icon: "settings", name: qsTr("System Settings") },
@@ -419,6 +454,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: activeModel
                     clip: true
+                    interactive: contentHeight > height
 
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
@@ -514,6 +550,7 @@ PageBase {
                     spacing: Tokens.spacing.small
                     model: libraryModel
                     clip: true
+                    interactive: contentHeight > height
 
                     move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                     moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }

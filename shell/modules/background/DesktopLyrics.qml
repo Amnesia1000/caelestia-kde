@@ -32,7 +32,7 @@ Item {
     readonly property string sansFont: GlobalConfig.appearance.font.body.family
     readonly property int alignment: Config.background.desktopLyrics.alignment
     readonly property bool autoHide: Config.background.desktopLyrics.autoHide
-    readonly property bool windowHidesLyrics: Kwin.windowHidesDesktopWidgets(root.screen ? root.screen.name : "", Config.background.visualiser.hideOnAllMonitors)
+    readonly property bool windowHidesLyrics: Kwin.windowHidesDesktopWidgets(root.screen ? root.screen.name : "", false)
     readonly property bool allWindowsFloating: !windowHidesLyrics
     readonly property bool shouldHide: autoHide && windowHidesLyrics
     readonly property bool isPlaying: Players.active?.isPlaying ?? false
@@ -205,6 +205,14 @@ Item {
 
     Connections {
         function onHasLyricsChanged() {
+            root.forceUpdate();
+        }
+
+        // hasLyricsChanged only fires when the boolean flips, so a track with
+        // lyrics replacing another one never triggered a refresh and the widget
+        // kept showing the previous song until it was rebuilt. lyricsChanged
+        // fires on every load, which keeps the lines in sync.
+        function onLyricsChanged() {
             root.forceUpdate();
         }
 

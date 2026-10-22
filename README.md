@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/logo.svg" width="64" alt="Caelestia logo" />
+<img src="assets/logo.svg" width="80" alt="Caelestia logo" />
 
 # caelestia-kde
 
@@ -130,6 +130,8 @@ assets/        the logo and screenshots used by the docs
 - [Bali10050](https://github.com/Bali10050/Darkly) - Darkly Qt
 - [wrymt](https://github.com/wrymt/darkly-gtk) - Darkly GTK
 - [Haidir](https://bitbucket.org/dirn-typo/yet-another-monochrome-icon-set) - icon set
+- [liixini](https://github.com/liixini/skwd-wall) - skwd-wall
+- [luisbocanegra](https://github.com/luisbocanegra/plasma-audio-visualizer) - plasma-audio-visualizer
 - [dim-ghub](https://github.com/dim-ghub/caelestia-shell) - v2.0.0 features
 - [dharmx](https://github.com/dharmx/walls) - default wallpapers
   

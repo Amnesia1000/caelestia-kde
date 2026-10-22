@@ -14,7 +14,6 @@ Scope {
     id: root
 
     property bool launcherInterrupted
-    property string lastAction: ""
     readonly property bool hasFullscreen: Kwin.hasFullscreen()
 
     // `action` ids are the krohnkite
@@ -120,7 +119,9 @@ Scope {
         description: qsTr("Toggle launcher, dashboard and osd")
         onPressed: {
             const v = Visibilities.getForActive();
-            v.launcher = v.dashboard = v.osd = v.utilities = !(v.launcher || v.dashboard || v.osd || v.utilities);
+            const open = !(Visibilities.launcherOpen || v.dashboard || v.osd || v.utilities);
+            Visibilities.setDrawer("launcher", open);
+            v.dashboard = v.osd = v.utilities = open;
         }
     }
     // qmllint disable unresolved-type
@@ -215,11 +216,8 @@ Scope {
         description: qsTr("Toggle launcher")
         onPressed: root.launcherInterrupted = false
         onReleased: {
-            if (!root.launcherInterrupted) {
-                root.lastAction = "launcher";
-                const visibilities = Visibilities.getForActive();
-                visibilities.launcher = !visibilities.launcher;
-            }
+            if (!root.launcherInterrupted)
+                Visibilities.toggleLauncher("");
             root.launcherInterrupted = false;
         }
     }
@@ -267,33 +265,23 @@ Scope {
         // qmllint enable unresolved-type
         name: "emoji"
         description: qsTr("Open emoji picker")
-        onPressed: {
-            Visibilities.launcherInitialSearch = `${GlobalConfig.launcher.actionPrefix}emoji `;
-            const visibilities = Visibilities.getForActive();
-            visibilities.launcher = true;
-        }
+        onPressed: Visibilities.toggleLauncher("emoji")
     }
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
         name: "clipboard"
         description: qsTr("Open clipboard history")
-        onPressed: {
-            Visibilities.launcherInitialSearch = `${GlobalConfig.launcher.actionPrefix}clipboard `;
-            const visibilities = Visibilities.getForActive();
-            visibilities.launcher = true;
-        }
+        onPressed: Visibilities.toggleLauncher("clipboard")
     }
 
     Connections {
         function onModifierReleased(): void {
-            const visibilities = Visibilities.getForActive();
-            if (visibilities.launcher && root.lastAction === "windows") {
+            if (Windows.isSwitching && Visibilities.launcherMode === "windows") {
                 const switcherKey = (typeof KeybindsModel !== "undefined" && KeybindsModel.getKey("windowSwitcher")) || "Alt+Tab";
                 if (!CUtils.isShortcutModifierPressed(switcherKey)) {
                     Windows.focusSelectedWindow();
-                    visibilities.launcher = false;
-                    root.lastAction = "";
+                    Visibilities.closeLauncher();
                 }
             }
         }
@@ -309,17 +297,14 @@ Scope {
         description: qsTr("Open window switcher")
         enabled: Config.tabSwitch.enabled
         onPressed: {
-            const visibilities = Visibilities.getForActive();
-            if (visibilities.launcher && root.lastAction === "windows") {
+            if (Windows.isSwitching && Visibilities.launcherMode === "windows") {
                 Windows.triggerCycleNext();
             } else {
-                root.lastAction = "windows";
                 Windows.isSwitching = true;
                 Windows.updateItems();
                 Windows.selectedIndex = (Windows.items.length > 1) ? 1 : 0;
                 Windows.refreshHighlight();
-                Visibilities.launcherInitialSearch = `${GlobalConfig.launcher.actionPrefix}windows `;
-                visibilities.launcher = true;
+                Visibilities.openLauncher("windows");
             }
         }
     }
@@ -330,17 +315,14 @@ Scope {
         description: qsTr("Open window switcher (reverse)")
         enabled: Config.tabSwitch.enabled
         onPressed: {
-            const visibilities = Visibilities.getForActive();
-            if (visibilities.launcher && root.lastAction === "windows") {
+            if (Windows.isSwitching && Visibilities.launcherMode === "windows") {
                 Windows.triggerCyclePrev();
             } else {
-                root.lastAction = "windows";
                 Windows.isSwitching = true;
                 Windows.updateItems();
                 Windows.selectedIndex = (Windows.items.length > 1) ? Windows.items.length - 1 : 0;
                 Windows.refreshHighlight();
-                Visibilities.launcherInitialSearch = `${GlobalConfig.launcher.actionPrefix}windows `;
-                visibilities.launcher = true;
+                Visibilities.openLauncher("windows");
             }
         }
     }
@@ -349,22 +331,28 @@ Scope {
         // qmllint enable unresolved-type
         name: "wallpaper"
         description: qsTr("Open wallpaper picker")
-        onPressed: {
-            Visibilities.launcherInitialSearch = `${GlobalConfig.launcher.actionPrefix}wallpaper `;
-            const visibilities = Visibilities.getForActive();
-            visibilities.launcher = true;
-        }
+        onPressed: Visibilities.toggleLauncher("wallpaper")
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "skwd-wall"
+        description: qsTr("Wallpaper (skwd-wall)")
+        onPressed: Launch.exec(["sh", "-c", "command -v skwd-wall-v2 >/dev/null 2>&1 && exec skwd-wall-v2 || exec skwd-wall"])
+    }
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "wallpaperRandom"
+        description: qsTr("Random wallpaper")
+        onPressed: Launch.exec(["sh", "-c", "command -v skwd-wall-v2 >/dev/null 2>&1 && exec skwd-wall-v2 random || (command -v skwd-wall >/dev/null 2>&1 && exec skwd-wall random) || caelestia wallpaper -r"])
     }
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
         name: "keybinds"
         description: qsTr("Open keybinds list")
-        onPressed: {
-            Visibilities.launcherInitialSearch = `${GlobalConfig.launcher.actionPrefix}keybinds `;
-            const visibilities = Visibilities.getForActive();
-            visibilities.launcher = true;
-        }
+        onPressed: Visibilities.toggleLauncher("keybinds")
     }
     CustomShortcut {
         name: "foot"
@@ -471,11 +459,7 @@ Scope {
             if (list().split("\n").includes(drawer)) {
                 if (root.hasFullscreen && ["launcher", "session", "dashboard"].includes(drawer))
                     return;
-                const visibilities = Visibilities.getForActive();
-                if (drawer === "overview")
-                    Visibilities.setOverview(!visibilities.overview);
-                else
-                    visibilities[drawer] = !visibilities[drawer];
+                Visibilities.setDrawer(drawer, !Visibilities.drawerOpen(drawer));
                 Logger.mark(`drawer=${drawer} toggled`);
             } else {
                 console.warn(lc, `Drawer "${drawer}" does not exist`);
@@ -487,15 +471,10 @@ Scope {
                     return;
                 if (drawer === "sidebar" && tab !== "") {
                     Visibilities.initialSidebarTab = tab;
-                    const visibilities = Visibilities.getForActive();
-                    visibilities.sidebar = true;
+                    Visibilities.setDrawer("sidebar", true);
                     return;
                 }
-                const visibilities = Visibilities.getForActive();
-                if (drawer === "overview")
-                    Visibilities.setOverview(!visibilities.overview);
-                else
-                    visibilities[drawer] = !visibilities[drawer];
+                Visibilities.setDrawer(drawer, !Visibilities.drawerOpen(drawer));
             } else {
                 console.warn(lc, `Drawer "${drawer}" does not exist`);
             }
@@ -512,10 +491,12 @@ Scope {
             WindowFactory.create();
         }
         function openPage(pageIdx: string, subPageIdx: string): void {
-            const hasSubPage = subPageIdx !== "-1" && subPageIdx !== "";
+            const hasSubPage = subPageIdx !== "-1" && subPageIdx !== "" && subPageIdx !== undefined;
+            const parsedSub = hasSubPage ? (/^\d+$/.test(subPageIdx) ? parseInt(subPageIdx) : subPageIdx) : -1;
+            const parsedPage = /^\d+$/.test(pageIdx) ? parseInt(pageIdx) : pageIdx;
             WindowFactory.create(null, {
-                initialPageIdx: parseInt(pageIdx),
-                initialSubPageIdx: hasSubPage ? parseInt(subPageIdx) : -1
+                initialPageIdx: parsedPage,
+                initialSubPageIdx: parsedSub
             });
         }
         function close(): void {
@@ -542,13 +523,9 @@ Scope {
     }
     IpcHandler {
         function action(name: string): void {
-            root.lastAction = name;
-            Visibilities.launcherInitialSearch =
-            `${GlobalConfig.launcher.actionPrefix}${name} `;
-
-            const visibilities = Visibilities.getForActive();
-            visibilities.launcher = true;
+            Visibilities.toggleLauncher(name);
         }
+
         target: "launcher"
     }
     Instantiator {

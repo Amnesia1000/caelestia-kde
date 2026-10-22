@@ -226,6 +226,7 @@ PageBase {
                 spacing: Tokens.spacing.small
                 model: GlobalConfig.services.arpcTargetWindows
                 clip: true
+                interactive: contentHeight > height
 
                 move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                 moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
@@ -377,6 +378,7 @@ PageBase {
                 spacing: Tokens.spacing.small
                 model: GlobalConfig.services.arpcSteamBlacklist
                 clip: true
+                interactive: contentHeight > height
 
                 move: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }
                 moveDisplaced: Transition { Anim { properties: "y"; type: Anim.FastSpatial } }

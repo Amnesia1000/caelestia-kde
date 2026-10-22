@@ -14,14 +14,14 @@ Item {
     id: root
 
     property int initialPageIdx: 0
-    property int initialSubPageIdx: -1
+    property var initialSubPageIdx: -1
 
     readonly property NexusState nState: NexusState {
         id: nState
 
         currentPageIdx: root.initialPageIdx
         Component.onCompleted: {
-            if (root.initialSubPageIdx !== -1)
+            if (root.initialSubPageIdx !== -1 && root.initialSubPageIdx !== undefined && root.initialSubPageIdx !== "")
                 openSubPage(root.initialSubPageIdx);
         }
 
@@ -33,6 +33,37 @@ Item {
 
     function requestClose(): void {
         root.close();
+    }
+
+    function currentFlickable(): var {
+        let item = pages.currentItem;
+        while (item) {
+            if (item.flickable !== undefined)
+                return item.flickable;
+            item = item.currentItem ?? null;
+        }
+        return null;
+    }
+
+    function scrollCurrentPage(event: var): bool {
+        if (event.x <= navPane.x + navPane.width)
+            return false;
+
+        const f = root.currentFlickable();
+        if (!f || !f.interactive)
+            return false;
+
+        // The page already handles the wheel when the cursor is over it.
+        const pos = f.mapFromItem(root, event.x, event.y);
+        if (pos.x >= 0 && pos.y >= 0 && pos.x <= f.width && pos.y <= f.height)
+            return false;
+
+        const maxY = Math.max(0, f.contentHeight - f.height);
+        if (maxY <= 0)
+            return false;
+
+        f.contentY = Math.max(0, Math.min(maxY, f.contentY - event.angleDelta.y));
+        return true;
     }
 
     implicitWidth: implicitHeight * Tokens.sizes.nexus.ratio
@@ -74,6 +105,8 @@ Item {
     }
 
     Pages {
+        id: pages
+
         anchors.left: navPane.right
         anchors.right: parent.right
         anchors.top: parent.top
@@ -82,5 +115,16 @@ Item {
         anchors.margins: Tokens.padding.extraLarge
 
         nState: nState
+    }
+
+    // The page margins around the content are outside the page flickable, so
+    // the wheel did nothing there. Forward it to the current page.
+    WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+
+        onWheel: event => {
+            if (root.scrollCurrentPage(event))
+                event.accepted = true;
+        }
     }
 }

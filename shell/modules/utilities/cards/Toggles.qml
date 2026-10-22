@@ -34,9 +34,6 @@ StyledRect {
                 id: "restartShell"
             },
             {
-                id: "badapple"
-            },
-            {
                 id: "pauseWallpaper"
             },
             {
@@ -115,7 +112,6 @@ StyledRect {
         case "dnd": return "notifications_off";
         case "vpn": return "vpn_key";
         case "quickShare": return "near_me";
-        case "badapple": return "nutrition";
         default: return "toggle_on";
         }
     }
@@ -264,10 +260,10 @@ StyledRect {
     Timer {
         id: execTimer
 
+        property var pendingAction: null
+
         interval: 250
         repeat: false
-
-        property var pendingAction: null
         onTriggered: {
             if (pendingAction) pendingAction();
             pendingAction = null;
@@ -296,7 +292,7 @@ StyledRect {
                     root.visibilities.utilities = false;
                     execTimer.pendingAction = () => WindowFactory.create(null, {
                         initialPageIdx: pageIdx,
-                        initialSubPageIdx: 6
+                        initialSubPageIdx: 5
                     });
                     execTimer.restart();
                 }
@@ -575,30 +571,12 @@ StyledRect {
                     }
                 }
                 DelegateChoice {
-                    roleValue: "badapple"
-                    delegate: Toggle {
-                        icon: "nutrition"
-                        isToggle: false
-                        inactiveOnColour: Colours.palette.m3onSurfaceVariant
-                        onClicked: {
-                            if (BadApplePlayer.shouldPlay)
-                                BadApplePlayer.stop();
-                            else
-                                BadApplePlayer.play();
-                        }
-                    }
-                }
-                DelegateChoice {
                     roleValue: "wallpaper"
                     delegate: Toggle {
                         icon: "wallpaper"
                         isToggle: false
                         inactiveOnColour: Colours.palette.m3onSurfaceVariant
-                        onClicked: {
-                            Visibilities.launcherInitialSearch = `${GlobalConfig.launcher.actionPrefix}wallpaper `;
-                            const visibilities = Visibilities.getForActive();
-                            visibilities.launcher = true;
-                        }
+                        onClicked: Visibilities.openLauncher("wallpaper")
                     }
                 }
                 DelegateChoice {
@@ -632,7 +610,10 @@ StyledRect {
                     delegate: Toggle {
                         icon: "equalizer"
                         checked: GlobalConfig.background.visualiser.enabled
-                        onClicked: GlobalConfig.background.visualiser.enabled = !GlobalConfig.background.visualiser.enabled
+                        onClicked: {
+                            const next = !GlobalConfig.background.visualiser.enabled;
+                            PlasmaWidgets.setWidgetEnabled("visualizer", next);
+                        }
                     }
                 }
                 DelegateChoice {

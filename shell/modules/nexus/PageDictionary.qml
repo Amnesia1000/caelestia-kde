@@ -12,23 +12,22 @@ QtObject {
             description: qsTr("Wallpapers, fonts, colors"),
             category: "personalization",
             settings: [
-                { label: qsTr("Theme & Effects"), pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 8 },
-                { label: qsTr("Font"), keywords: ["font", "typeface", "family", "text"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 8 },
-                { label: qsTr("Monospace font"), keywords: ["monospace", "font", "code", "terminal"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 8 },
-                { label: qsTr("Font scale"), keywords: ["font", "scale", "size", "text"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 8 },
+                { label: qsTr("Theme & Effects"), pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 7 },
+                { label: qsTr("Font"), keywords: ["font", "typeface", "family", "text"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 7 },
+                { label: qsTr("Monospace font"), keywords: ["monospace", "font", "code", "terminal"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 7 },
+                { label: qsTr("Font scale"), keywords: ["font", "scale", "size", "text"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 7 },
                 { label: qsTr("Colors"), keywords: ["accent", "palette", "scheme", "theme", "color"], pagePath: "wallandstyle/ColourSelect.qml", subPageIdx: 3 },
-                { label: qsTr("Advanced color settings"), keywords: ["advanced", "colors", "palette", "saturation", "contrast", "matugen"], pagePath: "wallandstyle/AdvancedColorsPage.qml", subPageIdx: 10 },
-                { label: qsTr("Color intensity"), keywords: ["intensity", "chroma", "vibrant", "vibrancy"], pagePath: "wallandstyle/AdvancedColorsPage.qml", subPageIdx: 10 },
-                { label: qsTr("Blur & Opacity"), pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 8 },
-                { label: qsTr("Corner Radius"), keywords: ["rounding", "radius"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 8 },
+                { label: qsTr("Advanced color settings"), keywords: ["advanced", "colors", "palette", "saturation", "contrast", "matugen"], pagePath: "wallandstyle/AdvancedColorsPage.qml", subPageIdx: 9 },
+                { label: qsTr("Color intensity"), keywords: ["intensity", "chroma", "vibrant", "vibrancy"], pagePath: "wallandstyle/AdvancedColorsPage.qml", subPageIdx: 9 },
+                { label: qsTr("Blur & Opacity"), pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 7 },
+                { label: qsTr("Corner Radius"), keywords: ["rounding", "radius"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 7 },
                 { label: qsTr("Wallpapers"), pagePath: "wallandstyle/WallpaperSelect.qml", subPageIdx: 1 },
                 { label: qsTr("Wallhaven"), keywords: ["wallhaven", "download", "online", "search"], pagePath: "wallandstyle/WallhavenPage.qml", subPageIdx: 4 },
                 { label: qsTr("Wallpaper settings"), keywords: ["filters", "thumbnails", "wallpaper"], pagePath: "wallandstyle/WallpaperSettingsPage.qml", subPageIdx: 5 },
-                { label: qsTr("Slideshow & Order"), keywords: ["slideshow", "interval", "randomise", "shuffle", "order"], pagePath: "wallandstyle/SlideshowAndOrderPage.qml", subPageIdx: 6 },
-                { label: qsTr("Video wallpapers"), keywords: ["video", "animated", "motion"], pagePath: "wallandstyle/VideoWallpapersPage.qml", subPageIdx: 7 },
-                { label: qsTr("Lock Screen"), keywords: ["lock", "wallpaper sync", "screen lock"], pagePath: "wallandstyle/LockScreenPage.qml", subPageIdx: 9 },
-                { label: qsTr("Fingerprint"), keywords: ["fingerprint", "unlock", "attempts", "tries", "howdy", "biometric"], pagePath: "wallandstyle/LockScreenPage.qml", subPageIdx: 9 },
-                { label: qsTr("Bezel mode"), keywords: ["pitch black", "bezels", "black", "theme and effects"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 8 }
+                { label: qsTr("Library & Community"), keywords: ["library", "community", "wallhaven", "online", "tags"], pagePath: "wallandstyle/LibraryAndCommunityPage.qml", subPageIdx: 6 },
+                { label: qsTr("Lock Screen"), keywords: ["lock", "wallpaper sync", "screen lock"], pagePath: "wallandstyle/LockScreenPage.qml", subPageIdx: 8 },
+                { label: qsTr("Fingerprint"), keywords: ["fingerprint", "unlock", "attempts", "tries", "howdy", "biometric"], pagePath: "wallandstyle/LockScreenPage.qml", subPageIdx: 8 },
+                { label: qsTr("Bezel mode"), keywords: ["pitch black", "bezels", "black", "theme and effects"], pagePath: "wallandstyle/AppearancePage.qml", subPageIdx: 7 }
             ]
         },
         {
@@ -58,6 +57,7 @@ QtObject {
                 { label: qsTr("Launcher"), pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
                 { label: qsTr("App browser layout"), keywords: ["launcher", "layout", "simple", "compact", "categories", "favourites"], pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
                 { label: qsTr("Truncated app names"), keywords: ["launcher", "name", "truncated", "long", "tooltip", "shrink", "flip"], pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
+                { label: qsTr("Clipboard"), keywords: ["history", "copied", "paste", "maximum entries", "history size", "confirm clear"], pagePath: "panels/LauncherPanel.qml", subPageIdx: 3 },
                 { label: qsTr("Sidebar"), pagePath: "panels/SidebarPanel.qml", subPageIdx: 4 },
                 { label: qsTr("Quick Toggles Panel"), pagePath: "panels/UtilitiesPanel.qml", subPageIdx: 5 },
                 { label: qsTr("Overview"), pagePath: "panels/OverviewPanel.qml", keywords: ["overview", "animations", "blur"], subPageIdx: 16 },
@@ -66,7 +66,7 @@ QtObject {
                 { label: qsTr("Unoccupied workspaces"), keywords: ["workspaces", "empty", "inactive", "hide"], pagePath: "panels/taskbar/BarWorkspaces.qml", subPageIdx: 7 },
                 { label: qsTr("Greeter"), keywords: ["greeting", "popout"], pagePath: "panels/taskbar/BarGreeter.qml", subPageIdx: 8 },
                 { label: qsTr("Greeter slideshow"), keywords: ["slideshow", "folders", "media", "greeting", "timing", "order"], pagePath: "panels/taskbar/BarGreeter.qml", subPageIdx: 8 },
-                { label: qsTr("Tray"), keywords: ["system tray", "icons"], pagePath: "panels/taskbar/BarTray.qml", subPageIdx: 9 },
+                { label: qsTr("Tray"), keywords: ["system tray", "icons", "always visible", "collapse", "hidden", "overflow", "pin"], pagePath: "panels/taskbar/BarTray.qml", subPageIdx: 9 },
                 { label: qsTr("Status icons"), keywords: ["indicators", "bar"], pagePath: "panels/taskbar/BarStatusIcons.qml", subPageIdx: 10 },
                 { label: qsTr("Clock"), keywords: ["date", "time"], pagePath: "panels/taskbar/BarClock.qml", subPageIdx: 11 },
                 { label: qsTr("Clock seconds"), keywords: ["clock", "time", "seconds", "show seconds"], pagePath: "panels/taskbar/BarClock.qml", subPageIdx: 11 },
@@ -146,16 +146,15 @@ QtObject {
             label: qsTr("Utilities"),
             key: "utilities",
             icon: "build",
-            description: qsTr("Quick controls, clipboard, game mode"),
+            description: qsTr("Quick controls, game mode"),
             category: "controls",
             settings: [
                 { label: qsTr("On-screen Sliders"), subPageIdx: 3, keywords: ["volume", "microphone", "brightness", "osd"] },
-                { label: qsTr("Clipboard"), subPageIdx: 4, keywords: ["history", "copied", "paste", "maximum entries", "history size"] },
-                { label: qsTr("Utilities Panel"), subPageIdx: 5, keywords: ["keep awake", "screenshot", "record"] },
-                { label: qsTr("Quick Toggles"), subPageIdx: 6, keywords: ["toggles", "dashboard", "switches"] },
+                { label: qsTr("Utilities Panel"), subPageIdx: 4, keywords: ["keep awake", "screenshot", "record"] },
+                { label: qsTr("Quick Toggles"), subPageIdx: 5, keywords: ["toggles", "dashboard", "switches"] },
                 { label: qsTr("Game Mode"), pagePath: "services/GameModePage.qml", subPageIdx: 1, keywords: ["hyprland overrides", "performance", "games"] },
                 { label: qsTr("Auto-enable rules"), keywords: ["game mode", "rules", "target windows"], pagePath: "services/GameModeTargetsPage.qml", subPageIdx: 2 },
-                { label: qsTr("Quick Share"), pagePath: "services/QuickSharePage.qml", subPageIdx: 7, keywords: ["bluetooth", "nearby", "file sharing", "send file", "receive file", "android"] }
+                { label: qsTr("Quick Share"), pagePath: "services/QuickSharePage.qml", subPageIdx: 6, keywords: ["bluetooth", "nearby", "file sharing", "send file", "receive file", "android"] }
             ]
         },
         {

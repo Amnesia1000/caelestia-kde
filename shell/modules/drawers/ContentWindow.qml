@@ -13,6 +13,7 @@ import Caelestia.Config
 import qs.components
 import qs.components.containers
 import qs.services
+import qs.utils
 import qs.modules.background
 import qs.modules.bar
 import qs.modules.overview as Overview
@@ -38,15 +39,21 @@ StyledWindow {
     // active workspace changes — hasFullscreenOn() filters by workspace, but
     // a plain function call only re-runs when its direct property deps change.
     readonly property bool actualFullscreen: (Kwin.activeWsId, Kwin.hasFullscreenOn(screen?.name ?? ""))
-    readonly property bool hasOpenOverlay: focusGrabState.active || panels.popouts.isDetached || desktopContextMenu.expanded || desktopIconContextMenu.expanded || dropMenu.expanded || viewOptions.open || widgetGallery.open || visibilities.overview || visibilities.launcher || visibilities.dashboard || visibilities.sidebar || visibilities.session || visibilities.utilities
+    readonly property bool transientOverlayOpen: panels.popouts.isDetached || panels.popouts.isContextPopout || desktopContextMenu.expanded || desktopIconContextMenu.expanded || dropMenu.expanded || viewOptions.open || widgetGallery.open || visibilities.overview || Visibilities.launcherOpen || visibilities.dashboard || visibilities.session || visibilities.utilities
+    readonly property bool hasOpenOverlay: focusGrabState.active || transientOverlayOpen || visibilities.sidebar
     readonly property bool hasFullscreen: actualFullscreen && !hasOpenOverlay
+    // The launcher is one panel across outputs: a screen that does not show it
+    // still takes input, so that a press there dismisses it.
+    readonly property bool foreignLauncherOpen: Visibilities.launcherOpen && !visibilities.launcher
+    // A context menu on another screen still needs this layer to take the dismiss
+    // click; it must not lift the fullscreen suppression above, which is per screen.
+    readonly property bool capturesOverlayInput: hasOpenOverlay || Visibilities.contextPopoutOpen
 
     // The sidebar is the only thing open and it is pinned (or one of the shell's
     // file dialogs is up): take input only over the panels, not the whole screen,
     // so clicks outside reach other windows instead of closing the sidebar.
     readonly property bool sidebarPassthrough: visibilities.sidebar && (Visibilities.sidebarPinned || Visibilities.openDialogs > 0)
-        && !(panels.popouts.isDetached || desktopContextMenu.expanded || desktopIconContextMenu.expanded || dropMenu.expanded || viewOptions.open || widgetGallery.open || visibilities.overview || visibilities.launcher || visibilities.dashboard || visibilities.session || visibilities.utilities
-            || (panels.popouts.currentName.startsWith("traymenu") && (panels.popouts.current as StackView)?.depth > 1))
+        && !(transientOverlayOpen || (TrayRegistry.isTrayPopout(panels.popouts.currentName) && (panels.popouts.current as StackView)?.depth > 1))
     property real fsTransitionProg: hasFullscreen ? 1 : 0
     readonly property real sdfBorderOffset: 2 * fsTransitionProg
     readonly property real overviewBorderThickness: Math.min(root.width, root.height) * 0.15
@@ -75,9 +82,6 @@ StyledWindow {
 
     readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || (panels.popouts.hasCurrent && !panels.popouts.isDockPopout)
 
-    property string focusReturn: ""
-    property int workspaceReturn: -1
-
     onHasFullscreenChanged: {
         if (!hasFullscreen)
             return;
@@ -91,7 +95,7 @@ StyledWindow {
 
     WlrLayershell.namespace: "dock"
     mask: {
-        if (hasOpenOverlay && !sidebarPassthrough) return fullRegion;
+        if (capturesOverlayInput && !sidebarPassthrough) return fullRegion;
         if (hasFullscreen) return emptyRegion;
         return regions;
     }
@@ -100,7 +104,7 @@ StyledWindow {
     anchors.left: true
     anchors.right: true
     WlrLayershell.exclusionMode: ExclusionMode.Ignore
-    WlrLayershell.layer: !wantsKeyboard && (hasOpenOverlay || (actualFullscreen && fsTransitionProg < 1) || (fsTransitionProg > 0 && Config.general.showOverFullscreen) || (panels.notifications.visible && panels.notifications.height > 0 && GlobalConfig.notifs.fullscreen === "on") || (((monitor?.lastIpcObject?.specialWorkspace?.name?.length ?? 0) > 0) && (monitor?.activeWorkspace?.toplevels?.values?.some(t => (t?.lastIpcObject?.fullscreen ?? 0) > 1) ?? false))) ? WlrLayer.Overlay : WlrLayer.Top
+    WlrLayershell.layer: !wantsKeyboard && (capturesOverlayInput || (actualFullscreen && fsTransitionProg < 1) || (fsTransitionProg > 0 && Config.general.showOverFullscreen) || (panels.notifications.visible && panels.notifications.height > 0 && GlobalConfig.notifs.fullscreen === "on") || (((monitor?.lastIpcObject?.specialWorkspace?.name?.length ?? 0) > 0) && (monitor?.activeWorkspace?.toplevels?.values?.some(t => (t?.lastIpcObject?.fullscreen ?? 0) > 1) ?? false))) ? WlrLayer.Overlay : WlrLayer.Top
     WlrLayershell.keyboardFocus: wantsKeyboard ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
     // A pinned sidebar gets out of the way of fullscreen windows (games, video)
@@ -117,30 +121,9 @@ StyledWindow {
                 visibilities.sidebar = true;
         }
     }
-    onWantsKeyboardChanged: {
-        if (wantsKeyboard) {
-            focusReturn = Kwin.activeWindow?.address ?? "";
-            workspaceReturn = Kwin.activeWsId;
-            return;
-        }
 
-        const pending = Kwin.pendingFocusAddress ?? "";
-        const addr = (Kwin.activeWindow?.address ?? "") || focusReturn;
-        const oldWorkspace = workspaceReturn;
-        focusReturn = "";
-        workspaceReturn = -1;
-
-        if (pending) {
-            return;
-        }
-
-        const currentWorkspace = Kwin.activeWsId;
-        if (oldWorkspace !== -1 && currentWorkspace !== oldWorkspace) {
-            return;
-        }
-
-        if (addr)
-            Kwin.focusWindow(addr);
+    FocusReturn {
+        active: root.wantsKeyboard
     }
 
     Overview.Anim {
@@ -194,7 +177,7 @@ StyledWindow {
     QtObject {
         id: focusGrabState
 
-        property bool active: (visibilities.launcher && Config.launcher.enabled) || (visibilities.session && Config.session.enabled) || (visibilities.sidebar && Config.sidebar.enabled) || (!Config.dashboard.showOnHover && visibilities.dashboard && Config.dashboard.enabled) || (!Config.utilities.showOnHover && visibilities.utilities && Config.utilities.enabled) || (panels.popouts.currentName.startsWith("traymenu") && (panels.popouts.current as StackView)?.depth > 1)
+        property bool active: (visibilities.launcher && Config.launcher.enabled) || (visibilities.session && Config.session.enabled) || (visibilities.sidebar && Config.sidebar.enabled) || (!Config.dashboard.showOnHover && visibilities.dashboard && Config.dashboard.enabled) || (!Config.utilities.showOnHover && visibilities.utilities && Config.utilities.enabled) || (TrayRegistry.isTrayPopout(panels.popouts.currentName) && (panels.popouts.current as StackView)?.depth > 1)
 
         function clear() {
             visibilities.launcher = false;
@@ -204,8 +187,8 @@ StyledWindow {
             visibilities.dashboard = false;
             visibilities.utilities = false;
             Visibilities.setOverview(false);
-            panels.popouts.hasCurrent = false;
-            panels.popouts.detachedMode = "";
+            Visibilities.closeContextPopouts();
+            panels.popouts.close();
             bar.closeTray();
         }
 
@@ -301,7 +284,20 @@ StyledWindow {
                 scale: overviewWallpaperLayer.bgScale
                 active: overviewWallpaperLayer.active || overviewWallpaperLayer.opacity > 0
                         || (overviewWallpaperLayer.keepAlive && wallpaperLoader.item && !wallpaperLoader.item.isVideo(wallpaperLoader.item.source))
-                sourceComponent: Component { Wallpaper { screen: root.screen; skipTransition: true } }
+                sourceComponent: Component {
+                    Wallpaper {
+                        screen: root.screen
+                        skipTransition: true
+                        source: {
+                            const cur = Wallpapers.current;
+                            if (Images.isVideo(cur)) {
+                                const hifi = Wallpapers.thumbHifi(cur);
+                                return hifi !== "" ? hifi : Wallpapers.getThumbnailHifiPath(cur);
+                            }
+                            return cur;
+                        }
+                    }
+                }
             }
         }
         Item {
@@ -517,6 +513,7 @@ StyledWindow {
             }
         }
         Component.onCompleted: Visibilities.load(root.screen, this)
+        Component.onDestruction: Visibilities.unload(this)
     }
     Interactions {
         id: interactions
@@ -524,10 +521,12 @@ StyledWindow {
         screen: root.screen
         popouts: panels.popouts
         visibilities: visibilities
+        dismissLauncher: root.foreignLauncherOpen
         panels: panels
         bar: bar
         borderThickness: root.borderLayoutThickness
         fullscreen: root.hasFullscreen
+        capturesDismissClick: root.capturesOverlayInput
         focusGrab: focusGrabState
         states: [
             State {
@@ -673,6 +672,8 @@ StyledWindow {
         }
         Connections {
             function onOpenDesktopContextMenu(x, y, screenName) {
+                if (ContextMenuStore.editMode || Config.background.disableQuickshellDesktop)
+                    return;
                 if (root.screen.name === screenName) {
                     desktopContextMenuAnchor.x = x;
                     desktopContextMenuAnchor.y = y;
