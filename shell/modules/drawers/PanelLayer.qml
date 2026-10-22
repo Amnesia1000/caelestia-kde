@@ -343,7 +343,7 @@ Item {
                 width: band.revealed ? band.revealedRect.width : band.restingRect.width
                 height: band.revealed ? band.revealedRect.height : band.restingRect.height
             }
-            Bar {
+            Bar.Bar {
                 id: bandBar
 
                 anchors.fill: parent

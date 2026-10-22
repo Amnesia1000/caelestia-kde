@@ -260,7 +260,7 @@ PageBase {
             last: true
             icon: "view_week"
             label: qsTr("Extra bars")
-            status: GlobalConfig.bar.panels.count === 0 ? qsTr("Add bars on other edges, or more than one per edge") : qsTr("%1 configured").arg(GlobalConfig.bar.panels.count)
+            status: GlobalConfig.bar.panels.count === 0 ? qsTr("Add a bar on the edges that have none") : qsTr("%1 configured").arg(GlobalConfig.bar.panels.count)
             onClicked: root.nState.openSubPage("extraBars")
         }
 

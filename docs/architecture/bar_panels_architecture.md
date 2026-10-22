@@ -109,9 +109,11 @@ A popout opened from a panel has to grow from that panel's edge, not from the ma
 
 ### Extra bars page
 
-`shell/modules/nexus/pages/panels/ExtraBarsPanel.qml` lists the configured panels and edits the selected one: name, edge, position, alignment, length, screens and the two reveal switches. Any edge can host any number of panels; adding one inserts a node and selects it.
+`shell/modules/nexus/pages/panels/ExtraBarsPanel.qml` lists every bar of the shell: the main bar as **Bar 1**, then the extra panels. Picking a panel edits it: name, edge, position, alignment, length, screens and the two reveal switches. Adding one inserts a node and selects it.
 
-It also has a **Widgets of this bar** button, which opens the components page with that panel as the target, stacked on top of the extra bars list so Back returns to it.
+An edge holds one bar. The main bar keeps its own edge, and "Add bar" only offers the edges that are still free, so two bars never draw over each other. A new panel spans its whole edge; `lengthPercent` is how it is turned into an island.
+
+Every row has a **Widgets of this bar** button, which opens the components page with that bar as the target, stacked on top of the extra bars list so Back returns to it.
 
 ### Taskbar page
 
