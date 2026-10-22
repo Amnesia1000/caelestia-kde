@@ -45,21 +45,25 @@ Item {
         return null;
     }
 
-    function scrollCurrentPage(event: var): void {
+    function scrollCurrentPage(event: var): bool {
+        if (event.x <= navPane.x + navPane.width)
+            return false;
+
         const f = root.currentFlickable();
         if (!f || !f.interactive)
-            return;
+            return false;
 
         // The page already handles the wheel when the cursor is over it.
         const pos = f.mapFromItem(root, event.x, event.y);
         if (pos.x >= 0 && pos.y >= 0 && pos.x <= f.width && pos.y <= f.height)
-            return;
+            return false;
 
         const maxY = Math.max(0, f.contentHeight - f.height);
         if (maxY <= 0)
-            return;
+            return false;
 
         f.contentY = Math.max(0, Math.min(maxY, f.contentY - event.angleDelta.y));
+        return true;
     }
 
     implicitWidth: implicitHeight * Tokens.sizes.nexus.ratio
@@ -119,8 +123,8 @@ Item {
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
 
         onWheel: event => {
-            root.scrollCurrentPage(event);
-            event.accepted = true;
+            if (root.scrollCurrentPage(event))
+                event.accepted = true;
         }
     }
 }
