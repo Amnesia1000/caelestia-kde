@@ -26,13 +26,7 @@ Singleton {
     property string activeTargetOutput: ""
     property bool loaded
 
-    function setDnd(value: bool, announce: bool): void {
-        if (props.dnd === value)
-            return;
-        if (announce) {
-            props.dnd = value;
-            return;
-        }
+    function setDndSilently(value: bool): void {
         suppressDndToast = true;
         props.dnd = value;
         suppressDndToast = false;

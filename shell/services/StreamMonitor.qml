@@ -14,9 +14,8 @@ Singleton {
 
     readonly property bool streamActive: PipewireStreamWatcher.streaming || Recorder.running
     property bool sharing: false
-    property bool prevDnd: false
     property bool autoDnd: false
-    property bool autoReleasing: false
+    property bool autoWriting: false
 
     function evaluate(): void {
         if (root.streamActive) {
@@ -34,20 +33,21 @@ Singleton {
     }
 
     function engageAutoDnd(): void {
-        if (root.autoDnd)
+        if (root.autoDnd || Notifs.dnd)
             return;
-        root.prevDnd = Notifs.dnd;
         root.autoDnd = true;
-        Notifs.setDnd(true, false);
+        root.autoWriting = true;
+        Notifs.setDndSilently(true);
+        root.autoWriting = false;
     }
 
     function releaseAutoDnd(): void {
         if (!root.autoDnd)
             return;
-        root.autoReleasing = true;
         root.autoDnd = false;
-        Notifs.setDnd(root.prevDnd, false);
-        root.autoReleasing = false;
+        root.autoWriting = true;
+        Notifs.setDndSilently(false);
+        root.autoWriting = false;
     }
 
     onStreamActiveChanged: root.evaluate()
@@ -55,9 +55,9 @@ Singleton {
     onSharingChanged: {
         if (!Config.utilities.toasts.dndWhileStreaming)
             return;
-        if (root.sharing && !Notifs.dnd)
+        if (root.sharing)
             root.engageAutoDnd();
-        else if (!root.sharing)
+        else
             root.releaseAutoDnd();
     }
 
@@ -78,7 +78,7 @@ Singleton {
         function onDndWhileStreamingChanged(): void {
             if (!Config.utilities.toasts.dndWhileStreaming)
                 root.releaseAutoDnd();
-            else if (root.sharing && !Notifs.dnd)
+            else if (root.sharing)
                 root.engageAutoDnd();
         }
 
@@ -87,9 +87,7 @@ Singleton {
 
     Connections {
         function onDndChanged(): void {
-            if (root.autoReleasing)
-                return;
-            if (root.autoDnd && !Notifs.dnd)
+            if (!root.autoWriting)
                 root.autoDnd = false;
         }
 

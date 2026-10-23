@@ -39,14 +39,16 @@ test_notification_preferences_page_has_no_duplicate_properties() {
 test_auto_dnd_is_applied_without_announcing_it() {
     assert_file_contains "$NOTIFS" 'suppressDndToast' \
         "Notifs must be able to change dnd without the change toast"
-    assert_file_contains "$NOTIFS" 'function setDnd(value: bool, announce: bool)' \
-        "Notifs must expose an explicit announce flag on the dnd setter"
-    assert_file_contains "$STREAM_MONITOR" 'Notifs.setDnd(true, false)' \
+    assert_file_contains "$NOTIFS" 'function setDndSilently(value: bool)' \
+        "Notifs must expose a dedicated silent dnd setter"
+    assert_file_contains "$STREAM_MONITOR" 'Notifs.setDndSilently(true)' \
         "engaging auto dnd must not announce the change"
-    assert_file_contains "$STREAM_MONITOR" 'Notifs.setDnd(root.prevDnd, false)' \
+    assert_file_contains "$STREAM_MONITOR" 'Notifs.setDndSilently(false)' \
         "releasing auto dnd must not announce the change"
     assert_file_not_contains "$STREAM_MONITOR" 'Notifs.dnd = ' \
         "StreamMonitor must not write dnd directly, that always announces"
+    assert_file_contains "$STREAM_MONITOR" 'if (!root.autoWriting)' \
+        "only StreamMonitor's own dnd writes may be ignored"
 }
 
 test_a_manual_dnd_toggle_still_announces() {
