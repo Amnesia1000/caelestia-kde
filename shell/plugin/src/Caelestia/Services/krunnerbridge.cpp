@@ -12,11 +12,8 @@ namespace caelestia::services {
 
 KRunnerBridge::KRunnerBridge(QObject* parent): QObject(parent) {
 #ifdef CAELESTIA_HAVE_KRUNNER
-    auto* manager = new KRunner::RunnerManager(this);
-    m_manager = manager;
-
-    connect(manager, &KRunner::RunnerManager::matchesChanged, this, &KRunnerBridge::publishResults);
-    connect(manager, &KRunner::RunnerManager::queryingChanged, this, [this] { setBusy(busy()); });
+    m_manager = new KRunner::RunnerManager(this);
+    connect(m_manager, &KRunner::RunnerManager::matchesChanged, this, &KRunnerBridge::publishResults);
 #endif
 }
 
@@ -28,10 +25,6 @@ bool KRunnerBridge::available() const {
 #else
     return false;
 #endif
-}
-
-bool KRunnerBridge::busy() const {
-    return m_busy;
 }
 
 QVariantList KRunnerBridge::results() const {
@@ -46,7 +39,7 @@ void KRunnerBridge::search(const QString& text) {
         return;
     }
 
-    static_cast<KRunner::RunnerManager*>(m_manager)->launchQuery(trimmed);
+    m_manager->launchQuery(trimmed);
 #else
     Q_UNUSED(text)
 #endif
@@ -54,55 +47,54 @@ void KRunnerBridge::search(const QString& text) {
 
 void KRunnerBridge::clear() {
 #ifdef CAELESTIA_HAVE_KRUNNER
-    static_cast<KRunner::RunnerManager*>(m_manager)->reset();
+    m_manager->reset();
 #endif
 
-    if (m_results.isEmpty() && m_sourceIndices.isEmpty())
+    if (m_results.isEmpty())
         return;
 
     m_results.clear();
-    m_sourceIndices.clear();
     emit resultsChanged();
 }
 
-void KRunnerBridge::run(int index, const QString& actionId) {
+void KRunnerBridge::run(const QString& id, const QString& actionId) {
 #ifdef CAELESTIA_HAVE_KRUNNER
-    if (index < 0 || index >= m_sourceIndices.size())
+    if (id.isEmpty())
         return;
 
-    auto* manager = static_cast<KRunner::RunnerManager*>(m_manager);
-    const auto matches = manager->matches();
-    const int source = m_sourceIndices.at(index);
-    if (source < 0 || source >= matches.size())
-        return;
+    // Runners keep answering while the list is on screen, so a row is identified by
+    // its match id and resolved against the current matches at activation time.
+    for (const auto& match : m_manager->matches()) {
+        if (match.id() != id)
+            continue;
 
-    const auto match = matches.at(source);
-    KRunner::Action chosen;
-    for (const auto& action : match.actions()) {
-        if (action.id() == actionId) {
-            chosen = action;
-            break;
+        KRunner::Action chosen;
+        for (const auto& action : match.actions()) {
+            if (action.id() == actionId) {
+                chosen = action;
+                break;
+            }
         }
-    }
 
-    manager->run(match, chosen);
+        m_manager->run(match, chosen);
+        return;
+    }
 #else
-    Q_UNUSED(index)
+    Q_UNUSED(id)
     Q_UNUSED(actionId)
 #endif
 }
 
+/// Only connected in a build with KF6Runner, so without it this stays empty rather
+/// than repeating what clear() already does.
 void KRunnerBridge::publishResults() {
 #ifdef CAELESTIA_HAVE_KRUNNER
-    const auto matches = static_cast<KRunner::RunnerManager*>(m_manager)->matches();
+    const auto matches = m_manager->matches();
 
     QVariantList next;
-    QList<int> nextIndices;
     next.reserve(matches.size());
-    nextIndices.reserve(matches.size());
 
-    for (int i = 0; i < matches.size(); ++i) {
-        const auto& match = matches.at(i);
+    for (const auto& match : matches) {
         if (!match.isValid())
             continue;
 
@@ -117,31 +109,18 @@ void KRunnerBridge::publishResults() {
         }
 
         next.append(QVariantMap{
+            {QStringLiteral("id"), match.id()},
             {QStringLiteral("text"), match.text()},
             {QStringLiteral("subtext"), match.subtext()},
             {QStringLiteral("icon"), match.iconName()},
             {QStringLiteral("relevance"), match.relevance()},
             {QStringLiteral("actions"), actions},
         });
-        nextIndices.append(i);
     }
 
     m_results = next;
-    m_sourceIndices = nextIndices;
-    emit resultsChanged();
-#else
-    if (m_results.isEmpty())
-        return;
-    m_results.clear();
     emit resultsChanged();
 #endif
-}
-
-void KRunnerBridge::setBusy(bool busy) {
-    if (m_busy == busy)
-        return;
-    m_busy = busy;
-    emit busyChanged();
 }
 
 } // namespace caelestia::services

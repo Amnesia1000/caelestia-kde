@@ -27,7 +27,7 @@ test_bridge_is_optional_at_build_time() {
         "the bridge source must always be part of the module"
 }
 
-test_bridge_reports_availability_and_runs_results() {
+test_bridge_identifies_results_by_match_id() {
     local hpp cpp
     hpp="$(cat "$BRIDGE_HPP")"
     cpp="$(cat "$BRIDGE_CPP")"
@@ -35,11 +35,21 @@ test_bridge_reports_availability_and_runs_results() {
     assert_contains "$hpp" 'QML_ELEMENT' "the bridge must be exposed to QML"
     assert_contains "$hpp" 'Q_PROPERTY(bool available READ available CONSTANT)' \
         "QML needs to know whether KRunner is usable"
+    # Runners keep answering while the list is on screen, so a row cannot be
+    # identified by its position.
+    assert_contains "$hpp" 'Q_INVOKABLE void run(const QString& id, const QString& actionId)' \
+        "activation must address a match by id, not by index"
+    assert_contains "$cpp" 'QStringLiteral("id"), match.id()' "results must carry their match id"
+    assert_contains "$cpp" 'if (match.id() != id)' "activation must resolve the match by id"
     assert_contains "$cpp" 'return false;' \
         "without KF6Runner the bridge must report itself unavailable"
-    assert_contains "$cpp" 'launchQuery' "queries go through KRunner's RunnerManager"
-    assert_contains "$cpp" 'matchesChanged' "results arrive asynchronously"
-    assert_contains "$cpp" 'manager->run(match, chosen)' "the bridge must be able to activate a result"
+}
+
+test_busy_state_is_not_advertised() {
+    # There is no consumer for it, and the previous implementation passed its own
+    # cached value back into setBusy, so it could never turn true.
+    assert_not_contains "$(cat "$BRIDGE_HPP")" 'busy' "the bridge must not advertise a busy state"
+    assert_not_contains "$(cat "$SEARCH")" 'busy' "the service must not re-export a busy state"
 }
 
 test_launcher_has_a_live_search_mode() {
@@ -54,23 +64,36 @@ test_launcher_has_a_live_search_mode() {
     assert_contains "$list" 'id: krunnerItem' "the search mode needs its own delegate"
     assert_contains "$list" 'onSearchQueryChanged: Search.search(root.searchQuery)' \
         "typing must drive the asynchronous query"
-    assert_contains "$list" 'if (state !== "search")' \
-        "leaving the mode must reset the bridge"
 
-    assert_contains "$search" 'readonly property bool available: KRunnerBridge.available' \
-        "the service must expose availability"
-    assert_contains "$search" 'KRunnerBridge.run(index, actionId ?? "")' \
-        "the service must forward activation"
+    assert_contains "$search" 'readonly property var results: KRunnerBridge.results' \
+        "the service must expose the results"
+    assert_contains "$search" 'KRunnerBridge.run(id, actionId ?? "")' \
+        "the service must forward activation by id"
 }
 
-test_search_results_activate_from_the_keyboard() {
-    assert_contains "$(cat "$CONTENT")" 'actionPrefix}search `' \
-        "Enter must route the search mode through the result's clicked()"
+test_every_launcher_row_activates_the_same_way() {
+    # Enter used to re-derive dispatch by parsing the mode prefix, so every new mode
+    # had to be threaded into that chain. Rows now own their activation.
+    local content
+    content="$(cat "$CONTENT")"
+    assert_contains "$content" 'currentItem.activate()' "Enter must delegate activation to the row"
+    assert_not_contains "$content" 'currentItem.clicked()' "Enter must not call a row-specific method"
+    assert_not_contains "$content" 'currentItem.modelData.onClicked' "Enter must not reach into row data"
 
     local item
+    for item in AppItem ActionItem CalcItem SchemeItem VariantItem EmojiItem ClipItem WindowSwitcherItem KRunnerItem KeybindItem; do
+        assert_contains "$(cat "$REPO_ROOT/shell/modules/launcher/items/$item.qml")" 'function activate()' \
+            "$item must expose activate()"
+    done
+    assert_contains "$(cat "$REPO_ROOT/shell/modules/launcher/AnimationsList.qml")" 'function activate()' \
+        "the animations list owns its rows too, so it must match"
+}
+
+test_search_results_activate_by_id() {
+    local item
     item="$(cat "$KRUNNER_ITEM")"
-    assert_contains "$item" 'function clicked(): void' "a result must expose clicked() for the launcher"
-    assert_contains "$item" 'Search.run(root.index, "")' "clicked() must run the KRunner match"
+    assert_contains "$item" 'function activate(): void' "a result must expose activate() for the launcher"
+    assert_contains "$item" 'Search.run(root.modelData.id, "")' "activation must address the match by id"
 }
 
 test_search_mode_is_discoverable_from_the_action_list() {

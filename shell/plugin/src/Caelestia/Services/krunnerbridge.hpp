@@ -5,6 +5,10 @@
 #include <qqmlintegration.h>
 #include <qvariantlist.h>
 
+namespace KRunner {
+class RunnerManager;
+}
+
 namespace caelestia::services {
 
 /// Bridges KDE's KRunner into the launcher, so shell search reaches whatever the
@@ -22,7 +26,6 @@ class KRunnerBridge : public QObject {
     QML_SINGLETON
 
     Q_PROPERTY(bool available READ available CONSTANT)
-    Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
     Q_PROPERTY(QVariantList results READ results NOTIFY resultsChanged)
 
 public:
@@ -30,31 +33,25 @@ public:
     ~KRunnerBridge() override;
 
     [[nodiscard]] bool available() const;
-    [[nodiscard]] bool busy() const;
     [[nodiscard]] QVariantList results() const;
 
-    /// Starts a query. Runner results arrive in batches, so `results` keeps
-    /// growing until `busy` returns to false.
+    /// Starts a query. Runners answer in batches, so `results` is re-published as
+    /// each one reports.
     Q_INVOKABLE void search(const QString& text);
     Q_INVOKABLE void clear();
-    /// Runs the result at `index`, through `actionId` when it names one of that
-    /// result's secondary actions and through its default action otherwise.
-    Q_INVOKABLE void run(int index, const QString& actionId);
+    /// Activates the result with this KRunner match id, through `actionId` when it
+    /// names one of that result's secondary actions and its default action otherwise.
+    Q_INVOKABLE void run(const QString& id, const QString& actionId);
 
 signals:
-    void busyChanged();
     void resultsChanged();
 
 private:
     void publishResults();
-    void setBusy(bool busy);
 
-    QObject* m_manager = nullptr;
+    /// Null when built without KF6Runner: every use sits behind the guard below.
+    KRunner::RunnerManager* m_manager = nullptr;
     QVariantList m_results;
-    /// Maps a published row to its position in KRunner's own match list, which
-    /// can hold entries this bridge does not show.
-    QList<int> m_sourceIndices;
-    bool m_busy = false;
 };
 
 } // namespace caelestia::services

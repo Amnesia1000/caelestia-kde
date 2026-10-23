@@ -102,7 +102,7 @@ StyledListView {
         implicitHeight: Tokens.sizes.launcher.itemHeight
         width: root.width
 
-        function clicked() {
+        function activate() {
             if (!modelData || !modelData.onClicked)
                 return;
             modelData.onClicked(root);
@@ -110,7 +110,7 @@ StyledListView {
 
         StateLayer {
             radius: Tokens.rounding.large
-            onClicked: delegateRoot.clicked()
+            onClicked: delegateRoot.activate()
         }
 
         Item {

@@ -9,32 +9,22 @@ import Caelestia.Services
 /// reaches the rest of the system (files, places, web shortcuts, definitions,
 /// unit conversion, settings modules).
 ///
-/// Results stream in as runners answer, so `results` grows until `busy` is false.
+/// Results are re-published as each runner answers, so `results` keeps growing
+/// until KRunner has nothing more to add.
 Singleton {
     id: root
 
-    readonly property bool available: KRunnerBridge.available
-    readonly property bool busy: KRunnerBridge.busy
     readonly property var results: KRunnerBridge.results
 
     function search(text: string): void {
-        if (!root.available)
-            return;
-
-        if (!text || !text.trim()) {
-            KRunnerBridge.clear();
-            return;
-        }
-
         KRunnerBridge.search(text);
     }
 
     function clear(): void {
-        if (root.available)
-            KRunnerBridge.clear();
+        KRunnerBridge.clear();
     }
 
-    function run(index: int, actionId: string): void {
-        KRunnerBridge.run(index, actionId ?? "");
+    function run(id: string, actionId: string): void {
+        KRunnerBridge.run(id, actionId ?? "");
     }
 }

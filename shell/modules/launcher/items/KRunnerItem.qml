@@ -12,15 +12,14 @@ Item {
 
     required property var modelData
     required property var list
-    required property int index
 
     readonly property real iconSize: (Tokens.sizes.launcher.itemHeight - Tokens.padding.small * 2) * 0.8
 
-    function clicked(): void {
+    function activate(): void {
         if (!root.modelData)
             return;
         root.list.visibilities.launcher = false;
-        Search.run(root.index, "");
+        Search.run(root.modelData.id, "");
     }
 
     implicitHeight: Tokens.sizes.launcher.itemHeight
@@ -29,7 +28,7 @@ Item {
 
     StateLayer {
         radius: Tokens.rounding.large
-        onClicked: root.clicked()
+        onClicked: root.activate()
     }
 
     Item {

@@ -147,8 +147,6 @@ StyledListView {
             Emojis.reload();
         if (state === "clipboard")
             Clipboard.reload();
-        if (state !== "search")
-            Search.clear();
 
         if (state !== "scheme" && state !== "variant") {
             Colours.clearPreview();
