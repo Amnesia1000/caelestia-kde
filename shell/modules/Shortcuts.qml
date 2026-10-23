@@ -632,6 +632,7 @@ Scope {
         description: qsTr("Open dock entry 9")
         key: ""
         onPressed: root.activateDockEntry(8)
+    }
     // qmllint disable unresolved-type
     CustomShortcut {
         // qmllint enable unresolved-type
@@ -703,6 +704,5 @@ Scope {
         description: qsTr("Open new window of dock entry 9")
         key: "Meta+Ctrl+9"
         onPressed: root.activateDockEntryNew(8)
-    }
     }
 }
