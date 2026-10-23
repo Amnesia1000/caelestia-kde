@@ -662,6 +662,20 @@ test_the_hooks_run_with_the_scheme_in_their_environment() {
     assert_contains "$logged" "wallpaper $image" "the wallpaper hook saw the wallpaper"
 }
 
+test_a_failing_hook_says_why_it_failed() {
+    # "the theme hook failed" on its own leaves the user guessing: a helper that is not
+    # installed, a sudo rule that is gone and a typo all look identical. The hook's own
+    # first line of output is the one thing that tells them apart.
+    setup_sandbox
+    set_cli_config '{"theme": {"postHook": "caelestia-no-such-helper --posthook"}}'
+
+    run_color wallpaper -f "$(wallpaper_image wall.png)"
+
+    assert_status 0 "$STATUS" "a failing hook must not stop the wallpaper being applied"
+    assert_contains "$OUTPUT" "the theme hook failed" "the failure is still reported"
+    assert_contains "$OUTPUT" "caelestia-no-such-helper" "and the warning carries the reason"
+}
+
 test_the_wallpaper_preview_changes_nothing() {
     setup_sandbox
     local first

@@ -1318,22 +1318,30 @@ defer_to_desktop() {
     return 0
 }
 
-# A failing hook is reported, not fatal: the palette is already on disk.
+# A failing hook is reported, not fatal: the palette is already on disk. Its own output
+# is the only clue to why, so the first line of it goes into the warning: "hook failed"
+# alone cannot tell a missing helper from a refused sudo from a typo in the command.
 run_hook() {
     local label="$1" command="$2"
     shift 2
     [[ -n "$command" ]] || return 0
 
-    if env "$@" \
+    local output
+    output="$(env "$@" \
         SCHEME_NAME="$META_NAME" \
         SCHEME_FLAVOUR="$META_FLAVOUR" \
         SCHEME_MODE="$META_MODE" \
         SCHEME_VARIANT="$META_VARIANT" \
         SCHEME_COLOURS="$META_COLOURS" \
-        sh -c "$command" >/dev/null 2>&1; then
-        return 0
+        sh -c "$command" 2>&1)" && return 0
+
+    local reason="${output%%$'\n'*}"
+    reason="${reason#"${reason%%[![:space:]]*}"}"
+    if [[ -n "$reason" ]]; then
+        warn "the $label hook failed: $reason"
+    else
+        warn "the $label hook failed"
     fi
-    warn "the $label hook failed"
 }
 
 run_theme_hook() {
