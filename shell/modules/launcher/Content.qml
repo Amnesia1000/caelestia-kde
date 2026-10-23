@@ -198,21 +198,17 @@ Item {
                 }
 
                 const currentItem = list.currentList?.currentItem;
-                if (currentItem) {
-                    if (list.showWallpapers) {
-                        Wallpapers.setWallpaper(currentItem.modelData.path);
-                        root.visibilities.launcher = false;
-                    } else if (text.startsWith(GlobalConfig.launcher.actionPrefix)) {
-                        if (text.startsWith(`${GlobalConfig.launcher.actionPrefix}calc `))
-                            currentItem.onClicked();
-                        else if (text.startsWith(`${GlobalConfig.launcher.actionPrefix}emoji `) || text.startsWith(`${GlobalConfig.launcher.actionPrefix}clipboard `) || text.startsWith(`${GlobalConfig.launcher.actionPrefix}windows `) || text.startsWith(`${GlobalConfig.launcher.actionPrefix}keybinds `) || text.startsWith(`${GlobalConfig.launcher.actionPrefix}animations `))
-                            currentItem.clicked();
-                        else
-                            currentItem.modelData.onClicked(list.currentList);
-                    } else {
-                        Apps.launch(currentItem.modelData);
-                        root.visibilities.launcher = false;
-                    }
+                if (!currentItem)
+                    return;
+
+                // The wallpapers list is the one surface whose rows are not launcher
+                // delegates, so it activates by path here; everything else owns its
+                // activation and does not need to be re-derived from the text.
+                if (list.showWallpapers) {
+                    Wallpapers.setWallpaper(currentItem.modelData.path);
+                    root.visibilities.launcher = false;
+                } else {
+                    currentItem.activate();
                 }
             }
 

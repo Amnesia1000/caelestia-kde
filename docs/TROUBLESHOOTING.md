@@ -410,6 +410,61 @@ Any other application that crashes when pasting its own content while the
 service runs belongs to the same class: report it so its format can be added to
 the filter.
 
+### 3.10 Launcher Search Mode Finds Nothing
+
+The launcher's system-wide search (`>search <query>`) is powered by KDE's
+KRunner, which reaches files, places, web shortcuts, the dictionary, unit and
+currency conversion and settings modules. KRunner's D-Bus service only exposes
+UI control methods, so the shell talks to the library instead, and the bridge is
+built only when the development package is present:
+
+```bash
+pacman -Q kf6-krunner          # Arch: the runtime is usually already there
+pacman -S kf6-krunner          # headers + CMake config the bridge needs
+```
+
+If `>search` shows nothing at all while `>calc` still works, the shell was
+compiled without it. Check what the installed plugin was built against:
+
+```bash
+ldd ~/.local/lib/qt6/qml/Caelestia/lib/libcaelestia-services.so | grep -i runner
+```
+
+No `libKF6Runner` line means the plugin predates KRunner or was built on a
+machine without the headers; reinstall the shell after installing the package.
+A build with KRunner gets `search` in the launcher's action list, and
+`KRunnerBridge.available` is `false` without it, so the mode simply has no
+results rather than erroring.
+
+Empty results with the bridge in place usually mean the runner itself is not
+enabled. Turn the relevant one on in *System Settings → Search → Plasma Search*
+(in particular *Files* for Baloo), and check that the file index exists:
+
+```bash
+balooctl6 status                # "indexing" or "idle" is healthy
+```
+
+Results that say *Search DuckDuckGo for …* are web searches: KRunner's *Web
+Search Keywords* runner offers the configured engine once nothing else matches,
+and search mode adds the same row itself when KRunner has not. The engine is
+KDE's choice, stored as `DefaultWebShortcut` in `~/.config/kuriikwsfilterrc`;
+with no such file the built-in default applies, which is DuckDuckGo. Providers
+ship with `kio` as `/usr/share/kf6/searchproviders/*.desktop`, and the value is
+the *file name* of the provider (`google`, `duckduckgo`, …) rather than one of
+the aliases on its `Keys=` line. Those aliases only apply to what you type, so
+`ddg:cats` searches directly whichever engine is configured.
+
+Pick the engine in *Nexus → Apps → Web search engine*, from KDE's own page in
+*System Settings → Search → Web Search Keywords* (`kcmshell6 kcm_webshortcuts`),
+or set it once:
+
+```bash
+kwriteconfig6 --file kuriikwsfilterrc --group General --key DefaultWebShortcut google
+```
+
+Until Baloo has an index the web row is often the only match for a filename, which makes the shortcut look
+like a bug rather than a fallback.
+
 ---
 
 ## 4. Runtime Issues — Lock Screen
