@@ -85,6 +85,12 @@ void KRunnerBridge::run(const QString& id, const QString& actionId) {
 #endif
 }
 
+void KRunnerBridge::reloadConfiguration() {
+#ifdef CAELESTIA_HAVE_KRUNNER
+    m_manager->reloadConfiguration();
+#endif
+}
+
 /// Only connected in a build with KF6Runner, so without it this stays empty rather
 /// than repeating what clear() already does.
 void KRunnerBridge::publishResults() {
@@ -110,6 +116,7 @@ void KRunnerBridge::publishResults() {
 
         next.append(QVariantMap{
             {QStringLiteral("id"), match.id()},
+            {QStringLiteral("runner"), match.runner() ? match.runner()->id() : QString()},
             {QStringLiteral("text"), match.text()},
             {QStringLiteral("subtext"), match.subtext()},
             {QStringLiteral("icon"), match.iconName()},

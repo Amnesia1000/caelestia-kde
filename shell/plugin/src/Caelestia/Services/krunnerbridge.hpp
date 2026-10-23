@@ -42,6 +42,9 @@ public:
     /// Activates the result with this KRunner match id, through `actionId` when it
     /// names one of that result's secondary actions and its default action otherwise.
     Q_INVOKABLE void run(const QString& id, const QString& actionId);
+    /// Re-reads the runner configuration, for KDE settings the shell writes while it
+    /// is running: runners cache what they read when they were created.
+    Q_INVOKABLE void reloadConfiguration();
 
 signals:
     void resultsChanged();

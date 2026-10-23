@@ -444,22 +444,25 @@ enabled. Turn the relevant one on in *System Settings → Search → Plasma Sear
 balooctl6 status                # "indexing" or "idle" is healthy
 ```
 
-Results that say *Search DuckDuckGo for …* come from KRunner's own *Web Search
-Keywords* runner, not from the shell, and the engine is KDE's choice rather than
-this port's. The runner reads `DefaultWebShortcut` from
-`~/.config/kuriikwsfilterrc`; with no such file the built-in default applies,
-which is DuckDuckGo. The providers themselves ship with `kio` as
-`/usr/share/kf6/searchproviders/*.desktop`, and each one's keywords are its
-`Keys=` line — DuckDuckGo accepts `ddg`, `dd`, `d` and `dukgo`, so `ddg:cats`
-searches directly. Change the fallback engine in *System Settings → Search →
-Web Search Keywords* (`kcmshell6 kcm_webshortcuts`), or set it once:
+Results that say *Search DuckDuckGo for …* are web searches: KRunner's *Web
+Search Keywords* runner offers the configured engine once nothing else matches,
+and search mode adds the same row itself when KRunner has not. The engine is
+KDE's choice, stored as `DefaultWebShortcut` in `~/.config/kuriikwsfilterrc`;
+with no such file the built-in default applies, which is DuckDuckGo. Providers
+ship with `kio` as `/usr/share/kf6/searchproviders/*.desktop`, and the value is
+the *file name* of the provider (`google`, `duckduckgo`, …) rather than one of
+the aliases on its `Keys=` line. Those aliases only apply to what you type, so
+`ddg:cats` searches directly whichever engine is configured.
+
+Pick the engine in *Nexus → Apps → Web search engine*, from KDE's own page in
+*System Settings → Search → Web Search Keywords* (`kcmshell6 kcm_webshortcuts`),
+or set it once:
 
 ```bash
 kwriteconfig6 --file kuriikwsfilterrc --group General --key DefaultWebShortcut google
 ```
 
-Use the first key of whichever provider you want. Until Baloo has an index the
-web row is often the only match for a filename, which makes the shortcut look
+Until Baloo has an index the web row is often the only match for a filename, which makes the shortcut look
 like a bug rather than a fallback.
 
 ---

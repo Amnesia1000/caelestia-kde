@@ -27,4 +27,10 @@ Singleton {
     function run(id: string, actionId: string): void {
         KRunnerBridge.run(id, actionId ?? "");
     }
+
+    /// The runner manager lives in the shell process, so a config it reads on startup
+    /// only takes effect here after it is told to re-read it.
+    function reloadConfiguration(): void {
+        KRunnerBridge.reloadConfiguration();
+    }
 }

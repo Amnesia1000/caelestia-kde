@@ -42,7 +42,12 @@ Item {
         if (!root.modelData)
             return;
         root.list.visibilities.launcher = false;
-        Search.run(root.modelData.id, "");
+        // The launcher adds this row itself when the query is something to look up
+        // rather than something installed, so it carries a url instead of a match id.
+        if (root.modelData.webSearchUrl)
+            Qt.openUrlExternally(root.modelData.webSearchUrl);
+        else
+            Search.run(root.modelData.id, "");
     }
 
     implicitHeight: Tokens.sizes.launcher.itemHeight

@@ -50,8 +50,21 @@ StyledListView {
 
     function resultsForText(text: string): var {
         switch (stateForText(text)) {
-        case "search":
-            return Search.results;
+        case "search": {
+            const q = root.searchQueryForText(text).trim();
+            const url = WebSearch.searchUrl(q);
+            // KRunner offers the configured engine itself once nothing else matched —
+            // and for "ddg:cats" style keyword queries — so the launcher only adds a
+            // row of its own when there is none, which keeps the two from doubling up.
+            if (!url || Search.results.some(match => match.runner === "krunner_webshortcuts"))
+                return Search.results;
+
+            return Search.results.concat([{
+                webSearchUrl: url,
+                text: qsTr("Search %1 for \"%2\"").arg(WebSearch.currentName).arg(q),
+                icon: "internet-web-browser"
+            }]);
+        }
         case "actions":
             return Actions.query(text);
         case "calc":
