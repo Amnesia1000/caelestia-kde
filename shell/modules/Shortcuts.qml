@@ -21,43 +21,50 @@ Scope {
     // keep their exact casing (e.g. "KrohnkitegrowWidth") or KWin will invoke actions
     // it never registered. `key` is the default binding ("" = unbound), overridden by
     // the user's keybinds.json.
+    //
+    // `description` stays untranslated on purpose: this array is the Instantiator's model,
+    // so a qsTr() here would make the model depend on the active language. QML then
+    // re-evaluates the model on every language change, the Instantiator recreates the
+    // delegates, and KGlobalAccel deactivates the actions whose replacements already
+    // registered - the keybinds stay dead until the shell restarts. The delegate
+    // translates the extracted source text instead; QT_TR_NOOP() below is not a typo.
     readonly property var krohnkiteShortcuts: [
-        { name: "krohnkiteFocusUp", description: qsTr("Focus the window above"), action: "KrohnkiteFocusUp", key: "Meta+Up" },
-        { name: "krohnkiteFocusDown", description: qsTr("Focus the window below"), action: "KrohnkiteFocusDown", key: "Meta+Down" },
-        { name: "krohnkiteFocusLeft", description: qsTr("Focus the window to the left"), action: "KrohnkiteFocusLeft", key: "Meta+Left" },
-        { name: "krohnkiteFocusRight", description: qsTr("Focus the window to the right"), action: "KrohnkiteFocusRight", key: "Meta+Right" },
-        { name: "krohnkiteShiftUp", description: qsTr("Move window up"), action: "KrohnkiteShiftUp", key: "Meta+Shift+Up" },
-        { name: "krohnkiteShiftDown", description: qsTr("Move window down"), action: "KrohnkiteShiftDown", key: "Meta+Shift+Down" },
-        { name: "krohnkiteShiftLeft", description: qsTr("Move window left"), action: "KrohnkiteShiftLeft", key: "Meta+Shift+Left" },
-        { name: "krohnkiteShiftRight", description: qsTr("Move window right"), action: "KrohnkiteShiftRight", key: "Meta+Shift+Right" },
-        { name: "krohnkiteCloseWindow", description: qsTr("Close current window"), action: "Window Close", key: "Meta+Q" },
-        { name: "krohnkiteFocusNext", description: qsTr("Focus next window"), action: "KrohnkiteFocusNext", key: "" },
-        { name: "krohnkiteFocusPrev", description: qsTr("Focus previous window"), action: "KrohnkiteFocusPrev", key: "" },
-        { name: "krohnkiteSetMaster", description: qsTr("Set active window as Master"), action: "KrohnkiteSetMaster", key: "" },
-        { name: "krohnkiteNextLayout", description: qsTr("Switch to next layout"), action: "KrohnkiteNextLayout", key: "" },
-        { name: "krohnkitePreviousLayout", description: qsTr("Switch to previous layout"), action: "KrohnkitePreviousLayout", key: "" },
-        { name: "krohnkiteBTreeLayout", description: qsTr("Switch to BTree layout"), action: "KrohnkiteBTreeLayout", key: "" },
-        { name: "krohnkiteMonocleLayout", description: qsTr("Switch to Monocle layout"), action: "KrohnkiteMonocleLayout", key: "" },
-        { name: "krohnkiteFloatingLayout", description: qsTr("Switch to Floating layout"), action: "KrohnkiteFloatingLayout", key: "" },
-        { name: "krohnkiteQuarterLayout", description: qsTr("Switch to Quarter layout"), action: "KrohnkiteQuarterLayout", key: "" },
-        { name: "krohnkiteSpreadLayout", description: qsTr("Switch to Spread layout"), action: "KrohnkiteSpreadLayout", key: "" },
-        { name: "krohnkiteStackedLayout", description: qsTr("Switch to Stacked layout"), action: "KrohnkiteStackedLayout", key: "" },
-        { name: "krohnkiteStairLayout", description: qsTr("Switch to Stair layout"), action: "KrohnkiteStairLayout", key: "" },
-        { name: "krohnkiteColumnsLayout", description: qsTr("Switch to Columns layout"), action: "KrohnkiteColumnsLayout", key: "" },
-        { name: "krohnkiteTreeColumnLayout", description: qsTr("Switch to Three Column layout"), action: "KrohnkiteThreeColumnLayout", key: "" },
-        { name: "krohnkiteSpiralLayout", description: qsTr("Switch to Spiral layout"), action: "KrohnkiteSpiralLayout", key: "" },
-        { name: "krohnkiteTileLayout", description: qsTr("Switch to Tile layout"), action: "KrohnkiteTileLayout", key: "" },
-        { name: "krohnkiteGrowHeight", description: qsTr("Increase window height"), action: "KrohnkiteGrowHeight", key: "" },
-        { name: "krohnkiteShrinkHeight", description: qsTr("Decrease window height"), action: "KrohnkiteShrinkHeight", key: "" },
-        { name: "krohnkiteGrowWidth", description: qsTr("Increase window width"), action: "KrohnkitegrowWidth", key: "" },
-        { name: "krohnkiteShrinkWidth", description: qsTr("Decrease window width"), action: "KrohnkiteShrinkWidth", key: "" },
-        { name: "krohnkiteIncreaseMaster", description: qsTr("Increase master area size"), action: "KrohnkiteIncrease", key: "" },
-        { name: "krohnkiteDecreaseMaster", description: qsTr("Decrease master area size"), action: "KrohnkiteDecrease", key: "" },
-        { name: "krohnkiteToggleFloat", description: qsTr("Toggle floating state"), action: "KrohnkiteToggleFloat", key: "" },
-        { name: "krohnkiteFloatAll", description: qsTr("Toggle floating state for all"), action: "KrohnkiteFloatAll", key: "" },
-        { name: "krohnkiteRotate", description: qsTr("Rotate the window layout"), action: "KrohnkiteRotate", key: "" },
-        { name: "krohnkiteRotatePart", description: qsTr("Rotate windows within a part"), action: "KrohnkiteRotatePart", key: "" },
-        { name: "krohnkiteToggleDock", description: qsTr("Toggle dock support"), action: "KrohnkitetoggleDock", key: "" },
+        { name: "krohnkiteFocusUp", description: QT_TR_NOOP("Focus the window above"), action: "KrohnkiteFocusUp", key: "Meta+Up" },
+        { name: "krohnkiteFocusDown", description: QT_TR_NOOP("Focus the window below"), action: "KrohnkiteFocusDown", key: "Meta+Down" },
+        { name: "krohnkiteFocusLeft", description: QT_TR_NOOP("Focus the window to the left"), action: "KrohnkiteFocusLeft", key: "Meta+Left" },
+        { name: "krohnkiteFocusRight", description: QT_TR_NOOP("Focus the window to the right"), action: "KrohnkiteFocusRight", key: "Meta+Right" },
+        { name: "krohnkiteShiftUp", description: QT_TR_NOOP("Move window up"), action: "KrohnkiteShiftUp", key: "Meta+Shift+Up" },
+        { name: "krohnkiteShiftDown", description: QT_TR_NOOP("Move window down"), action: "KrohnkiteShiftDown", key: "Meta+Shift+Down" },
+        { name: "krohnkiteShiftLeft", description: QT_TR_NOOP("Move window left"), action: "KrohnkiteShiftLeft", key: "Meta+Shift+Left" },
+        { name: "krohnkiteShiftRight", description: QT_TR_NOOP("Move window right"), action: "KrohnkiteShiftRight", key: "Meta+Shift+Right" },
+        { name: "krohnkiteCloseWindow", description: QT_TR_NOOP("Close current window"), action: "Window Close", key: "Meta+Q" },
+        { name: "krohnkiteFocusNext", description: QT_TR_NOOP("Focus next window"), action: "KrohnkiteFocusNext", key: "" },
+        { name: "krohnkiteFocusPrev", description: QT_TR_NOOP("Focus previous window"), action: "KrohnkiteFocusPrev", key: "" },
+        { name: "krohnkiteSetMaster", description: QT_TR_NOOP("Set active window as Master"), action: "KrohnkiteSetMaster", key: "" },
+        { name: "krohnkiteNextLayout", description: QT_TR_NOOP("Switch to next layout"), action: "KrohnkiteNextLayout", key: "" },
+        { name: "krohnkitePreviousLayout", description: QT_TR_NOOP("Switch to previous layout"), action: "KrohnkitePreviousLayout", key: "" },
+        { name: "krohnkiteBTreeLayout", description: QT_TR_NOOP("Switch to BTree layout"), action: "KrohnkiteBTreeLayout", key: "" },
+        { name: "krohnkiteMonocleLayout", description: QT_TR_NOOP("Switch to Monocle layout"), action: "KrohnkiteMonocleLayout", key: "" },
+        { name: "krohnkiteFloatingLayout", description: QT_TR_NOOP("Switch to Floating layout"), action: "KrohnkiteFloatingLayout", key: "" },
+        { name: "krohnkiteQuarterLayout", description: QT_TR_NOOP("Switch to Quarter layout"), action: "KrohnkiteQuarterLayout", key: "" },
+        { name: "krohnkiteSpreadLayout", description: QT_TR_NOOP("Switch to Spread layout"), action: "KrohnkiteSpreadLayout", key: "" },
+        { name: "krohnkiteStackedLayout", description: QT_TR_NOOP("Switch to Stacked layout"), action: "KrohnkiteStackedLayout", key: "" },
+        { name: "krohnkiteStairLayout", description: QT_TR_NOOP("Switch to Stair layout"), action: "KrohnkiteStairLayout", key: "" },
+        { name: "krohnkiteColumnsLayout", description: QT_TR_NOOP("Switch to Columns layout"), action: "KrohnkiteColumnsLayout", key: "" },
+        { name: "krohnkiteTreeColumnLayout", description: QT_TR_NOOP("Switch to Three Column layout"), action: "KrohnkiteThreeColumnLayout", key: "" },
+        { name: "krohnkiteSpiralLayout", description: QT_TR_NOOP("Switch to Spiral layout"), action: "KrohnkiteSpiralLayout", key: "" },
+        { name: "krohnkiteTileLayout", description: QT_TR_NOOP("Switch to Tile layout"), action: "KrohnkiteTileLayout", key: "" },
+        { name: "krohnkiteGrowHeight", description: QT_TR_NOOP("Increase window height"), action: "KrohnkiteGrowHeight", key: "" },
+        { name: "krohnkiteShrinkHeight", description: QT_TR_NOOP("Decrease window height"), action: "KrohnkiteShrinkHeight", key: "" },
+        { name: "krohnkiteGrowWidth", description: QT_TR_NOOP("Increase window width"), action: "KrohnkitegrowWidth", key: "" },
+        { name: "krohnkiteShrinkWidth", description: QT_TR_NOOP("Decrease window width"), action: "KrohnkiteShrinkWidth", key: "" },
+        { name: "krohnkiteIncreaseMaster", description: QT_TR_NOOP("Increase master area size"), action: "KrohnkiteIncrease", key: "" },
+        { name: "krohnkiteDecreaseMaster", description: QT_TR_NOOP("Decrease master area size"), action: "KrohnkiteDecrease", key: "" },
+        { name: "krohnkiteToggleFloat", description: QT_TR_NOOP("Toggle floating state"), action: "KrohnkiteToggleFloat", key: "" },
+        { name: "krohnkiteFloatAll", description: QT_TR_NOOP("Toggle floating state for all"), action: "KrohnkiteFloatAll", key: "" },
+        { name: "krohnkiteRotate", description: QT_TR_NOOP("Rotate the window layout"), action: "KrohnkiteRotate", key: "" },
+        { name: "krohnkiteRotatePart", description: QT_TR_NOOP("Rotate windows within a part"), action: "KrohnkiteRotatePart", key: "" },
+        { name: "krohnkiteToggleDock", description: QT_TR_NOOP("Toggle dock support"), action: "KrohnkitetoggleDock", key: "" },
     ]
 
     function activateDockEntry(idx: int): void {
@@ -546,7 +553,7 @@ Scope {
             required property var modelData
 
             name: modelData.name
-            description: modelData.description
+            description: qsTr(modelData.description)
             key: Config.general.krohnkiteEnabled ? modelData.key : ""
             onPressed: {
                 if (Config.general.krohnkiteEnabled)
