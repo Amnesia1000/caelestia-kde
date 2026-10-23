@@ -48,7 +48,6 @@ PageBase {
                 last: true
                 label: qsTr("Wallpaper Settings")
                 status: Wallpapers.hasSkwd ? qsTr("Configure wallpaper engine, mixer, and effects") : qsTr("Configure scaling, recoloring, video playback, and slideshows")
-                opacity: enabled ? 1 : 0.5
                 onClicked: root.nState.openSubPage(5)
             }
         }

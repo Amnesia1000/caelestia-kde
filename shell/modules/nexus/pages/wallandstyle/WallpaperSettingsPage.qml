@@ -33,10 +33,11 @@ PageBase {
         "videoWallpaperPauseOnTiled", "videoWallpaperPauseOnAllDisplays", "videoWallpaperMuteOnMedia"
     ]
 
-    function setFallbackOption(setting: string, value: var): void {
+    function setFallbackOption(setting: string, value: var, saveNow = true): void {
         GlobalConfig.background[setting] = value;
         clearScreenOverrides(setting);
-        GlobalConfig.save();
+        if (saveNow)
+            GlobalConfig.save();
     }
 
     function clearScreenOverrides(setting: string): void {
@@ -160,21 +161,21 @@ PageBase {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: Tokens.spacing.extraSmall / 2
+            visible: Wallpapers.hasSkwd
 
             InfoRow {
                 first: true
                 Layout.fillWidth: true
                 icon: "info"
                 wrapSubtext: true
-                label: Wallpapers.hasSkwd ? qsTr("Managed by skwd-wall") : qsTr("Managed by Quickshell")
-                subtext: Wallpapers.hasSkwd ? qsTr("Wallpaper settings and effects are configured directly through skwd-wall.") : qsTr("The built-in wallpaper renderer is used because skwd-wall is not installed.")
+                label: qsTr("Managed by skwd-wall")
+                subtext: qsTr("Wallpaper settings and effects are configured directly through skwd-wall.")
             }
 
             NavRow {
                 icon: "settings"
                 label: qsTr("General Settings")
                 status: qsTr("Configure wallpaper engine and display options")
-                visible: Wallpapers.hasSkwd
                 onClicked: root.openSkwd("settings")
             }
 
@@ -182,7 +183,6 @@ PageBase {
                 icon: "tune"
                 label: qsTr("Wallpaper Mixer")
                 status: qsTr("Blend and layer multiple wallpapers")
-                visible: Wallpapers.hasSkwd
                 onClicked: root.openSkwd("mixer")
             }
 
@@ -191,7 +191,6 @@ PageBase {
                 icon: "auto_fix_high"
                 label: qsTr("Shaders & Effects")
                 status: qsTr("Post-processing, blur, and visual filters")
-                visible: Wallpapers.hasSkwd
                 onClicked: root.openSkwd("effects")
             }
         }
@@ -201,8 +200,16 @@ PageBase {
             Layout.fillWidth: true
             spacing: Tokens.spacing.extraSmall / 2
 
-            SelectRow {
+            InfoRow {
                 first: true
+                Layout.fillWidth: true
+                icon: "info"
+                wrapSubtext: true
+                label: qsTr("Managed by Quickshell")
+                subtext: qsTr("The built-in wallpaper renderer is used because skwd-wall is not installed.")
+            }
+
+            SelectRow {
                 last: true
                 label: qsTr("Wallpaper scaling")
                 subtext: qsTr("How the wallpaper image fits the screen")
@@ -238,7 +245,8 @@ PageBase {
                 reset: ({ node: GlobalConfig.background, setting: "wallpaperRecolorStrength" })
                 value: Config.background.wallpaperRecolorStrength
                 enabled: Config.background.wallpaperRecolor
-                onMoved: v => root.setFallbackOption("wallpaperRecolorStrength", v)
+                onMoved: v => root.setFallbackOption("wallpaperRecolorStrength", v, false)
+                onReleased: () => GlobalConfig.save()
             }
         }
 
@@ -340,7 +348,8 @@ PageBase {
                 reset: ({ node: GlobalConfig.background, setting: "slideshowInterval" })
                 value: Config.background.slideshowInterval
                 enabled: Config.background.slideshowEnabled
-                onMoved: v => root.setFallbackOption("slideshowInterval", v)
+                onMoved: v => root.setFallbackOption("slideshowInterval", v, false)
+                onReleased: () => GlobalConfig.save()
             }
 
             ToggleRow {
