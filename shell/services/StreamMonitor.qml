@@ -16,6 +16,7 @@ Singleton {
     property bool sharing: false
     property bool prevDnd: false
     property bool autoDnd: false
+    property bool autoReleasing: false
 
     function evaluate(): void {
         if (root.streamActive) {
@@ -32,19 +33,32 @@ Singleton {
         root.evaluate();
     }
 
+    function engageAutoDnd(): void {
+        if (root.autoDnd)
+            return;
+        root.prevDnd = Notifs.dnd;
+        root.autoDnd = true;
+        Notifs.setDnd(true, false);
+    }
+
+    function releaseAutoDnd(): void {
+        if (!root.autoDnd)
+            return;
+        root.autoReleasing = true;
+        root.autoDnd = false;
+        Notifs.setDnd(root.prevDnd, false);
+        root.autoReleasing = false;
+    }
+
     onStreamActiveChanged: root.evaluate()
 
     onSharingChanged: {
         if (!Config.utilities.toasts.dndWhileStreaming)
             return;
-        if (root.sharing && !Notifs.dnd) {
-            root.prevDnd = Notifs.dnd;
-            root.autoDnd = true;
-            Notifs.dnd = true;
-        } else if (!root.sharing && root.autoDnd) {
-            root.autoDnd = false;
-            Notifs.dnd = root.prevDnd;
-        }
+        if (root.sharing && !Notifs.dnd)
+            root.engageAutoDnd();
+        else if (!root.sharing)
+            root.releaseAutoDnd();
     }
 
     Component.onCompleted: root.evaluate()
@@ -62,14 +76,10 @@ Singleton {
 
     Connections {
         function onDndWhileStreamingChanged(): void {
-            if (!Config.utilities.toasts.dndWhileStreaming && root.autoDnd) {
-                root.autoDnd = false;
-                Notifs.dnd = root.prevDnd;
-            } else if (Config.utilities.toasts.dndWhileStreaming && root.sharing && !Notifs.dnd) {
-                root.prevDnd = Notifs.dnd;
-                root.autoDnd = true;
-                Notifs.dnd = true;
-            }
+            if (!Config.utilities.toasts.dndWhileStreaming)
+                root.releaseAutoDnd();
+            else if (root.sharing && !Notifs.dnd)
+                root.engageAutoDnd();
         }
 
         target: Config.utilities.toasts
@@ -77,6 +87,8 @@ Singleton {
 
     Connections {
         function onDndChanged(): void {
+            if (root.autoReleasing)
+                return;
             if (root.autoDnd && !Notifs.dnd)
                 root.autoDnd = false;
         }
