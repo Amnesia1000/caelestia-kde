@@ -29,12 +29,19 @@ test_notification_model_forwards_replies() {
         "empty replies and non-replyable notifications must be ignored"
 }
 
-test_sidebar_offers_the_reply_field_only_when_needed() {
+test_sidebar_offers_the_reply_field_without_expanding() {
     local notif
     notif="$(cat "$SIDEBAR_NOTIF")"
 
-    assert_contains "$notif" 'visible: root.modelData?.hasInlineReply ?? false' \
-        "the reply field must hide for notifications that cannot be answered"
+    assert_contains "$notif" 'readonly property bool canReply: root.modelData?.hasInlineReply ?? false' \
+        "the row must know whether the sender offered a reply"
+    # A box you have to discover an expansion gesture for is a box nobody types in.
+    assert_contains "$notif" 'visible: root.canReply' \
+        "the reply field must be visible on a collapsed row"
+    assert_contains "$notif" 'root.replyHeight' \
+        "the row height must account for the reply field"
+    assert_contains "$notif" 'anchors.top: root.canReply ? replyField.bottom : summary.bottom' \
+        "the expanded body must sit below the reply field when there is one"
     assert_contains "$notif" 'root.modelData.sendReply(text)' \
         "accepting the field must send the reply"
     assert_contains "$notif" 'root.modelData?.inlineReplyPlaceholder ?? ""' \

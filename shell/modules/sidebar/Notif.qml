@@ -16,7 +16,12 @@ StyledRect {
     required property DrawerVisibilities visibilities
 
     readonly property StyledText body: (expandedContent.item as ExpandedBody)?.body ?? null
-    readonly property real nonAnimHeight: expanded ? summary.implicitHeight + expandedContent.implicitHeight + expandedContent.anchors.topMargin + Tokens.padding.medium * 2 : summaryHeightMetrics.height
+    /// Only notifications whose sender asked for a reply can be answered.
+    readonly property bool canReply: root.modelData?.hasInlineReply ?? false
+    // The reply field is always laid out when it exists, expanded or not: a box you
+    // have to discover a gesture for is a box nobody types in.
+    readonly property real replyHeight: root.canReply ? replyField.implicitHeight + Tokens.spacing.small : 0
+    readonly property real nonAnimHeight: expanded ? summary.implicitHeight + root.replyHeight + expandedContent.implicitHeight + expandedContent.anchors.topMargin + Tokens.padding.medium * 2 : summaryHeightMetrics.height + root.replyHeight
 
     implicitHeight: nonAnimHeight
 
@@ -110,11 +115,31 @@ StyledRect {
         }
     }
 
+    StyledTextField {
+        id: replyField
+
+        visible: root.canReply
+        anchors.top: summary.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.leftMargin: Tokens.padding.medium
+        anchors.rightMargin: Tokens.padding.medium
+        anchors.topMargin: Tokens.spacing.small
+        placeholderText: root.modelData?.inlineReplyPlaceholder ?? ""
+
+        onAccepted: {
+            // Send and clear; the notification stays put so the sender can replace
+            // it with the answer.
+            root.modelData.sendReply(text);
+            text = "";
+        }
+    }
+
     WrappedLoader {
         id: expandedContent
 
         shouldBeActive: root.expanded
-        anchors.top: summary.bottom
+        anchors.top: root.canReply ? replyField.bottom : summary.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.topMargin: Tokens.spacing.extraSmall
@@ -144,22 +169,6 @@ StyledRect {
                 Qt.openUrlExternally(link);
                 if (!Visibilities.sidebarPinned)
                     root.visibilities.sidebar = false;
-            }
-        }
-
-        StyledTextField {
-            id: replyField
-
-            Layout.fillWidth: true
-            visible: root.modelData?.hasInlineReply ?? false
-            enabled: visible
-            placeholderText: root.modelData?.inlineReplyPlaceholder ?? ""
-
-            onAccepted: {
-                // Send and clear; the notification stays put so the sender can
-                // replace it with the answer.
-                root.modelData.sendReply(text);
-                text = "";
             }
         }
 
