@@ -48,8 +48,9 @@ PageBase {
     }
 
     function resetFallbackSettings(): void {
+        const background = GlobalConfig.background;
         for (const setting of root.fallbackSettings) {
-            GlobalConfig.background.resetOption(setting);
+            background.resetOption(setting);
             clearScreenOverrides(setting);
         }
         GlobalConfig.save();
