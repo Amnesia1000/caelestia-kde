@@ -129,4 +129,15 @@ Item {
                 event.accepted = true;
         }
     }
+
+    MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.BackButton | Qt.ExtraButton1
+        preventStealing: true
+
+        onPressed: mouse => {
+            WindowFactory.goBack();
+            mouse.accepted = true;
+        }
+    }
 }

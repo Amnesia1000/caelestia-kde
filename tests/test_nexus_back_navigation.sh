@@ -32,6 +32,13 @@ test_the_shortcut_only_closes_a_sub_page() {
         "the back action should pop one sub-page"
 }
 
+test_mouse_back_button_triggers_go_back() {
+    assert_file_contains "$NEXUS/Nexus.qml" 'acceptedButtons: Qt.BackButton' \
+        "the nexus window should listen for the mouse back button"
+    assert_file_contains "$NEXUS/Nexus.qml" 'WindowFactory.goBack()' \
+        "the mouse back button should invoke WindowFactory.goBack"
+}
+
 test_the_shortcuts_page_lists_the_back_binding() {
     assert_file_contains "$NEXUS/pages/ShortcutManagerPage.qml" 'nexus.*' \
         "the shortcuts page should classify nexusBack as a shell shortcut"
