@@ -83,6 +83,19 @@ for fname in candidate_files:
                     "--key", "plugin", target_plugin
                 ], check=True)
                 modified = True
+            if target_plugin == "org.kde.plasma.folder":
+                cur_url = subprocess.run([
+                    "kreadconfig6", "--file", fname,
+                    "--group", "Containments", "--group", cid, "--group", "General",
+                    "--key", "url"
+                ], text=True, capture_output=True).stdout.strip()
+                if not cur_url:
+                    subprocess.run([
+                        "kwriteconfig6", "--file", fname,
+                        "--group", "Containments", "--group", cid, "--group", "General",
+                        "--key", "url", "desktop:/"
+                    ], check=True)
+                    modified = True
 
 if modified:
     subprocess.run(["systemctl", "--user", "reset-failed", "plasma-plasmashell"], check=False)

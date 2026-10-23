@@ -13,9 +13,17 @@ for candidate in \
     fi
 done
 
+SHELL_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/caelestia/shell.json"
+MODE="desktop"
+if [[ -f "$SHELL_CONFIG" ]] && command -v python3 >/dev/null 2>&1; then
+    if python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("background",{}).get("disableQuickshellDesktop") else 1)' "$SHELL_CONFIG" 2>/dev/null; then
+        MODE="folder"
+    fi
+fi
+
 if [[ -n "$SYNC_SCRIPT" ]]; then
-    bash "$SYNC_SCRIPT" desktop
-    echo "StartupTasks: Synced KDE wallpaper layout to desktop mode"
+    bash "$SYNC_SCRIPT" "$MODE"
+    echo "StartupTasks: Synced KDE wallpaper layout to $MODE mode"
 fi
 
 exit 0

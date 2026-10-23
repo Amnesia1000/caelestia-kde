@@ -72,7 +72,7 @@ Variants {
         screen: modelData
         name: "background"
         isDesktopWidget: true
-        color: (Config.background.wallpaperEnabled && wallpaperHasBeenUp && !ContextMenuStore.editMode) ? "black" : "transparent"
+        color: (Config.background.wallpaperEnabled && wallpaperHasBeenUp && !ContextMenuStore.editMode && !Config.background.disableQuickshellDesktop) ? "black" : "transparent"
         surfaceFormat.opaque: false
         mask: {
             if (ContextMenuStore.editMode)
@@ -131,7 +131,7 @@ Variants {
 
                 asynchronous: true
                 anchors.fill: parent
-                active: Config.background.wallpaperEnabled && !ContextMenuStore.editMode
+                active: Config.background.wallpaperEnabled && !ContextMenuStore.editMode && !Config.background.disableQuickshellDesktop
                 visible: !ContextMenuStore.editMode
                 sourceComponent: Wallpaper {
                     screen: win.modelData
