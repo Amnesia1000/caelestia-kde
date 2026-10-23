@@ -338,14 +338,12 @@ Singleton {
         // the text "No active player", which a caller can only render as a dead Image.
         function status(): string {
             const active = root.active;
-            if (!active)
-                return JSON.stringify({ title: "", artist: "", artUrl: "", status: "Stopped" });
 
             return JSON.stringify({
-                title: active.trackTitle ?? "",
-                artist: active.trackArtist ?? "",
+                title: active?.trackTitle ?? "",
+                artist: active?.trackArtist ?? "",
                 artUrl: root.getArtUrl(active),
-                status: active.isPlaying ? "Playing" : "Paused"
+                status: MprisPlaybackState.toString(active?.playbackState ?? MprisPlaybackState.Stopped)
             });
         }
 
