@@ -76,7 +76,7 @@ VerticalFadeFlickable {
                     bottomLeftRadius: parent.bottomLeftRadius
                     bottomRightRadius: parent.bottomRightRadius
 
-                    onClicked: root.nState.currentPageIdx = item.pageIdx
+                    onClicked: root.nState.goToPage(item.pageIdx)
                 }
 
                 RowLayout {

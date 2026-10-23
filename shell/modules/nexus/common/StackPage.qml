@@ -142,6 +142,10 @@ StackView {
             root.pop();
         }
 
+        function onSubPagesCleared(): void {
+            root.popToIndex(0, StackView.Immediate);
+        }
+
         target: root.nState
     }
 }

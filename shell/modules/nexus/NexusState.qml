@@ -29,10 +29,23 @@ QtObject {
     signal close
     signal subPageOpened(target: var)
     signal subPageClosed
+    signal subPagesCleared
 
     function openSubPage(target: var): void {
         subPageIdxStack.push(target);
         subPageOpened(target);
+    }
+
+    function goToPage(pageIdx: int): void {
+        if (pageIdx !== currentPageIdx) {
+            currentPageIdx = pageIdx;
+            return;
+        }
+        pendingSubPageIdx = -1;
+        if (subPageIdxStack.length === 0)
+            return;
+        subPageIdxStack.length = 0;
+        subPagesCleared();
     }
 
     // Navigation that changes page, such as a search result. Landing on the
@@ -42,6 +55,8 @@ QtObject {
             pendingSubPageIdx = -1;
             if (subPageIdx >= 0)
                 openSubPage(subPageIdx);
+            else
+                goToPage(pageIdx);
             return;
         }
         currentPageIdx = pageIdx;
