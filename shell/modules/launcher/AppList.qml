@@ -21,6 +21,10 @@ StyledListView {
     readonly property string requestedState: stateForText(search.text)
     readonly property string displayState: stateForText(displayText)
 
+    // KRunner answers asynchronously, so its query is driven from the search text
+    // instead of resultsForText, which has to stay synchronous to feed the model.
+    readonly property string searchQuery: root.searchQueryForText(root._debouncedSearchText)
+
     function syncDisplayText(): void {
         if (visibilities.launcher && requestedState === displayState)
             displayText = search.text;
@@ -29,7 +33,7 @@ StyledListView {
     function stateForText(text: string): string {
         const prefix = GlobalConfig.launcher.actionPrefix;
         if (text.startsWith(prefix)) {
-            for (const action of ["calc", "scheme", "variant", "emoji", "clipboard", "windows"])
+            for (const action of ["calc", "scheme", "variant", "emoji", "clipboard", "windows", "search"])
                 if (text.startsWith(`${prefix}${action} `))
                     return action;
 
@@ -39,8 +43,15 @@ StyledListView {
         return "apps";
     }
 
+    function searchQueryForText(text: string): string {
+        const prefix = `${GlobalConfig.launcher.actionPrefix}search `;
+        return text.startsWith(prefix) ? text.slice(prefix.length) : "";
+    }
+
     function resultsForText(text: string): var {
         switch (stateForText(text)) {
+        case "search":
+            return Search.results;
         case "actions":
             return Actions.query(text);
         case "calc":
@@ -127,6 +138,8 @@ StyledListView {
 
     state: visibilities.launcher ? requestedState : displayState
 
+    onSearchQueryChanged: Search.search(root.searchQuery)
+
     onStateChanged: {
         if (state === "scheme" || state === "variant")
             Schemes.reload();
@@ -134,6 +147,8 @@ StyledListView {
             Emojis.reload();
         if (state === "clipboard")
             Clipboard.reload();
+        if (state !== "search")
+            Search.clear();
 
         if (state !== "scheme" && state !== "variant") {
             Colours.clearPreview();
@@ -225,6 +240,13 @@ StyledListView {
 
             PropertyChanges {
                 root.delegate: windowsItem
+            }
+        },
+        State {
+            name: "search"
+
+            PropertyChanges {
+                root.delegate: krunnerItem
             }
         }
     ]
@@ -408,6 +430,14 @@ StyledListView {
         id: windowsItem
 
         WindowSwitcherItem {
+            list: root
+        }
+    }
+
+    Component {
+        id: krunnerItem
+
+        KRunnerItem {
             list: root
         }
     }

@@ -165,6 +165,13 @@ class LauncherConfig : public settings::ObjectNode {
                 { u"enabled"_s, true },
             }),
             vmap({
+                { u"name"_s, u"Search Everything"_s },
+                { u"icon"_s, u"search"_s },
+                { u"description"_s, u"Search files, places, web shortcuts and settings with KRunner"_s },
+                { u"command"_s, QStringList{ u"autocomplete"_s, u"search"_s } },
+                { u"enabled"_s, true },
+            }),
+            vmap({
                 { u"name"_s, u"Keybinds"_s },
                 { u"icon"_s, u"keyboard"_s },
                 { u"description"_s, u"View all keybinds"_s },
