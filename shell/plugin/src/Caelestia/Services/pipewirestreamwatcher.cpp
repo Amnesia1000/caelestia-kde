@@ -4,6 +4,7 @@
 #include <pipewire/pipewire.h>
 #include <spa/utils/result.h>
 
+#include <QElapsedTimer>
 #include <QHash>
 #include <QLoggingCategory>
 #include <QMetaObject>
@@ -47,6 +48,21 @@ bool isStreamingNode(const char* mediaClass, const char* nodeName, const char* m
     return false;
 }
 
+bool isVideoNodeClass(const char* mediaClass) {
+    return mediaClass && (strcmp(mediaClass, "Stream/Input/Video") == 0 || strcmp(mediaClass, "Video/Source") == 0);
+}
+
+qint64 elapsedMs() {
+    static const QElapsedTimer clock = [] {
+        QElapsedTimer t;
+        t.start();
+        return t;
+    }();
+    return clock.elapsed();
+}
+
+constexpr qint64 STREAM_CONFIRM_INTERVAL_MS = 5000;
+
 } // namespace
 
 struct TrackedNode {
@@ -55,6 +71,17 @@ struct TrackedNode {
     QString mediaName;
     QString mediaRole;
     bool isStreaming = false;
+    qint64 firstStreamingMs = 0;
+    bool confirmed = false;
+};
+
+class PipewireStreamWatcherPrivate;
+
+struct NodeBinding {
+    uint32_t id = 0;
+    pw_node* proxy = nullptr;
+    spa_hook listener{};
+    PipewireStreamWatcherPrivate* owner = nullptr;
 };
 
 class PipewireStreamWatcherPrivate {
@@ -73,6 +100,8 @@ public:
 
     mutable QMutex mutex;
     QHash<uint32_t, TrackedNode> trackedNodes;
+    QHash<uint32_t, NodeBinding*> bindings;
+    QTimer* confirmTimer = nullptr;
 
     bool m_streaming = false;
     int m_streamCount = 0;
@@ -84,6 +113,13 @@ public:
     void scheduleReconnect();
     void notifyStateChangedFromThread();
     void updateState(bool streaming, int count, const QStringList& streams);
+
+    void bindNode(uint32_t id, uint32_t version, const spa_dict* props);
+    void releaseBinding(uint32_t id);
+    void releaseBindings();
+    void applyNodeProps(uint32_t id, const spa_dict* props);
+
+    static void onNodeInfo(void* data, const pw_node_info* info);
 
     static void onGlobal(
         void* data, uint32_t id, uint32_t permissions, const char* type, uint32_t version, const spa_dict* props);
@@ -101,12 +137,21 @@ void PipewireStreamWatcherPrivate::init() {
         tryConnect();
     });
 
+    confirmTimer = new QTimer(q);
+    confirmTimer->setInterval(1000);
+    QObject::connect(confirmTimer, &QTimer::timeout, q, [this]() {
+        notifyStateChangedFromThread();
+    });
+
     tryConnect();
 }
 
 void PipewireStreamWatcherPrivate::cleanup() {
     if (reconnectTimer) {
         reconnectTimer->stop();
+    }
+    if (confirmTimer) {
+        confirmTimer->stop();
     }
 
     if (threadLoop) {
@@ -116,6 +161,7 @@ void PipewireStreamWatcherPrivate::cleanup() {
 
     if (registry) {
         spa_hook_remove(&registryListener);
+        releaseBindings();
         pw_proxy_destroy(reinterpret_cast<pw_proxy*>(registry));
         registry = nullptr;
     }
@@ -223,21 +269,41 @@ void PipewireStreamWatcherPrivate::notifyStateChangedFromThread() {
     bool streaming = false;
     int count = 0;
     QStringList streams;
+    bool pending = false;
 
     {
         QMutexLocker locker(&mutex);
-        for (const auto& node : trackedNodes) {
-            if (node.isStreaming) {
-                ++count;
-                streams.append(!node.mediaName.isEmpty() ? node.mediaName : node.nodeName);
+        const qint64 nowMs = elapsedMs();
+        for (auto& node : trackedNodes) {
+            if (!node.isStreaming) {
+                continue;
             }
+            if (!node.confirmed) {
+                if (nowMs - node.firstStreamingMs >= STREAM_CONFIRM_INTERVAL_MS) {
+                    node.confirmed = true;
+                    qCInfo(lcPipewireStreamWatcher) << "Streaming node confirmed after grace period:"
+                                                    << (!node.mediaName.isEmpty() ? node.mediaName : node.nodeName);
+                } else {
+                    pending = true;
+                    continue;
+                }
+            }
+            ++count;
+            streams.append(!node.mediaName.isEmpty() ? node.mediaName : node.nodeName);
         }
         streaming = (count > 0);
     }
 
     QMetaObject::invokeMethod(
         q,
-        [this, streaming, count, streams]() {
+        [this, streaming, count, streams, pending]() {
+            if (pending != confirmTimer->isActive()) {
+                if (pending) {
+                    confirmTimer->start();
+                } else {
+                    confirmTimer->stop();
+                }
+            }
             updateState(streaming, count, streams);
         },
         Qt::QueuedConnection);
@@ -265,8 +331,149 @@ void PipewireStreamWatcherPrivate::updateState(bool streaming, int count, const 
     }
 }
 
+void PipewireStreamWatcherPrivate::bindNode(uint32_t id, uint32_t version, const spa_dict* props) {
+    if (!registry) {
+        return;
+    }
+
+    releaseBinding(id);
+
+    const uint32_t bindVersion = version < PW_VERSION_NODE ? version : PW_VERSION_NODE;
+    auto* proxy = static_cast<pw_node*>(pw_registry_bind(registry, id, PW_TYPE_INTERFACE_Node, bindVersion, 0));
+    if (!proxy) {
+        qCWarning(lcPipewireStreamWatcher) << "Failed to bind node" << id;
+        return;
+    }
+
+    auto* binding = new NodeBinding;
+    binding->id = id;
+    binding->proxy = proxy;
+    binding->owner = this;
+
+    static const pw_node_events nodeEvents = {
+        .version = PW_VERSION_NODE_EVENTS,
+        .info = onNodeInfo,
+    };
+    pw_node_add_listener(proxy, &binding->listener, &nodeEvents, binding);
+
+    bindings.insert(id, binding);
+
+    if (props) {
+        applyNodeProps(id, props);
+    }
+}
+
+void PipewireStreamWatcherPrivate::releaseBinding(uint32_t id) {
+    auto* binding = bindings.take(id);
+    if (!binding) {
+        return;
+    }
+
+    spa_hook_remove(&binding->listener);
+    if (binding->proxy) {
+        pw_proxy_destroy(reinterpret_cast<pw_proxy*>(binding->proxy));
+    }
+    delete binding;
+}
+
+void PipewireStreamWatcherPrivate::releaseBindings() {
+    const auto ids = bindings.keys();
+    for (const uint32_t id : ids) {
+        releaseBinding(id);
+    }
+}
+
+void PipewireStreamWatcherPrivate::applyNodeProps(uint32_t id, const spa_dict* props) {
+    if (!props) {
+        return;
+    }
+
+    const char* mediaClass = spa_dict_lookup(props, PW_KEY_MEDIA_CLASS);
+    const char* nodeName = spa_dict_lookup(props, PW_KEY_NODE_NAME);
+    const char* mediaName = spa_dict_lookup(props, PW_KEY_MEDIA_NAME);
+    const char* mediaRole = spa_dict_lookup(props, PW_KEY_MEDIA_ROLE);
+
+    bool wasStreaming = false;
+    bool streaming = false;
+    {
+        QMutexLocker locker(&mutex);
+        auto it = trackedNodes.find(id);
+        if (it == trackedNodes.end()) {
+            return;
+        }
+
+        wasStreaming = it->isStreaming;
+        const char* effectiveClass = mediaClass;
+        const char* effectiveName = nodeName;
+        const char* effectiveMediaName = mediaName;
+        const char* effectiveRole = mediaRole;
+
+        if (mediaClass) {
+            it->mediaClass = QString::fromUtf8(mediaClass);
+        }
+        if (nodeName) {
+            it->nodeName = QString::fromUtf8(nodeName);
+        }
+        if (mediaName) {
+            it->mediaName = QString::fromUtf8(mediaName);
+        }
+        if (mediaRole) {
+            it->mediaRole = QString::fromUtf8(mediaRole);
+        }
+
+        const QByteArray classBytes = it->mediaClass.toUtf8();
+        const QByteArray nameBytes = it->nodeName.toUtf8();
+        const QByteArray mediaBytes = it->mediaName.toUtf8();
+        const QByteArray roleBytes = it->mediaRole.toUtf8();
+
+        if (!effectiveClass)
+            effectiveClass = classBytes.isEmpty() ? nullptr : classBytes.constData();
+        if (!effectiveName)
+            effectiveName = nameBytes.isEmpty() ? nullptr : nameBytes.constData();
+        if (!effectiveMediaName)
+            effectiveMediaName = mediaBytes.isEmpty() ? nullptr : mediaBytes.constData();
+        if (!effectiveRole)
+            effectiveRole = roleBytes.isEmpty() ? nullptr : roleBytes.constData();
+
+        const bool consumerClass = effectiveClass && strcmp(effectiveClass, "Stream/Input/Video") == 0;
+        const bool mediaNameUnknown = !effectiveMediaName;
+        streaming = consumerClass && mediaNameUnknown
+                        ? false
+                        : isStreamingNode(effectiveClass, effectiveName, effectiveMediaName, effectiveRole);
+
+        if (streaming && !wasStreaming) {
+            it->firstStreamingMs = elapsedMs();
+            it->confirmed = false;
+        } else if (!streaming) {
+            it->firstStreamingMs = 0;
+            it->confirmed = false;
+        }
+        it->isStreaming = streaming;
+    }
+
+    if (streaming != wasStreaming) {
+        if (streaming) {
+            qCInfo(lcPipewireStreamWatcher)
+                << "Detected video streaming node:" << (mediaName ? mediaName : (nodeName ? nodeName : "<unknown>"))
+                << "id:" << id << "class:" << (mediaClass ? mediaClass : "<unknown>");
+        } else {
+            qCInfo(lcPipewireStreamWatcher) << "Video streaming node no longer streaming, id:" << id;
+        }
+        notifyStateChangedFromThread();
+    }
+}
+
+void PipewireStreamWatcherPrivate::onNodeInfo(void* data, const pw_node_info* info) {
+    auto* binding = static_cast<NodeBinding*>(data);
+    if (!binding || !binding->owner || !info) {
+        return;
+    }
+
+    binding->owner->applyNodeProps(binding->id, info->props);
+}
+
 void PipewireStreamWatcherPrivate::onGlobal(
-    void* data, uint32_t id, uint32_t /*permissions*/, const char* type, uint32_t /*version*/, const spa_dict* props) {
+    void* data, uint32_t id, uint32_t /*permissions*/, const char* type, uint32_t version, const spa_dict* props) {
     if (!type || strcmp(type, PW_TYPE_INTERFACE_Node) != 0 || !props) {
         return;
     }
@@ -274,24 +481,41 @@ void PipewireStreamWatcherPrivate::onGlobal(
     auto* d = static_cast<PipewireStreamWatcherPrivate*>(data);
 
     const char* mediaClass = spa_dict_lookup(props, PW_KEY_MEDIA_CLASS);
+    if (!isVideoNodeClass(mediaClass)) {
+        return;
+    }
+
     const char* nodeName = spa_dict_lookup(props, PW_KEY_NODE_NAME);
     const char* mediaName = spa_dict_lookup(props, PW_KEY_MEDIA_NAME);
     const char* mediaRole = spa_dict_lookup(props, PW_KEY_MEDIA_ROLE);
 
-    const bool streaming = isStreamingNode(mediaClass, nodeName, mediaName, mediaRole);
+    const bool consumerClass = strcmp(mediaClass, "Stream/Input/Video") == 0;
+    const bool streaming =
+        consumerClass && !mediaName ? false : isStreamingNode(mediaClass, nodeName, mediaName, mediaRole);
 
     {
         QMutexLocker locker(&d->mutex);
-        d->trackedNodes.insert(id, { mediaClass ? QString::fromUtf8(mediaClass) : QString(),
-                                       nodeName ? QString::fromUtf8(nodeName) : QString(),
-                                       mediaName ? QString::fromUtf8(mediaName) : QString(),
-                                       mediaRole ? QString::fromUtf8(mediaRole) : QString(), streaming });
+        auto& node = d->trackedNodes[id];
+        node.mediaClass = mediaClass ? QString::fromUtf8(mediaClass) : QString();
+        node.nodeName = nodeName ? QString::fromUtf8(nodeName) : QString();
+        node.mediaName = mediaName ? QString::fromUtf8(mediaName) : QString();
+        node.mediaRole = mediaRole ? QString::fromUtf8(mediaRole) : QString();
+        if (streaming && !node.isStreaming) {
+            node.firstStreamingMs = elapsedMs();
+            node.confirmed = false;
+        } else if (!streaming) {
+            node.firstStreamingMs = 0;
+            node.confirmed = false;
+        }
+        node.isStreaming = streaming;
     }
 
     if (streaming) {
         qCInfo(lcPipewireStreamWatcher) << "Detected video streaming node:" << (nodeName ? nodeName : "<unknown>")
                                         << "id:" << id << "class:" << (mediaClass ? mediaClass : "<unknown>");
     }
+
+    d->bindNode(id, version, props);
 
     d->notifyStateChangedFromThread();
 }
@@ -308,6 +532,8 @@ void PipewireStreamWatcherPrivate::onGlobalRemove(void* data, uint32_t id) {
             d->trackedNodes.erase(it);
         }
     }
+
+    d->releaseBinding(id);
 
     if (wasStreaming) {
         qCInfo(lcPipewireStreamWatcher) << "Video streaming node removed, id:" << id;
