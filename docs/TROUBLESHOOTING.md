@@ -444,6 +444,24 @@ enabled. Turn the relevant one on in *System Settings → Search → Plasma Sear
 balooctl6 status                # "indexing" or "idle" is healthy
 ```
 
+Results that say *Search DuckDuckGo for …* come from KRunner's own *Web Search
+Keywords* runner, not from the shell, and the engine is KDE's choice rather than
+this port's. The runner reads `DefaultWebShortcut` from
+`~/.config/kuriikwsfilterrc`; with no such file the built-in default applies,
+which is DuckDuckGo. The providers themselves ship with `kio` as
+`/usr/share/kf6/searchproviders/*.desktop`, and each one's keywords are its
+`Keys=` line — DuckDuckGo accepts `ddg`, `dd`, `d` and `dukgo`, so `ddg:cats`
+searches directly. Change the fallback engine in *System Settings → Search →
+Web Search Keywords* (`kcmshell6 kcm_webshortcuts`), or set it once:
+
+```bash
+kwriteconfig6 --file kuriikwsfilterrc --group General --key DefaultWebShortcut google
+```
+
+Use the first key of whichever provider you want. Until Baloo has an index the
+web row is often the only match for a filename, which makes the shortcut look
+like a bug rather than a fallback.
+
 ---
 
 ## 4. Runtime Issues — Lock Screen
