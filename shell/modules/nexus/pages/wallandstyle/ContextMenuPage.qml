@@ -207,7 +207,8 @@ PageBase {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: Tokens.padding.medium
+                    anchors.leftMargin: Tokens.padding.medium
+                    anchors.rightMargin: Tokens.padding.medium
                     spacing: Tokens.spacing.small
                     visible: !isPlaceholder
 
@@ -222,6 +223,18 @@ PageBase {
                         font: Tokens.font.body.small
                         color: sourceList !== "library" ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
                         elide: Text.ElideRight
+                    }
+
+                    IconButton {
+                        visible: raw.type === "group"
+                        icon: "swap_vert"
+                        type: IconButton.Text
+                        z: 100
+                        onClicked: {
+                            submenuDialog.sourceList = sourceList;
+                            submenuDialog.entry = raw;
+                            submenuDialog.openIn(QsWindow.window, activeDelegate);
+                        }
                     }
 
                     TextButton {
@@ -384,6 +397,34 @@ PageBase {
                     raw: { id: id, type: "custom", label: label, command: cmd, icon: icon, enabled: false }
                 });
                 root.componentMeta[id] = { name: label, icon: icon };
+                root.save();
+            }
+        }
+
+        SubmenuOrderDialog {
+            id: submenuDialog
+
+            property string sourceList: ""
+
+            onSaved: children => {
+                const model = root.getModel(submenuDialog.sourceList);
+                if (!model || !submenuDialog.entry)
+                    return;
+
+                const id = submenuDialog.entry.id;
+                let index = -1;
+                for (let i = 0; i < model.count; i++) {
+                    if (model.get(i).raw?.id === id) {
+                        index = i;
+                        break;
+                    }
+                }
+                if (index < 0)
+                    return;
+
+                const raw = model.get(index).raw;
+                raw.children = children;
+                model.setProperty(index, "raw", raw);
                 root.save();
             }
         }

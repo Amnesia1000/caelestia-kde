@@ -798,9 +798,9 @@ with open(cli_path) as f:
     config = json.load(f)
 changed = False
 ours = re.compile(
-    r'\s*&&\s*sudo\s+\S*(?:sync\.sh|caelestia-greeter-sync)\s+--posthook'
-    r'|sudo\s+\S*(?:sync\.sh|caelestia-greeter-sync)\s+--posthook\s*&&\s*'
-    r'|sudo\s+\S*(?:sync\.sh|caelestia-greeter-sync)\s+--posthook'
+    r'\s*&&\s*sudo\s+(?:-\S+\s+)*\S*(?:sync\.sh|caelestia-greeter-sync)\s+--posthook'
+    r'|sudo\s+(?:-\S+\s+)*\S*(?:sync\.sh|caelestia-greeter-sync)\s+--posthook\s*&&\s*'
+    r'|sudo\s+(?:-\S+\s+)*\S*(?:sync\.sh|caelestia-greeter-sync)\s+--posthook'
 )
 for section in ("wallpaper", "theme"):
     hook = config.get(section, {}).get("postHook", "")

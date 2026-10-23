@@ -394,6 +394,8 @@ Searcher {
         onExited: code => {
             const hasSkwd = (code === 0);
             root.hasSkwd = hasSkwd;
+            if (GlobalConfig.background.disableQuickshellDesktop)
+                return;
             GlobalConfig.background.wallpaperEnabled = !hasSkwd;
             for (let i = 0; i < Quickshell.screens.length; i++) {
                 const sConf = GlobalConfig.forScreen(Quickshell.screens[i].name);

@@ -13,6 +13,7 @@ Singleton {
     id: root
 
     property var openWindow: null
+    readonly property bool openWindowActive: root.openWindow !== null && root.openWindow.nexus.windowActive
 
     function create(parent: Item, props: var): var {
         props = props || {};
@@ -57,6 +58,14 @@ Singleton {
             nState.openSubPage("extraBars");
 
         nState.openSubPage("barComponents");
+    }
+
+    function goBack(): void {
+        if (!root.openWindow)
+            return;
+        const state = root.openWindow.nexus.nState;
+        if (state.subPageIdxStack.length > 0)
+            state.closeSubPage();
     }
 
     QtObject {
