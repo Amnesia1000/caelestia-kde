@@ -233,6 +233,44 @@ bash scripts/04a-window-rules.sh
 
 The rule uses substring matching (`wmclassmatch 2`), omits `types` (matching both Dialog and Normal window types), enforces `placement 0` (NoPlacement to prevent centering), forces 0% active and inactive opacity, and marks the window to stay below others while skipping taskbars, pagers, and window switchers.
 
+### 3.3.3 Shell Crash-Loops When MangoHud Is Enabled Session-Wide ([#940](https://github.com/ladybug-me/caelestia-kde/issues/940))
+
+With `MANGOHUD=1` set for the whole session (common on gaming distributions, e.g. in
+`~/.config/environment.d/`), the shell dies seconds after it starts and
+`caelestia-shell.service` restarts it in a loop — the "What's new" window reappears each
+time and shortcuts stop working.
+
+**Cause:**
+MangoHud installs an implicit Vulkan layer, which the loader adds to *every* process in
+the session. QtMultimedia's FFmpeg backend creates a Vulkan device for hardware decode as
+soon as a `MediaPlayer` exists, and MangoHud crashes inside `vkCreateDevice`. The
+backtrace ends in `libMangoHud.so` ← `vkCreateDevice` ← `libavutil` ←
+`libffmpegmediaplugin.so`, and the same crash happens outside the shell with
+`MANGOHUD=1 qml6 player.qml`.
+
+**Fix:**
+The shell's unit opts out of MangoHud with `Environment=DISABLE_MANGOHUD=1`, so the layer
+is never loaded into the shell while games keep their overlay. That is shipped since this
+change; an existing install gets it by re-running:
+
+```bash
+bash scripts/10-autostart.sh
+```
+
+For an older install, the same thing without touching the shell:
+
+```ini
+# ~/.config/systemd/user/caelestia-shell.service.d/no-mangohud.conf
+[Service]
+Environment=DISABLE_MANGOHUD=1
+```
+
+**Verify:**
+```bash
+systemctl --user show -p NRestarts --value caelestia-shell.service   # stays at 0
+journalctl --user -u caelestia-shell.service | grep -c core-dump     # no new entries
+```
+
 ### 3.4 Colors Not Applying
 
 | Symptom | Fix |
