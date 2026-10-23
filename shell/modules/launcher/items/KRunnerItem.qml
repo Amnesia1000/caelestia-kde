@@ -15,6 +15,29 @@ Item {
 
     readonly property real iconSize: (Tokens.sizes.launcher.itemHeight - Tokens.padding.small * 2) * 0.8
 
+    /// KRunner sends an empty icon for executables with no themed icon — most shell
+    /// scripts and local binaries — and can send a bare path rather than a name.
+    /// Both used to reach the icon provider unresolved, which draws its placeholder.
+    readonly property string fallbackIcon: {
+        const id = root.modelData?.id ?? "";
+        if (id.startsWith("exec://"))
+            return "application-x-executable";
+        if (id.startsWith("file:") || id.includes("_places_"))
+            return "inode-directory";
+        return "image-missing";
+    }
+
+    readonly property string iconSource: {
+        const raw = (root.modelData?.icon ?? "").trim();
+        if (!raw)
+            return Quickshell.iconPath(root.fallbackIcon, "image-missing");
+        if (raw.startsWith("file://") || raw.startsWith("image://"))
+            return raw;
+        if (raw.startsWith("/"))
+            return `file://${raw}`;
+        return Quickshell.iconPath(raw, root.fallbackIcon);
+    }
+
     function activate(): void {
         if (!root.modelData)
             return;
@@ -43,7 +66,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: parent.left
             implicitSize: root.iconSize
-            source: Quickshell.iconPath(root.modelData?.icon ?? "")
+            source: root.iconSource
         }
 
         Item {

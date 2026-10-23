@@ -105,4 +105,22 @@ test_search_mode_is_discoverable_from_the_action_list() {
         "the action must autocomplete the search prefix"
 }
 
+test_krunner_icons_never_reach_the_provider_unresolved() {
+    local item
+    item="$(cat "$KRUNNER_ITEM")"
+
+    # KRunner sends an empty icon for executables with no themed icon (most scripts
+    # and local binaries) and can send a bare filesystem path. Both used to reach the
+    # icon provider unresolved, which draws its placeholder.
+    assert_not_contains "$item" 'Quickshell.iconPath(root.modelData?.icon ?? "")' \
+        "the provider must never be called without a fallback"
+    assert_contains "$item" 'Quickshell.iconPath(root.fallbackIcon, "image-missing")' \
+        "an empty icon must resolve to a fallback"
+    assert_contains "$item" 'return `file://${raw}`;' "a bare path must become a file URL"
+    assert_contains "$item" 'Quickshell.iconPath(raw, root.fallbackIcon)' \
+        "an unknown icon name must degrade to the fallback"
+    assert_contains "$item" 'if (id.startsWith("exec://"))' \
+        "executables need an executable glyph rather than a missing-image one"
+}
+
 run_tests
