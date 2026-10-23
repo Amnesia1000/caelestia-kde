@@ -22,9 +22,15 @@ Singleton {
 
     property alias dnd: props.dnd
     property string lastSavedState: ""
-
+    property bool suppressDndToast: false
     property string activeTargetOutput: ""
     property bool loaded
+
+    function setDndSilently(value: bool): void {
+        suppressDndToast = true;
+        props.dnd = value;
+        suppressDndToast = false;
+    }
 
     function getCursorOutputName(): string {
         const monitor = Kwin.monitors.find(m => m.name === Kwin.cursorOutputName()) || Kwin.focusedMonitor;
@@ -171,6 +177,9 @@ Singleton {
     }
 
     onDndChanged: {
+        if (suppressDndToast)
+            return;
+
         if (!GlobalConfig.utilities.toasts.dndChanged)
             return;
 
