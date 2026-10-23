@@ -2,15 +2,17 @@
 #include "krunnerbridge.hpp"
 
 #ifdef CAELESTIA_HAVE_KRUNNER
+#include <qvariantmap.h>
+
 #include <KRunner/Action>
 #include <KRunner/QueryMatch>
 #include <KRunner/RunnerManager>
-#include <qvariantmap.h>
 #endif
 
 namespace caelestia::services {
 
-KRunnerBridge::KRunnerBridge(QObject* parent): QObject(parent) {
+KRunnerBridge::KRunnerBridge(QObject* parent)
+    : QObject(parent) {
 #ifdef CAELESTIA_HAVE_KRUNNER
     m_manager = new KRunner::RunnerManager(this);
     connect(m_manager, &KRunner::RunnerManager::matchesChanged, this, &KRunnerBridge::publishResults);
@@ -109,19 +111,19 @@ void KRunnerBridge::publishResults() {
             if (action.id().isEmpty())
                 continue;
             actions.append(QVariantMap{
-                {QStringLiteral("id"), action.id()},
-                {QStringLiteral("text"), action.text()},
+                { QStringLiteral("id"), action.id() },
+                { QStringLiteral("text"), action.text() },
             });
         }
 
         next.append(QVariantMap{
-            {QStringLiteral("id"), match.id()},
-            {QStringLiteral("runner"), match.runner() ? match.runner()->id() : QString()},
-            {QStringLiteral("text"), match.text()},
-            {QStringLiteral("subtext"), match.subtext()},
-            {QStringLiteral("icon"), match.iconName()},
-            {QStringLiteral("relevance"), match.relevance()},
-            {QStringLiteral("actions"), actions},
+            { QStringLiteral("id"), match.id() },
+            { QStringLiteral("runner"), match.runner() ? match.runner()->id() : QString() },
+            { QStringLiteral("text"), match.text() },
+            { QStringLiteral("subtext"), match.subtext() },
+            { QStringLiteral("icon"), match.iconName() },
+            { QStringLiteral("relevance"), match.relevance() },
+            { QStringLiteral("actions"), actions },
         });
     }
 

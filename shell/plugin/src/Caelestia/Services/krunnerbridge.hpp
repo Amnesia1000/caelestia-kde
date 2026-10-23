@@ -6,7 +6,9 @@
 #include <qvariantlist.h>
 
 namespace KRunner {
+
 class RunnerManager;
+
 }
 
 namespace caelestia::services {
