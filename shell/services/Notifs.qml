@@ -279,6 +279,10 @@ Singleton {
     }
 
     IpcHandler {
+        function list(): string {
+            return root.serializeState();
+        }
+
         function clear(): void {
             root.clear();
         }

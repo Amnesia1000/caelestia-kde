@@ -87,8 +87,6 @@ Item {
     readonly property string ipcBin: "PATH=\"${CAELESTIA_BIN_DIR:-$HOME/.local/bin}:$PATH\" caelestia-shell-ipc"
     property var liveMedia: ({})
     property var liveNotifs: []
-    property double notifsClearedAt: 0
-    property bool isClearingNotifs: false
     property var greetingInfo: getGreeting()
 
     function getLuminance(c) {
@@ -310,42 +308,37 @@ Item {
         }
     }
 
+    /// The shell owns the live notification list; notifs.json is only its debounced
+    /// persistence copy, so reading the file makes this dock lag seconds behind the
+    /// notification page. Ask the shell for the live snapshot instead.
     Plasma5Support.DataSource {
         id: notifLoader
 
         function poll() {
-            connectSource("cat ~/.local/state/caelestia/notifs.json 2>/dev/null");
+            connectSource(lockScreenUi.ipcBin + " call notifs list");
         }
 
         engine: "executable"
-        connectedSources: ["cat ~/.local/state/caelestia/notifs.json 2>/dev/null"]
+        connectedSources: []
         onNewData: (source, data) => {
             var stdout = data["stdout"] || "";
             disconnectSource(source);
             if (!stdout) return;
-            if (lockScreenUi.isClearingNotifs) return;
             try {
-                var arr = JSON.parse(stdout);
-                if (Array.isArray(arr)) {
-                    if (lockScreenUi.notifsClearedAt > 0) {
-                        arr = arr.filter(function(n) {
-                            if (!n || !n.time) return false;
-                            var t = new Date(n.time).getTime();
-                            return !isNaN(t) && t > lockScreenUi.notifsClearedAt;
-                        });
-                    }
-                    lockScreenUi.liveNotifs = arr;
-                }
+                var snapshot = JSON.parse(stdout);
+                if (Array.isArray(snapshot)) lockScreenUi.liveNotifs = snapshot;
             } catch(e) {}
         }
+        Component.onCompleted: poll()
     }
 
     Timer {
         id: notifTimer
 
-        interval: 3000
+        interval: 2000
         repeat: true
-        running: true
+        running: !lockScreenUi.hideNotifs
+        onRunningChanged: if (running) notifLoader.poll()
         onTriggered: notifLoader.poll()
     }
 
@@ -353,9 +346,9 @@ Item {
         id: notifActionSource
 
         function clearAll() {
-            lockScreenUi.notifsClearedAt = Date.now();
+            // The snapshot is authoritative, so drop the local copy for instant
+            // feedback and let the next poll confirm it.
             lockScreenUi.liveNotifs = [];
-            lockScreenUi.isClearingNotifs = true;
             connectSource(lockScreenUi.ipcBin + " call notifs clear");
         }
 
@@ -363,7 +356,6 @@ Item {
         connectedSources: []
         onNewData: (source, data) => {
             disconnectSource(source);
-            lockScreenUi.isClearingNotifs = false;
             notifLoader.poll();
         }
     }
