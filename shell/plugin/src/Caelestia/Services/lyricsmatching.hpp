@@ -45,11 +45,11 @@ inline double score(const QString& trackTitle, const QString& trackArtist, doubl
     const auto foundWords = foundArtist.split(QLatin1Char(' '));
     const QSet<QString> wanted(wantedWords.begin(), wantedWords.end());
     const QSet<QString> found(foundWords.begin(), foundWords.end());
-    const double overlap = double((wanted & found).size()) / (wanted | found).size();
+    const double overlap = double((wanted & found).size()) / double((wanted | found).size());
     if (overlap < 0.5)
         return -1;
 
-    if (duration <= 0 || candidateDuration <= 0)
+    if (duration <= 0 || candidateDuration <= 0 || std::isnan(duration) || std::isnan(candidateDuration))
         return wantedArtist == foundArtist ? 2.0 : -1.0;
     const double tolerance = std::clamp(duration * 0.04, 5.0, 15.0);
     const double difference = std::abs(duration - candidateDuration);
