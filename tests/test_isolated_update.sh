@@ -65,6 +65,40 @@ test_update_runs_twice_in_an_isolated_home() {
     assert_file_exists "$home/.local/state/caelestia/scheme.json"
 }
 
+test_an_install_from_before_the_wallpaper_engine_still_gets_it() {
+    # update.sh never ran the packages step, so an install from before the skwd-wall
+    # integration kept the shell's own wallpaper renderer for good. The engine has to be
+    # ensured from the update path as well.
+    local root home bin log status
+    root="$(new_tmpdir)"
+    home="$root/home"
+    bin="$root/bin"
+    log="$root/steps.log"
+    mkdir -p "$home" "$bin" "$home/.runtime"
+    make_update_bundle "$root" "$log"
+
+    cat > "$root/scripts/lib/skwd-wall.sh" <<'EOF'
+ensure_skwd_wall() {
+    printf 'ensure_skwd_wall\n' >> "${SKWD_LOG:?}"
+    return 0
+}
+EOF
+
+    for command in git cmake make caelestia; do
+        stub_bin "$bin" "$command" 'exit 0'
+    done
+
+    status="$(
+        HOME="$home" XDG_STATE_HOME="$home/.local/state" XDG_RUNTIME_DIR="$home/.runtime" \
+            SKWD_LOG="$root/skwd.log" PATH="$bin:$PATH" bash "$root/update.sh" > "$root/update.log" 2>&1
+        printf '%s\n' "$?"
+    )"
+
+    assert_status 0 "$status" "the update should still succeed"
+    assert_contains "$(cat "$root/skwd.log" 2>/dev/null)" "ensure_skwd_wall" \
+        "the update must ensure the wallpaper engine, not leave the old renderer in place"
+}
+
 test_each_update_step_failure_stops_before_the_next_step() {
     local root home bin log failing next status calls
     for failing in 03-deploy-configs.sh 08-build-shell.sh 09-system-tweaks.sh; do

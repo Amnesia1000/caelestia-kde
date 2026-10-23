@@ -124,6 +124,24 @@ trap 'caelestia_stop_sudo_keepalive' EXIT
 
 bash "$BUNDLE_DIR/scripts/03-deploy-configs.sh" || die "Config deployment failed."
 
+# Step 2b - wallpaper engine. An install from before the skwd-wall integration has
+# only the shell's own renderer, and update.sh never ran the packages step, so it stayed
+# on that path indefinitely. ensure_skwd_wall is idempotent and degrades to a warning.
+section "Step 2b - Wallpaper Engine"
+
+if [[ -f "$BUNDLE_DIR/scripts/lib/skwd-wall.sh" ]]; then
+    # shellcheck source=scripts/lib/skwd-wall.sh
+    source "$BUNDLE_DIR/scripts/lib/skwd-wall.sh"
+    info "Ensuring the wallpaper engine (skwd-wall)..."
+    if ensure_skwd_wall; then
+        ok "Wallpaper engine ready."
+    else
+        warn "skwd-wall is not available; the shell will keep drawing wallpapers itself."
+    fi
+else
+    warn "scripts/lib/skwd-wall.sh is missing; skipping the wallpaper engine check."
+fi
+
 info "Building the Caelestia shell UI..."
 bash "$BUNDLE_DIR/scripts/08-build-shell.sh" || die "Shell build failed."
 
