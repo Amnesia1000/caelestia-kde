@@ -2,6 +2,8 @@
 #include <QtNetwork>
 #include <QtQml>
 #include <QtTest>
+#include <cmath>
+#include <limits>
 
 #include "../src/Caelestia/Config/rootnodes.hpp"
 #include "lyrics.hpp"
@@ -9,8 +11,10 @@
 
 namespace caelestia::services {
 
+using namespace Qt::StringLiterals;
+
 struct Response {
-    QByteArray body = "{}";
+    QByteArray body = "{}"_ba;
     QNetworkReply::NetworkError error = QNetworkReply::NoError;
     int status = 200;
     int delay = 0;
@@ -29,7 +33,7 @@ public:
             if (isFinished())
                 return;
             if (response.error != NoError)
-                setError(response.error, QStringLiteral("simulated network error"));
+                setError(response.error, u"simulated network error"_s);
             setFinished(true);
             emit readyRead();
             emit finished();
@@ -38,20 +42,20 @@ public:
 
     void abort() override {
         if (!isFinished()) {
-            setError(OperationCanceledError, QStringLiteral("cancelled"));
+            setError(OperationCanceledError, u"cancelled"_s);
             setFinished(true);
             emit finished();
         }
     }
 
-    qint64 bytesAvailable() const override { return m_body.size() + QNetworkReply::bytesAvailable(); }
+    [[nodiscard]] qint64 bytesAvailable() const override { return m_body.size() + QNetworkReply::bytesAvailable(); }
 
 protected:
     qint64 readData(char* data, qint64 maximum) override {
         if (m_body.isEmpty())
             return -1;
         const auto count = std::min<qint64>(maximum, m_body.size());
-        memcpy(data, m_body.constData(), count);
+        memcpy(data, m_body.constData(), static_cast<size_t>(count));
         m_body.remove(0, count);
         return count;
     }
@@ -73,10 +77,10 @@ protected:
     }
 };
 
-static QByteArray track(int id = 42, const QString& title = QStringLiteral("Example"), double duration = 200) {
+static QByteArray track(int id = 42, const QString& title = u"Example"_s, double duration = 200) {
     return QJsonDocument(
-        QJsonObject{ { "id", id }, { "trackName", title }, { "artistName", "Artist" }, { "duration", duration },
-            { "syncedLyrics", "[00:00.00]First line\n[00:10.00]Second line" } })
+        QJsonObject{ { u"id"_s, id }, { u"trackName"_s, title }, { u"artistName"_s, u"Artist"_s },
+            { u"duration"_s, duration }, { u"syncedLyrics"_s, u"[00:00.00]First line\n[00:10.00]Second line"_s } })
         .toJson();
 }
 
@@ -91,8 +95,8 @@ class LyricsTest : public QObject {
         return fake;
     }
 
-    void prepare(Lyrics& lyrics, const QString& title = QStringLiteral("Example")) {
-        lyrics.m_artist = QStringLiteral("Artist");
+    void prepare(Lyrics& lyrics, const QString& title = u"Example"_s) {
+        lyrics.m_artist = u"Artist"_s;
         lyrics.m_title = title;
         lyrics.m_duration = 200;
         lyrics.m_preferredBackend = LyricsBackend::LRCLIB;
@@ -102,27 +106,41 @@ private slots:
 
     void initTestCase() {
         QVERIFY(m_dir.isValid());
-        qputenv("XDG_CONFIG_HOME", (m_dir.path() + "/config").toUtf8());
-        qputenv("XDG_STATE_HOME", (m_dir.path() + "/state").toUtf8());
-        qputenv("XDG_CACHE_HOME", (m_dir.path() + "/cache").toUtf8());
-        config::ConfigSingleton::instance()->paths()->set_lyricsDir(m_dir.path() + "/local");
+        qputenv("XDG_CONFIG_HOME", (m_dir.path() + u"/config"_s).toUtf8());
+        qputenv("XDG_STATE_HOME", (m_dir.path() + u"/state"_s).toUtf8());
+        qputenv("XDG_CACHE_HOME", (m_dir.path() + u"/cache"_s).toUtf8());
+        config::ConfigSingleton::instance()->paths()->set_lyricsDir(m_dir.path() + u"/local"_s);
     }
 
     void init() {
-        QDir(m_dir.path() + "/cache").removeRecursively();
-        QDir(m_dir.path() + "/state").removeRecursively();
+        QDir(m_dir.path() + u"/cache"_s).removeRecursively();
+        QDir(m_dir.path() + u"/state"_s).removeRecursively();
     }
 
     void matchingPreservesRecordings() {
         using namespace lyricsmatching;
-        QVERIFY(score("Example (Official Music Video)", "Artist - Topic", 200, "Example", "Artist", 201) > 0);
-        QVERIFY(score("Example", "Artist", 200, "Different", "Artist", 200) < 0);
-        QVERIFY(score("Example (Live)", "Artist", 200, "Example", "Artist", 200) < 0);
-        QVERIFY(score("Example (Remix)", "Artist", 200, "Example", "Artist", 200) < 0);
-        QVERIFY(score("Example", "Artist", 200, "Example", "Another Artist", 290) < 0);
-        QVERIFY(score("Example", "Artist", 0, "Example", "Artist", 0) > 0);
-        QVERIFY(score("Example", "", 200, "Example", "Artist", 200) < 0);
-        QVERIFY(score(QString::fromUtf8("دل"), "Artist", 200, QString::fromUtf8("دل"), "Artist", 200) > 0);
+        QVERIFY(
+            score(u"Example (Official Music Video)"_s, u"Artist - Topic"_s, 200, u"Example"_s, u"Artist"_s, 201) > 0);
+        QVERIFY(score(u"Example"_s, u"Artist"_s, 200, u"Different"_s, u"Artist"_s, 200) < 0);
+        QVERIFY(score(u"Example (Live)"_s, u"Artist"_s, 200, u"Example"_s, u"Artist"_s, 200) < 0);
+        QVERIFY(score(u"Example (Remix)"_s, u"Artist"_s, 200, u"Example"_s, u"Artist"_s, 200) < 0);
+        QVERIFY(score(u"Example"_s, u"Artist"_s, 200, u"Example"_s, u"Another Artist"_s, 290) < 0);
+        QVERIFY(score(u"Example"_s, u"Artist"_s, 0, u"Example"_s, u"Artist"_s, 0) > 0);
+        QVERIFY(score(u"Example"_s, u""_s, 200, u"Example"_s, u"Artist"_s, 200) < 0);
+        QVERIFY(score(QString::fromUtf8("دل"), u"Artist"_s, 200, QString::fromUtf8("دل"), u"Artist"_s, 200) > 0);
+    }
+
+    void matchingHandlesNanAndPunctuation() {
+        using namespace lyricsmatching;
+        const double nanVal = std::numeric_limits<double>::quiet_NaN();
+        // NaN duration should fall back safely without dividing by zero or crashing
+        QVERIFY(score(u"Example"_s, u"Artist"_s, nanVal, u"Example"_s, u"Artist"_s, 200) > 0);
+        QVERIFY(score(u"Example"_s, u"Artist"_s, 200, u"Example"_s, u"Artist"_s, nanVal) > 0);
+        // Non-alphanumeric only strings reject safely
+        QVERIFY(score(u"???"_s, u"Artist"_s, 200, u"???"_s, u"Artist"_s, 200) < 0);
+        // Long repetitive input does not hang regex
+        const QString repeated = u"[Official Music Video] "_s.repeated(100) + u"Song"_s;
+        QCOMPARE(title(repeated), u"Song"_s);
     }
 
     void refreshRestoresTheSameCandidate() {
@@ -130,11 +148,11 @@ private slots:
         auto* fake = network(lyrics);
         prepare(lyrics);
         fake->respond = [](const QUrl& url) {
-            return Response{ url.path() == "/api/get" ? track() : QByteArray("[]") };
+            return Response{ url.path() == u"/api/get"_s ? track() : QByteArray("[]") };
         };
         lyrics.doLoad();
         QTRY_VERIFY(lyrics.hasLyrics());
-        QCOMPARE(lyrics.selectedCandidate().id(), QStringLiteral("42"));
+        QCOMPARE(lyrics.selectedCandidate().id(), u"42"_s);
         lyrics.refresh();
         QTest::qWait(100);
         QTRY_VERIFY(!lyrics.loading());
@@ -145,34 +163,35 @@ private slots:
     void ranksSearchAfterAnExactMiss() {
         Lyrics lyrics;
         auto* fake = network(lyrics);
-        prepare(lyrics, "Example (Official Video)");
+        prepare(lyrics, u"Example (Official Video)"_s);
         fake->respond = [](const QUrl& url) {
-            if (url.path() == "/api/get")
-                return Response{ "{}", QNetworkReply::ContentNotFoundError, 404 };
-            if (url.path() == "/api/search")
-                return Response{ "[" + track(1, "Example (Live)") + "," + track(2, "Example", 201) + "]" };
+            if (url.path() == u"/api/get"_s)
+                return Response{ "{}"_ba, QNetworkReply::ContentNotFoundError, 404 };
+            if (url.path() == u"/api/search"_s)
+                return Response{ "[" + track(1, u"Example (Live)"_s) + "," + track(2, u"Example"_s, 201) + "]" };
             return Response{};
         };
         lyrics.doLoad();
         QTRY_VERIFY(!lyrics.loading());
         QVERIFY(lyrics.hasLyrics());
-        QCOMPARE(lyrics.selectedCandidate().id(), QStringLiteral("2"));
+        QCOMPARE(lyrics.selectedCandidate().id(), u"2"_s);
     }
 
     void failedSavedCandidateFallsBack() {
         Lyrics lyrics;
         auto* fake = network(lyrics);
         prepare(lyrics);
-        lyrics.m_lyricsMap.insert(lyrics.trackKey(), QJsonObject{ { "backend", "LRCLIB" }, { "id", "999" } });
+        lyrics.m_lyricsMap.insert(
+            lyrics.trackKey(), QJsonObject{ { u"backend"_s, u"LRCLIB"_s }, { u"id"_s, u"999"_s } });
         fake->respond = [](const QUrl& url) {
-            if (url.path() == "/api/get/999")
-                return Response{ "{}", QNetworkReply::ContentNotFoundError, 404 };
-            return Response{ url.path() == "/api/get" ? track() : QByteArray("[]") };
+            if (url.path() == u"/api/get/999"_s)
+                return Response{ "{}"_ba, QNetworkReply::ContentNotFoundError, 404 };
+            return Response{ url.path() == u"/api/get"_s ? track() : QByteArray("[]") };
         };
         lyrics.doLoad();
         QTRY_VERIFY(!lyrics.loading());
         QVERIFY(lyrics.hasLyrics());
-        QCOMPARE(lyrics.selectedCandidate().id(), QStringLiteral("42"));
+        QCOMPARE(lyrics.selectedCandidate().id(), u"42"_s);
     }
 
     void netEaseRejectsAnotherSongByTheSameArtist() {
@@ -181,24 +200,25 @@ private slots:
         prepare(lyrics);
         lyrics.m_preferredBackend = LyricsBackend::NetEase;
         fake->respond = [](const QUrl& url) {
-            if (url.path() == "/api/search/get") {
+            if (url.path() == u"/api/search/get"_s) {
                 QJsonArray songs;
                 for (int id : { 1, 2 }) {
-                    songs.append(QJsonObject{ { "id", id }, { "name", id == 1 ? "Different" : "Example" },
-                        { "duration", 200000 }, { "artists", QJsonArray{ QJsonObject{ { "name", "Artist" } } } } });
+                    songs.append(QJsonObject{ { u"id"_s, id }, { u"name"_s, id == 1 ? u"Different"_s : u"Example"_s },
+                        { u"duration"_s, 200000 },
+                        { u"artists"_s, QJsonArray{ QJsonObject{ { u"name"_s, u"Artist"_s } } } } });
                 }
                 return Response{
-                    QJsonDocument(QJsonObject{ { "result", QJsonObject{ { "songs", songs } } } }).toJson()
+                    QJsonDocument(QJsonObject{ { u"result"_s, QJsonObject{ { u"songs"_s, songs } } } }).toJson()
                 };
             }
-            if (url.path() == "/api/song/lyric")
-                return Response{ R"({"lrc":{"lyric":"[00:00.00]Correct song"}})" };
-            return Response{ "[]" };
+            if (url.path() == u"/api/song/lyric"_s)
+                return Response{ R"({"lrc":{"lyric":"[00:00.00]Correct song"}})"_ba };
+            return Response{ "[]"_ba };
         };
         lyrics.doLoad();
         QTRY_VERIFY(!lyrics.loading());
         QVERIFY(lyrics.hasLyrics());
-        QCOMPARE(lyrics.selectedCandidate().id(), QStringLiteral("2"));
+        QCOMPARE(lyrics.selectedCandidate().id(), u"2"_s);
     }
 
     void searchRejectsDifferentRecordings() {
@@ -206,11 +226,11 @@ private slots:
         auto* fake = network(lyrics);
         prepare(lyrics);
         fake->respond = [](const QUrl& url) {
-            if (url.path() == "/api/get")
-                return Response{ "{}", QNetworkReply::ContentNotFoundError, 404 };
-            if (url.path() == "/api/search")
-                return Response{ "[" + track(1, "Example (Live)") + "," + track(2, "Example", 300) + "]" };
-            return Response{ "[]" };
+            if (url.path() == u"/api/get"_s)
+                return Response{ "{}"_ba, QNetworkReply::ContentNotFoundError, 404 };
+            if (url.path() == u"/api/search"_s)
+                return Response{ "[" + track(1, u"Example (Live)"_s) + "," + track(2, u"Example"_s, 300) + "]" };
+            return Response{ "[]"_ba };
         };
         lyrics.doLoad();
         QTRY_VERIFY(!lyrics.loading());
@@ -223,15 +243,34 @@ private slots:
         prepare(lyrics);
         int attempts = 0;
         fake->respond = [&attempts](const QUrl& url) {
-            if (url.path() != "/api/get")
-                return Response{ "[]" };
+            if (url.path() != u"/api/get"_s)
+                return Response{ "[]"_ba };
             if (++attempts == 1)
-                return Response{ "{}", QNetworkReply::TimeoutError };
+                return Response{ "{}"_ba, QNetworkReply::TimeoutError };
             return Response{ track() };
         };
         lyrics.doLoad();
         QTRY_VERIFY(lyrics.hasLyrics());
         QCOMPARE(attempts, 2);
+    }
+
+    void nonTransientFailureDoesNotRetry() {
+        Lyrics lyrics;
+        auto* fake = network(lyrics);
+        prepare(lyrics);
+        int attempts = 0;
+        fake->respond = [&attempts](const QUrl& url) {
+            if (url.path() == u"/api/get"_s) {
+                ++attempts;
+                return Response{ "{}"_ba, QNetworkReply::ContentNotFoundError, 404 };
+            }
+            return Response{ "[]"_ba };
+        };
+        lyrics.doLoad();
+        QTRY_VERIFY(!lyrics.loading());
+        // 404 is permanent, so it must not retry
+        QCOMPARE(attempts, 1);
+        QVERIFY(!lyrics.hasLyrics());
     }
 
     void retriesAreBounded() {
@@ -240,11 +279,11 @@ private slots:
         prepare(lyrics);
         int attempts = 0;
         fake->respond = [&attempts](const QUrl& url) {
-            if (url.path() == "/api/get") {
+            if (url.path() == u"/api/get"_s) {
                 ++attempts;
-                return Response{ "{}", QNetworkReply::TimeoutError };
+                return Response{ "{}"_ba, QNetworkReply::TimeoutError };
             }
-            return Response{ "[]" };
+            return Response{ "[]"_ba };
         };
         lyrics.doLoad();
         QTRY_VERIFY(!lyrics.loading());
@@ -257,7 +296,7 @@ private slots:
         auto* fake = network(lyrics);
         prepare(lyrics);
         fake->respond = [](const QUrl&) {
-            return Response{ "{}", QNetworkReply::TimeoutError };
+            return Response{ "{}"_ba, QNetworkReply::TimeoutError };
         };
         lyrics.doLoad();
         QTest::qWait(20);
@@ -274,18 +313,52 @@ private slots:
         auto* fake = network(lyrics);
         prepare(lyrics);
         fake->respond = [](const QUrl& url) {
-            if (url.path() == "/api/get")
+            if (url.path() == u"/api/get"_s)
                 return Response{ track(), QNetworkReply::NoError, 200, 200 };
-            return Response{ "[]" };
+            return Response{ "[]"_ba };
         };
         lyrics.doLoad();
-        lyrics.setTrack("Artist", "Next", "Album", 210);
+        lyrics.setTrack(u"Artist"_s, u"Next"_s, u"Album"_s, 210);
         lyrics.clearTrack();
         QTest::qWait(300);
         QVERIFY(!lyrics.loading());
         QVERIFY(!lyrics.hasLyrics());
         // clearTrack must also stop the metadata debounce timer.
         QCOMPARE(fake->requests.size(), 3);
+    }
+
+    void rapidMetadataDebounce() {
+        Lyrics lyrics;
+        auto* fake = network(lyrics);
+        fake->respond = [](const QUrl&) {
+            return Response{ track() };
+        };
+        // Rapid sequential updates as Firefox MPRIS properties stream in
+        lyrics.setTrack(u"Artist"_s, u""_s);
+        QTest::qWait(10);
+        lyrics.setTrack(u"Artist"_s, u"Title"_s);
+        QTest::qWait(10);
+        lyrics.setTrack(u"Artist"_s, u"Title"_s, u"Album"_s, 200);
+
+        // Before debounce fires (50ms interval), no requests dispatched yet
+        QCOMPARE(fake->requests.size(), 0);
+
+        // Wait for debounce timer to fire
+        QTRY_VERIFY(fake->requests.size() >= 1);
+        QTRY_VERIFY(lyrics.hasLyrics());
+        QCOMPARE(lyrics.trackTitle(), u"Title"_s);
+    }
+
+    void localCandidateFailureFallsBack() {
+        Lyrics lyrics;
+        network(lyrics);
+        prepare(lyrics);
+        // Set an invalid local candidate that cannot be opened
+        LyricCandidate badLocal(LyricsBackend::Local, u"/nonexistent/path/to/song.lrc"_s, u"Example"_s, u"Artist"_s);
+        lyrics.setSelectedCandidate(badLocal);
+        // candidateFailed should handle failure without freezing in loading state
+        QTRY_VERIFY(!lyrics.loading());
+        QVERIFY(!lyrics.hasLyrics());
     }
 };
 
