@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Caelestia.Components
 import Caelestia.Config
 import Caelestia.Services
 import qs.components
@@ -18,6 +19,41 @@ PageBase {
     property string caelestiaKeybind: KeybindsModel.getKey("wallpaper")
     readonly property bool isSkwdOverridden: root.skwdKeybind !== "Meta+X"
     readonly property bool isCaelestiaOverridden: root.caelestiaKeybind !== "Meta+Ctrl+T"
+
+    readonly property list<MenuItem> scalingItems: [
+        MenuItem { text: qsTr("Crop") },
+        MenuItem { text: qsTr("Fit") },
+        MenuItem { text: qsTr("Stretch") }
+    ]
+    readonly property list<int> scalingValues: [Image.PreserveAspectCrop, Image.PreserveAspectFit, Image.Stretch]
+    readonly property list<string> fallbackSettings: [
+        "wallpaperFillMode", "wallpaperRecolor", "wallpaperRecolorStrength",
+        "slideshowEnabled", "slideshowInterval", "slideshowRandom",
+        "videoWallpaperPaused", "videoWallpaperSoundEnabled", "videoWallpaperPauseOnFullscreen",
+        "videoWallpaperPauseOnTiled", "videoWallpaperPauseOnAllDisplays", "videoWallpaperMuteOnMedia"
+    ]
+
+    function setFallbackOption(setting: string, value: var): void {
+        GlobalConfig.background[setting] = value;
+        clearScreenOverrides(setting);
+        GlobalConfig.save();
+    }
+
+    function clearScreenOverrides(setting: string): void {
+        for (const screen of Quickshell.screens) {
+            const screenConfig = GlobalConfig.forScreen(screen.name);
+            if (screenConfig)
+                screenConfig.background.resetOption(setting);
+        }
+    }
+
+    function resetFallbackSettings(): void {
+        for (const setting of root.fallbackSettings) {
+            GlobalConfig.background.resetOption(setting);
+            clearScreenOverrides(setting);
+        }
+        GlobalConfig.save();
+    }
 
     function openSkwd(section: string): void {
         const target = section ? section : "";
@@ -60,13 +96,14 @@ PageBase {
             text: resetBtn.armed ? qsTr("Sure?") : qsTr("Reset settings")
             icon: "restart_alt"
             type: resetBtn.armed ? TextButton.Filled : TextButton.Tonal
-            enabled: Wallpapers.hasSkwd
-            opacity: enabled ? 1 : 0.5
             onClicked: {
                 if (resetBtn.armed) {
                     resetBtn.armed = false;
                     resetArmTimer.stop();
-                    Launch.exec(["bash", Quickshell.shellPath("scripts/export-plasma-config.sh"), "skwd"]);
+                    if (Wallpapers.hasSkwd)
+                        Launch.exec(["bash", Quickshell.shellPath("scripts/export-plasma-config.sh"), "skwd"]);
+                    else
+                        root.resetFallbackSettings();
                 } else {
                     resetBtn.armed = true;
                     resetArmTimer.start();
@@ -116,7 +153,7 @@ PageBase {
 
         SectionHeader {
             first: true
-            text: qsTr("Configuration & Tools")
+            text: Wallpapers.hasSkwd ? qsTr("Configuration & Tools") : qsTr("General Settings")
         }
 
         ColumnLayout {
@@ -128,16 +165,15 @@ PageBase {
                 Layout.fillWidth: true
                 icon: "info"
                 wrapSubtext: true
-                label: Wallpapers.hasSkwd ? qsTr("Managed by skwd-wall") : qsTr("skwd-wall not installed")
-                subtext: Wallpapers.hasSkwd ? qsTr("Wallpaper settings and effects are configured directly through skwd-wall.") : qsTr("Download and install skwd-wall to enable these settings.")
+                label: Wallpapers.hasSkwd ? qsTr("Managed by skwd-wall") : qsTr("Managed by Quickshell")
+                subtext: Wallpapers.hasSkwd ? qsTr("Wallpaper settings and effects are configured directly through skwd-wall.") : qsTr("The built-in wallpaper renderer is used because skwd-wall is not installed.")
             }
 
             NavRow {
                 icon: "settings"
                 label: qsTr("General Settings")
                 status: qsTr("Configure wallpaper engine and display options")
-                enabled: Wallpapers.hasSkwd
-                opacity: enabled ? 1 : 0.5
+                visible: Wallpapers.hasSkwd
                 onClicked: root.openSkwd("settings")
             }
 
@@ -145,8 +181,7 @@ PageBase {
                 icon: "tune"
                 label: qsTr("Wallpaper Mixer")
                 status: qsTr("Blend and layer multiple wallpapers")
-                enabled: Wallpapers.hasSkwd
-                opacity: enabled ? 1 : 0.5
+                visible: Wallpapers.hasSkwd
                 onClicked: root.openSkwd("mixer")
             }
 
@@ -155,9 +190,104 @@ PageBase {
                 icon: "auto_fix_high"
                 label: qsTr("Shaders & Effects")
                 status: qsTr("Post-processing, blur, and visual filters")
-                enabled: Wallpapers.hasSkwd
-                opacity: enabled ? 1 : 0.5
+                visible: Wallpapers.hasSkwd
                 onClicked: root.openSkwd("effects")
+            }
+        }
+
+        ColumnLayout {
+            visible: !Wallpapers.hasSkwd
+            Layout.fillWidth: true
+            spacing: Tokens.spacing.extraSmall / 2
+
+            SelectRow {
+                first: true
+                last: true
+                label: qsTr("Wallpaper scaling")
+                subtext: qsTr("How the wallpaper image fits the screen")
+                menuItems: root.scalingItems
+                active: root.scalingItems[Math.max(0, root.scalingValues.indexOf(Config.background.wallpaperFillMode))]
+                onSelected: item => root.setFallbackOption("wallpaperFillMode", root.scalingValues[root.scalingItems.indexOf(item)])
+            }
+        }
+
+        SectionHeader {
+            visible: !Wallpapers.hasSkwd
+            text: qsTr("Shaders & Effects")
+        }
+
+        ColumnLayout {
+            visible: !Wallpapers.hasSkwd
+            Layout.fillWidth: true
+            spacing: Tokens.spacing.extraSmall / 2
+
+            ToggleRow {
+                text: qsTr("Recolor wallpaper")
+                reset: ({ node: GlobalConfig.background, setting: "wallpaperRecolor" })
+                checked: Config.background.wallpaperRecolor
+                onToggled: root.setFallbackOption("wallpaperRecolor", checked)
+                first: true
+            }
+
+            SliderRow {
+                last: true
+                icon: ""
+                label: qsTr("Recolor strength")
+                valueLabel: Math.round(value * 100) + "%"
+                reset: ({ node: GlobalConfig.background, setting: "wallpaperRecolorStrength" })
+                value: Config.background.wallpaperRecolorStrength
+                enabled: Config.background.wallpaperRecolor
+                onMoved: v => root.setFallbackOption("wallpaperRecolorStrength", v)
+            }
+        }
+
+        SectionHeader {
+            visible: !Wallpapers.hasSkwd
+            text: qsTr("Video Wallpapers")
+        }
+
+        ColumnLayout {
+            visible: !Wallpapers.hasSkwd
+            Layout.fillWidth: true
+            spacing: Tokens.spacing.extraSmall / 2
+
+            ToggleRow {
+                text: qsTr("Pause video wallpapers")
+                reset: ({ node: GlobalConfig.background, setting: "videoWallpaperPaused" })
+                checked: Config.background.videoWallpaperPaused
+                onToggled: root.setFallbackOption("videoWallpaperPaused", checked)
+                first: true
+            }
+            ToggleRow {
+                text: qsTr("Enable video audio")
+                reset: ({ node: GlobalConfig.background, setting: "videoWallpaperSoundEnabled" })
+                checked: Config.background.videoWallpaperSoundEnabled
+                onToggled: root.setFallbackOption("videoWallpaperSoundEnabled", checked)
+            }
+            ToggleRow {
+                text: qsTr("Pause video on fullscreen")
+                reset: ({ node: GlobalConfig.background, setting: "videoWallpaperPauseOnFullscreen" })
+                checked: Config.background.videoWallpaperPauseOnFullscreen
+                onToggled: root.setFallbackOption("videoWallpaperPauseOnFullscreen", checked)
+            }
+            ToggleRow {
+                text: qsTr("Pause video on tiled windows")
+                reset: ({ node: GlobalConfig.background, setting: "videoWallpaperPauseOnTiled" })
+                checked: Config.background.videoWallpaperPauseOnTiled
+                onToggled: root.setFallbackOption("videoWallpaperPauseOnTiled", checked)
+            }
+            ToggleRow {
+                text: qsTr("Pause video on all displays")
+                reset: ({ node: GlobalConfig.background, setting: "videoWallpaperPauseOnAllDisplays" })
+                checked: Config.background.videoWallpaperPauseOnAllDisplays
+                onToggled: root.setFallbackOption("videoWallpaperPauseOnAllDisplays", checked)
+            }
+            ToggleRow {
+                text: qsTr("Mute video when media plays")
+                reset: ({ node: GlobalConfig.background, setting: "videoWallpaperMuteOnMedia" })
+                checked: Config.background.videoWallpaperMuteOnMedia
+                onToggled: root.setFallbackOption("videoWallpaperMuteOnMedia", checked)
+                last: true
             }
         }
 
@@ -166,6 +296,7 @@ PageBase {
         }
 
         ColumnLayout {
+            visible: Wallpapers.hasSkwd
             Layout.fillWidth: true
             spacing: Tokens.spacing.extraSmall / 2
 
@@ -174,8 +305,7 @@ PageBase {
                 icon: "slideshow"
                 label: qsTr("Playlists & Slideshows")
                 status: qsTr("Manage wallpaper playlists and transition intervals")
-                enabled: Wallpapers.hasSkwd
-                opacity: enabled ? 1 : 0.5
+                visible: Wallpapers.hasSkwd
                 onClicked: root.openSkwd("playlists")
             }
 
@@ -184,9 +314,40 @@ PageBase {
                 icon: "schedule"
                 label: qsTr("Schedule & Timers")
                 status: qsTr("Time-based wallpaper rules and schedules")
-                enabled: Wallpapers.hasSkwd
-                opacity: enabled ? 1 : 0.5
+                visible: Wallpapers.hasSkwd
                 onClicked: root.openSkwd("schedule")
+            }
+        }
+
+        ColumnLayout {
+            visible: !Wallpapers.hasSkwd
+            Layout.fillWidth: true
+            spacing: Tokens.spacing.extraSmall / 2
+
+            ToggleRow {
+                text: qsTr("Wallpaper slideshow")
+                reset: ({ node: GlobalConfig.background, setting: "slideshowEnabled" })
+                checked: Config.background.slideshowEnabled
+                onToggled: root.setFallbackOption("slideshowEnabled", checked)
+                first: true
+            }
+
+            SliderRow {
+                icon: ""
+                label: qsTr("Slideshow interval")
+                valueLabel: qsTr("%1 min").arg(Math.max(1, Math.round(value * 60)))
+                reset: ({ node: GlobalConfig.background, setting: "slideshowInterval" })
+                value: Config.background.slideshowInterval
+                enabled: Config.background.slideshowEnabled
+                onMoved: v => root.setFallbackOption("slideshowInterval", v)
+            }
+
+            ToggleRow {
+                text: qsTr("Random order")
+                reset: ({ node: GlobalConfig.background, setting: "slideshowRandom" })
+                checked: Config.background.slideshowRandom
+                onToggled: root.setFallbackOption("slideshowRandom", checked)
+                last: true
             }
         }
 
