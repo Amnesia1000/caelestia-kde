@@ -225,6 +225,9 @@ Singleton {
         bodyMarkupSupported: true
         imageSupported: true
         persistenceSupported: true
+        // Lets clients offer reply-from-the-notification. The shell answers it in
+        // the sidebar dock; a passive toast cannot take keyboard focus.
+        inlineReplySupported: true
 
         onNotification: notif => {
             notif.tracked = true;

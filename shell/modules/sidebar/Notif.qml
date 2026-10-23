@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
+import qs.components.controls
 import qs.services
 
 StyledRect {
@@ -146,11 +147,26 @@ StyledRect {
             }
         }
 
+        StyledTextField {
+            id: replyField
+
+            Layout.fillWidth: true
+            visible: root.modelData?.hasInlineReply ?? false
+            enabled: visible
+            placeholderText: root.modelData?.inlineReplyPlaceholder ?? ""
+
+            onAccepted: {
+                // Send and clear; the notification stays put so the sender can
+                // replace it with the answer.
+                root.modelData.sendReply(text);
+                text = "";
+            }
+        }
+
         NotifActionList {
             notif: root.modelData
         }
     }
-
     component WrappedLoader: Loader {
         id: comp
 
