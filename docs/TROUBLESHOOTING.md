@@ -465,6 +465,78 @@ kwriteconfig6 --file kuriikwsfilterrc --group General --key DefaultWebShortcut g
 Until Baloo has an index the web row is often the only match for a filename, which makes the shortcut look
 like a bug rather than a fallback.
 
+### 3.11 The Calendar Agenda Stays Empty
+
+The agenda reads iCalendar (`.ics`) sources; the shell has no PIM stack of its own.
+If the popout says *Add a calendar in Settings → Calendar*, nothing is configured
+yet — *Nexus → Services → Calendars & agenda*. For Google Calendar the address is
+**Settings → the calendar → "Secret address in iCal format"**; Nextcloud, Fastmail
+and KOrganizer all hand out an equivalent export link, and a local `.ics` path works
+too.
+
+If sources are configured but no events appear:
+
+```bash
+# What the shell runs, and what it gets back
+python3 ~/.config/quickshell/caelestia/scripts/calendar_events.py \
+  --days 14 --source 'Work=https://calendar.google.com/…/basic.ics'
+```
+
+* `No time zone found with key …` means the system tz database is missing — install
+  `tzdata`.
+* A `[[errors]]` entry names the source that failed; the others still load, so one
+  bad link cannot empty the agenda.
+* Recurring events are expanded here, and only `DAILY`, `WEEKLY`, `MONTHLY` and
+  `YEARLY` rules are understood. A calendar relying on exotic `BY*` combinations will
+  show the master event and its plain recurrences, not every exception.
+* Fetched URLs are cached for 15 minutes under `~/.cache/caelestia/calendar`, so
+  pressing *Refresh* right after a change may return the cached copy.
+
+### 3.12 Focus Sessions Turn Notifications Off at the Wrong Time
+
+A focus session is a window (days plus start and end) during which the shell turns
+Do Not Disturb on itself. A window whose end is before its start runs overnight and
+belongs to the day it started on — `22:00–07:00` on a Monday covers Tuesday morning.
+
+* If DND will not clear, check whether a session is still running:
+  *Nexus → Notifications → Focus sessions* names the window and the time it ends.
+* Turning DND off by hand during a session keeps it off until the window ends; the
+  shell only clears a DND it turned on itself.
+* An app that should still reach you goes in *Allowed through*; the name has to match
+  the application name the notification carries, which is what
+  `notify-send -a <name>` and most messaging apps set.
+
+### 3.13 Shell Text Does Not Follow the System Text Size
+
+The shell draws with its own type tokens, so KDE's font size does not reach it
+unless *Nexus → Accessibility → Follow system text size* is on (it is by default).
+With it on, the shell reads `[General] font` from `~/.config/kdeglobals` and uses its
+point size as the scale, against a 10 pt base:
+
+```bash
+kreadconfig6 --file kdeglobals --group General --key font   # e.g. "Noto Sans,11,-1,5,…"
+```
+
+An absent key means KDE is running its default, which is the 10 pt base, so the shell
+stays at 100%. If a different size is wanted in the shell alone, switch the toggle off
+and use *Font scale* instead.
+
+### 3.14 Magnifier, Colour Filters or Screen Reader Do Nothing
+
+Those are not shell features: the magnifier, colour inversion and colour-blindness
+correction are **KWin effects**, so the shell can only load or unload them, and the
+shortcuts and filter choice live in *System Settings → Accessibility*. Check what
+KWin reports:
+
+```bash
+qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.isEffectLoaded zoom
+qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.listOfEffects | tr ',' '\n' | grep -i colour
+```
+
+The screen reader is Orca, which has to be installed (`orca` on Arch, `gnome-orca`
+elsewhere). The page reports it as missing rather than offering a button that cannot
+work.
+
 ---
 
 ## 4. Runtime Issues — Lock Screen

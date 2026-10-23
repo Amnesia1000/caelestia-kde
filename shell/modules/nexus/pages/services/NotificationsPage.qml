@@ -40,11 +40,18 @@ PageBase {
 
         NavRow {
             first: true
-            last: true
             icon: "tune"
             label: qsTr("Toast events")
             status: qsTr("Choose which system changes show a toast")
             onClicked: root.nState.openSubPage(3)
+        }
+
+        NavRow {
+            last: true
+            icon: "do_not_disturb_on"
+            label: qsTr("Focus sessions")
+            status: Focus.active ? qsTr("Running until %1").arg(Focus.activeEnd()) : qsTr("Do Not Disturb on a schedule")
+            onClicked: root.nState.openSubPage(4)
         }
     }
 }

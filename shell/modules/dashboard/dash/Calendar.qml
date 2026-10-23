@@ -180,6 +180,16 @@ CustomMouseArea {
                         font: Tokens.font.body.small
                         renderType: Text.QtRendering
                     }
+
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottom: parent.bottom
+                        implicitWidth: 3
+                        implicitHeight: 3
+                        radius: Tokens.rounding.full
+                        color: Colours.palette.m3primary
+                        visible: CalendarEvents.hasEventsOn(dayItem.model.date)
+                    }
                 }
             }
 

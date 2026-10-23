@@ -89,7 +89,7 @@ Singleton {
         root.activeTargetOutput = root.getTargetOutput();
 
         const comp = notifComp.createObject(root, {
-            popup: root.shouldShowPopup(),
+            popup: root.shouldShowPopup(params.appName ?? ""),
             shellRaised: true,
             image: "",
             hints: ({}),
@@ -107,8 +107,8 @@ Singleton {
         return comp;
     }
 
-    function shouldShowPopup(): bool {
-        if (props.dnd || [...Visibilities.screens.values()].some(v => v.sidebar))
+    function shouldShowPopup(appName: string): bool {
+        if ((props.dnd && !Focus.allows(appName)) || [...Visibilities.screens.values()].some(v => v.sidebar))
             return false;
         if (GlobalConfig.notifs.fullscreen === "off") {
             if (GlobalConfig.notifs.monitor === "focused") {
@@ -127,7 +127,7 @@ Singleton {
     }
 
     function shouldPlaySound(notif: Notification): bool {
-        if (props.dnd)
+        if (props.dnd && !Focus.allows(notif.appName))
             return false;
         if (notif.appName === "caelestia-cli" || GlobalConfig.audio.sounds.disabledNotifApps.includes(notif.appName))
             return false;
@@ -234,7 +234,7 @@ Singleton {
 
             root.activeTargetOutput = root.getTargetOutput();
 
-            const showPopup = root.shouldShowPopup();
+            const showPopup = root.shouldShowPopup(notif.appName);
             const comp = notifComp.createObject(root, {
                 popup: showPopup,
                 notification: notif

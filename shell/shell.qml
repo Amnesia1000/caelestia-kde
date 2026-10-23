@@ -38,6 +38,9 @@ ShellRoot {
     property var _updateCheckerInit: null
     property var _autoSchemeInit: null
     property var _quickShareInit: null
+    property var _calendarInit: null
+    property var _focusInit: null
+    property var _accessibilityInit: null
 
     settings.watchFiles: false
 
@@ -127,6 +130,12 @@ ShellRoot {
             root._updateCheckerInit = UpdateChecker;
             root._autoSchemeInit = AutoScheme;
             root._quickShareInit = QuickShare;
+            // These three do work on their own timers, so they cannot wait for a
+            // surface to ask for them: the agenda fetches, focus flips DND on the
+            // minute, and the shell text has to follow KDE's before anything is drawn.
+            root._calendarInit = CalendarEvents;
+            root._focusInit = Focus;
+            root._accessibilityInit = Accessibility;
         }
     }
 

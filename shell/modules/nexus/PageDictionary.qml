@@ -139,7 +139,8 @@ QtObject {
             settings: [
                 { label: qsTr("Notification behavior"), pagePath: "services/NotificationPreferencesPage.qml", subPageIdx: 1, keywords: ["fullscreen", "position", "timeout", "taskbar"] },
                 { label: qsTr("Toasts"), pagePath: "services/ToastPreferencesPage.qml", subPageIdx: 2, keywords: ["popup", "banner", "sound", "volume"] },
-                { label: qsTr("Toast events"), pagePath: "services/ToastEventsPage.qml", subPageIdx: 3, keywords: ["charging", "clipboard", "vpn", "keyboard", "audio"] }
+                { label: qsTr("Toast events"), pagePath: "services/ToastEventsPage.qml", subPageIdx: 3, keywords: ["charging", "clipboard", "vpn", "keyboard", "audio"] },
+                { label: qsTr("Focus sessions"), pagePath: "services/FocusPage.qml", subPageIdx: 4, keywords: ["do not disturb", "dnd", "schedule", "focus", "quiet"] }
             ]
         },
         {
@@ -203,7 +204,8 @@ QtObject {
             settings: [
                 { label: qsTr("Background Services"), keywords: ["daemons", "systemd", "tuning"] },
                 { label: qsTr("Visualiser Input"), keywords: ["visualiser", "microphone", "cava", "audio"] },
-                { label: qsTr("Rich Presence"), keywords: ["discord", "steamgriddb", "activity"], pagePath: "services/ArpcPage.qml", subPageIdx: 1 }
+                { label: qsTr("Rich Presence"), keywords: ["discord", "steamgriddb", "activity"], pagePath: "services/ArpcPage.qml", subPageIdx: 1 },
+                { label: qsTr("Calendar"), keywords: ["agenda", "events", "ics", "ical", "google", "nextcloud", "reminder"], pagePath: "services/CalendarPage.qml", subPageIdx: 2 }
             ]
         },
         {
@@ -262,6 +264,22 @@ QtObject {
                 { label: qsTr("Let the CLI run its own tools"), keywords: ["claude", "permissions", "tools", "bypass", "dangerous"] },
                 { label: qsTr("Accounts"), keywords: ["claude", "account", "login", "switch"] },
                 { label: qsTr("Providers"), keywords: ["ollama", "openai", "chatgpt", "gemini", "openrouter", "api key"] }
+            ]
+        },
+        {
+            label: qsTr("Accessibility"),
+            key: "accessibility",
+            icon: "accessibility_new",
+            description: qsTr("Text size, motion, magnifier, screen reader"),
+            category: "accessibility",
+            settings: [
+                { label: qsTr("Follow system text size"), keywords: ["font", "scale", "bigger", "text", "kde"] },
+                { label: qsTr("Font scale"), keywords: ["font", "size", "zoom", "text"] },
+                { label: qsTr("Reduce motion"), keywords: ["animation", "motion", "vestibular", "reduce"] },
+                { label: qsTr("Magnifier"), keywords: ["zoom", "magnify", "loupe", "kwin"] },
+                { label: qsTr("Invert colours"), keywords: ["contrast", "invert", "negative"] },
+                { label: qsTr("Colour filters"), keywords: ["colour", "blind", "protanopia", "deuteranopia", "filter"] },
+                { label: qsTr("Screen reader"), keywords: ["orca", "speech", "a11y"] }
             ]
         }
     ]

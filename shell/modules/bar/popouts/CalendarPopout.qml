@@ -22,6 +22,54 @@ StyledRect {
     readonly property int currMonth: viewDate.getMonth()
     readonly property int currYear: viewDate.getFullYear()
 
+    /// One row per day header and per event, so the agenda stays a single flat list.
+    readonly property var agendaRows: {
+        const rows = [];
+        for (const group of CalendarEvents.upcoming(3)) {
+            rows.push({ kind: "day", label: root.dayLabel(group.date) });
+            for (const event of group.events)
+                rows.push({
+                    kind: "event",
+                    label: event.allDay ? qsTr("All day") : Qt.formatTime(event.start, "hh:mm"),
+                    event: event
+                });
+        }
+        if (rows.length === 0)
+            rows.push({ kind: "empty", label: "" });
+        return rows;
+    }
+
+    function dayLabel(date: date): string {
+        const now = new Date();
+        const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        const days = Math.round((day - midnight) / 86400000);
+        if (days === 0)
+            return qsTr("Today");
+        if (days === 1)
+            return qsTr("Tomorrow");
+
+        return Qt.locale().toString(date, "ddd d MMM");
+    }
+
+    function rowText(row: var): string {
+        if (row.kind === "day")
+            return "";
+        if (row.kind === "empty")
+            return root.agendaHint();
+
+        return row.event.location ? `${row.event.summary} · ${row.event.location}` : row.event.summary;
+    }
+
+    function agendaHint(): string {
+        if (!CalendarEvents.configured)
+            return qsTr("Add a calendar in Settings → Calendar");
+        if (CalendarEvents.errors.length > 0)
+            return qsTr("Could not read %1").arg(CalendarEvents.errors[0].source);
+
+        return qsTr("Nothing scheduled");
+    }
+
     function shiftMonth(delta: int): void {
         root.viewDate = new Date(root.currYear, root.currMonth + delta, 1);
     }
@@ -195,6 +243,16 @@ StyledRect {
                         font: Tokens.font.body.builders.small.size(Tokens.font.body.small.pointSize * root.fontScale).build()
                         renderType: Text.QtRendering
                     }
+
+                    Rectangle {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.bottom: parent.bottom
+                        implicitWidth: 3 * root.scaleOffset
+                        implicitHeight: 3 * root.scaleOffset
+                        radius: Tokens.rounding.full
+                        color: Colours.palette.m3primary
+                        visible: CalendarEvents.hasEventsOn(dayItem.model.date)
+                    }
                 }
             }
 
@@ -238,6 +296,67 @@ StyledRect {
 
                 Behavior on y {
                     Anim {}
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.topMargin: Tokens.spacing.small * root.scaleOffset
+            implicitHeight: 1
+            color: Colours.palette.m3outlineVariant
+        }
+
+        StyledText {
+            Layout.fillWidth: true
+            Layout.topMargin: Tokens.spacing.extraSmall * root.scaleOffset
+            text: qsTr("Upcoming")
+            color: Colours.palette.m3primary
+            font: Tokens.font.label.builders.small.size(Tokens.font.label.small.pointSize * root.fontScale).build()
+        }
+
+        Repeater {
+            model: root.agendaRows
+
+            delegate: Item {
+                id: agendaRow
+
+                required property var modelData
+
+                Layout.fillWidth: true
+                implicitHeight: rowLayout.implicitHeight
+
+                RowLayout {
+                    id: rowLayout
+
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    spacing: Tokens.spacing.small * root.scaleOffset
+
+                    StyledText {
+                        Layout.preferredWidth: 84 * root.scaleOffset
+                        text: agendaRow.modelData.label ?? ""
+                        color: Colours.palette.m3onSurfaceVariant
+                        font: Tokens.font.label.builders.small.size(Tokens.font.label.small.pointSize * root.fontScale).build()
+                        elide: Text.ElideRight
+                        visible: text.length > 0
+                    }
+
+                    Rectangle {
+                        implicitWidth: 4 * root.scaleOffset
+                        implicitHeight: 4 * root.scaleOffset
+                        radius: Tokens.rounding.full
+                        color: Colours.palette.m3primary
+                        visible: agendaRow.modelData.kind === "event"
+                    }
+
+                    StyledText {
+                        Layout.fillWidth: true
+                        text: root.rowText(agendaRow.modelData)
+                        color: agendaRow.modelData.kind === "event" ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
+                        font: Tokens.font.body.builders.small.size(Tokens.font.body.small.pointSize * root.fontScale).build()
+                        elide: Text.ElideRight
+                    }
                 }
             }
         }

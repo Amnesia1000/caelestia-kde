@@ -108,6 +108,7 @@ QtObject {
                 SubPage { slot: 1; key: "notificationPreferences"; Component { NotificationPreferencesPage {} } }
                 SubPage { slot: 2; key: "toastPreferences"; Component { ToastPreferencesPage {} } }
                 SubPage { slot: 3; key: "toastEvents"; Component { ToastEventsPage {} } }
+                SubPage { slot: 4; key: "focus"; Component { FocusPage {} } }
             }
         },
         Component {
@@ -142,6 +143,7 @@ QtObject {
             StackPage {
                 SubPage { slot: 0; key: "services"; Component { ServicesPage {} } }
                 SubPage { slot: 1; key: "arpc"; Component { ArpcPage {} } }
+                SubPage { slot: 2; key: "calendar"; Component { CalendarPage {} } }
             }
         },
         Component {
@@ -167,6 +169,11 @@ QtObject {
         Component {
             StackPage {
                 SubPage { slot: 0; key: "ai"; Component { AiSettingsPage {} } }
+            }
+        },
+        Component {
+            StackPage {
+                SubPage { slot: 0; key: "accessibility"; Component { AccessibilityPage {} } }
             }
         }
     ]
