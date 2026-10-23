@@ -21,6 +21,13 @@ Scope {
     // keep their exact casing (e.g. "KrohnkitegrowWidth") or KWin will invoke actions
     // it never registered. `key` is the default binding ("" = unbound), overridden by
     // the user's keybinds.json.
+    //
+    // `description` stays untranslated on purpose: this array is the Instantiator's model,
+    // so a qsTr() here would make the model depend on the active language. QML then
+    // re-evaluates the model on every language change, the Instantiator recreates the
+    // delegates, and KGlobalAccel deactivates the actions whose replacements already
+    // registered - the keybinds stay dead until the shell restarts. The delegate
+    // translates the extracted source text instead; QT_TR_NOOP() below is not a typo.
     readonly property var krohnkiteShortcuts: [
         { name: "krohnkiteFocusUp", description: QT_TR_NOOP("Focus the window above"), action: "KrohnkiteFocusUp", key: "Meta+Up" },
         { name: "krohnkiteFocusDown", description: QT_TR_NOOP("Focus the window below"), action: "KrohnkiteFocusDown", key: "Meta+Down" },
