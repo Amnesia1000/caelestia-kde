@@ -261,6 +261,13 @@ Item {
         }
 
         Popout {
+            name: "privacy"
+            sourceComponent: Privacy {
+                popouts: root.popouts
+            }
+        }
+
+        Popout {
             name: "nightlight"
             sourceComponent: NightLight {
                 popouts: root.popouts

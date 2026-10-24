@@ -586,6 +586,30 @@ path, or an entry restricted with `OnlyShowIn=` to a desktop the session does no
 Removing the user's copy (`--remove NAME`, or the bin icon in Nexus, which only appears for
 entries the user owns) restores whatever the package shipped.
 
+### 3.17 The Privacy Indicator Does Not Appear
+
+The privacy icon in the status area is only drawn while an application is capturing, which is
+why it is missing most of the time. It reports two things:
+
+- **Microphone** — every PipeWire capture stream (`media.class` of `Stream/Input/Audio`). These
+  nodes exist only while an application is recording, so the list is the answer; the shell's own
+  capture is excluded so the icon means "somebody else is listening".
+- **Video capture** — the client video streams `PipewireStreamWatcher` reports: screen sharing and
+  apps that open a camera. Camera *devices* are excluded on purpose, because a `Video/Source` node
+  exists even when nothing is looking through it.
+
+```bash
+pw-dump | grep -B4 'Stream/Input/Audio'      # what the microphone row is built from
+pactl -f json list source-outputs            # the same capture streams as PulseAudio sees them
+```
+
+An application that opens the camera or microphone **through V4L2/ALSA directly** rather than
+through PipeWire is invisible to this: the shell can only see what the sound and video servers
+know about. Applications routed through `xdg-desktop-portal` — Firefox, Chromium, Zoom, OBS — are
+reported for as long as they hold a stream open. If the icon is enabled in *Nexus → Panels → Status
+icons* but never appears, check `pw-dump` for a `Stream/Input/Audio` node while the application
+claims to be recording — a node that is not there is a capture the shell was not told about.
+
 ---
 
 ## 4. Runtime Issues — Lock Screen

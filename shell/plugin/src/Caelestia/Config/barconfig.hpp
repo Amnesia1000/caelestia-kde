@@ -274,6 +274,7 @@ class BarConfig : public settings::ObjectNode {
     CONFIG_LIST(EntryList, statusIcons,
         DEFAULT_ARG({
             LIST_ENTRY(lockStatus, true),
+            LIST_ENTRY(privacy, true),
             LIST_ENTRY(microphone, false),
             LIST_ENTRY(kbLayout, false),
             LIST_ENTRY(network, true),
