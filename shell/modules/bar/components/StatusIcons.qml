@@ -55,6 +55,8 @@ StyledRect {
         switch (id) {
         case "lockStatus":
             return Kwin.capsLock || Kwin.numLock;
+        case "privacy":
+            return Privacy.inUse;
         case "kbLayout":
             return (Kwin.kbLayout || "").length > 0;
         case "network":
@@ -213,6 +215,7 @@ StyledRect {
                         sourceComponent: {
                             switch(name) {
                                 case "lockStatus": return lockstatusComp;
+                                case "privacy": return privacyComp;
                                 case "audio": return audioComp;
                                 case "microphone": return microphoneComp;
                                 case "kbLayout": return kblayoutComp;
@@ -383,6 +386,16 @@ StyledRect {
         MaterialIcon {
             animate: true
             text: Icons.getMicVolumeIcon(Audio.sourceVolume, Audio.sourceMuted)
+            color: root.colour
+        }
+    }
+
+    Component {
+        id: privacyComp
+
+        MaterialIcon {
+            animate: true
+            text: Privacy.icon
             color: root.colour
         }
     }
