@@ -548,6 +548,27 @@ The screen reader is Orca, which has to be installed (`orca` on Arch, `gnome-orc
 elsewhere). The page reports it as missing rather than offering a button that cannot
 work.
 
+### 3.15 Displays Page Is Empty or Changes Do Not Stick
+
+Nexus reads and writes the screen layout through **KScreen**, the same component System
+Settings uses, so what it shows is the real layout and every change is applied by KScreen
+rather than by the shell:
+
+```bash
+kscreen-doctor -j | head -20        # what the page reads
+kscreen-doctor output.eDP-1.scale.1.5   # what the page runs for a change
+```
+
+If the page shows the "no kscreen-doctor" note, the package is missing (`kscreen` on
+Arch, `kscreen5`/`libkscreen` elsewhere). A change that reverts after a moment means KScreen
+rejected it — for example disabling the only enabled output, which the enabled switch
+refuses to do on purpose. Rotation is reported by KScreen as a bit flag (1 none, 2 left,
+4 upside down, 8 right), so the page names it before showing it.
+
+Input (pointer, touchpad, keyboard) is deliberately not duplicated here: those settings are
+applied by Plasma's KCMs, so the page opens them rather than keeping a second copy that
+would drift.
+
 ---
 
 ## 4. Runtime Issues — Lock Screen

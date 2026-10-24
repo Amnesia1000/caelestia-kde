@@ -288,7 +288,7 @@ StyledRect {
                 icon: "tune"
                 type: IconButton.Text
                 onClicked: {
-                    const pageIdx = PageDictionary.pages.findIndex(p => p.key === "utilities");
+                    const pageIdx = PageDictionary.pageIdxFor("utilities");
                     root.visibilities.utilities = false;
                     execTimer.pendingAction = () => WindowFactory.create(null, {
                         initialPageIdx: pageIdx,

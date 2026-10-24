@@ -80,7 +80,7 @@ StyledRect {
     /// The empty agenda is the only place a first-time user meets this feature, so it
     /// leads to the page that fills it rather than naming a menu they have to find.
     function openCalendarSettings(): void {
-        const pageIdx = PageDictionary.pages.findIndex(page => page.key === "services");
+        const pageIdx = PageDictionary.pageIdxFor("services");
         if (pageIdx < 0)
             return;
 

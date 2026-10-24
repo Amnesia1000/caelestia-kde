@@ -117,6 +117,22 @@ QtObject {
             ]
         },
         {
+            label: qsTr("Displays"),
+            key: "displays",
+            icon: "monitor",
+            description: qsTr("Resolution, scale, rotation, HDR"),
+            category: "connectivity",
+            settings: [
+                { label: qsTr("Resolution"), keywords: ["mode", "refresh rate", "hz", "screen", "monitor"], subPageIdx: 1 },
+                { label: qsTr("Refresh rate"), keywords: ["hz", "mode", "screen", "monitor"], subPageIdx: 1 },
+                { label: qsTr("Scale"), keywords: ["scaling", "fractional", "zoom", "hidpi", "screen"] },
+                { label: qsTr("Rotation"), keywords: ["rotate", "orientation", "portrait", "screen"] },
+                { label: qsTr("HDR"), keywords: ["hdr", "dynamic range", "screen"] },
+                { label: qsTr("Mouse & touchpad"), keywords: ["pointer", "input", "tap to click", "natural scrolling"] },
+                { label: qsTr("Keyboard"), keywords: ["input", "repeat rate", "layouts"] }
+            ]
+        },
+        {
             label: qsTr("Audio & Sound"),
             key: "audio",
             icon: "volume_up",
@@ -283,6 +299,16 @@ QtObject {
             ]
         }
     ]
+
+    /// Index of the page with this key, so shortcuts do not have to remember a position
+    /// that shifts whenever a page is added.
+    function pageIdxFor(key: string): int {
+        for (let i = 0; i < pages.length; i++) {
+            if (pages[i].key === key)
+                return i;
+        }
+        return -1;
+    }
 
     // Sub page index of the first entry pointing at the given page, or -1 when
     // no entry does. Callers that jump to a sub page should look it up instead

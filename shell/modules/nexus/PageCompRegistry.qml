@@ -11,6 +11,7 @@ import qs.modules.nexus.pages.apps
 import qs.modules.nexus.pages.audio
 import qs.modules.nexus.pages.bluetooth
 import qs.modules.nexus.pages.desktop
+import qs.modules.nexus.pages.display
 import qs.modules.nexus.pages.network
 import qs.modules.nexus.pages.panels
 import qs.modules.nexus.pages.services
@@ -92,6 +93,12 @@ QtObject {
                 SubPage { slot: 0; key: "bluetooth"; Component { BluetoothPage {} } }
                 SubPage { slot: 1; key: "btDeviceInfo"; Component { BtDeviceInfo {} } }
                 SubPage { slot: 2; key: "bluetoothPairing"; Component { BluetoothPairing {} } }
+            }
+        },
+        Component {
+            StackPage {
+                SubPage { slot: 0; key: "displays"; Component { DisplayPage {} } }
+                SubPage { slot: 1; key: "displayModes"; Component { DisplayModesPage {} } }
             }
         },
         Component {
