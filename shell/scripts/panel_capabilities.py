@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Report what a panel says it can display, from its EDID.
+"""Report which outputs advertise an HDR transfer function, from their EDID.
 
 KScreen accepts any HDR request and keeps it in its config whether or not the panel can
-show it, so the shell cannot learn the capability from KScreen. The EDID can: a panel that
-does HDR10 carries BT.2020 colourimetry and an HDR Static Metadata block whose transfer
-functions include SMPTE ST 2084 (PQ). Anything less is not a screen worth offering the
-switch on.
+show the result, so the capability cannot be read back from the compositor. The panel's own
+EDID can: an HDR Static Metadata block whose transfer functions include SMPTE ST 2084 (PQ,
+what HDR10 uses) or HLG is a screen that can show an HDR signal, while a block that only
+describes the SDR range is not.
 
-The script is deliberately dependency-free: `edid-decode` is not installed everywhere, and
-this only needs two data blocks.
+With no arguments it reads every connector in /sys/class/drm; `--file PATH` reads a single
+EDID, which is what the tests use. It is dependency-free on purpose: edid-decode is not
+installed everywhere and one data block is all this needs.
 """
 
 import glob
@@ -17,32 +18,31 @@ import os
 import sys
 
 CTA_EXTENSION = 0x02
-COLORIMETRY = 0x05
+EXTENDED_TAG = 0x07
 HDR_STATIC_METADATA = 0x06
+# Bit 2 of the transfer-function byte is PQ, bit 3 is HLG.
+HDR_TRANSFER_FUNCTIONS = 0x0C
 
-# EDID byte 0x14, bits 6-4: bit depth per primary, as the display reports it.
-BIT_DEPTHS = {0: 0, 1: 6, 2: 8, 3: 10, 4: 12, 5: 14, 6: 16}
-
-
-def edid_paths(output_name):
-    """Every sysfs path that can hold this output's EDID, most specific first."""
-    return [
-        f"/sys/class/drm/card*-{output_name}/edid",
-        f"/sys/class/drm/{output_name}/edid",
-    ]
+EDID_HEADER = b"\x00\xff\xff\xff\xff\xff\xff\x00"
 
 
-def read_edid(output_name):
-    for pattern in edid_paths(output_name):
-        for path in sorted(glob.glob(pattern)):
-            try:
-                with open(path, "rb") as handle:
-                    data = handle.read()
-            except OSError:
-                continue
-            if len(data) >= 128 and data[:8] == b"\x00\xff\xff\xff\xff\xff\xff\x00":
-                return data
-    return b""
+def output_name(path):
+    """`/sys/class/drm/card0-eDP-1/edid` describes the connector KScreen calls `eDP-1`."""
+    parent = os.path.basename(os.path.dirname(path))
+    if parent.startswith("card"):
+        return parent.split("-", 1)[-1]
+
+    return os.path.splitext(os.path.basename(path))[0]
+
+
+def read_edid(path):
+    try:
+        with open(path, "rb") as handle:
+            data = handle.read()
+    except OSError:
+        return b""
+
+    return data if data[:8] == EDID_HEADER else b""
 
 
 def data_blocks(block):
@@ -62,59 +62,29 @@ def data_blocks(block):
         position += 1 + length
 
 
-def capabilities(data):
-    """What the EDID claims. `hdr` is None when the panel says nothing either way."""
-    result = {"bits": 0, "hdr": None, "wcg": None, "maxLuminance": 0}
+def supports_hdr(data):
     if len(data) < 128:
-        return result
-
-    result["bits"] = BIT_DEPTHS.get((data[0x14] >> 4) & 0x07, 0)
+        return False
 
     for index in range(1, data[126] + 1):
-        block = data[index * 128:(index + 1) * 128]
-        for tag, payload in data_blocks(block):
-            if tag != 7 or not payload:
-                continue
+        for tag, payload in data_blocks(data[index * 128:(index + 1) * 128]):
+            if tag == EXTENDED_TAG and len(payload) >= 2 and payload[0] == HDR_STATIC_METADATA:
+                if payload[1] & HDR_TRANSFER_FUNCTIONS:
+                    return True
 
-            extended = payload[0]
-            if extended == COLORIMETRY and len(payload) >= 2:
-                # BT.2020 colourimetry, the gamut HDR content is graded in.
-                result["wcg"] = bool(payload[1] & 0x05)
-            elif extended == HDR_STATIC_METADATA and len(payload) >= 3:
-                # Bit 2 of the EOTF byte is SMPTE ST 2084 (PQ, what HDR10 uses), bit 3 is
-                # HLG. Either one is a panel that can show an HDR signal; without them the
-                # block only describes the SDR range.
-                pq = bool(payload[1] & 0x04) or bool(payload[1] & 0x08)
-                result["hdr"] = pq
-                if len(payload) >= 4 and payload[3]:
-                    result["maxLuminance"] = round(50 * 2 ** (payload[3] / 32))
-
-    return result
-
-
-def describe(edids):
-    reports = []
-    for output_name, data in edids:
-        report = {"output": output_name}
-        report.update(capabilities(data))
-        reports.append(report)
-    return reports
+    return False
 
 
 def main(argv):
-    if not argv:
-        print("usage: panel_capabilities.py [--file PATH] OUTPUT...", file=sys.stderr)
-        return 2
+    paths = argv[1:2] if argv[:1] == ["--file"] else sorted(glob.glob("/sys/class/drm/*/edid"))
 
-    edids = []
-    if argv[0] == "--file":
-        with open(argv[1], "rb") as handle:
-            edids.append((os.path.basename(os.path.dirname(argv[1])) or "edid", handle.read()))
-    else:
-        for output_name in argv:
-            edids.append((output_name, read_edid(output_name)))
+    reports = []
+    for path in paths:
+        data = read_edid(path)
+        if data:
+            reports.append({"output": output_name(path), "hdr": supports_hdr(data)})
 
-    print(json.dumps(describe(edids)))
+    print(json.dumps(reports))
     return 0
 
 

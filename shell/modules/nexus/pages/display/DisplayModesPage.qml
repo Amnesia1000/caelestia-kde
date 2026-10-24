@@ -40,47 +40,20 @@ PageBase {
         Repeater {
             model: root.modes
 
-            delegate: ConnectedRect {
+            delegate: RowButton {
                 id: modeRow
 
                 required property var modelData
                 required property int index
 
-                Layout.fillWidth: true
                 first: index === 0
                 last: index === root.modes.length - 1
-                implicitHeight: modeLayout.implicitHeight + modeLayout.anchors.margins * 2
-
-                StateLayer {
-                    onClicked: {
-                        if (!root.isCurrent(modeRow.modelData))
-                            Displays.setMode(root.output.name, String(modeRow.modelData.id));
-                        root.nState.closeSubPage();
-                    }
-                }
-
-                RowLayout {
-                    id: modeLayout
-
-                    anchors.fill: parent
-                    anchors.margins: Tokens.padding.medium
-                    anchors.leftMargin: Tokens.padding.largeIncreased
-                    anchors.rightMargin: Tokens.padding.largeIncreased
-                    spacing: Tokens.spacing.medium
-
-                    MaterialIcon {
-                        text: root.isCurrent(modeRow.modelData) ? "check" : ""
-                        color: Colours.palette.m3primary
-                        fontStyle: Tokens.font.icon.medium
-                    }
-
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: Displays.modeLabel(modeRow.modelData)
-                        color: root.isCurrent(modeRow.modelData) ? Colours.palette.m3primary : Colours.palette.m3onSurface
-                        font: Tokens.font.body.small
-                        elide: Text.ElideRight
-                    }
+                icon: root.isCurrent(modeRow.modelData) ? "check" : "aspect_ratio"
+                text: Displays.modeLabel(modeRow.modelData)
+                onClicked: {
+                    if (!root.isCurrent(modeRow.modelData))
+                        Displays.setMode(root.output.name, String(modeRow.modelData.id));
+                    root.nState.closeSubPage();
                 }
             }
         }

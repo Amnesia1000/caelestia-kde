@@ -11,19 +11,18 @@ Singleton {
     id: root
 
     property var outputs: []
-    property bool failed: false
-    /// What each panel says it can show, keyed by output name: read from its EDID, because
-    /// KScreen stores whatever it is asked for and cannot tell us whether the screen can.
+    /// False when KScreen could not be asked at all: an empty list would otherwise read as
+    /// "no screens" rather than "kscreen is not installed".
+    property bool available: true
+    /// Which panels advertise an HDR transfer function, keyed by output name. KScreen stores
+    /// whatever it is asked for, so the capability has to come from the panel's own EDID.
     property var panels: ({})
 
-    /// A machine without kscreen cannot be asked anything, and an empty list would read as
-    /// "no screens" rather than "not installed", so the page says which one it is.
-    readonly property bool available: !root.failed
     readonly property var connected: root.outputs.filter(output => output.connected)
     readonly property var enabled: root.connected.filter(output => output.enabled)
 
-    readonly property var rotationNames: ["none", "left", "inverted", "right"]
-    readonly property var rotationLabels: [qsTr("Normal"), qsTr("Left"), qsTr("Upside down"), qsTr("Right")]
+    /// KScreen reports the rotation as a power of two; the CLI takes these names.
+    readonly property var rotations: ({ 1: "none", 2: "left", 4: "inverted", 8: "right" })
 
     /// KWin resets a panel to full brightness whenever its colour mode or resolution
     /// changes, so everything that writes the layout announces it and lets brightness be
@@ -51,12 +50,17 @@ Singleton {
     }
 
     function rotationName(rotation: int): string {
-        return root.rotationNames[Math.log2(rotation)] ?? "none";
+        return root.rotations[rotation] ?? "none";
     }
 
+    /// The layout and the panels behind it are independent questions, so they are asked at
+    /// the same time rather than one after the other.
     function refresh(): void {
         readProcess.running = false;
         readProcess.running = true;
+
+        panelsProcess.running = false;
+        panelsProcess.running = true;
     }
 
     function apply(settings: list<string>): void {
@@ -79,8 +83,8 @@ Singleton {
         root.apply([`output.${name}.scale.${scale}`]);
     }
 
-    function setRotation(name: string, rotation: string): void {
-        root.apply([`output.${name}.rotation.${rotation}`]);
+    function setRotation(name: string, rotation: int): void {
+        root.apply([`output.${name}.rotation.${root.rotationName(rotation)}`]);
     }
 
     /// The wide colour gamut goes with HDR rather than on its own, which is what KDE's own
@@ -88,15 +92,6 @@ Singleton {
     /// a half-applied change.
     function setHdr(name: string, on: bool): void {
         root.apply([`output.${name}.hdr.${on ? "enable" : "disable"}`, `output.${name}.wcg.${on ? "enable" : "disable"}`]);
-    }
-
-    function readPanels(): void {
-        const names = root.connected.map(output => output.name);
-        if (names.length === 0)
-            return;
-
-        panelsProcess.command = ["python3", Quickshell.shellPath("scripts/panel_capabilities.py"), ...names];
-        panelsProcess.running = true;
     }
 
     Component.onCompleted: root.refresh()
@@ -110,11 +105,10 @@ Singleton {
             onStreamFinished: {
                 try {
                     root.outputs = JSON.parse(text).outputs ?? [];
-                    root.failed = false;
-                    root.readPanels();
+                    root.available = true;
                 } catch (error) {
                     root.outputs = [];
-                    root.failed = true;
+                    root.available = false;
                 }
             }
         }
@@ -122,13 +116,15 @@ Singleton {
         onExited: code => {
             if (code !== 0) {
                 root.outputs = [];
-                root.failed = true;
+                root.available = false;
             }
         }
     }
 
     Process {
         id: panelsProcess
+
+        command: ["python3", Quickshell.shellPath("scripts/panel_capabilities.py")]
 
         stdout: StdioCollector {
             onStreamFinished: {

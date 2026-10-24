@@ -55,19 +55,19 @@ PageBase {
     readonly property list<MenuItem> rotationItems: [
         MenuItem {
             text: qsTr("Normal")
-            value: "none"
+            value: 1
         },
         MenuItem {
             text: qsTr("Left")
-            value: "left"
+            value: 2
         },
         MenuItem {
             text: qsTr("Upside down")
-            value: "inverted"
+            value: 4
         },
         MenuItem {
             text: qsTr("Right")
-            value: "right"
+            value: 8
         }
     ]
 
@@ -79,8 +79,7 @@ PageBase {
     }
 
     function rotationItem(output: var): MenuItem {
-        const value = Displays.rotationName(output.rotation);
-        return root.rotationItems.find(item => item.value === value) ?? null;
+        return root.rotationItems.find(item => item.value === output.rotation) ?? null;
     }
 
     function currentModeLabel(output: var): string {
@@ -118,29 +117,31 @@ PageBase {
                 required property var modelData
                 required property int index
 
+                readonly property var output: outputSection.modelData
+
                 Layout.fillWidth: true
                 spacing: Tokens.spacing.extraSmall / 2
 
                 SectionHeader {
                     first: index === 0
-                    text: outputSection.modelData.enabled ? outputSection.modelData.name : qsTr("%1 (off)").arg(outputSection.modelData.name)
+                    text: outputSection.output.enabled ? outputSection.output.name : qsTr("%1 (off)").arg(outputSection.output.name)
                 }
 
                 ToggleRow {
                     first: true
                     text: qsTr("Enabled")
-                    subtext: Displays.enabled.length > 1 || !outputSection.modelData.enabled ? qsTr("Drives a picture for this screen") : qsTr("The last enabled screen has to stay on")
-                    checked: outputSection.modelData.enabled
-                    enabled: Displays.enabled.length > 1 || !outputSection.modelData.enabled
-                    onToggled: Displays.setEnabled(outputSection.modelData.name, checked)
+                    subtext: Displays.enabled.length > 1 || !outputSection.output.enabled ? qsTr("Drives a picture for this screen") : qsTr("The last enabled screen has to stay on")
+                    checked: outputSection.output.enabled
+                    enabled: Displays.enabled.length > 1 || !outputSection.output.enabled
+                    onToggled: Displays.setEnabled(outputSection.output.name, checked)
                 }
 
                 NavRow {
                     icon: "aspect_ratio"
                     label: qsTr("Resolution & refresh rate")
-                    status: root.currentModeLabel(outputSection.modelData)
+                    status: root.currentModeLabel(outputSection.output)
                     onClicked: {
-                        root.nState.selectedOutput = outputSection.modelData.name;
+                        root.nState.selectedOutput = outputSection.output.name;
                         root.nState.openSubPage(1);
                     }
                 }
@@ -149,28 +150,28 @@ PageBase {
                     label: qsTr("Scale")
                     subtext: qsTr("How large everything is drawn")
                     menuItems: root.scaleItems
-                    active: root.scaleItem(outputSection.modelData)
-                    fallbackText: `${Math.round(outputSection.modelData.scale * 100)}%`
-                    onSelected: item => Displays.setScale(outputSection.modelData.name, Number(item.value))
+                    active: root.scaleItem(outputSection.output)
+                    fallbackText: `${Math.round(outputSection.output.scale * 100)}%`
+                    onSelected: item => Displays.setScale(outputSection.output.name, Number(item.value))
                 }
 
                 SelectRow {
                     label: qsTr("Rotation")
                     subtext: qsTr("Turn the picture to match how the screen stands")
                     menuItems: root.rotationItems
-                    active: root.rotationItem(outputSection.modelData)
-                    fallbackText: Displays.rotationName(outputSection.modelData.rotation)
-                    last: !Displays.supportsHdr(outputSection.modelData)
-                    onSelected: item => Displays.setRotation(outputSection.modelData.name, item.value)
+                    active: root.rotationItem(outputSection.output)
+                    fallbackText: Displays.rotationName(outputSection.output.rotation)
+                    last: !Displays.supportsHdr(outputSection.output)
+                    onSelected: item => Displays.setRotation(outputSection.output.name, item.value)
                 }
 
                 ToggleRow {
                     last: true
-                    visible: Displays.supportsHdr(outputSection.modelData)
+                    visible: Displays.supportsHdr(outputSection.output)
                     text: qsTr("HDR")
                     subtext: qsTr("High dynamic range, and the wide colour gamut that goes with it")
-                    checked: outputSection.modelData.hdr
-                    onToggled: Displays.setHdr(outputSection.modelData.name, checked)
+                    checked: outputSection.output.hdr
+                    onToggled: Displays.setHdr(outputSection.output.name, checked)
                 }
             }
         }

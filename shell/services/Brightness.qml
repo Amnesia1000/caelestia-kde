@@ -221,7 +221,7 @@ Singleton {
         /// Set while a layout change is being undone, so KWin's reset is not mistaken for
         /// the user moving the brightness slider.
         property bool reasserting: false
-        property int reassertAttempts: 0
+        property int reassertSteps: 0
 
         readonly property Process readProc: Process {
             stdout: StdioCollector {
@@ -270,24 +270,27 @@ Singleton {
             }
         }
 
-        /// KWin applies a colour or mode change asynchronously and puts the panel back to
-        /// full brightness when it does. It also ignores a write that matches the value it
-        /// already holds, and that reset does not change the value it holds, so the panel is
-        /// nudged off it before being set back, and the whole thing repeated for a few
-        /// seconds in case KWin overtakes us again.
+        /// One percent is the smallest step that survives the whole-percent rounding on the
+        /// way to KWin, so it is what a nudge has to be to count as a change.
+        readonly property real reassertNudge: 0.01
+
+        /// KWin applies a colour or mode change asynchronously and pins the panel to full
+        /// brightness when it does, and it ignores a write that matches the value it already
+        /// holds. So the panel is nudged off that value first, and the whole thing repeated
+        /// for a few seconds in case KWin overtakes us again.
         readonly property Timer reassertTimer: Timer {
             interval: 400
             onTriggered: {
-                monitor.reassertAttempts -= 1;
-
-                const settled = monitor.reassertAttempts === 0;
+                const settling = monitor.reassertSteps <= 1;
                 const target = monitor.brightness;
-                const value = settled ? target : (target >= 0.99 ? target - 0.01 : target + 0.01);
+                const value = settling ? target : (target >= 1 ? target - monitor.reassertNudge : target + monitor.reassertNudge);
 
                 monitor.syncKwinRecord(Math.round(value * 100) / 100);
                 monitor.writeBrightness(value);
 
-                if (settled) {
+                monitor.reassertSteps -= 1;
+
+                if (settling) {
                     monitor.reasserting = false;
                     return;
                 }
@@ -298,7 +301,7 @@ Singleton {
 
         function scheduleReassert(): void {
             reasserting = true;
-            reassertAttempts = 10;
+            reassertSteps = 10;
             reassertTimer.restart();
         }
 

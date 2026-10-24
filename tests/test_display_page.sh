@@ -24,7 +24,19 @@ test_kscreen_is_the_only_owner_of_the_layout() {
     assert_contains "$service" 'root.layoutApplied();' \
         "every change has to be read back and announced, so the page and the backlight both catch up"
     assert_contains "$service" 'root.outputs = []' "an unreadable layout must not look like an empty one"
-    assert_contains "$service" 'root.failed = true' "and has to be reported"
+    assert_contains "$service" 'root.available = false' "and has to be reported"
+}
+
+test_the_two_reads_do_not_wait_for_each_other() {
+    local service
+    service="$(cat "$SERVICE")"
+
+    # The layout and the panels behind it are separate questions; asking them in series
+    # means the EDID probe is blocked behind kscreen-doctor for no reason.
+    assert_not_contains "$service" 'readPanels' "the probe must not be called from the layout read"
+    assert_contains "$service" 'panelsProcess.running = true;' "it runs on its own"
+    assert_contains "$service" 'command: ["python3", Quickshell.shellPath("scripts/panel_capabilities.py")]' \
+        "and finds the outputs itself, so it needs no arguments"
 }
 
 test_output_settings_map_onto_the_kscreen_cli() {
@@ -34,10 +46,12 @@ test_output_settings_map_onto_the_kscreen_cli() {
     assert_contains "$service" '`output.${name}.${on ? "enable" : "disable"}`' "enabling an output"
     assert_contains "$service" '`output.${name}.mode.${modeId}`' "setting a mode"
     assert_contains "$service" '`output.${name}.scale.${scale}`' "setting the scale"
-    assert_contains "$service" '`output.${name}.rotation.${rotation}`' "setting the rotation"
+    assert_contains "$service" '`output.${name}.rotation.${root.rotationName(rotation)}`' "setting the rotation"
     assert_contains "$service" '`output.${name}.hdr.${on ? "enable" : "disable"}`' "setting HDR"
-    assert_contains "$service" 'return root.rotationNames[Math.log2(rotation)] ?? "none"' \
-        "KScreen reports the rotation as a bit flag, so it has to be named"
+    assert_contains "$service" 'readonly property var rotations: ({ 1: "none", 2: "left", 4: "inverted", 8: "right" })' \
+        "KScreen reports the rotation as a power of two, and the names live in one place"
+    assert_contains "$service" 'function setRotation(name: string, rotation: int): void' \
+        "so the page passes the value it read, not a spelling of it"
     assert_contains "$service" 'function modesFor(output: var): var' \
         "modes are offered largest and fastest first"
 }
@@ -47,11 +61,13 @@ test_the_page_is_driven_by_the_service() {
     page="$(cat "$PAGE")"
 
     assert_contains "$page" 'model: Displays.connected' "one section per connected screen"
-    assert_contains "$page" 'Displays.setEnabled(outputSection.modelData.name, checked)' "enabled switch"
-    assert_contains "$page" 'Displays.setScale(outputSection.modelData.name, Number(item.value))' "scale menu"
-    assert_contains "$page" 'Displays.setRotation(outputSection.modelData.name, item.value)' "rotation menu"
-    assert_contains "$page" 'Displays.setHdr(outputSection.modelData.name, checked)' "HDR switch"
-    assert_contains "$page" 'enabled: Displays.enabled.length > 1 || !outputSection.modelData.enabled' \
+    assert_contains "$page" 'readonly property var output: outputSection.modelData' \
+        "the section names its screen once instead of repeating modelData"
+    assert_contains "$page" 'Displays.setEnabled(outputSection.output.name, checked)' "enabled switch"
+    assert_contains "$page" 'Displays.setScale(outputSection.output.name, Number(item.value))' "scale menu"
+    assert_contains "$page" 'Displays.setRotation(outputSection.output.name, item.value)' "rotation menu"
+    assert_contains "$page" 'Displays.setHdr(outputSection.output.name, checked)' "HDR switch"
+    assert_contains "$page" 'enabled: Displays.enabled.length > 1 || !outputSection.output.enabled' \
         "the last enabled screen cannot be switched off"
     assert_contains "$page" 'fallbackText:' "a scale or rotation outside the menu still shows the truth"
     assert_contains "$page" 'Launch.exec(["systemsettings", "kcm_touchpad"])' \
@@ -65,6 +81,7 @@ test_the_mode_list_marks_and_applies() {
 
     assert_contains "$modes" 'model: root.modes' "every mode of the selected output"
     assert_contains "$modes" 'function isCurrent(mode: var): bool' "the current one has to be recognisable"
+    assert_contains "$modes" 'delegate: RowButton {' "the rows are the row the rest of Nexus already uses"
     assert_contains "$modes" 'Displays.setMode(root.output.name, String(modeRow.modelData.id))' "applying a mode"
     assert_contains "$modes" 'root.nState.closeSubPage()' "and returning to the screen it came from"
 }
@@ -114,9 +131,9 @@ test_hdr_is_only_offered_for_a_panel_that_claims_it() {
         "and only a panel that says so counts"
     assert_contains "$service" 'Quickshell.shellPath("scripts/panel_capabilities.py")' \
         "the claim comes from the panel's own EDID, not from KScreen"
-    assert_contains "$page" 'visible: Displays.supportsHdr(outputSection.modelData)' \
+    assert_contains "$page" 'visible: Displays.supportsHdr(outputSection.output)' \
         "so the switch is absent when the panel is silent"
-    assert_contains "$page" 'last: !Displays.supportsHdr(outputSection.modelData)' \
+    assert_contains "$page" 'last: !Displays.supportsHdr(outputSection.output)' \
         "and the row above it keeps the rounded corner"
 }
 
@@ -139,7 +156,9 @@ test_brightness_survives_a_layout_change() {
     assert_contains "$brightness" 'function onLayoutApplied(): void' "announcing an applied layout"
     assert_contains "$brightness" 'if (monitor && !monitor.reasserting && monitor.brightness !== value)' \
         "KWin resetting the panel must not be mistaken for the user dimming it"
-    assert_contains "$brightness" 'const value = settled ? target : (target >= 0.99 ? target - 0.01 : target + 0.01)' \
+    assert_contains "$brightness" 'readonly property real reassertNudge: 0.01' \
+        "the nudge is a named step, not a number buried in the timer"
+    assert_contains "$brightness" 'const value = settling ? target : (target >= 1 ? target - monitor.reassertNudge : target + monitor.reassertNudge)' \
         "KWin ignores a write it already holds, so the panel is nudged off the value first"
     assert_contains "$brightness" 'monitor.writeBrightness(value)' \
         "and the brightness written back to the panel"
@@ -168,9 +187,9 @@ out = Path(sys.argv[1])
 def edid(eotf):
     base = bytearray(128)
     base[0:8] = b"\x00\xff\xff\xff\xff\xff\xff\x00"
-    base[0x14] = 0x30  # ten bits per primary
     base[126] = 1  # one CTA extension
-    blocks = bytes([0xE3, 0x05, 0x80, 0x00]) + bytes([0xE6, 0x06, eotf, 0x01, 0x7A, 0x7A, 0x52])
+    # An extended-tag block carrying the HDR Static Metadata payload and its EOTF byte.
+    blocks = bytes([0xE6, 0x06, eotf, 0x01, 0x7A, 0x7A, 0x52])
     cta = bytearray(128)
     cta[0] = 0x02
     cta[1] = 0x03
@@ -187,7 +206,6 @@ PY
     sdr="$("$PYTHON" "$SCRIPT" --file "$dir/sdr.edid")"
 
     assert_contains "$hdr" '"hdr": true' "a panel offering the PQ transfer function can do HDR"
-    assert_contains "$hdr" '"maxLuminance": 703' "and reports the luminance it claims"
     assert_contains "$sdr" '"hdr": false' "a panel describing only the SDR range cannot"
 
     rm -rf "$dir"
