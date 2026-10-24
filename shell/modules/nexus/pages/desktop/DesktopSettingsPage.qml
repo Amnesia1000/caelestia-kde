@@ -120,6 +120,29 @@ PageBase {
             }
         }
 
+        StepperRow {
+            label: qsTr("Icon Vibrancy")
+            subtext: qsTr("Saturation level of vibrant Material You icons")
+            reset: ({
+                node: GlobalConfig.background,
+                setting: "materialYouIconsVibrancy"
+            })
+            value: Config.background.materialYouIconsVibrancy
+            from: 0.0
+            to: 1.0
+            stepSize: 0.05
+            enabled: !Config.background.disableQuickshellDesktop && Config.background.desktopIconsEnabled && Config.background.materialYouIconsEnabled && Config.background.materialYouIconsVibrant
+            onMoved: v => {
+                GlobalConfig.background.materialYouIconsVibrancy = v;
+                for (let i = 0; i < Quickshell.screens.length; i++) {
+                    let sConf = GlobalConfig.forScreen(Quickshell.screens[i].name);
+                    if (sConf)
+                        sConf.background.resetOption("materialYouIconsVibrancy");
+                }
+                GlobalConfig.save();
+            }
+        }
+
         SelectRow {
             Layout.fillWidth: true
             label: qsTr("Desktop Icon Size")

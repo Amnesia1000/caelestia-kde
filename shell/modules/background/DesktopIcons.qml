@@ -28,6 +28,7 @@ Item {
     readonly property bool iconsEnabled: screenConfig.desktopIconsEnabled
     readonly property bool materialYou: screenConfig.materialYouIconsEnabled
     readonly property bool vibrant: screenConfig.materialYouIconsVibrant
+    readonly property real vibrancy: screenConfig.materialYouIconsVibrancy
     readonly property string desktopDir: Paths.home + "/Desktop"
 
     // Multi-monitor scaling and density adaptation
@@ -1821,6 +1822,7 @@ wl-paste --no-newline --type text/uri-list`]
                 iconSize: root.iconSize
                 materialYou: root.materialYou
                 vibrant: root.vibrant
+                vibrancy: root.vibrancy
                 pointingCursor: DesktopLayout.singleClick
                 selected: root.selection[key] === true && root.openGroupId === ""
                 focusVisible: root.keyboardActive && root.focusKey === key && root.openGroupId === ""
