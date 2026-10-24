@@ -1,51 +1,51 @@
 pragma Singleton
 
-import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
 import qs.utils
 
-// Keep-awake outlives the shell. `PersistentProperties` alone does not survive a
-// service restart — it is written when the shell reloads itself, not when it is
-// stopped — so the intent is kept in a file of its own and read back on start.
+// Keep-awake outlives the shell. The intent is one value in the runtime directory, so a
+// restarted or crashed shell picks it up again, while a reboot or a new login starts clean
+// — an inhibitor that outlived a reboot would quietly stop the machine from sleeping.
+// `PersistentProperties` cannot carry this: it is written when the shell reloads itself,
+// not when the service is stopped.
 Singleton {
     id: root
 
-    property bool enabled: false
-    property date enabledSince: new Date()
+    // The flag and the time it was raised move together, so restoring the file cannot look
+    // like a toggle, and no reader can catch half of a change. `setEnabled` is the only way
+    // in: writing `enabled` directly would skip the file.
+    property var state: ({ enabled: false, since: new Date() })
 
-    // Reading the file is not a toggle: restoring a value must not be written back,
-    // and a toggle made before the file arrives must win over what it says.
-    property bool restoring: false
-    property bool touched: false
+    readonly property bool enabled: root.state.enabled
+    readonly property date enabledSince: root.state.since
 
-    function restore(text: string): void {
-        if (root.touched)
+    function setEnabled(value: bool): void {
+        if (value === root.state.enabled)
             return;
 
-        let state = {};
-        try {
-            state = JSON.parse(text) ?? {};
-        } catch (err) {
-            return;
-        }
-
-        root.restoring = true;
-        root.enabled = state.enabled === true;
-        const since = state.since ? new Date(state.since) : new Date();
-        root.enabledSince = isNaN(since.getTime()) ? new Date() : since;
-        root.restoring = false;
+        root.state = { enabled: value, since: value ? new Date() : root.state.since };
+        stateFile.setText(root.serialize(root.state));
     }
 
-    onEnabledChanged: {
-        if (root.restoring)
-            return;
+    function serialize(state: var): string {
+        return JSON.stringify({ enabled: state.enabled, since: state.since.toISOString() });
+    }
 
-        root.touched = true;
-        if (root.enabled)
-            root.enabledSince = new Date();
-        saveTimer.restart();
+    function restore(text: string): void {
+        let stored = null;
+        try {
+            stored = JSON.parse(text);
+        } catch (err) {
+            Logger.log("[IdleInhibitor] keep-awake state is unreadable, starting with it off:", err);
+        }
+
+        const since = stored?.since ? new Date(stored.since) : new Date();
+        root.state = {
+            enabled: stored?.enabled === true,
+            since: isNaN(since.getTime()) ? new Date() : since
+        };
     }
 
     IdleInhibitor {
@@ -61,18 +61,11 @@ Singleton {
     FileView {
         id: stateFile
 
-        path: `${Paths.state}/keepawake.json`
+        path: Paths.runtimeTemp("keepawake.json")
         watchChanges: false
         printErrors: false
 
         onLoaded: root.restore(stateFile.text())
-    }
-
-    Timer {
-        id: saveTimer
-
-        interval: 300
-        onTriggered: stateFile.setText(JSON.stringify({ enabled: root.enabled, since: root.enabledSince.toISOString() }))
     }
 
     IpcHandler {
@@ -81,18 +74,17 @@ Singleton {
         }
 
         function toggle(): void {
-            root.enabled = !root.enabled;
+            root.setEnabled(!root.enabled);
         }
 
         function enable(): void {
-            root.enabled = true;
+            root.setEnabled(true);
         }
 
         function disable(): void {
-            root.enabled = false;
+            root.setEnabled(false);
         }
 
         target: "idleInhibitor"
     }
 }
-
