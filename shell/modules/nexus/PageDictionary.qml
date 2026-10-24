@@ -195,7 +195,7 @@ QtObject {
             settings: [
                 { label: qsTr("System Shortcuts"), keywords: ["global", "keys", "hotkeys"] },
                 { label: qsTr("App Shortcuts"), keywords: ["launch", "open", "binding"] },
-                { label: qsTr("Custom Keybinds"), pagePath: "wallandstyle/AddShortcutDialog.qml", keywords: ["scripts", "commands", "actions"] }
+                { label: qsTr("Custom Keybinds"), pagePath: "desktop/AddShortcutDialog.qml", keywords: ["scripts", "commands", "actions"] }
             ]
         },
         {

@@ -368,7 +368,7 @@ test_the_dialogs_share_one_transition_with_a_shorter_exit() {
     for dialog in \
         "$SHELL_DIR/modules/nexus/common/KeyCaptureDialog.qml" \
         "$SHELL_DIR/modules/nexus/common/UninstallDialog.qml" \
-        "$SHELL_DIR/modules/nexus/pages/wallandstyle/AddShortcutDialog.qml"; do
+        "$SHELL_DIR/modules/nexus/pages/desktop/AddShortcutDialog.qml"; do
         assert_file_contains "$dialog" 'enter: DialogTransition { }' \
             "$(basename "$dialog") should use the shared entrance"
         assert_file_contains "$dialog" 'exit: DialogTransition {' \
