@@ -284,16 +284,32 @@ PageBase {
             Layout.fillWidth: true
             spacing: 0
 
+            ToggleRow {
+                first: true
+                Layout.fillWidth: true
+                text: qsTr("Follow system text size")
+                subtext: qsTr("Match the text size set in KDE's settings")
+                reset: ({ node: GlobalConfig.appearance.font, setting: "followSystemScale" })
+                checked: GlobalConfig.appearance.font.followSystemScale
+                onToggled: {
+                    GlobalConfig.appearance.font.followSystemScale = checked;
+                    GlobalConfig.save();
+                }
+            }
+
             StepperRow {
                 reset: ({ node: GlobalConfig.appearance.font, setting: "scale" })
-                first: true
                 Layout.fillWidth: true
                 label: qsTr("Font scale")
                 value: GlobalConfig.appearance.font.scale
                 from: 0.5
                 to: 2
                 stepSize: 0.05
-                onMoved: v => GlobalConfig.appearance.font.scale = v
+                onMoved: v => {
+                    GlobalConfig.appearance.font.scale = v;
+                    GlobalConfig.appearance.font.followSystemScale = false;
+                    GlobalConfig.save();
+                }
             }
 
             StepperRow {

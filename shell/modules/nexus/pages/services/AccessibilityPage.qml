@@ -73,7 +73,11 @@ PageBase {
             from: 0.5
             to: 2
             stepSize: 0.05
-            onMoved: v => GlobalConfig.appearance.font.scale = v
+            onMoved: v => {
+                GlobalConfig.appearance.font.scale = v;
+                GlobalConfig.appearance.font.followSystemScale = false;
+                GlobalConfig.save();
+            }
         }
 
         ConnectedRect {
