@@ -31,6 +31,10 @@ CACHE_SECONDS = 300
 TIMEOUT_SECONDS = 15
 USER_AGENT = "caelestia-shell (+https://github.com/ladybug-me/caelestia-kde)"
 WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
+# A bound on how far a recurring rule is expanded, so a rule that never ends cannot
+# produce an unbounded list: four occurrences a day for a long horizon is already more
+# than any agenda shows.
+MAX_OCCURRENCES = 400
 
 
 def unfold(text: str) -> list[str]:
@@ -185,7 +189,7 @@ def expand(start: datetime, rule: dict[str, str], exdates: set[datetime],
 
     cursor = start
     produced = 0
-    while len(starts) < 400 and cursor <= until_window:
+    while len(starts) < MAX_OCCURRENCES and cursor <= until_window:
         if until is not None and cursor > until:
             break
         if count and produced >= count:
@@ -207,6 +211,26 @@ def expand(start: datetime, rule: dict[str, str], exdates: set[datetime],
     return starts
 
 
+def event_end(raw: dict, start: datetime, all_day: bool) -> datetime:
+    """When an event finishes, falling back the way the format expects.
+
+    DTEND is authoritative when present; an all-day event without one covers its day,
+    and a timed event without one gets an hour. A zero-length entry is a common export
+    slip, and left alone it would fall out of every day of the agenda.
+    """
+    end = None
+    if "DTEND" in raw:
+        try:
+            end, _ = parse_moment(raw["DTEND"][0], raw["DTEND"][1], start.tzinfo)
+        except ValueError:
+            end = None
+
+    if end is None:
+        return start + (timedelta(days=1) if all_day else timedelta(hours=1))
+
+    return end if end > start else start + (timedelta(days=1) if all_day else timedelta(hours=1))
+
+
 def build_events(text: str, source_name: str, window_start: datetime,
                  window_end: datetime) -> list[dict]:
     events: list[dict] = []
@@ -220,19 +244,7 @@ def build_events(text: str, source_name: str, window_start: datetime,
         except ValueError:
             continue
 
-        if "DTEND" in raw:
-            try:
-                end, _ = parse_moment(raw["DTEND"][0], raw["DTEND"][1], start.tzinfo)
-            except ValueError:
-                end = start + timedelta(hours=1)
-        elif all_day:
-            end = start + timedelta(days=1)
-        else:
-            end = start + timedelta(hours=1)
-        # A zero-length entry is a common export slip, and left alone it would fall out
-        # of every day of the agenda.
-        if end <= start:
-            end = start + (timedelta(days=1) if all_day else timedelta(hours=1))
+        end = event_end(raw, start, all_day)
 
         duration = end - start
         exdates: set[datetime] = set()

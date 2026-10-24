@@ -12,21 +12,23 @@ import qs.utils
 /// Everything visual the shell draws comes from its own token fonts, so enlarging the
 /// text in System Settings used to leave the shell untouched. `followSystemScale` keeps
 /// the two together by reading KDE's font size and writing it as the shell's type scale.
-/// The rest of the page drives KWin itself: the magnifier, colour inversion and the
-/// colour-blindness filters are KWin effects, so the shell only loads and unloads them.
+/// The rest drives KWin itself: the magnifier, colour inversion and the colour-blindness
+/// filters are KWin effects, so this only loads and unloads them and reports what KWin
+/// says is loaded.
 Singleton {
     id: root
 
-    /// KDE's default font size, and the size the shell's own type scale is built for.
+    /// The point size the shell's type scale is drawn for, and the range it will follow.
     readonly property int basePointSize: 10
     readonly property real minScale: 0.5
     readonly property real maxScale: 2
 
+    /// KDE's font size in points, or 0 when KDE carries no `font` key (its default).
     property int systemPointSize: 0
-    property bool zoomLoaded: false
-    property bool invertLoaded: false
-    property bool colourFilterLoaded: false
+    property var loadedEffects: []
     property bool screenReaderInstalled: false
+
+    readonly property bool followSystem: GlobalConfig.appearance.font.followSystemScale
 
     readonly property real systemScale: {
         const points = root.systemPointSize > 0 ? root.systemPointSize : root.basePointSize;
@@ -34,11 +36,10 @@ Singleton {
         return Math.max(root.minScale, Math.min(root.maxScale, Math.round(scale * 100) / 100));
     }
 
-    readonly property bool followSystem: GlobalConfig.appearance.font.followSystemScale
-
     function applySystemScale(): void {
         if (!root.followSystem)
             return;
+
         const current = GlobalConfig.appearance.font.scale;
         if (Math.abs(current - root.systemScale) < 0.005)
             return;
@@ -47,15 +48,16 @@ Singleton {
         GlobalConfig.save();
     }
 
+    function isEffectLoaded(name: string): bool {
+        return root.loadedEffects.indexOf(name) >= 0;
+    }
+
+    /// Loads or unloads one of KWin's effects, then re-reads the list: what the page
+    /// shows is what KWin reports, not what this side hoped the call did.
     function setEffect(name: string, on: bool): void {
         const method = on ? "loadEffect" : "unloadEffect";
         Quickshell.execDetached(["qdbus6", "org.kde.KWin", "/Effects", `org.kde.kwin.Effects.${method}`, name]);
-        if (name === "zoom")
-            root.zoomLoaded = on;
-        else if (name === "invert")
-            root.invertLoaded = on;
-        else if (name === "colorblindnesscorrection")
-            root.colourFilterLoaded = on;
+        effectsReload.restart();
     }
 
     function startScreenReader(): void {
@@ -63,61 +65,76 @@ Singleton {
             Quickshell.execDetached(["orca"]);
     }
 
-    function applyState(output: string): void {
-        const lines = output.trim().split("\n");
-        if (lines.length >= 4) {
-            root.zoomLoaded = lines[0].trim() === "true";
-            root.invertLoaded = lines[1].trim() === "true";
-            root.colourFilterLoaded = lines[2].trim() === "true";
-            root.screenReaderInstalled = lines[3].trim() === "yes";
-        }
+    Component.onCompleted: {
+        effectsProcess.running = true;
         root.applySystemScale();
     }
 
-    function refresh(): void {
-        if (!stateProcess.running)
-            stateProcess.running = true;
-        if (!fontProcess.running)
-            fontProcess.running = true;
-    }
-
     onFollowSystemChanged: root.applySystemScale()
-    Component.onCompleted: root.refresh()
 
-    /// One round trip for the three effects and the screen reader, rather than four.
+    /// One query for the whole list. Asking per effect would mean matching a positional
+    /// reply, which breaks the moment KWin answers in a different shape.
     Process {
-        id: stateProcess
+        id: effectsProcess
 
-        command: [
-            "bash", "-c",
-            "for e in zoom invert colorblindnesscorrection; do qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.isEffectLoaded \"$e\" 2>/dev/null || echo false; done; command -v orca >/dev/null && echo yes || echo no"
-        ]
+        command: ["qdbus6", "org.kde.KWin", "/Effects", "org.kde.kwin.Effects.loadedEffects"]
 
         stdout: StdioCollector {
-            onStreamFinished: root.applyState(text)
+            onStreamFinished: root.loadedEffects = text.trim().split(",").filter(name => name.length > 0)
         }
     }
 
-    /// `font` is a KConfig entry shaped "Family,11,-1,5,…": the point size is the
-    /// second field, and an absent key means KDE's default is in use.
-    Process {
-        id: fontProcess
-
-        command: ["kreadconfig6", "--file", "kdeglobals", "--group", "General", "--key", "font"]
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const size = parseInt((text.split(",")[1] ?? "").trim(), 10);
-                root.systemPointSize = isNaN(size) || size <= 0 ? 0 : size;
-                root.applySystemScale();
-            }
-        }
-    }
-
+    /// KWin applies the call asynchronously, so give it a moment before asking.
     Timer {
-        interval: 30 * 1000
+        id: effectsReload
+
+        interval: 300
+        onTriggered: effectsProcess.running = true
+    }
+
+    Process {
+        id: orcaCheck
+
+        command: ["bash", "-c", "command -v orca"]
         running: true
-        repeat: true
-        onTriggered: root.refresh()
+
+        stdout: StdioCollector {
+            onStreamFinished: root.screenReaderInstalled = text.trim().length > 0
+        }
+    }
+
+    /// `~/.config/kdeglobals` is watched rather than polled: KDE writes the key when the
+    /// user changes the font, which is the only moment the value can change.
+    FileView {
+        id: kdeGlobals
+
+        path: `${Quickshell.env("XDG_CONFIG_HOME") || Paths.home + "/.config"}/kdeglobals`
+        watchChanges: true
+        printErrors: false
+
+        onFileChanged: reload()
+
+        onLoaded: {
+            // `font` is a KConfig entry shaped "Family,11,-1,5,...", where the point
+            // size is the second field. No key means KDE is on its default.
+            let points = 0;
+            let inGeneral = false;
+            for (const raw of text().split("\n")) {
+                const line = raw.trim();
+                if (line.startsWith("[")) {
+                    inGeneral = line === "[General]";
+                    continue;
+                }
+                if (!inGeneral || !line.startsWith("font="))
+                    continue;
+
+                const size = parseInt(line.substring(5).split(",")[1] ?? "", 10);
+                points = isNaN(size) || size <= 0 ? 0 : size;
+                break;
+            }
+
+            root.systemPointSize = points;
+            root.applySystemScale();
+        }
     }
 }

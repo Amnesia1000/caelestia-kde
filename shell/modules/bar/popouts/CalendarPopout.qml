@@ -3,14 +3,16 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import M3Shapes
 import Caelestia.Config
 import qs.components
 import qs.components.controls
-import qs.components.effects
 import qs.services
 import qs.modules.nexus
 
+/// The clock's calendar: a month at a glance, and the events of the day picked in it.
+///
+/// The month itself belongs to `CalendarMonth`, so this only holds the selection and
+/// renders that day's agenda.
 StyledRect {
     id: root
 
@@ -20,33 +22,30 @@ StyledRect {
     property real fontScale: 1.0
 
     property date viewDate: new Date()
-    readonly property int currMonth: viewDate.getMonth()
-    readonly property int currYear: viewDate.getFullYear()
-
-    /// The day whose events are listed under the grid. Clicking a day moves it, which
-    /// is what makes the grid and the list one control instead of two.
+    /// The day whose events are listed under the grid. Picking a day moves it, which is
+    /// what makes the grid and the list one control instead of two.
     property date selectedDate: new Date()
     readonly property var selectedEvents: CalendarEvents.eventsOn(root.selectedDate)
-
     readonly property string selectedLabel: root.isToday(root.selectedDate) ? qsTr("Today") : Qt.locale().toString(root.selectedDate, "ddd d MMM")
 
-    function isSameDay(a: date, b: date): bool {
-        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-    }
-
     function isToday(date: date): bool {
-        return root.isSameDay(date, new Date());
-    }
-
-    function isSelected(date: date): bool {
-        return root.isSameDay(date, root.selectedDate);
+        const now = new Date();
+        return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
     }
 
     function select(date: date): void {
         root.selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
         // A trailing day belongs to the month it is shown in, so follow it there.
-        if (date.getMonth() !== root.currMonth || date.getFullYear() !== root.currYear)
+        if (date.getMonth() !== root.viewDate.getMonth() || date.getFullYear() !== root.viewDate.getFullYear())
             root.viewDate = new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+
+    function shiftMonth(delta: int): void {
+        root.viewDate = new Date(root.viewDate.getFullYear(), root.viewDate.getMonth() + delta, 1);
+    }
+
+    function goToToday(): void {
+        root.viewDate = new Date();
     }
 
     function eventTime(event: var): string {
@@ -93,25 +92,10 @@ StyledRect {
         });
     }
 
-    function shiftMonth(delta: int): void {
-        root.viewDate = new Date(root.currYear, root.currMonth + delta, 1);
-    }
-
-    function goToToday(): void {
-        root.viewDate = new Date();
-    }
-
     implicitWidth: 497 * root.scaleOffset
     implicitHeight: inner.implicitHeight + Tokens.padding.large * 2 * root.scaleOffset
     radius: Tokens.rounding.extraLarge * root.scaleOffset
     color: Colours.tPalette.m3surfaceContainer
-
-    CalendarMonthSlide {
-        id: monthSlide
-
-        shownDate: root.viewDate
-        offset: Tokens.padding.extraLarge * root.scaleOffset
-    }
 
     // Opening the calendar is the moment its contents matter, so that is when a stale
     // copy is re-read rather than only on the background timer.
@@ -154,197 +138,18 @@ StyledRect {
         width: root.width - Tokens.padding.large * 2 * root.scaleOffset
         spacing: Tokens.spacing.extraSmall * root.scaleOffset
 
-        RowLayout {
-            id: monthNavigationRow
-
+        CalendarMonth {
             Layout.fillWidth: true
-            spacing: Tokens.spacing.extraSmall * root.scaleOffset
 
-            IconButton {
-                isRound: true
-                icon: "chevron_left"
-                type: IconButton.Text
-                font: Tokens.font.icon.builders.small.weight(Font.Bold).size(Tokens.font.icon.builders.small.build().pointSize * root.fontScale).build()
-                padding: Tokens.padding.small * root.scaleOffset
-                onClicked: root.shiftMonth(-1)
-            }
+            viewDate: root.viewDate
+            highlightedDate: root.selectedDate
+            selectable: true
+            scaleOffset: root.scaleOffset
+            fontScale: root.fontScale
 
-            Item {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-
-                implicitWidth: monthYearDisplay.implicitWidth + Tokens.padding.large * 2 * root.scaleOffset
-                implicitHeight: monthYearDisplay.implicitHeight + Tokens.padding.extraSmall * 2 * root.scaleOffset
-
-                StateLayer {
-                    color: Colours.palette.m3primary
-                    radius: pressed ? Tokens.rounding.small * root.scaleOffset : height / 2
-                    disabled: {
-                        const now = new Date();
-                        return root.currMonth === now.getMonth() && root.currYear === now.getFullYear();
-                    }
-                    onClicked: root.goToToday()
-
-                    Behavior on radius {
-                        Anim {
-                            type: Anim.DefaultEffects
-                        }
-                    }
-                }
-
-                StyledText {
-                    id: monthYearDisplay
-
-                    opacity: monthSlide.animOpacity
-                    transform: Translate {
-                        x: monthSlide.animTranslate
-                    }
-
-                    anchors.centerIn: parent
-                    text: grid.title
-                    color: Colours.palette.m3primary
-                    font: Tokens.font.title.builders.small.capitalisation(Font.Capitalize).size(Tokens.font.title.builders.small.build().pointSize * root.fontScale).build()
-                }
-            }
-
-            IconButton {
-                isRound: true
-                icon: "chevron_right"
-                type: IconButton.Text
-                font: Tokens.font.icon.builders.small.weight(Font.Bold).size(Tokens.font.icon.builders.small.build().pointSize * root.fontScale).build()
-                padding: Tokens.padding.small * root.scaleOffset
-                onClicked: root.shiftMonth(1)
-            }
-        }
-
-        DayOfWeekRow {
-            id: daysRow
-
-            Layout.fillWidth: true
-            locale: grid.locale
-
-            delegate: StyledText {
-                required property var model
-
-                horizontalAlignment: Text.AlignHCenter
-                text: model.shortName
-                font: Tokens.font.body.builders.small.weight(Font.Medium).size(Tokens.font.body.builders.small.build().pointSize * root.fontScale).build()
-                color: (model.day === 0 || model.day === 6) ? Colours.palette.m3tertiary : Colours.palette.m3onSurface
-                renderType: Text.QtRendering
-            }
-        }
-
-        Item {
-            Layout.fillWidth: true
-            implicitHeight: grid.implicitHeight
-
-            opacity: monthSlide.animOpacity
-            transform: Translate {
-                x: monthSlide.animTranslate
-            }
-
-            MonthGrid {
-                id: grid
-
-                month: root.currMonth
-                year: root.currYear
-
-                anchors.fill: parent
-
-                spacing: 3 * root.scaleOffset
-                locale: Qt.locale()
-
-                delegate: Item {
-                    id: dayItem
-
-                    required property var model
-
-                    implicitWidth: implicitHeight
-                    implicitHeight: text.implicitHeight + Tokens.padding.small * root.scaleOffset
-
-                    StyledText {
-                        id: text
-
-                        anchors.centerIn: parent
-
-                        horizontalAlignment: Text.AlignHCenter
-                        text: grid.locale.toString(dayItem.model.day)
-                        color: {
-                            if (root.isSelected(dayItem.model.date))
-                                return Colours.palette.m3onPrimary;
-                            if (dayItem.model.today)
-                                return Colours.palette.m3primary;
-                            if (dayItem.model.date.getDay() === 0 || dayItem.model.date.getDay() === 6)
-                                return Colours.palette.m3tertiary;
-
-                            return Colours.palette.m3onSurfaceVariant;
-                        }
-                        opacity: dayItem.model.today || dayItem.model.month === grid.month ? 1 : 0.4
-                        font: Tokens.font.body.builders.small.size(Tokens.font.body.small.pointSize * root.fontScale).build()
-                        renderType: Text.QtRendering
-                    }
-
-                    Rectangle {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.bottom: parent.bottom
-                        implicitWidth: 3 * root.scaleOffset
-                        implicitHeight: 3 * root.scaleOffset
-                        radius: Tokens.rounding.full
-                        color: Colours.palette.m3primary
-                        // The selected day already carries the indicator shape.
-                        visible: !root.isSelected(dayItem.model.date) && CalendarEvents.hasEventsOn(dayItem.model.date)
-                    }
-
-                    StateLayer {
-                        anchors.fill: parent
-                        radius: Tokens.rounding.full
-                        onClicked: root.select(dayItem.model.date)
-                    }
-                }
-            }
-
-            MaterialShape {
-                id: selectionIndicator
-
-                readonly property Item selectedItem: grid.contentItem.children.find(c => root.isSelected(c.model.date)) ?? null
-                property Item day
-
-                onSelectedItemChanged: {
-                    if (selectedItem)
-                        day = selectedItem;
-                }
-
-                x: day ? day.x + (day.width - implicitWidth) / 2 : 0
-                y: day ? day.y + (day.height - implicitHeight) / 2 : 0
-
-                implicitSize: day ? Math.max(day.implicitWidth, day.implicitHeight) + Tokens.padding.extraSmall * 2 * root.scaleOffset : 0
-                shape: MaterialShape.Sunny
-
-                clip: true
-                color: Colours.palette.m3primary
-
-                opacity: selectedItem ? 1 : 0
-
-                Colouriser {
-                    x: -selectionIndicator.x
-                    y: -selectionIndicator.y
-
-                    implicitWidth: grid.width
-                    implicitHeight: grid.height
-
-                    source: grid
-                    sourceColor: Colours.palette.m3onSurface
-                    colorizationColor: Colours.palette.m3onPrimary
-                }
-
-                Behavior on x {
-                    Anim {}
-                }
-
-                Behavior on y {
-                    Anim {}
-                }
-            }
+            onMonthShifted: delta => root.shiftMonth(delta)
+            onTodayRequested: root.goToToday()
+            onDayClicked: date => root.select(date)
         }
 
         Rectangle {
@@ -375,7 +180,7 @@ StyledRect {
 
                 Layout.fillWidth: true
                 Layout.topMargin: Tokens.spacing.extraSmall * root.scaleOffset
-                implicitHeight: (eventRow.modelData ? eventText.implicitHeight : hint.implicitHeight)
+                implicitHeight: eventRow.modelData ? eventText.implicitHeight : hint.implicitHeight
 
                 Column {
                     id: eventText

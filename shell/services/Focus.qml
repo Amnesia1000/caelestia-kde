@@ -79,7 +79,11 @@ Singleton {
     }
 
     function allows(appName: string): bool {
-        return root.applied && appName !== "" && root.allowlist.includes(appName);
+        if (!root.applied || appName === "")
+            return false;
+
+        const name = appName.toLowerCase();
+        return root.allowlist.some(allowed => allowed.toLowerCase() === name);
     }
 
     function sync(): void {

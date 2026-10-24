@@ -10,6 +10,7 @@ SCRIPT="$REPO_ROOT/shell/scripts/calendar_events.py"
 SERVICE="$REPO_ROOT/shell/services/CalendarEvents.qml"
 POPOUT="$REPO_ROOT/shell/modules/bar/popouts/CalendarPopout.qml"
 CLOCK="$REPO_ROOT/shell/modules/bar/components/Clock.qml"
+MONTH="$REPO_ROOT/shell/components/CalendarMonth.qml"
 CONFIG="$REPO_ROOT/shell/plugin/src/Caelestia/Config/serviceconfig.hpp"
 BAR_CONFIG="$REPO_ROOT/shell/plugin/src/Caelestia/Config/barconfig.hpp"
 PAGE="$REPO_ROOT/shell/modules/nexus/pages/services/CalendarPage.qml"
@@ -125,27 +126,40 @@ test_service_reads_the_configured_sources() {
 }
 
 test_the_selected_day_drives_the_agenda() {
-    local popout dash
+    local popout month
     popout="$(cat "$POPOUT")"
-    dash="$REPO_ROOT/shell/modules/dashboard/dash/Calendar.qml"
+    month="$(cat "$MONTH")"
 
     # The list under the grid is the selected day opened up, not a separate feed.
     assert_contains "$popout" 'readonly property var selectedEvents: CalendarEvents.eventsOn(root.selectedDate)' \
         "the agenda must follow the selected day"
     assert_contains "$popout" 'text: root.selectedLabel' "and be headed by which day it is"
-    assert_contains "$popout" 'onClicked: root.select(dayItem.model.date)' \
-        "a day in the grid has to be clickable"
-    assert_contains "$popout" 'if (date.getMonth() !== root.currMonth || date.getFullYear() !== root.currYear)' \
+    assert_contains "$popout" 'onDayClicked: date => root.select(date)' \
+        "picking a day in the grid must move the list"
+    assert_contains "$popout" 'if (date.getMonth() !== root.viewDate.getMonth()' \
         "clicking a day of the adjacent month must follow it there"
-    assert_contains "$popout" 'if (root.isSelected(dayItem.model.date))' \
-        "the selected day must be marked in the grid"
+    assert_contains "$month" 'if (root.isMarked(dayItem.model.date))' \
+        "the marked day must be highlighted in the grid"
     assert_contains "$popout" 'root.eventTime(eventRow.modelData)' "a timed event shows its time"
-    assert_contains "$popout" 'CalendarEvents.hasEventsOn(dayItem.model.date)' \
+    assert_contains "$month" 'CalendarEvents.hasEventsOn(dayItem.model.date)' \
         "days with events must be marked in the grid"
-    assert_contains "$(cat "$dash")" 'CalendarEvents.hasEventsOn(dayItem.model.date)' \
-        "the dashboard grid must mark those days too"
     assert_contains "$(cat "$SERVICE")" 'return root.events.filter(event => event.start.getTime() < end && event.end.getTime() > start);' \
         "a day's events are the ones that overlap it, so multi-day events show"
+}
+
+test_the_month_lives_in_one_place() {
+    local grids dashboard
+    # The bar popout and the dashboard used to draw the same month twice. One MonthGrid in
+    # the tree is what keeps them from drifting apart again.
+    grids="$(grep -rl 'MonthGrid {' "$REPO_ROOT/shell" --include='*.qml' | wc -l)"
+    assert_eq "1" "$grids" "the month grid must exist once, in the shared view"
+
+    dashboard="$(cat "$REPO_ROOT/shell/modules/dashboard/dash/Calendar.qml")"
+    assert_contains "$dashboard" 'CalendarMonth {' "the dashboard must use the shared view"
+    assert_contains "$dashboard" 'onMonthShifted: delta => root.shiftMonth(delta)' \
+        "and leave its own date where the dashboard already stored it"
+    assert_contains "$(cat "$MONTH")" 'disabled: !root.selectable' \
+        "the dashboard's month is not clickable, the popout's is"
 }
 
 test_the_empty_agenda_offers_the_way_out() {
@@ -216,7 +230,7 @@ test_the_calendar_updates_itself() {
     assert_contains "$script" 'if error.code == 304 and cached.exists():' "a 304 must reuse the cached copy"
     assert_contains "$script" 'add_argument("--refresh", action="store_true"' "and a forced re-fetch must be possible"
     assert_contains "$service" 'calendar_events.py"), "--days", String(root.days)]' "the days window is still passed"
-    assert_contains "$service" 'if (root._force)' "forcing bypasses the on-disk copy"
+    assert_contains "$service" 'if (force)' "forcing bypasses the on-disk copy"
     assert_contains "$(cat "$PAGE")" 'CalendarEvents.refresh(true)' "Refresh in Nexus forces a re-fetch"
 }
 

@@ -17,7 +17,10 @@ PageBase {
 
     property list<string> draftDays: []
 
-    readonly property bool canAdd: nameField.field.text.trim() !== "" && Focus.parseTime(startField.field.text) >= 0 && Focus.parseTime(endField.field.text) >= 0
+    readonly property string defaultStart: "09:00"
+    readonly property string defaultEnd: "17:00"
+
+    readonly property bool canAdd: nameField.field.text.trim() !== "" && Focus.parseTime(startField.text) >= 0 && Focus.parseTime(endField.text) >= 0
 
     function toggleDraftDay(day: string): void {
         const days = Array.from(root.draftDays);
@@ -36,14 +39,14 @@ PageBase {
         GlobalConfig.notifs.focusSchedules.insert({
             name: nameField.field.text.trim(),
             days: Array.from(root.draftDays),
-            start: startField.field.text.trim(),
-            end: endField.field.text.trim()
+            start: startField.text.trim(),
+            end: endField.text.trim()
         });
         GlobalConfig.save();
 
         nameField.clear();
-        startField.clear();
-        endField.clear();
+        startField.text = root.defaultStart;
+        endField.text = root.defaultEnd;
         root.draftDays = [];
     }
 
@@ -71,16 +74,15 @@ PageBase {
         return qsTr("No session running now");
     }
 
-    function addAllowedApp(): void {
-        const appName = allowInput.text.trim();
-        if (appName === "" || root.allowlist.includes(appName))
+    function addAllowedApp(appName: string): void {
+        const name = appName.trim();
+        if (name === "" || root.allowlist.includes(name))
             return;
 
         const apps = Array.from(root.allowlist);
-        apps.push(appName);
+        apps.push(name);
         GlobalConfig.notifs.focusAllowlist = apps;
         GlobalConfig.save();
-        allowInput.text = "";
     }
 
     function removeAllowedApp(appName: string): void {
@@ -280,8 +282,8 @@ PageBase {
                 StyledInputField {
                     id: startField
 
-                    text: "09:00"
-                    implicitWidth: 70
+                    implicitWidth: 96
+                    text: root.defaultStart
                 }
 
                 StyledText {
@@ -293,8 +295,8 @@ PageBase {
                 StyledInputField {
                     id: endField
 
-                    text: "17:00"
-                    implicitWidth: 70
+                    implicitWidth: 96
+                    text: root.defaultEnd
                 }
 
                 Item {
@@ -326,29 +328,20 @@ PageBase {
                 anchors.margins: Tokens.padding.medium
                 anchors.leftMargin: Tokens.padding.largeIncreased
                 anchors.rightMargin: Tokens.padding.largeIncreased
-                text: qsTr("Notifications from these apps still pop up during a focus session. Names have to match the application name the notification carries.")
+                text: qsTr("Notifications from these apps still pop up during a focus session.")
                 color: Colours.palette.m3onSurfaceVariant
                 font: NexusStyle.secondaryFont
                 wrapMode: Text.Wrap
             }
         }
 
-        RowLayout {
-            Layout.fillWidth: true
-            spacing: Tokens.spacing.small
-
-            StyledInputField {
-                id: allowInput
-
-                Layout.fillWidth: true
-                onEditingFinished: root.addAllowedApp()
-            }
-
-            TextButton {
-                text: qsTr("Add")
-                enabled: allowInput.text.trim() !== ""
-                onClicked: root.addAllowedApp()
-            }
+        AppPickerRow {
+            last: true
+            icon: "add"
+            label: qsTr("Allow an application")
+            status: qsTr("Pick it from the applications installed here")
+            exclude: root.allowlist
+            onSelected: name => root.addAllowedApp(name)
         }
 
         Flow {
@@ -358,38 +351,11 @@ PageBase {
             Repeater {
                 model: root.allowlist
 
-                delegate: StyledRect {
-                    id: allowChip
-
+                delegate: RemovableChip {
                     required property string modelData
 
-                    width: implicitWidth
-                    height: implicitHeight
-                    implicitWidth: chipLayout.implicitWidth + Tokens.padding.medium * 2
-                    implicitHeight: chipLayout.implicitHeight + Tokens.padding.extraSmall * 2
-                    color: Colours.layer(Colours.palette.m3surfaceContainer, 2)
-                    radius: Tokens.rounding.large
-
-                    RowLayout {
-                        id: chipLayout
-
-                        x: Tokens.padding.medium
-                        y: Tokens.padding.extraSmall
-                        spacing: Tokens.spacing.extraSmall
-
-                        StyledText {
-                            text: allowChip.modelData
-                        }
-
-                        MaterialIcon {
-                            text: "close"
-                            font: Tokens.font.icon.small
-
-                            StateLayer {
-                                onClicked: root.removeAllowedApp(allowChip.modelData)
-                            }
-                        }
-                    }
+                    label: modelData
+                    onRemoved: root.removeAllowedApp(modelData)
                 }
             }
         }

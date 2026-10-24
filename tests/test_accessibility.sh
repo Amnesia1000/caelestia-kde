@@ -19,18 +19,21 @@ test_shell_text_follows_kdes_font_size() {
 
     assert_contains "$config" 'CONFIG_PROPERTY(bool, followSystemScale, true)' \
         "following KDE's text size has to be a setting"
+    # The file is watched, not polled: spawning kreadconfig6 every 30s to learn a value
+    # that only changes when the user changes it is work for nothing.
+    assert_contains "$service" 'watchChanges: true' "kdeglobals must be watched"
+    assert_contains "$service" 'onFileChanged: reload()' "and re-read when KDE writes it"
+    assert_not_contains "$service" 'kreadconfig6' "the font size must not be polled through a process"
     # kdeglobals stores "Family,11,-1,5,…": the point size is the second field.
-    assert_contains "$service" '"kdeglobals", "--group", "General", "--key", "font"' \
-        "the size has to be read from where KDE keeps it"
-    assert_contains "$service" 'const size = parseInt((text.split(",")[1] ?? "").trim(), 10)' \
-        "and be taken from the font entry"
+    assert_contains "$service" 'const size = parseInt(line.substring(5).split(",")[1] ?? "", 10)' \
+        "the size has to be taken from the font entry"
     assert_contains "$service" 'const scale = points / root.basePointSize' \
         "an 11 pt default has to become 110%, not a delta"
-    assert_contains "$service" 'root.systemPointSize = isNaN(size) || size <= 0 ? 0 : size' \
+    assert_contains "$service" 'points = isNaN(size) || size <= 0 ? 0 : size' \
         "an absent key means KDE's default, not a zero scale"
     assert_contains "$service" 'if (!root.followSystem)' "the setting has to be honoured"
     assert_contains "$service" 'Math.abs(current - root.systemScale) < 0.005' \
-        "the config must not be rewritten on every poll"
+        "the config must not be rewritten on every re-read"
 }
 
 test_visual_helpers_drive_kwin_effects() {
@@ -38,13 +41,20 @@ test_visual_helpers_drive_kwin_effects() {
     service="$(cat "$SERVICE")"
     page="$(cat "$PAGE")"
 
-    # These are KWin's own effect names; the shell only loads and unloads them.
-    assert_contains "$service" 'for e in zoom invert colorblindnesscorrection' \
-        "the effects to query have to be the ones KWin ships"
+    # KWin reports the whole list in one call; asking per effect meant matching a
+    # positional reply, which is the kind of contract that silently breaks.
+    assert_contains "$service" '["qdbus6", "org.kde.KWin", "/Effects", "org.kde.kwin.Effects.loadedEffects"]' \
+        "the loaded effects must be read in one query"
+    assert_not_contains "$service" 'Effects.isEffectLoaded' "and not one process per effect"
+    assert_contains "$service" 'root.loadedEffects.indexOf(name) >= 0' "membership decides the switch"
     assert_contains "$service" 'org.kde.kwin.Effects.${method}' "toggling must go through KWin's interface"
-    assert_contains "$page" 'Accessibility.setEffect("zoom", checked)' "the magnifier must be switchable"
-    assert_contains "$page" 'Accessibility.setEffect("invert", checked)' "so must inversion"
-    assert_contains "$page" 'Accessibility.setEffect("colorblindnesscorrection", checked)' "and the filters"
+    assert_contains "$service" 'effectsReload.restart()' "and the list is re-read after the call"
+
+    # The page is data: one row per effect, so a fourth effect is a line, not a copy.
+    assert_contains "$page" 'readonly property var effectRows' "the effects belong in one list"
+    assert_contains "$page" 'checked: Accessibility.isEffectLoaded(modelData.id)' \
+        "each row asks whether KWin has it loaded"
+    assert_contains "$page" 'onToggled: Accessibility.setEffect(modelData.id, checked)'
     assert_contains "$page" 'qsTr("Reduce motion")' "reduced motion belongs on this page"
     assert_contains "$page" 'GlobalConfig.appearance.anim.enabled = !checked' \
         "reduced motion is the inverse of the animations switch"

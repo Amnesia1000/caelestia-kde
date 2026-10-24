@@ -23,17 +23,16 @@ Singleton {
     property bool loading: false
     property double updatedAt: 0
 
-    /// Set while a forced re-fetch is in flight, so the script skips the cache.
-    property bool _force: false
-    /// A refresh asked for while one was already running, and whether it was forced.
-    property bool _pending: false
-    property bool _pendingForce: false
+    /// A re-read asked for while one was already running: "" for nothing, otherwise the
+    /// kind of request to run once the current read finishes. A forced request wins over
+    /// a soft one, since it subsumes it.
+    property string _queued: ""
 
     readonly property bool configured: root.sources.length > 0
 
-    readonly property var command: {
+    function commandFor(force: bool): var {
         const args = ["python3", Quickshell.shellPath("scripts/calendar_events.py"), "--days", String(root.days)];
-        if (root._force)
+        if (force)
             args.push("--refresh");
         for (const source of root.sources) {
             const name = (source.name || "").trim() || "Calendar";
@@ -55,9 +54,7 @@ Singleton {
     }
 
     function hasEventsOn(date: date): bool {
-        const start = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-        const end = start + 86400000;
-        return root.events.some(event => event.start.getTime() < end && event.end.getTime() > start);
+        return root.eventsOn(date).length > 0;
     }
 
     function apply(output: string): void {
@@ -87,18 +84,18 @@ Singleton {
         if (!root.configured)
             return;
 
+        const kind = force ? "force" : "soft";
         if (calendarProcess.running) {
             // A read is already on its way — queue one instead of dropping it, or a
             // popout opened during the first fetch would keep showing stale events.
-            root._pending = true;
-            root._pendingForce = root._pendingForce || force;
+            if (kind === "force" || root._queued === "")
+                root._queued = kind;
             return;
         }
 
-        root._force = force;
         root.loading = true;
-        calendarProcess.running = true;
-    }
+        calendarProcess.command = root.commandFor(force);
+        calendarProcess.running = true;    }
 
     onSourcesChanged: root.refresh()
     onDaysChanged: root.refresh()
@@ -107,22 +104,18 @@ Singleton {
     Process {
         id: calendarProcess
 
-        command: root.command
-
         stdout: StdioCollector {
             onStreamFinished: root.apply(text)
         }
 
         onExited: code => {
             root.loading = false;
-            root._force = false;
             if (code !== 0 && root.errors.length === 0)
                 root.errors = [{ source: "Calendar", error: `calendar_events.py exited with ${code}` }];
 
-            if (root._pending) {
-                const force = root._pendingForce;
-                root._pending = false;
-                root._pendingForce = false;
+            if (root._queued !== "") {
+                const force = root._queued === "force";
+                root._queued = "";
                 root.refresh(force);
             }
         }

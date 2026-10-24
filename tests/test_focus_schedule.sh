@@ -60,18 +60,31 @@ test_allowlisted_apps_pass_through_the_session() {
     local notifs
     notifs="$(cat "$NOTIFS")"
 
-    assert_contains "$notifs" 'function shouldShowPopup(appName: string): bool' \
-        "the popup decision needs to know which app is speaking"
-    assert_contains "$notifs" 'props.dnd && !Focus.allows(appName)' \
-        "an allowlisted app must still pop up during a session"
-    assert_contains "$notifs" 'props.dnd && !Focus.allows(notif.appName)' \
-        "and must still make a sound"
+    # The popup and the sound ask the same question, so the DND + focus + fullscreen
+    # policy is stated once instead of copied into each decision.
+    assert_contains "$notifs" 'function isSilenced(appName: string): bool' \
+        "silencing must be one predicate"
+    assert_contains "$notifs" 'if (props.dnd && !Focus.allows(appName))' \
+        "an allowlisted app must still be heard during a session"
+    assert_contains "$notifs" 'return !root.isSilenced(appName);' \
+        "the popup decision must go through that predicate"
+    assert_contains "$notifs" 'return !root.isSilenced(notif.appName);' \
+        "and so must the sound decision"
+    local popup_decision sound_decision
+    popup_decision="$(sed -n '/function shouldShowPopup/,/^    }/p' <<<"$notifs")"
+    sound_decision="$(sed -n '/function shouldPlaySound/,/^    }/p' <<<"$notifs")"
+    assert_not_contains "$popup_decision" 'hasFullscreen' \
+        "the popup decision must not restate the fullscreen rule"
+    assert_not_contains "$sound_decision" 'hasFullscreen' \
+        "neither must the sound decision"
     assert_contains "$notifs" 'root.shouldShowPopup(notif.appName)' \
         "the D-Bus path must pass the app name through"
     assert_contains "$notifs" 'root.shouldShowPopup(params.appName ?? "")' \
         "shell-raised notifications must pass theirs too"
-    assert_contains "$(cat "$SERVICE")" 'return root.applied && appName !== "" && root.allowlist.includes(appName)' \
-        "the allowlist may only apply while focus is what silenced things"
+    assert_contains "$(cat "$SERVICE")" 'function allows(appName: string): bool' \
+        "the allowlist must be the focus service's to answer"
+    assert_contains "$(cat "$SERVICE")" 'root.allowlist.some(allowed => allowed.toLowerCase() === name)' \
+        "and has to ignore the case the notifier happens to use"
 }
 
 test_focus_page_is_reachable_from_notifications() {
@@ -82,7 +95,12 @@ test_focus_page_is_reachable_from_notifications() {
 
     assert_contains "$page" 'GlobalConfig.notifs.focusSchedules.insert' "the page must add schedules"
     assert_contains "$page" 'GlobalConfig.notifs.focusSchedules.remove(index)' "and remove them"
+    assert_contains "$page" 'start: startField.text.trim()' "the times come straight out of the fields"
+    assert_contains "$page" 'startField.text = root.defaultStart' "which reset to the defaults after adding"
     assert_contains "$page" 'GlobalConfig.notifs.focusAllowlist = apps' "and edit the allowlist"
+    assert_contains "$page" 'AppPickerRow {' "apps are picked from the installed ones"
+    assert_contains "$page" 'onSelected: name => root.addAllowedApp(name)' "not typed in from memory"
+    assert_not_contains "$page" 'allowInput' "the free-text allow field is gone"
     assert_contains "$hub" 'root.nState.openSubPage(4)' "the hub must link to it"
     assert_contains "$registry" 'Component { FocusPage {} }' "the page must be registered"
 }

@@ -9,6 +9,7 @@ Item {
     id: root
 
     property string text: ""
+    property alias placeholderText: inputField.placeholderText
     property var validator: null
     property bool readOnly: false
     property int horizontalAlignment: TextInput.AlignHCenter

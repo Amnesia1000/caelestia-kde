@@ -11,6 +11,26 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
+    /// The KWin effects this page offers, as data: adding one is a row here rather than
+    /// a fourth near-identical toggle.
+    readonly property var effectRows: [
+        {
+            id: "zoom",
+            label: qsTr("Magnifier"),
+            subtext: qsTr("Load KWin's zoom effect (Meta+= by default)")
+        },
+        {
+            id: "invert",
+            label: qsTr("Invert colours"),
+            subtext: qsTr("Load KWin's colour inversion effect")
+        },
+        {
+            id: "colorblindnesscorrection",
+            label: qsTr("Colour filters"),
+            subtext: qsTr("Load KWin's colour blindness correction effect")
+        }
+    ]
+
     function systemTextStatus(): string {
         if (!Accessibility.followSystem)
             return qsTr("The shell keeps the scale set below, whatever KDE's text size is");
@@ -96,27 +116,20 @@ PageBase {
             text: qsTr("Screen")
         }
 
-        ToggleRow {
-            first: true
-            text: qsTr("Magnifier")
-            subtext: qsTr("Load KWin's zoom effect (Meta+= by default)")
-            checked: Accessibility.zoomLoaded
-            onToggled: Accessibility.setEffect("zoom", checked)
-        }
+        Repeater {
+            model: root.effectRows
 
-        ToggleRow {
-            text: qsTr("Invert colours")
-            subtext: qsTr("Load KWin's colour inversion effect")
-            checked: Accessibility.invertLoaded
-            onToggled: Accessibility.setEffect("invert", checked)
-        }
+            delegate: ToggleRow {
+                required property var modelData
+                required property int index
 
-        ToggleRow {
-            last: true
-            text: qsTr("Colour filters")
-            subtext: qsTr("Load KWin's colour blindness correction effect")
-            checked: Accessibility.colourFilterLoaded
-            onToggled: Accessibility.setEffect("colorblindnesscorrection", checked)
+                first: index === 0
+                last: index === root.effectRows.length - 1
+                text: modelData.label
+                subtext: modelData.subtext
+                checked: Accessibility.isEffectLoaded(modelData.id)
+                onToggled: Accessibility.setEffect(modelData.id, checked)
+            }
         }
 
         ConnectedRect {
