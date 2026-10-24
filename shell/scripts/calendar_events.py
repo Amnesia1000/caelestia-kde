@@ -228,6 +228,10 @@ def build_events(text: str, source_name: str, window_start: datetime,
             end = start + timedelta(days=1)
         else:
             end = start + timedelta(hours=1)
+        # A zero-length entry is a common export slip, and left alone it would fall out
+        # of every day of the agenda.
+        if end <= start:
+            end = start + (timedelta(days=1) if all_day else timedelta(hours=1))
 
         duration = end - start
         exdates: set[datetime] = set()
@@ -309,7 +313,9 @@ def main() -> int:
     args = parser.parse_args()
 
     now = datetime.now().astimezone()
-    window_start = now - timedelta(hours=1)
+    # From the start of today, not from now: the day's agenda should still list the
+    # meeting that already happened, which is what the shell shows when a day is picked.
+    window_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     window_end = now + timedelta(days=max(1, args.days))
     cache_dir = Path(os.path.expanduser(args.cache_dir))
 

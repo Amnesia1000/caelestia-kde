@@ -23,52 +23,46 @@ StyledRect {
     readonly property int currMonth: viewDate.getMonth()
     readonly property int currYear: viewDate.getFullYear()
 
-    /// One row per day header and per event, so the agenda stays a single flat list.
-    readonly property var agendaRows: {
-        const rows = [];
-        for (const group of CalendarEvents.upcoming(3)) {
-            rows.push({ kind: "day", label: root.dayLabel(group.date) });
-            for (const event of group.events)
-                rows.push({
-                    kind: "event",
-                    label: event.allDay ? qsTr("All day") : Qt.formatTime(event.start, "hh:mm"),
-                    event: event
-                });
-        }
-        if (rows.length === 0)
-            rows.push({ kind: "empty", label: "" });
-        return rows;
+    /// The day whose events are listed under the grid. Clicking a day moves it, which
+    /// is what makes the grid and the list one control instead of two.
+    property date selectedDate: new Date()
+    readonly property var selectedEvents: CalendarEvents.eventsOn(root.selectedDate)
+
+    readonly property string selectedLabel: root.isToday(root.selectedDate) ? qsTr("Today") : Qt.locale().toString(root.selectedDate, "ddd d MMM")
+
+    function isSameDay(a: date, b: date): bool {
+        return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
     }
 
-    function dayLabel(date: date): string {
-        const now = new Date();
-        const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-        const days = Math.round((day - midnight) / 86400000);
-        if (days === 0)
-            return qsTr("Today");
-        if (days === 1)
-            return qsTr("Tomorrow");
-
-        return Qt.locale().toString(date, "ddd d MMM");
+    function isToday(date: date): bool {
+        return root.isSameDay(date, new Date());
     }
 
-    function rowText(row: var): string {
-        if (row.kind === "day")
-            return "";
-        if (row.kind === "empty")
-            return root.agendaHint();
+    function isSelected(date: date): bool {
+        return root.isSameDay(date, root.selectedDate);
+    }
 
-        return row.event.location ? `${row.event.summary} · ${row.event.location}` : row.event.summary;
+    function select(date: date): void {
+        root.selectedDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        // A trailing day belongs to the month it is shown in, so follow it there.
+        if (date.getMonth() !== root.currMonth || date.getFullYear() !== root.currYear)
+            root.viewDate = new Date(date.getFullYear(), date.getMonth(), 1);
+    }
+
+    function eventTime(event: var): string {
+        if (event.allDay)
+            return qsTr("All day");
+        // Same 12/24-hour choice as the bar clock, so the two never disagree.
+        return event.start.toLocaleString(Qt.locale(), Units.twelveHourClock ? "h:mm A" : "HH:mm");
     }
 
     function agendaHint(): string {
         if (!CalendarEvents.configured)
-            return qsTr("No calendars yet — click to add one");
+            return qsTr("No calendars yet - click to add one");
         if (CalendarEvents.errors.length > 0)
-            return qsTr("Could not read %1 — click to check the address").arg(CalendarEvents.errors[0].source);
+            return qsTr("Could not read %1 - click to check the address").arg(CalendarEvents.errors[0].source);
 
-        return qsTr("Nothing scheduled");
+        return qsTr("No events");
     }
 
     /// The empty agenda is the only place a first-time user meets this feature, so it
@@ -249,8 +243,11 @@ StyledRect {
                         horizontalAlignment: Text.AlignHCenter
                         text: grid.locale.toString(dayItem.model.day)
                         color: {
-                            const dayOfWeek = dayItem.model.date.getDay();
-                            if (dayOfWeek === 0 || dayOfWeek === 6)
+                            if (root.isSelected(dayItem.model.date))
+                                return Colours.palette.m3onPrimary;
+                            if (dayItem.model.today)
+                                return Colours.palette.m3primary;
+                            if (dayItem.model.date.getDay() === 0 || dayItem.model.date.getDay() === 6)
                                 return Colours.palette.m3tertiary;
 
                             return Colours.palette.m3onSurfaceVariant;
@@ -267,36 +264,43 @@ StyledRect {
                         implicitHeight: 3 * root.scaleOffset
                         radius: Tokens.rounding.full
                         color: Colours.palette.m3primary
-                        visible: CalendarEvents.hasEventsOn(dayItem.model.date)
+                        // The selected day already carries the indicator shape.
+                        visible: !root.isSelected(dayItem.model.date) && CalendarEvents.hasEventsOn(dayItem.model.date)
+                    }
+
+                    StateLayer {
+                        anchors.fill: parent
+                        radius: Tokens.rounding.full
+                        onClicked: root.select(dayItem.model.date)
                     }
                 }
             }
 
             MaterialShape {
-                id: todayIndicator
+                id: selectionIndicator
 
-                readonly property Item todayItem: grid.contentItem.children.find(c => c.model.today) ?? null
-                property Item today
+                readonly property Item selectedItem: grid.contentItem.children.find(c => root.isSelected(c.model.date)) ?? null
+                property Item day
 
-                onTodayItemChanged: {
-                    if (todayItem)
-                        today = todayItem;
+                onSelectedItemChanged: {
+                    if (selectedItem)
+                        day = selectedItem;
                 }
 
-                x: today ? today.x + (today.width - implicitWidth) / 2 : 0
-                y: today ? today.y + (today.height - implicitHeight) / 2 : 0
+                x: day ? day.x + (day.width - implicitWidth) / 2 : 0
+                y: day ? day.y + (day.height - implicitHeight) / 2 : 0
 
-                implicitSize: today ? Math.max(today.implicitWidth, today.implicitHeight) + Tokens.padding.extraSmall * 2 * root.scaleOffset : 0
+                implicitSize: day ? Math.max(day.implicitWidth, day.implicitHeight) + Tokens.padding.extraSmall * 2 * root.scaleOffset : 0
                 shape: MaterialShape.Sunny
 
                 clip: true
                 color: Colours.palette.m3primary
 
-                opacity: todayItem ? 1 : 0
+                opacity: selectedItem ? 1 : 0
 
                 Colouriser {
-                    x: -todayIndicator.x
-                    y: -todayIndicator.y
+                    x: -selectionIndicator.x
+                    y: -selectionIndicator.y
 
                     implicitWidth: grid.width
                     implicitHeight: grid.height
@@ -318,61 +322,82 @@ StyledRect {
 
         Rectangle {
             Layout.fillWidth: true
-            Layout.topMargin: Tokens.spacing.small * root.scaleOffset
+            Layout.topMargin: Tokens.spacing.medium * root.scaleOffset
             implicitHeight: 1
             color: Colours.palette.m3outlineVariant
         }
 
+        // The day the indicator sits on, so the list below reads as that cell opened up
+        // rather than as a separate feed.
         StyledText {
             Layout.fillWidth: true
-            Layout.topMargin: Tokens.spacing.extraSmall * root.scaleOffset
-            text: qsTr("Upcoming")
-            color: Colours.palette.m3primary
-            font: Tokens.font.label.builders.small.size(Tokens.font.label.small.pointSize * root.fontScale).build()
+            Layout.topMargin: Tokens.spacing.medium * root.scaleOffset
+            text: root.selectedLabel
+            color: Colours.palette.m3onSurface
+            font: Tokens.font.body.builders.small.size(Tokens.font.body.builders.small.build().pointSize * root.fontScale).weight(Font.Medium).build()
+            elide: Text.ElideRight
         }
 
         Repeater {
-            model: root.agendaRows
+            model: root.selectedEvents.length > 0 ? root.selectedEvents : [null]
 
             delegate: Item {
-                id: agendaRow
+                id: eventRow
 
                 required property var modelData
 
                 Layout.fillWidth: true
-                implicitHeight: rowLayout.implicitHeight
+                Layout.topMargin: Tokens.spacing.extraSmall * root.scaleOffset
+                implicitHeight: (eventRow.modelData ? eventText.implicitHeight : hint.implicitHeight)
 
-                RowLayout {
-                    id: rowLayout
+                Column {
+                    id: eventText
 
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    spacing: Tokens.spacing.small * root.scaleOffset
+                    width: parent.width
+                    spacing: 0
+                    visible: eventRow.modelData !== null
+
+                    Row {
+                        width: parent.width
+                        spacing: Tokens.spacing.small * root.scaleOffset
+
+                        StyledText {
+                            width: 74 * root.scaleOffset
+                            text: eventRow.modelData ? root.eventTime(eventRow.modelData) : ""
+                            color: Colours.palette.m3primary
+                            font: Tokens.font.label.builders.small.size(Tokens.font.label.small.pointSize * root.fontScale).build()
+                            elide: Text.ElideRight
+                        }
+
+                        StyledText {
+                            width: parent.width - 74 * root.scaleOffset - parent.spacing
+                            text: eventRow.modelData?.summary ?? ""
+                            color: Colours.palette.m3onSurface
+                            font: Tokens.font.body.builders.small.size(Tokens.font.body.small.pointSize * root.fontScale).build()
+                            elide: Text.ElideRight
+                        }
+                    }
 
                     StyledText {
-                        Layout.preferredWidth: 84 * root.scaleOffset
-                        text: agendaRow.modelData.label ?? ""
+                        width: parent.width - 74 * root.scaleOffset - Tokens.spacing.small * root.scaleOffset
+                        x: 74 * root.scaleOffset + Tokens.spacing.small * root.scaleOffset
+                        text: eventRow.modelData?.location ?? ""
                         color: Colours.palette.m3onSurfaceVariant
                         font: Tokens.font.label.builders.small.size(Tokens.font.label.small.pointSize * root.fontScale).build()
                         elide: Text.ElideRight
                         visible: text.length > 0
                     }
+                }
 
-                    Rectangle {
-                        implicitWidth: 4 * root.scaleOffset
-                        implicitHeight: 4 * root.scaleOffset
-                        radius: Tokens.rounding.full
-                        color: Colours.palette.m3primary
-                        visible: agendaRow.modelData.kind === "event"
-                    }
+                StyledText {
+                    id: hint
 
-                    StyledText {
-                        Layout.fillWidth: true
-                        text: root.rowText(agendaRow.modelData)
-                        color: agendaRow.modelData.kind === "event" ? Colours.palette.m3onSurface : Colours.palette.m3onSurfaceVariant
-                        font: Tokens.font.body.builders.small.size(Tokens.font.body.small.pointSize * root.fontScale).build()
-                        elide: Text.ElideRight
-                    }
+                    width: parent.width
+                    visible: eventRow.modelData === null
+                    text: root.agendaHint()
+                    color: Colours.palette.m3onSurfaceVariant
+                    font: Tokens.font.body.builders.small.size(Tokens.font.body.small.pointSize * root.fontScale).build()
+                    wrapMode: Text.Wrap
                 }
 
                 // Last, so it takes the click rather than the text above it, and it has
@@ -380,7 +405,7 @@ StyledRect {
                 StateLayer {
                     anchors.fill: parent
                     radius: Tokens.rounding.medium
-                    disabled: agendaRow.modelData.kind !== "empty"
+                    disabled: eventRow.modelData !== null || CalendarEvents.configured
                     onClicked: root.openCalendarSettings()
                 }
             }

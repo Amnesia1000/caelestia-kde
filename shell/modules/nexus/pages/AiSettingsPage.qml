@@ -681,7 +681,7 @@ exit $status`]
                 if (!root.claudeInstalled)
                     return qsTr("Not installed");
                 if (UpdateChecker.claudeCodeHasUpdate)
-                    return root.claudeVersionShort + " → " + UpdateChecker.claudeCodeLatestVersion;
+                    return root.claudeVersionShort + " -> " + UpdateChecker.claudeCodeLatestVersion;
                 return root.claudeVersionShort;
             }
         }

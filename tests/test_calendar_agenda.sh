@@ -83,6 +83,16 @@ test_parser_expands_recurrence_and_timezones() {
     assert_not_contains "$output" '"day": "2099-10-07"' "COUNT=3 must stop the rule"
 }
 
+test_the_window_starts_at_todays_midnight() {
+    local script
+    script="$(cat "$SCRIPT")"
+
+    # Picking today shows today, including the meeting that already happened; starting
+    # the window at "now" would leave the day looking empty by the evening.
+    assert_contains "$script" 'window_start = now.replace(hour=0, minute=0, second=0, microsecond=0)' \
+        "the agenda window must start at the beginning of today"
+}
+
 test_unreadable_source_is_reported_not_fatal() {
     local dir output
     dir="$(mktemp -d)"
@@ -114,18 +124,42 @@ test_service_reads_the_configured_sources() {
         "the UI needs dates, not raw milliseconds"
 }
 
-test_agenda_is_shown_in_the_calendar_popout() {
+test_the_selected_day_drives_the_agenda() {
     local popout dash
     popout="$(cat "$POPOUT")"
     dash="$REPO_ROOT/shell/modules/dashboard/dash/Calendar.qml"
 
-    assert_contains "$popout" 'CalendarEvents.upcoming(3)' "the popout must list the next days of events"
+    # The list under the grid is the selected day opened up, not a separate feed.
+    assert_contains "$popout" 'readonly property var selectedEvents: CalendarEvents.eventsOn(root.selectedDate)' \
+        "the agenda must follow the selected day"
+    assert_contains "$popout" 'text: root.selectedLabel' "and be headed by which day it is"
+    assert_contains "$popout" 'onClicked: root.select(dayItem.model.date)' \
+        "a day in the grid has to be clickable"
+    assert_contains "$popout" 'if (date.getMonth() !== root.currMonth || date.getFullYear() !== root.currYear)' \
+        "clicking a day of the adjacent month must follow it there"
+    assert_contains "$popout" 'if (root.isSelected(dayItem.model.date))' \
+        "the selected day must be marked in the grid"
+    assert_contains "$popout" 'root.eventTime(eventRow.modelData)' "a timed event shows its time"
     assert_contains "$popout" 'CalendarEvents.hasEventsOn(dayItem.model.date)' \
         "days with events must be marked in the grid"
-    assert_contains "$popout" 'qsTr("No calendars yet — click to add one")' \
-        "an empty agenda must offer the way to configure one"
     assert_contains "$(cat "$dash")" 'CalendarEvents.hasEventsOn(dayItem.model.date)' \
         "the dashboard grid must mark those days too"
+    assert_contains "$(cat "$SERVICE")" 'return root.events.filter(event => event.start.getTime() < end && event.end.getTime() > start);' \
+        "a day's events are the ones that overlap it, so multi-day events show"
+}
+
+test_the_empty_agenda_offers_the_way_out() {
+    local popout
+    popout="$(cat "$POPOUT")"
+
+    assert_contains "$popout" 'qsTr("No calendars yet - click to add one")' \
+        "an empty agenda must offer the way to configure one"
+    assert_contains "$popout" 'onClicked: root.openCalendarSettings()' \
+        "and the row has to act on it"
+    assert_contains "$popout" 'disabled: eventRow.modelData !== null || CalendarEvents.configured' \
+        "only the hint row is clickable, not an event"
+    assert_contains "$popout" 'PageDictionary.subPageIdxFor("services/CalendarPage.qml")' \
+        "the page is looked up, not hardcoded"
 }
 
 test_calendar_settings_page_is_reachable() {

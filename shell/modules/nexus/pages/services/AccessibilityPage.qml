@@ -132,7 +132,7 @@ PageBase {
                 anchors.margins: Tokens.padding.medium
                 anchors.leftMargin: Tokens.padding.largeIncreased
                 anchors.rightMargin: Tokens.padding.largeIncreased
-                text: qsTr("These are KWin effects, so the shortcuts and the filter itself (protanopia, deuteranopia, …) are set in System Settings → Accessibility. Switching one on here loads it for the session.")
+                text: qsTr("These are KWin effects, so the shortcuts and the filter itself (protanopia, deuteranopia, ...) are set in System Settings -> Accessibility. Switching one on here loads it for the session.")
                 color: Colours.palette.m3onSurfaceVariant
                 font: NexusStyle.secondaryFont
                 wrapMode: Text.Wrap

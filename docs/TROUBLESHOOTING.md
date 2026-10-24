@@ -468,8 +468,9 @@ like a bug rather than a fallback.
 ### 3.11 The Calendar Agenda Stays Empty
 
 The agenda reads iCalendar (`.ics`) sources; the shell has no PIM stack of its own.
-It lives in the clock popout — hover the clock or click it — where the month grid is
-followed by an *Upcoming* list, and days with events carry a dot. If the popout says
+It lives in the clock popout — hover the clock or click it. The month grid marks the
+days that have events, and the list under it shows the day you have selected: click
+any day to see its events, with times and locations. If the popout says
 *No calendars yet*, nothing is configured: click that row, or go to
 *Nexus → Services → Calendars & agenda*. For Google Calendar the address is
 **Settings → the calendar → "Secret address in iCal format"**; Nextcloud, Fastmail

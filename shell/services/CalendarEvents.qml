@@ -24,13 +24,6 @@ Singleton {
     property double updatedAt: 0
 
     readonly property bool configured: root.sources.length > 0
-    readonly property var nextEvent: {
-        const now = Date.now();
-        for (const event of root.events)
-            if (event.end.getTime() > now)
-                return event;
-        return null;
-    }
 
     readonly property var command: {
         const args = ["python3", Quickshell.shellPath("scripts/calendar_events.py"), "--days", String(root.days)];
@@ -43,36 +36,20 @@ Singleton {
         return args;
     }
 
-    function dayKey(date: date): string {
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-    }
-
+    /// The events of the selected day, and whether a day has any — the grid marks the
+    /// ones that do without having to build a list.
     function eventsOn(date: date): var {
-        const key = root.dayKey(date);
-        return root.events.filter(event => event.day === key);
+        const start = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+        const end = start + 86400000;
+        // Overlap rather than a day key: an all-day event, and a meeting that runs past
+        // midnight, belong to every day they touch.
+        return root.events.filter(event => event.start.getTime() < end && event.end.getTime() > start);
     }
 
     function hasEventsOn(date: date): bool {
-        const key = root.dayKey(date);
-        return root.events.some(event => event.day === key);
-    }
-
-    /// The events of the next `days` days, grouped by day, skipping empty days.
-    function upcoming(limit: int): var {
-        const out = [];
-        let current = null;
-        for (const event of root.events) {
-            if (event.end.getTime() < Date.now() && !event.allDay)
-                continue;
-            if (!current || current.day !== event.day) {
-                current = { day: event.day, date: event.start, events: [] };
-                out.push(current);
-            }
-            current.events.push(event);
-            if (out.length >= limit)
-                break;
-        }
-        return out;
+        const start = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+        const end = start + 86400000;
+        return root.events.some(event => event.start.getTime() < end && event.end.getTime() > start);
     }
 
     function apply(output: string): void {

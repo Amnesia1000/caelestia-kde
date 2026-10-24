@@ -87,7 +87,7 @@ PageBase {
                 anchors.margins: Tokens.padding.medium
                 anchors.leftMargin: Tokens.padding.largeIncreased
                 anchors.rightMargin: Tokens.padding.largeIncreased
-                text: qsTr("Add the calendar's iCal address. In Google Calendar that is Settings → your calendar → \"Secret address in iCal format\"; Nextcloud and Fastmail call it an export or subscription link. Local .ics files work too.")
+                text: qsTr("Add the calendar's iCal address. In Google Calendar that is Settings -> your calendar -> \"Secret address in iCal format\"; Nextcloud and Fastmail call it an export or subscription link. Local .ics files work too.")
                 color: Colours.palette.m3onSurfaceVariant
                 font: NexusStyle.secondaryFont
                 wrapMode: Text.Wrap
