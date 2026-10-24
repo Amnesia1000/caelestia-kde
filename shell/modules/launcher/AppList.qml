@@ -23,7 +23,7 @@ StyledListView {
 
     // KRunner answers asynchronously, so its query is driven from the search text
     // instead of resultsForText, which has to stay synchronous to feed the model.
-    readonly property string searchQuery: root.searchQueryForText(root._debouncedSearchText)
+    readonly property string searchQuery: root.searchQueryForText(search.text)
 
     function syncDisplayText(): void {
         if (visibilities.launcher && requestedState === displayState)
@@ -75,7 +75,7 @@ StyledListView {
             return M3Variants.query(text);
         case "emoji": {
             const prefix = GlobalConfig.launcher.actionPrefix;
-            const q = root._debouncedSearchText.slice((prefix + "emoji ").length).toLowerCase();
+            const q = root.search.text.slice((prefix + "emoji ").length).toLowerCase();
             if (!q)
                 return Emojis.getSortedItems();
             return Emojis.search(q);
@@ -129,25 +129,6 @@ StyledListView {
         }
     }
 
-    property string _debouncedSearchText: search.text
-
-    Timer {
-        id: searchDebounceTimer
-
-        interval: 80
-        onTriggered: root._debouncedSearchText = search.text
-    }
-    Connections {
-        target: search
-
-        function onTextChanged(): void {
-            if (root.state === "emoji") {
-                searchDebounceTimer.restart();
-            } else {
-                root._debouncedSearchText = search.text;
-            }
-        }
-    }
 
     state: visibilities.launcher ? requestedState : displayState
 

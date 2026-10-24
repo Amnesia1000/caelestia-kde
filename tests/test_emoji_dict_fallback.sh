@@ -29,7 +29,7 @@ test_emoji_search_ranks_by_relevance_and_frequency() {
     content="$(cat "$EMOJI_CPP")"
     assert_contains "$content" 'emojiMatchScore' \
         "EmojiDb must score candidates by relevance"
-    assert_contains "$content" 'std::stable_sort(matchedIndices.begin(), matchedIndices.end()' \
+    assert_contains "$content" 'std::partial_sort(scored.begin()' \
         "EmojiDb must sort matched indices by score, favourites, and frequency"
 }
 
