@@ -1,22 +1,16 @@
 pragma Singleton
 
 import QtQuick
+import Quickshell
 import Caelestia
 import Caelestia.Config
 import Caelestia.Services
 
-QtObject {
+Singleton {
     id: root
 
     readonly property bool _loaded: EmojiDb.loaded
     readonly property int itemCount: EmojiDb.count
-
-    property Connections favConnections: Connections {
-        target: GlobalConfig.launcher
-
-        function onFavouriteEmojisChanged(): void {
-        }
-    }
 
     function reload(): void {
         if (!EmojiDb.loaded) {
@@ -34,6 +28,14 @@ QtObject {
     }
 
     function search(text: string): var {
-        return EmojiDb.search(text, 500);
+        const favEmojis = GlobalConfig.launcher.favouriteEmojis || [];
+        return EmojiDb.search(text, 500, favEmojis);
+    }
+
+    Connections {
+        function onFavouriteEmojisChanged(): void {
+        }
+
+        target: GlobalConfig.launcher
     }
 }
