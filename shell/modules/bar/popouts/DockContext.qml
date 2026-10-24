@@ -32,6 +32,22 @@ ColumnLayout {
     property real fontScale: 1.0
     property bool _isSidebarOpen: false
 
+    /// The names this application is known by, for the recent-documents lookup: the
+    /// desktop entry id, the window class, and whatever the menu model carries.
+    readonly property var appNames: [model?.id, model?.appClass, model?.entry?.id].filter(name => typeof name === "string" && name.length > 0)
+
+    function loadRecents(): void {
+        Recents.load(root.appNames);
+    }
+
+    function openRecent(entry: var): void {
+        Launch.exec(["xdg-open", entry.path]);
+        root.popouts.hasCurrent = false;
+    }
+
+    onAppNamesChanged: root.loadRecents()
+    Component.onCompleted: root.loadRecents()
+
     width: 200 * scaleOffset
     implicitWidth: 200 * scaleOffset
     spacing: Tokens.spacing.medium * scaleOffset
@@ -135,6 +151,69 @@ ColumnLayout {
         }
     }
 
+    // Jump list: what this application opened last, straight out of the freedesktop
+    // recent-documents list. Absent when the application has no history or the list
+    // does not name it.
+    StyledRect {
+        Layout.fillWidth: true
+        visible: Recents.entries.length > 0
+        implicitHeight: recentLayout.implicitHeight + Tokens.padding.medium * 2 * root.scaleOffset
+        radius: Tokens.rounding.medium * root.scaleOffset
+        color: Colours.tPalette.m3surfaceContainer
+        clip: true
+
+        ColumnLayout {
+            id: recentLayout
+
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.margins: Tokens.padding.medium * root.scaleOffset
+            spacing: Tokens.spacing.extraSmall
+
+            StyledText {
+                Layout.fillWidth: true
+                text: qsTr("Recent files")
+                color: Colours.palette.m3onSurfaceVariant
+                font: Tokens.font.body.small
+            }
+
+            Repeater {
+                model: ScriptModel {
+                    values: [...Recents.entries]
+                }
+
+                delegate: StyledRect {
+                    id: recentRow
+
+                    required property var modelData
+
+                    Layout.fillWidth: true
+                    implicitHeight: recentLabel.implicitHeight + Tokens.padding.small * root.scaleOffset
+                    radius: Tokens.rounding.full
+                    color: "transparent"
+
+                    StateLayer {
+                        anchors.fill: parent
+                        radius: recentRow.radius
+                        onClicked: root.openRecent(recentRow.modelData)
+                    }
+
+                    StyledText {
+                        id: recentLabel
+
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: recentRow.modelData.name
+                        elide: Text.ElideMiddle
+                        font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
+                    }
+                }
+            }
+        }
+    }
+
     IconTextButton {
         Layout.fillWidth: true
         inactiveColour: Colours.palette.m3primaryContainer
@@ -146,7 +225,6 @@ ColumnLayout {
             if (!model || !model.toplevels || model.toplevels.length === 0) return false;
             return !model.toplevels.some(t => t.title && String(t.title).startsWith("Nexus"));
         }
-
         onClicked: {
             for (const toplevel of model.toplevels) {
                 if (toplevel.pid) {
