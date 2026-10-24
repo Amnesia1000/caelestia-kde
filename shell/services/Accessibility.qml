@@ -40,7 +40,8 @@ Singleton {
         if (!root.followSystem)
             return;
 
-        if (GlobalConfig.appearance.font.isOverride("scale") && !GlobalConfig.appearance.font.isOverride("followSystemScale"))
+        const fontNode = GlobalConfig.appearance.font;
+        if (fontNode.isOverride("scale") && !fontNode.isOverride("followSystemScale"))
             return;
 
         const current = GlobalConfig.appearance.font.scale;
