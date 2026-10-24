@@ -289,7 +289,7 @@ test_press_and_lift_scales_are_named() {
     assert_file_contains "$SHELL_DIR/modules/nexus/common/NexusStyle.qml" \
         'readonly property real dragScale: 1.05' \
         "the drag lift should be named once"
-    assert_file_contains "$SHELL_DIR/modules/nexus/pages/wallandstyle/ContextMenuPage.qml" \
+    assert_file_contains "$SHELL_DIR/modules/nexus/pages/desktop/ContextMenuPage.qml" \
         'scale: NexusStyle.dragScale' \
         "the reorder drag should use the named lift"
     assert_file_contains "$SHELL_DIR/modules/nexus/pages/panels/taskbar/BarComponents.qml" \

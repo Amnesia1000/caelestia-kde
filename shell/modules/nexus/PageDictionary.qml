@@ -38,8 +38,8 @@ QtObject {
             category: "personalization",
             settings: [
                 { label: qsTr("Desktop"), pagePath: "desktop/DesktopSettingsPage.qml", keywords: ["plasma", "icons", "desktop", "integration"], subPageIdx: 4 },
-                { label: qsTr("Desktop Addons"), pagePath: "wallandstyle/DesktopAddonsPage.qml", subPageIdx: 1 },
-                { label: qsTr("Right Click Menu"), pagePath: "wallandstyle/ContextMenuPage.qml", subPageIdx: 2 },
+                { label: qsTr("Desktop Addons"), pagePath: "desktop/DesktopAddonsPage.qml", subPageIdx: 1 },
+                { label: qsTr("Right Click Menu"), pagePath: "desktop/ContextMenuPage.qml", subPageIdx: 2 },
                 { label: qsTr("Window Tiling"), pagePath: "desktop/KrohnkitePage.qml", keywords: ["krohnkite", "tiling", "layouts"], subPageIdx: 3 },
                 { label: qsTr("Floating windows"), keywords: ["floating", "float", "krohnkite"], pagePath: "desktop/KrohnkitePage.qml", subPageIdx: 3 },
                 { label: qsTr("Virtual Workspaces"), keywords: ["desktops", "virtual", "switcher"] }
