@@ -295,13 +295,21 @@ int emojiMatchScore(const EmojiEntry& e, const QString& lower) {
         return 0;
     if (e.name.startsWith(lower, Qt::CaseInsensitive))
         return 1;
-    if (e.name.contains(QStringLiteral(" ") + lower, Qt::CaseInsensitive) ||
-        e.name.contains(QStringLiteral("-") + lower, Qt::CaseInsensitive))
+    if (e.name.contains(QLatin1Char(' ') + lower, Qt::CaseInsensitive) ||
+        e.name.contains(QLatin1Char('-') + lower, Qt::CaseInsensitive))
         return 2;
     if (e.name.contains(lower, Qt::CaseInsensitive))
         return 3;
     return 4;
 }
+
+struct ScoredCandidate {
+    int index;
+    int score;
+    bool isFav;
+    int freq;
+    int nameLen;
+};
 
 } // namespace
 
@@ -357,37 +365,41 @@ QVariantList EmojiDb::search(const QString& text, int limit, const QStringList& 
 
     const QSet<QString> favSet(favourites.begin(), favourites.end());
 
-    std::stable_sort(matchedIndices.begin(), matchedIndices.end(), [&](int a, int b) {
-        const auto& ea = m_emojis[a];
-        const auto& eb = m_emojis[b];
+    // Score each candidate once — avoid re-evaluating inside the comparator.
+    QVector<ScoredCandidate> scored;
+    scored.reserve(matchedIndices.size());
+    for (int idx : std::as_const(matchedIndices)) {
+        const auto& e = m_emojis[idx];
+        scored.append({
+            idx,
+            emojiMatchScore(e, lower),
+            favSet.contains(e.ch),
+            m_frequencies.value(e.ch, 0),
+            static_cast<int>(e.name.size()),
+        });
+    }
 
-        const int scoreA = emojiMatchScore(ea, lower);
-        const int scoreB = emojiMatchScore(eb, lower);
-        if (scoreA != scoreB)
-            return scoreA < scoreB;
+    const int actualLimit =
+        (limit <= 0) ? static_cast<int>(scored.size()) : std::min(limit, static_cast<int>(scored.size()));
 
-        const bool aFav = favSet.contains(ea.ch);
-        const bool bFav = favSet.contains(eb.ch);
-        if (aFav != bFav)
-            return aFav;
+    // partial_sort: only the top `actualLimit` items reach their final position.
+    auto cmp = [](const ScoredCandidate& a, const ScoredCandidate& b) {
+        if (a.score != b.score)
+            return a.score < b.score;
+        if (a.isFav != b.isFav)
+            return a.isFav;
+        if (a.freq != b.freq)
+            return a.freq > b.freq;
+        if (a.nameLen != b.nameLen)
+            return a.nameLen < b.nameLen;
+        return a.index < b.index;
+    };
+    std::partial_sort(scored.begin(), scored.begin() + actualLimit, scored.end(), cmp);
 
-        const int freqA = m_frequencies.value(ea.ch, 0);
-        const int freqB = m_frequencies.value(eb.ch, 0);
-        if (freqA != freqB)
-            return freqA > freqB;
-
-        if (ea.name.size() != eb.name.size())
-            return ea.name.size() < eb.name.size();
-
-        return a < b;
-    });
-
-    const int actualLimit = (limit <= 0) ? static_cast<int>(matchedIndices.size())
-                                         : std::min(limit, static_cast<int>(matchedIndices.size()));
     QVariantList result;
     result.reserve(actualLimit);
     for (int i = 0; i < actualLimit; ++i) {
-        const auto& e = m_emojis[matchedIndices[i]];
+        const auto& e = m_emojis[scored[i].index];
         result.append(QVariantMap{
             { QStringLiteral("ch"), e.ch },
             { QStringLiteral("name"), e.name },

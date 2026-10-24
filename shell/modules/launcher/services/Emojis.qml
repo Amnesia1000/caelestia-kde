@@ -24,12 +24,12 @@ Singleton {
 
     function getSortedItems(): var {
         const favEmojis = GlobalConfig.launcher.favouriteEmojis || [];
-        return EmojiDb.getSortedItems(favEmojis);
+        return EmojiDb.getSortedItems(favEmojis, 30);
     }
 
     function search(text: string): var {
         const favEmojis = GlobalConfig.launcher.favouriteEmojis || [];
-        return EmojiDb.search(text, 500, favEmojis);
+        return EmojiDb.search(text, 30, favEmojis);
     }
 
     Connections {
