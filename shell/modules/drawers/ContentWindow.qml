@@ -1000,7 +1000,7 @@ StyledWindow {
         y: panel.y + panels.topMargin
         implicitWidth: panel.width
         implicitHeight: panel.height
-        radius: Tokens.rounding.extraLarge
+        radius: Surface.panelRounding
         deformScale: (GlobalConfig.appearance.blurMask || !GlobalConfig.appearance.transparency.enabled) ? ((deformAmount * Config.appearance.deformScale) / 10000) : 0
         Config.screen: root.screen.name
     }
