@@ -395,7 +395,7 @@ StyledRect {
 
         MaterialIcon {
             animate: true
-            text: Privacy.icon
+            text: Privacy.microphoneApps.length > 0 ? "mic" : "videocam"
             color: root.colour
         }
     }

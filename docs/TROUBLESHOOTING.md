@@ -594,8 +594,9 @@ why it is missing most of the time. It reports two things:
 - **Microphone** — every PipeWire capture stream (`media.class` of `Stream/Input/Audio`). These
   nodes exist only while an application is recording, so the list is the answer; the shell's own
   capture is excluded so the icon means "somebody else is listening".
-- **Video capture** — what `PipewireStreamWatcher` reports, which is how screen sharing tools and
-  camera consumers appear.
+- **Video capture** — the client video streams `PipewireStreamWatcher` reports: screen sharing and
+  apps that open a camera. Camera *devices* are excluded on purpose, because a `Video/Source` node
+  exists even when nothing is looking through it.
 
 ```bash
 pw-dump | grep -B4 'Stream/Input/Audio'      # what the microphone row is built from
@@ -604,8 +605,8 @@ pactl -f json list source-outputs            # the same capture streams as Pulse
 
 An application that opens the camera or microphone **through V4L2/ALSA directly** rather than
 through PipeWire is invisible to this: the shell can only see what the sound and video servers
-know about. Firefox, Chromium, Zoom, OBS and anything else routed through
-`xdg-desktop-portal` are reported normally. If the icon is enabled in *Nexus → Panels → Status
+know about. Applications routed through `xdg-desktop-portal` — Firefox, Chromium, Zoom, OBS — are
+reported for as long as they hold a stream open. If the icon is enabled in *Nexus → Panels → Status
 icons* but never appears, check `pw-dump` for a `Stream/Input/Audio` node while the application
 claims to be recording — a node that is not there is a capture the shell was not told about.
 

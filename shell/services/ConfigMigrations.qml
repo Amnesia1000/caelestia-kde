@@ -99,17 +99,6 @@ Singleton {
         utilities.quickToggles = next;
     }
 
-    // The privacy icon joined the shipped list, but a list the user has reordered is
-    // an override of its own, so it never sees the new default entry.
-    function migratePrivacyIcon(): void {
-        const icons = GlobalConfig.bar.statusIcons;
-
-        if (!icons.isOverride("values") || icons.values.some(entry => entry.id === "privacy"))
-            return;
-
-        icons.insert({ id: "privacy", enabled: true }, 0);
-    }
-
     function migrateTemperatureUnits(): void {
         const services = GlobalConfig.services;
 
@@ -177,7 +166,6 @@ Singleton {
     Component.onCompleted: {
         root.migrateWorkspaceDisplay();
         root.migrateQuickToggles();
-        root.migratePrivacyIcon();
         root.migrateTemperatureUnits();
         root.migrateClockFormat();
         root.migratePerMonitor();

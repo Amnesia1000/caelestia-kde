@@ -30,7 +30,10 @@ ColumnLayout {
 
     Repeater {
         model: ScriptModel {
-            values: [...QsServices.Privacy.entries]
+            values: [
+                { icon: "mic", label: qsTr("Microphone"), apps: QsServices.Privacy.microphoneApps },
+                { icon: "videocam", label: qsTr("Video capture"), apps: QsServices.Privacy.videoApps }
+            ].filter(row => row.apps.length > 0)
         }
 
         delegate: StyledRect {
