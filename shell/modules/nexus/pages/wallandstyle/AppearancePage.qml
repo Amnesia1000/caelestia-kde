@@ -12,6 +12,7 @@ import qs.components
 import qs.components.controls
 import qs.services
 import qs.utils
+import qs.modules.nexus
 import qs.modules.nexus.common
 
 PageBase {
@@ -48,7 +49,7 @@ PageBase {
             text: qsTr("Restart Shell")
             icon: "restart_alt"
             type: TextButton.Filled
-            onClicked: Launch.exec(["bash", "-c", `bash "${Quickshell.shellPath("scripts/restart_shell.sh")}"; sleep 1; caelestia shell nexus openPage 0 8`])
+            onClicked: Launch.exec(["bash", "-c", `bash "${Quickshell.shellPath("scripts/restart_shell.sh")}"; sleep 1; caelestia shell nexus openPage ${PageDictionary.pageIdxFor("appearance")} 8`])
         },
         IconTextButton {
             id: resetBtn
