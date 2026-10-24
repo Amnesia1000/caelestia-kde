@@ -4841,7 +4841,7 @@
     <message>
       <location line="-24"/>
       <source>Desktop lyrics</source>
-      <translation>Lyrics de Multimedia (Mostrar letras en el escritorio)</translation>
+      <translation>Lyrics Multimedia del escritorio</translation>
     </message>
     <message>
       <location line="+10"/>
@@ -4861,7 +4861,7 @@
     <message>
       <location line="+8"/>
       <source>Visualiser</source>
-      <translation>Visualizador</translation>
+      <translation>Visualizador de Audio</translation>
     </message>
     <message>
       <location line="+13"/>
@@ -5242,7 +5242,7 @@
     <message>
       <location line="+1"/>
       <source>Visualiser, auto-hide, styling</source>
-      <translation type="unfinished"/>
+      <translation>Visualizador, ocultamiento automático y estilo</translation>
     </message>
     <message>
       <location line="+9"/>
@@ -5750,7 +5750,7 @@ Ahora salir a tocar el pasto</translation>
     <message>
       <location filename="../modules/nexus/pages/services/GameModePage.qml" line="+19"/>
       <source>Game mode</source>
-      <translation>Modo de juego</translation>
+      <translation>Modo gaming</translation>
     </message>
     <message>
       <location line="+13"/>
@@ -9430,17 +9430,17 @@ Ahora salir a tocar el pasto</translation>
     <message>
       <location line="+4"/>
       <source>Panels</source>
-      <translation>Shell</translation>
+      <translation>Paneles</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>Dashboard, taskbar, launcher, sidebar</source>
-      <translation>Dashboard, paneles, lanzador y panel lateral</translation>
+      <translation>Panel, barra de tareas, menú de aplicaciones y panel de notificaciones</translation>
     </message>
     <message>
       <location line="+3"/>
       <source>Taskbar</source>
-      <translation>Paneles</translation>
+      <translation>Barra de tareas</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -9450,7 +9450,7 @@ Ahora salir a tocar el pasto</translation>
     <message>
       <location line="+1"/>
       <source>Launcher</source>
-      <translation>Lanzador</translation>
+      <translation>Menú de aplicaciones</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -9470,7 +9470,7 @@ Ahora salir a tocar el pasto</translation>
     <message>
       <location line="+1"/>
       <source>Sidebar</source>
-      <translation>Panel lateral</translation>
+      <translation>Panel de notificaciones</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -9741,7 +9741,7 @@ Ahora salir a tocar el pasto</translation>
     <message>
       <location line="+3"/>
       <source>Quick controls, game mode</source>
-      <translation type="unfinished"/>
+      <translation>Atajo de controles, modo gaming y compartir archivos</translation>
     </message>
     <message>
       <location line="+3"/>
@@ -10008,7 +10008,7 @@ Ahora salir a tocar el pasto</translation>
     <message>
       <location filename="../modules/nexus/pages/PanelsPage.qml" line="+8"/>
       <source>Panels</source>
-      <translation>Shell</translation>
+      <translation>Paneles</translation>
     </message>
     <message>
       <location line="+11"/>
@@ -10037,7 +10037,7 @@ Ahora salir a tocar el pasto</translation>
     <message>
       <location line="-32"/>
       <source>Taskbar</source>
-      <translation>Paneles</translation>
+      <translation>Barra de tareas</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -10057,12 +10057,12 @@ Ahora salir a tocar el pasto</translation>
     <message>
       <location line="+5"/>
       <source>Launcher</source>
-      <translation>Lanzador</translation>
+      <translation>Menú de Aplicaciones</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Sidebar</source>
-      <translation>Panel lateral</translation>
+      <translation>Panel de Notificaciones</translation>
     </message>
     <message>
       <location line="+6"/>
@@ -10501,102 +10501,105 @@ PIN: %1</source>
     <message>
       <location filename="../modules/nexus/pages/services/QuickSharePage.qml" line="+12"/>
       <source>Quick Share</source>
-      <translation type="unfinished"/>
+      <translation>Quick Share</translation>
     </message>
     <message>
       <location line="+11"/>
       <source>Status</source>
-      <translation type="unfinished"/>
+      <translation>Estado</translation>
     </message>
     <message>
       <location line="+5"/>
       <source>Enable Quick Share</source>
-      <translation type="unfinished"/>
+      <translation>Activar Quick Share</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Listening for nearby devices</source>
-      <translation type="unfinished"/>
+      <translation>Buscando dispositivos cercanos</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Checking this machine can receive</source>
-      <translation type="unfinished"/>
+      <translation>Comprobando que este equipo pueda recibir archivos</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Disabled</source>
-      <translation type="unfinished"/>
+      <translation>Desactivado</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Discoverable</source>
-      <translation type="unfinished"/>
+      <translation>Visible para otros dispositivos</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Advertise this machine so nearby devices can send to it</source>
-      <translation type="unfinished"/>
+      <translation>Hacer visible este equipo para que los dispositivos cercanos puedan enviarle archivos</translation>
     </message>
     <message>
       <location line="+9"/>
       <source>Same network</source>
-      <translation type="unfinished"/>
+      <translation>Misma red</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Nearby devices have to be on the same network, which for a phone means the same Wi-Fi</source>
-      <translation type="unfinished"/>
+      <translation>Los dispositivos cercanos deben estar en la misma red; en el caso de un teléfono, en la misma red Wi-Fi</translation>
     </message>
     <message>
       <location line="+4"/>
       <source>Setup</source>
-      <translation type="unfinished"/>
+      <translation>Configuración</translation>
     </message>
     <message>
       <location line="+7"/>
       <source>Quick Share setup</source>
-      <translation type="unfinished"/>
+      <translation>Configurar Quick Share</translation>
     </message>
     <message>
       <location line="+8"/>
       <source>Startup</source>
-      <translation type="unfinished"/>
+      <translation>Inicio</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Start automatically</source>
-      <translation type="unfinished"/>
+      <translation>Iniciar automáticamente</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Turn Quick Share on when the shell starts</source>
-      <translation type="unfinished"/>
+      <translation>Activar Quick Share al iniciar el shell</translation>
     </message>
     <message>
       <location line="+7"/>
       <source>Transfers</source>
-      <translation type="unfinished"/>
+      <translation>Transferencias</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Received files</source>
-      <translation type="unfinished"/>
+      <translation>Archivos recibidos</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Saved to your Downloads folder</source>
-      <translation type="unfinished"/>
+      <translation>Se guardan en la carpeta Descargas</translation>
     </message>
     <message>
       <location line="+6"/>
       <source>Clear transfer history</source>
-      <translation type="unfinished"/>
+      <translation>Borrar historial de transferencias</translation>
     </message>
     <message numerus="yes">
       <location line="+1"/>
       <source>%n transfer(s) recorded</source>
-      <translation type="unfinished"/>
+      <translation>
+        <numerusform>%n transferencia registrada</numerusform>
+        <numerusform>%n transferencias registradas</numerusform>
+      </translation>
     </message>
   </context>
   <context>
@@ -10604,52 +10607,52 @@ PIN: %1</source>
     <message>
       <location filename="../services/QuickShareSetup.qml" line="+50"/>
       <source>Avahi and the transfer port are ready</source>
-      <translation type="unfinished"/>
+      <translation>Avahi y el puerto de transferencia están listos</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>The transfer port could not be confirmed</source>
-      <translation type="unfinished"/>
+      <translation>No se pudo comprobar el puerto de transferencia</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>Asking the system…</source>
-      <translation type="unfinished"/>
+      <translation>Consultando al sistema…</translation>
     </message>
     <message>
       <location line="+1"/>
       <source>Starts the Avahi daemon and opens the transfer port in the firewall</source>
-      <translation type="unfinished"/>
+      <translation>Inicia el servicio Avahi y abre el puerto de transferencia en el cortafuegos</translation>
     </message>
     <message>
       <location line="+25"/>
       <source>Waiting for administrator rights…</source>
-      <translation type="unfinished"/>
+      <translation>Esperando permisos de administrador…</translation>
     </message>
     <message>
       <location line="+36"/>
       <source>Quick Share&apos;s system setup helper could not be run</source>
-      <translation type="unfinished"/>
+      <translation>No se pudo ejecutar el asistente de configuración del sistema de Quick Share</translation>
     </message>
     <message>
       <location line="+8"/>
       <source>Setup ran, but the port is still blocked</source>
-      <translation type="unfinished"/>
+      <translation>Se ejecutó la configuración, pero el puerto sigue bloqueado</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>Setup ran; the port cannot be checked again without root</source>
-      <translation type="unfinished"/>
+      <translation>Se ejecutó la configuración; no se puede volver a comprobar el puerto sin permisos de administrador</translation>
     </message>
     <message>
       <location line="+23"/>
       <source>Administrator rights were refused</source>
-      <translation type="unfinished"/>
+      <translation>Se denegaron los permisos de administrador</translation>
     </message>
     <message>
       <location line="+2"/>
       <source>Setup failed (%1)</source>
-      <translation type="unfinished"/>
+      <translation>Error de configuración (%1)</translation>
     </message>
   </context>
   <context>
@@ -13347,7 +13350,7 @@ PIN: %1</source>
     <message>
       <location line="+7"/>
       <source>Game mode</source>
-      <translation>Modo de juego</translation>
+      <translation>Modo gaming</translation>
     </message>
     <message>
       <location line="+1"/>
@@ -13357,7 +13360,7 @@ PIN: %1</source>
     <message>
       <location line="+5"/>
       <source>File sharing</source>
-      <translation type="unfinished"/>
+      <translation>Compartir archivos</translation>
     </message>
     <message>
       <location line="+7"/>
@@ -13367,7 +13370,7 @@ PIN: %1</source>
     <message>
       <location line="+1"/>
       <source>Send files to nearby devices</source>
-      <translation type="unfinished"/>
+      <translation>Enviar archivos a dispositivos cercanos</translation>
     </message>
   </context>
   <context>
