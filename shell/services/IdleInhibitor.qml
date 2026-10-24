@@ -1,31 +1,55 @@
 pragma Singleton
 
+import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import qs.utils
 
+// Keep-awake outlives the shell. `PersistentProperties` alone does not survive a
+// service restart — it is written when the shell reloads itself, not when it is
+// stopped — so the intent is kept in a file of its own and read back on start.
 Singleton {
     id: root
 
-    property alias enabled: props.enabled
-    readonly property alias enabledSince: props.enabledSince
+    property bool enabled: false
+    property date enabledSince: new Date()
 
-    onEnabledChanged: {
-        if (enabled)
-            props.enabledSince = new Date();
+    // Reading the file is not a toggle: restoring a value must not be written back,
+    // and a toggle made before the file arrives must win over what it says.
+    property bool restoring: false
+    property bool touched: false
+
+    function restore(text: string): void {
+        if (root.touched)
+            return;
+
+        let state = {};
+        try {
+            state = JSON.parse(text) ?? {};
+        } catch (err) {
+            return;
+        }
+
+        root.restoring = true;
+        root.enabled = state.enabled === true;
+        const since = state.since ? new Date(state.since) : new Date();
+        root.enabledSince = isNaN(since.getTime()) ? new Date() : since;
+        root.restoring = false;
     }
 
-    PersistentProperties {
-        id: props
+    onEnabledChanged: {
+        if (root.restoring)
+            return;
 
-        property bool enabled
-        property date enabledSince
-
-        reloadableId: "idleInhibitor"
+        root.touched = true;
+        if (root.enabled)
+            root.enabledSince = new Date();
+        saveTimer.restart();
     }
 
     IdleInhibitor {
-        enabled: props.enabled
+        enabled: root.enabled
         window: PanelWindow {
             implicitWidth: 1
             implicitHeight: 1
@@ -34,23 +58,41 @@ Singleton {
         }
     }
 
+    FileView {
+        id: stateFile
+
+        path: `${Paths.state}/keepawake.json`
+        watchChanges: false
+        printErrors: false
+
+        onLoaded: root.restore(stateFile.text())
+    }
+
+    Timer {
+        id: saveTimer
+
+        interval: 300
+        onTriggered: stateFile.setText(JSON.stringify({ enabled: root.enabled, since: root.enabledSince.toISOString() }))
+    }
+
     IpcHandler {
         function isEnabled(): bool {
-            return props.enabled;
+            return root.enabled;
         }
 
         function toggle(): void {
-            props.enabled = !props.enabled;
+            root.enabled = !root.enabled;
         }
 
         function enable(): void {
-            props.enabled = true;
+            root.enabled = true;
         }
 
         function disable(): void {
-            props.enabled = false;
+            root.enabled = false;
         }
 
         target: "idleInhibitor"
     }
 }
+

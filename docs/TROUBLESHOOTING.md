@@ -668,6 +668,22 @@ A file an older version left at `~/.config/caelestia/` because it ignored `XDG_C
 
 If `keyd` is active and manages Meta+1..5, the tweak script skips KWin bindings for those combos to avoid conflicts.
 
+### 5.5 Keep Awake Survives a Restart — How to Turn It Off for Good
+
+"Keep awake" is stored outside the config, in `${XDG_STATE_HOME:-~/.local/state}/caelestia/keepawake.json`,
+because it is runtime state rather than a setting: the shell writes it on every toggle and reads it back
+on start, so restarting the shell (or the whole session) does not quietly hand the machine back to the
+idle timers while a long build is running. To stop it from coming back:
+
+```bash
+caelestia shell idleInhibitor disable      # the normal way, writes the file
+rm -f "${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/keepawake.json"   # or forget it entirely
+```
+
+`caelestia shell idleInhibitor isEnabled` reports what the shell currently believes. Note that the
+inhibitor is a Wayland idle inhibitor, so it shows up in neither `systemd-inhibit --list` nor the
+power settings; only the shell knows about it.
+
 ## 6. Network & Proxy Issues
 
 ### 6.1 Package Repository Problems
