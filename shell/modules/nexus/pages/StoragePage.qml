@@ -43,8 +43,8 @@ PageBase {
             parts.push(qsTr("%1 used").arg(entry.use));
         if (entry.readOnly)
             parts.push(qsTr("read-only"));
-        if (entry.mounted)
-            parts.push(entry.mountpoint);
+        if (entry.mountpoints.length > 0)
+            parts.push(entry.mountpoints.join(", "));
         return parts.join(" · ");
     }
 
@@ -110,7 +110,9 @@ PageBase {
                         text: root.entryTitle(filesystemRow.modelData)
                         subtext: root.entryStatus(filesystemRow.modelData)
                         checked: filesystemRow.modelData.mounted
-                        enabled: !Disks.working
+                        // A filesystem the system is running from is shown, not offered:
+                        // unmounting / or /boot is never what the click meant.
+                        enabled: !Disks.working && !filesystemRow.modelData.system
                         onToggled: filesystemRow.modelData.mounted ? Disks.unmount(filesystemRow.modelData) : Disks.mount(filesystemRow.modelData)
                     }
                 }

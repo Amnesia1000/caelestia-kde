@@ -27,30 +27,30 @@ data = {
     "blockdevices": [
         {
             "name": "sda", "path": "/dev/sda", "type": "disk", "fstype": None, "label": None,
-            "mountpoint": None, "rm": False, "hotplug": False, "ro": False, "model": "Samsung SSD", "size": "931.5G",
+            "mountpoints": [], "rm": False, "hotplug": False, "ro": False, "model": "Samsung SSD", "size": "931.5G",
             "children": [
                 {"name": "sda1", "path": "/dev/sda1", "type": "part", "fstype": "vfat", "label": "ESP",
-                 "mountpoint": "/boot", "rm": False, "hotplug": False, "ro": False, "size": "1G", "fsuse%": "12%"},
+                 "mountpoints": ["/boot"], "rm": False, "hotplug": False, "ro": False, "size": "1G", "fsuse%": "12%"},
                 {"name": "sda2", "path": "/dev/sda2", "type": "part", "fstype": "ext4", "label": "root",
-                 "mountpoint": "/", "rm": False, "hotplug": False, "ro": False, "size": "930G", "fsuse%": "41%"},
+                 "mountpoints": ["/", "/var/tmp"], "rm": False, "hotplug": False, "ro": False, "size": "930G", "fsuse%": "41%"},
                 {"name": "sda3", "path": "/dev/sda3", "type": "part", "fstype": "swap", "label": "swap",
-                 "mountpoint": "[SWAP]", "rm": False, "hotplug": False, "ro": False, "size": "8G", "fsuse%": None},
+                 "mountpoints": ["[SWAP]"], "rm": False, "hotplug": False, "ro": False, "size": "8G", "fsuse%": None},
             ],
         },
         {"name": "loop0", "path": "/dev/loop0", "type": "loop", "fstype": "squashfs", "label": None,
-         "mountpoint": "/snap/core", "rm": False, "hotplug": False, "ro": True, "model": None, "size": "128M"},
+         "mountpoints": ["/snap/core"], "rm": False, "hotplug": False, "ro": True, "model": None, "size": "128M"},
         {"name": "zram0", "path": "/dev/zram0", "type": "disk", "fstype": None, "label": None,
-         "mountpoint": "[SWAP]", "rm": False, "hotplug": False, "ro": False, "model": None, "size": "4G"},
+         "mountpoints": ["[SWAP]"], "rm": False, "hotplug": False, "ro": False, "model": None, "size": "4G"},
         {
             "name": "sdb", "path": "/dev/sdb", "type": "disk", "fstype": None, "label": None,
-            "mountpoint": None, "rm": True, "hotplug": True, "ro": False, "model": "USB Stick", "size": "57.3G",
+            "mountpoints": [], "rm": True, "hotplug": True, "ro": False, "model": "USB Stick", "size": "57.3G",
             "children": [
                 {"name": "sdb1", "path": "/dev/sdb1", "type": "part", "fstype": "exfat", "label": "Backup",
-                 "mountpoint": None, "rm": True, "hotplug": True, "ro": False, "size": "57.3G", "fsuse%": None},
+                 "mountpoints": [], "rm": True, "hotplug": True, "ro": False, "size": "57.3G", "fsuse%": None},
             ],
         },
         {"name": "sdc", "path": "/dev/sdc", "type": "disk", "fstype": "ext4", "label": "Whole disk",
-         "mountpoint": "/mnt/whole", "rm": False, "hotplug": True, "ro": False, "model": "Portable",
+         "mountpoints": ["/mnt/whole"], "rm": False, "hotplug": True, "ro": False, "model": "Portable",
          "size": "14.6G", "fsuse%": "3%"},
     ]
 }
@@ -99,13 +99,13 @@ test_a_partition_inherits_its_disk() {
     assert_eq "removable=True model=USB Stick disk=/dev/sdb mounted=False label=Backup fstype=exfat" \
         "$(fields sdb1 removable model disk mounted label fstype)" \
         "the page groups by disk and only ejects removable ones, so both have to come from the parent"
-    assert_eq "removable=False model=Samsung SSD" "$(fields sda2 removable model)" "an internal disk says so"
+    assert_eq "removable=False model=Samsung SSD system=True mountpoints=['/', '/var/tmp']" "$(fields sda2 removable model system mountpoints)" "the files the system needs are marked, so the page can show them without offering to unmount them"
 }
 
 test_a_whole_disk_filesystem_is_listed_too() {
     prepare
 
-    assert_eq "mountpoint=/mnt/whole use=3% removable=True" "$(fields sdc mountpoint use removable)" \
+    assert_eq "mountpoint=/mnt/whole use=3% removable=True system=False" "$(fields sdc mountpoint use removable system)" \
         "a stick formatted without a partition table has no children to walk into"
 }
 

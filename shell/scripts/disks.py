@@ -6,6 +6,10 @@ decision about what is worth showing is made here rather than in QML so it can b
 tested: loop devices, zram, swap and device-mapper internals are not something anyone
 mounts by hand, and every partition of a disk inherits the disk's model and whether it
 can be pulled out.
+
+A filesystem mounted at a path the system needs is reported as `system`, so the page can
+show it without offering to unmount it: unmounting `/` is not a thing a settings page
+should be one click away from.
 """
 from __future__ import annotations
 
@@ -13,9 +17,14 @@ import argparse
 import json
 import subprocess
 
-FIELDS = "NAME,PATH,TYPE,FSTYPE,LABEL,MOUNTPOINT,RM,HOTPLUG,RO,MODEL,FSUSE%"
+FIELDS = "NAME,PATH,TYPE,FSTYPE,LABEL,MOUNTPOINTS,RM,HOTPLUG,RO,MODEL,SIZE,FSUSE%"
 MOUNTABLE_TYPES = {"part", "disk", "crypt"}
 IGNORED_FSTYPES = {"swap"}
+SWAP = "[SWAP]"
+
+CRITICAL_MOUNTPOINTS = {
+    "/", "/boot", "/boot/efi", "/usr", "/etc", "/var", "/var/tmp", "/var/log", "/opt", "/srv", "/root",
+}
 
 
 def read_devices(path: str | None) -> list:
@@ -37,16 +46,26 @@ def is_mountable(node: dict) -> bool:
     return node.get("type") in MOUNTABLE_TYPES and bool(node.get("fstype")) and node["fstype"] not in IGNORED_FSTYPES
 
 
+def mountpoints(node: dict) -> list:
+    found = node.get("mountpoints")
+    if found is None:
+        found = [node.get("mountpoint")] if node.get("mountpoint") else []
+    return [point for point in found if point and point != SWAP]
+
+
 def entry(node: dict, disk: dict, removable: bool) -> dict:
-    mountpoint = node.get("mountpoint") or ""
+    points = mountpoints(node)
+    mountpoint = node.get("mountpoint") or (points[0] if points else "")
     return {
         "device": node.get("path") or f"/dev/{node['name']}",
         "label": node.get("label") or "",
         "fstype": node["fstype"],
         "size": node.get("size") or "",
         "use": node.get("fsuse%") or "",
-        "mountpoint": mountpoint,
-        "mounted": bool(mountpoint),
+        "mountpoints": points,
+        "mountpoint": mountpoint if mountpoint != SWAP else "",
+        "mounted": bool(points) and mountpoint != SWAP,
+        "system": any(point in CRITICAL_MOUNTPOINTS for point in points),
         "readOnly": bool(node.get("ro")),
         "removable": removable,
         "model": disk.get("model") or "",
