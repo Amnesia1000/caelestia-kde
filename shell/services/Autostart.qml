@@ -15,8 +15,6 @@ Singleton {
 
     property var entries: []
 
-    readonly property var enabledEntries: root.entries.filter(entry => entry.enabled)
-
     function refresh(): void {
         listProcess.running = false;
         listProcess.running = true;

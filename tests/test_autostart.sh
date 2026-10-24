@@ -55,6 +55,12 @@ test_the_list_merges_system_and_user_entries() {
     assert_contains "$listed" '"id": "own-app"' "and so are the user's"
     assert_contains "$listed" '"system": true' "a system entry says where it came from"
     assert_contains "$listed" '"enabled": false' "a Hidden entry is listed as off"
+
+    # The page reads the list top to bottom, so it is ordered by what it shows, not by the
+    # desktop file's name.
+    local names
+    names="$(printf '%s' "$listed" | "$PYTHON" -c 'import json,sys; print(" | ".join(e["name"] for e in json.load(sys.stdin)))')"
+    assert_eq "My App | System App" "$names" "entries are ordered by their name"
     rm -rf "$SANDBOX"
 }
 

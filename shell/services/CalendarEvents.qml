@@ -123,11 +123,10 @@ Singleton {
     }
 
     /// A calendar changes when it changes, so the agenda is re-read on its own while
-    /// the shell is open. A meeting that starts has to raise a session, which makes it a
-    /// deadline rather than a nicety, so the read gets five times more frequent when focus
-    /// follows the calendar. Both are conditional fetches, so most of these cost one 304.
+    /// the shell is open. The fetch is conditional, so most of these cost one 304. A feature
+    /// that needs a tighter cadence asks for its own refresh rather than changing this one.
     Timer {
-        interval: GlobalConfig.notifs.focusCalendar ? 60 * 1000 : 5 * 60 * 1000
+        interval: 5 * 60 * 1000
         running: root.configured
         repeat: true
         onTriggered: root.refresh()

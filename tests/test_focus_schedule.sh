@@ -49,8 +49,12 @@ test_a_running_meeting_can_start_a_session() {
         "and its end time is formatted the way the bar formats time"
     assert_contains "$service" 'function onEventsChanged(): void' \
         "a calendar that has just been read has to be acted on"
-    assert_contains "$calendar" 'interval: GlobalConfig.notifs.focusCalendar ? 60 * 1000 : 5 * 60 * 1000' \
-        "a meeting start is a deadline, so the calendar is read more often when focus follows it"
+    # The calendar's own cadence belongs to the calendar: focus asks for a refresh instead of
+    # reaching into another service's timer.
+    assert_contains "$service" 'onTriggered: CalendarEvents.refresh()' \
+        "a meeting start is a deadline, so focus asks the calendar to refresh every minute"
+    assert_contains "$service" 'running: root.followCalendar && CalendarEvents.configured' \
+        "and only while it is following that calendar"
     assert_contains "$page" 'GlobalConfig.notifs.focusCalendar = checked' "and the page can switch it on"
 }
 

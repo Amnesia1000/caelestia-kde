@@ -2,6 +2,8 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
+import Quickshell.Widgets
 import Caelestia.Config
 import qs.components
 import qs.components.controls
@@ -57,6 +59,12 @@ PageBase {
                     anchors.leftMargin: Tokens.padding.largeIncreased
                     anchors.rightMargin: Tokens.padding.largeIncreased
                     spacing: Tokens.spacing.medium
+
+                    IconImage {
+                        asynchronous: true
+                        implicitSize: Math.round(Tokens.font.icon.large.pointSize * 1.8)
+                        source: Quickshell.iconPath(entryRow.modelData.icon, "application-x-executable")
+                    }
 
                     ColumnLayout {
                         Layout.fillWidth: true

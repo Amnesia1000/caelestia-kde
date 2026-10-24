@@ -61,31 +61,40 @@ def enabled(entry):
 
 def entries():
     """Every entry, the user's copies taking precedence over the system ones."""
-    found = {}
-    for directory in [*reversed(system_dirs()), user_dir()]:
+    system = {}
+    for directory in reversed(system_dirs()):
         if not directory.is_dir():
             continue
         for path in sorted(directory.glob("*.desktop")):
             entry = parse(path)
-            if entry.get("Type", "Application") != "Application":
-                continue
+            if entry.get("Type", "Application") == "Application":
+                system[path.stem] = entry
 
-            name = path.stem
-            in_user_dir = path.parent == user_dir()
-            known = found.get(name, {})
-            found[name] = {
-                "id": name,
-                "name": entry.get("Name", name),
-                "command": entry.get("Exec", ""),
-                "icon": entry.get("Icon", ""),
-                "enabled": enabled(entry),
-                # A system entry with a copy in the user's directory is an override, not a
-                # second entry: that is how it gets switched off.
-                "system": known.get("system", not in_user_dir),
-                "own": in_user_dir,
-            }
+    user = {}
+    if user_dir().is_dir():
+        for path in sorted(user_dir().glob("*.desktop")):
+            entry = parse(path)
+            if entry.get("Type", "Application") == "Application":
+                user[path.stem] = entry
 
-    return sorted(found.values(), key=lambda item: item["name"].casefold())
+    listed = []
+    for name in sorted(set(system) | set(user)):
+        # A user copy of a system entry is an override, not a second entry: that is how a
+        # system program gets switched off, so what it says wins while what it *is* stays.
+        entry = user.get(name, system.get(name, {}))
+        listed.append({
+            "id": name,
+            "name": entry.get("Name", name),
+            "command": entry.get("Exec", ""),
+            "icon": entry.get("Icon", ""),
+            "enabled": enabled(entry),
+            "system": name in system,
+            "own": name in user,
+        })
+
+    # Read by name, not by file name: that is the column the page shows.
+    listed.sort(key=lambda item: item["name"].casefold())
+    return listed
 
 
 def find_user_file(name):
@@ -105,24 +114,16 @@ def find_any_file(name):
 def write_hidden(path, hidden):
     """Set `Hidden` in a desktop file, leaving every other line as it was."""
     try:
-        text = path.read_text(encoding="utf-8")
+        lines = path.read_text(encoding="utf-8").splitlines()
     except OSError:
         return False
 
-    kept = [line for line in text.splitlines() if not line.strip().startswith("Hidden=")]
+    lines = [line for line in lines if not line.strip().startswith("Hidden=")]
     if hidden:
-        out = []
-        in_entry = False
-        for line in kept:
-            out.append(line)
-            if line.strip() == "[Desktop Entry]":
-                in_entry = True
-                out.append("Hidden=true")
-        if not in_entry:
-            out.insert(0, "Hidden=true")
-        kept = out
+        group = next((index for index, line in enumerate(lines) if line.strip() == "[Desktop Entry]"), -1)
+        lines.insert(group + 1, "Hidden=true")
 
-    path.write_text("\n".join(kept) + "\n", encoding="utf-8")
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     return True
 
 
