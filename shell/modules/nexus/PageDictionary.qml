@@ -308,6 +308,19 @@ QtObject {
                 { label: qsTr("Colour filters"), keywords: ["colour", "blind", "protanopia", "deuteranopia", "filter"] },
                 { label: qsTr("Screen reader"), keywords: ["orca", "speech", "a11y"] }
             ]
+        },
+        {
+            label: qsTr("Storage"),
+            key: "storage",
+            icon: "hard_drive",
+            description: qsTr("Mount, unmount and eject filesystems"),
+            category: "system",
+            settings: [
+                { label: qsTr("Mount"), keywords: ["mount", "usb", "disk", "partition", "filesystem", "drive"] },
+                { label: qsTr("Unmount"), keywords: ["unmount", "eject", "safe remove", "usb", "disk"] },
+                { label: qsTr("Eject"), keywords: ["eject", "power off", "unplug", "usb", "drive"] },
+                { label: qsTr("Removable media"), keywords: ["usb", "stick", "sdcard", "external", "removable"] }
+            ]
         }
     ]
 

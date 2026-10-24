@@ -190,6 +190,11 @@ QtObject {
             StackPage {
                 SubPage { slot: 0; key: "accessibility"; Component { AccessibilityPage {} } }
             }
+        },
+        Component {
+            StackPage {
+                SubPage { slot: 0; key: "storage"; Component { StoragePage {} } }
+            }
         }
     ]
 
