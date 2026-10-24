@@ -89,7 +89,7 @@ Singleton {
         root.activeTargetOutput = root.getTargetOutput();
 
         const comp = notifComp.createObject(root, {
-            popup: root.shouldShowPopup(),
+            popup: root.shouldShowPopup(params.appName ?? ""),
             shellRaised: true,
             image: "",
             hints: ({}),
@@ -107,44 +107,39 @@ Singleton {
         return comp;
     }
 
-    function shouldShowPopup(): bool {
-        if (props.dnd || [...Visibilities.screens.values()].some(v => v.sidebar))
+    /// Whether this app's notification must stay quiet right now. Both the popup and
+    /// the sound ask this, so the DND/focus policy and the fullscreen rule are stated
+    /// once rather than copied into each decision.
+    function isSilenced(appName: string): bool {
+        if (props.dnd && !Focus.allows(appName))
+            return true;
+        if (GlobalConfig.notifs.fullscreen !== "off")
             return false;
-        if (GlobalConfig.notifs.fullscreen === "off") {
-            if (GlobalConfig.notifs.monitor === "focused") {
-                const targetName = root.activeTargetOutput || root.getTargetOutput();
-                if (targetName === "" || Kwin.hasFullscreenOn(targetName))
-                    return false;
-            } else {
-                const scrList = Screens.screens || [];
-                if (scrList.length > 0 && scrList.every(s => Kwin.hasFullscreenOn(s.name)))
-                    return false;
-                if (scrList.length === 0 && hasFullscreen())
-                    return false;
-            }
+
+        if (GlobalConfig.notifs.monitor === "focused") {
+            const targetName = root.activeTargetOutput || root.getTargetOutput();
+            return targetName === "" || Kwin.hasFullscreenOn(targetName);
         }
-        return true;
+
+        const scrList = Screens.screens || [];
+        if (scrList.length > 0)
+            return scrList.every(s => Kwin.hasFullscreenOn(s.name));
+
+        return hasFullscreen();
+    }
+
+    function shouldShowPopup(appName: string): bool {
+        if ([...Visibilities.screens.values()].some(v => v.sidebar))
+            return false;
+
+        return !root.isSilenced(appName);
     }
 
     function shouldPlaySound(notif: Notification): bool {
-        if (props.dnd)
-            return false;
         if (notif.appName === "caelestia-cli" || GlobalConfig.audio.sounds.disabledNotifApps.includes(notif.appName))
             return false;
-        if (GlobalConfig.notifs.fullscreen === "off") {
-            if (GlobalConfig.notifs.monitor === "focused") {
-                const targetName = root.activeTargetOutput || root.getTargetOutput();
-                if (targetName === "" || Kwin.hasFullscreenOn(targetName))
-                    return false;
-            } else {
-                const scrList = Screens.screens || [];
-                if (scrList.length > 0 && scrList.every(s => Kwin.hasFullscreenOn(s.name)))
-                    return false;
-                if (scrList.length === 0 && hasFullscreen())
-                    return false;
-            }
-        }
-        return true;
+
+        return !root.isSilenced(notif.appName);
     }
 
     function clear(): void {
@@ -234,7 +229,7 @@ Singleton {
 
             root.activeTargetOutput = root.getTargetOutput();
 
-            const showPopup = root.shouldShowPopup();
+            const showPopup = root.shouldShowPopup(notif.appName);
             const comp = notifComp.createObject(root, {
                 popup: showPopup,
                 notification: notif

@@ -225,13 +225,25 @@ PageBase {
 
         SelectRow {
             Layout.fillWidth: true
-            last: true
             label: qsTr("GPU")
             subtext: Gpu.name ? qsTr("Monitoring: %1").arg(Gpu.name) : qsTr("Override for GPU type")
             menuOnTop: true
             menuItems: root.gpuItems
             active: root.gpuItems[root.gpuKeyToIndex(GlobalConfig.services.gpuType)]
             onSelected: item => GlobalConfig.services.gpuType = root.gpuValues[root.gpuItems.indexOf(item)]
+        }
+
+        SectionHeader {
+            text: qsTr("Calendar")
+        }
+
+        NavRow {
+            first: true
+            last: true
+            icon: "calendar_month"
+            label: qsTr("Calendars & agenda")
+            status: CalendarEvents.configured ? qsTr("%1 calendar(s)").arg(CalendarEvents.sources.length) : qsTr("No calendar added")
+            onClicked: root.nState.openSubPage(2)
         }
     }
 }
