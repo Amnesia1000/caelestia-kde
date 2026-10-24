@@ -120,7 +120,7 @@ test_service_reads_the_configured_sources() {
         "the reading belongs to the script, not to QML"
     assert_contains "$service" '"--source", `${name}=${url}`' "each source must be passed through"
     assert_contains "$service" 'onSourcesChanged: root.refresh()' "editing the list must refresh"
-    assert_contains "$service" 'interval: 5 * 60 * 1000' "a calendar must not go stale"
+    assert_contains "$service" 'interval: GlobalConfig.notifs.focusCalendar ? 60 * 1000 : 5 * 60 * 1000' "a calendar must not go stale, and has to be read faster when a meeting can start a focus session"
     assert_contains "$service" 'start: new Date(item.startMs)' \
         "the UI needs dates, not raw milliseconds"
 }
@@ -219,7 +219,7 @@ test_the_calendar_updates_itself() {
 
     # A Google calendar changes when it changes; the shell has to come back for it
     # rather than showing whatever it read at startup.
-    assert_contains "$service" 'interval: 5 * 60 * 1000' "the agenda must re-read on a timer"
+    assert_contains "$service" 'interval: GlobalConfig.notifs.focusCalendar ? 60 * 1000 : 5 * 60 * 1000' "the agenda must re-read on a timer"
     assert_contains "$service" 'running: root.configured' "and only when there is something to read"
     assert_contains "$popout" 'root.refreshOnOpen()' "opening the popout must refresh what is shown"
     assert_contains "$popout" 'function onHasCurrentChanged(): void' "the refresh hangs off the popout opening"
