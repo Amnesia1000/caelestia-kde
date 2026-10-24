@@ -160,13 +160,15 @@ PageBase {
                     menuItems: root.rotationItems
                     active: root.rotationItem(outputSection.modelData)
                     fallbackText: Displays.rotationName(outputSection.modelData.rotation)
+                    last: !Displays.supportsHdr(outputSection.modelData)
                     onSelected: item => Displays.setRotation(outputSection.modelData.name, item.value)
                 }
 
                 ToggleRow {
                     last: true
+                    visible: Displays.supportsHdr(outputSection.modelData)
                     text: qsTr("HDR")
-                    subtext: qsTr("High dynamic range, where the screen and its content support it")
+                    subtext: qsTr("High dynamic range, and the wide colour gamut that goes with it")
                     checked: outputSection.modelData.hdr
                     onToggled: Displays.setHdr(outputSection.modelData.name, checked)
                 }

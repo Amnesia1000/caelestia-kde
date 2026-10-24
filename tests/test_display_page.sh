@@ -21,8 +21,8 @@ test_kscreen_is_the_only_owner_of_the_layout() {
         "the shell reads the layout from KScreen"
     assert_contains "$service" 'writeProcess.command = ["kscreen-doctor", ...settings]' \
         "and asks KScreen to change it, instead of keeping a second copy"
-    assert_contains "$service" 'onExited: root.refresh()' \
-        "every change has to be read back, so the page shows what really happened"
+    assert_contains "$service" 'root.layoutApplied();' \
+        "every change has to be read back and announced, so the page and the backlight both catch up"
     assert_contains "$service" 'root.outputs = []' "an unreadable layout must not look like an empty one"
     assert_contains "$service" 'root.failed = true' "and has to be reported"
 }
@@ -99,4 +99,97 @@ test_the_page_is_registered_next_to_its_neighbours() {
         "and the registry has to keep that order"
 }
 
+SCRIPT="$REPO_ROOT/shell/scripts/panel_capabilities.py"
+BRIGHTNESS="$REPO_ROOT/shell/services/Brightness.qml"
+PYTHON="$(command -v python3 || command -v python)"
+
+test_hdr_is_only_offered_for_a_panel_that_claims_it() {
+    local service page
+    service="$(cat "$SERVICE")"
+    page="$(cat "$PAGE")"
+
+    assert_contains "$service" 'function supportsHdr(output: var): bool' \
+        "HDR must not be offered on a screen that cannot show it"
+    assert_contains "$service" 'root.panels[output?.name]?.hdr === true' \
+        "and only a panel that says so counts"
+    assert_contains "$service" 'Quickshell.shellPath("scripts/panel_capabilities.py")' \
+        "the claim comes from the panel's own EDID, not from KScreen"
+    assert_contains "$page" 'visible: Displays.supportsHdr(outputSection.modelData)' \
+        "so the switch is absent when the panel is silent"
+    assert_contains "$page" 'last: !Displays.supportsHdr(outputSection.modelData)' \
+        "and the row above it keeps the rounded corner"
+}
+
+test_hdr_takes_the_wide_gamut_with_it() {
+    local service
+    service="$(cat "$SERVICE")"
+
+    assert_contains "$service" 'output.${name}.hdr.${on ? "enable" : "disable"}' "HDR is set"
+    assert_contains "$service" 'output.${name}.wcg.${on ? "enable" : "disable"}' \
+        "together with the wide colour gamut, the way KDE's own switch does it"
+}
+
+test_brightness_survives_a_layout_change() {
+    local brightness
+    brightness="$(cat "$BRIGHTNESS")"
+
+    assert_contains "$brightness" 'function reassertBrightness(): void' \
+        "a layout change must not throw away the brightness the user chose"
+    assert_contains "$brightness" 'target: Displays' "the trigger is the display service"
+    assert_contains "$brightness" 'function onLayoutApplied(): void' "announcing an applied layout"
+    assert_contains "$brightness" 'if (monitor && !monitor.reasserting && monitor.brightness !== value)' \
+        "KWin resetting the panel must not be mistaken for the user dimming it"
+    assert_contains "$brightness" 'const value = settled ? target : (target >= 0.99 ? target - 0.01 : target + 0.01)' \
+        "KWin ignores a write it already holds, so the panel is nudged off the value first"
+    assert_contains "$brightness" 'monitor.writeBrightness(value)' \
+        "and the brightness written back to the panel"
+}
+
+test_the_edid_decides_what_the_panel_can_show() {
+    if [ -z "$PYTHON" ]; then
+        skip_test "python3 not installed"
+        return
+    fi
+
+    local dir hdr sdr
+    dir="$("$PYTHON" - <<'PY'
+import tempfile
+
+print(tempfile.mkdtemp())
+PY
+)"
+    "$PYTHON" - "$dir" <<'PY'
+import sys
+from pathlib import Path
+
+out = Path(sys.argv[1])
+
+
+def edid(eotf):
+    base = bytearray(128)
+    base[0:8] = b"\x00\xff\xff\xff\xff\xff\xff\x00"
+    base[0x14] = 0x30  # ten bits per primary
+    base[126] = 1  # one CTA extension
+    blocks = bytes([0xE3, 0x05, 0x80, 0x00]) + bytes([0xE6, 0x06, eotf, 0x01, 0x7A, 0x7A, 0x52])
+    cta = bytearray(128)
+    cta[0] = 0x02
+    cta[1] = 0x03
+    cta[2] = 4 + len(blocks)
+    cta[4:4 + len(blocks)] = blocks
+    return bytes(base) + bytes(cta)
+
+
+(out / "hdr.edid").write_bytes(edid(0x05))  # SDR and PQ
+(out / "sdr.edid").write_bytes(edid(0x01))  # SDR only
+PY
+
+    hdr="$("$PYTHON" "$SCRIPT" --file "$dir/hdr.edid")"
+    sdr="$("$PYTHON" "$SCRIPT" --file "$dir/sdr.edid")"
+
+    assert_contains "$hdr" '"hdr": true' "a panel offering the PQ transfer function can do HDR"
+    assert_contains "$hdr" '"maxLuminance": 703' "and reports the luminance it claims"
+    assert_contains "$sdr" '"hdr": false' "a panel describing only the SDR range cannot"
+
+    rm -rf "$dir"
+}
 run_tests

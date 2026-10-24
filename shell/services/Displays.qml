@@ -3,7 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.utils
 
 /// KScreen owns the outputs. The shell reads its JSON and hands every change back to
 /// `kscreen-doctor`, in the same one-shot form System Settings uses, so the two can never
@@ -13,6 +12,9 @@ Singleton {
 
     property var outputs: []
     property bool failed: false
+    /// What each panel says it can show, keyed by output name: read from its EDID, because
+    /// KScreen stores whatever it is asked for and cannot tell us whether the screen can.
+    property var panels: ({})
 
     /// A machine without kscreen cannot be asked anything, and an empty list would read as
     /// "no screens" rather than "not installed", so the page says which one it is.
@@ -22,6 +24,17 @@ Singleton {
 
     readonly property var rotationNames: ["none", "left", "inverted", "right"]
     readonly property var rotationLabels: [qsTr("Normal"), qsTr("Left"), qsTr("Upside down"), qsTr("Right")]
+
+    /// KWin resets a panel to full brightness whenever its colour mode or resolution
+    /// changes, so everything that writes the layout announces it and lets brightness be
+    /// put back afterwards.
+    signal layoutApplied
+
+    /// HDR is offered only for a panel that advertises an HDR transfer function, so the
+    /// switch is not there to be flipped on a screen that cannot show the result.
+    function supportsHdr(output: var): bool {
+        return root.panels[output?.name]?.hdr === true;
+    }
 
     function outputFor(name: string): var {
         return root.outputs.find(output => output.name === name) ?? null;
@@ -70,8 +83,20 @@ Singleton {
         root.apply([`output.${name}.rotation.${rotation}`]);
     }
 
+    /// The wide colour gamut goes with HDR rather than on its own, which is what KDE's own
+    /// switch does: HDR content is graded in BT.2020, so enabling one without the other is
+    /// a half-applied change.
     function setHdr(name: string, on: bool): void {
-        root.apply([`output.${name}.hdr.${on ? "enable" : "disable"}`]);
+        root.apply([`output.${name}.hdr.${on ? "enable" : "disable"}`, `output.${name}.wcg.${on ? "enable" : "disable"}`]);
+    }
+
+    function readPanels(): void {
+        const names = root.connected.map(output => output.name);
+        if (names.length === 0)
+            return;
+
+        panelsProcess.command = ["python3", Quickshell.shellPath("scripts/panel_capabilities.py"), ...names];
+        panelsProcess.running = true;
     }
 
     Component.onCompleted: root.refresh()
@@ -86,6 +111,7 @@ Singleton {
                 try {
                     root.outputs = JSON.parse(text).outputs ?? [];
                     root.failed = false;
+                    root.readPanels();
                 } catch (error) {
                     root.outputs = [];
                     root.failed = true;
@@ -102,10 +128,35 @@ Singleton {
     }
 
     Process {
+        id: panelsProcess
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                let reports = [];
+                try {
+                    reports = JSON.parse(text);
+                } catch (error) {
+                    // An unreadable EDID is not an error worth a page of its own: the HDR
+                    // row simply stays away, because nothing claimed the screen can do it.
+                    reports = [];
+                }
+
+                const panels = {};
+                for (const report of reports)
+                    panels[report.output] = report;
+                root.panels = panels;
+            }
+        }
+    }
+
+    Process {
         id: writeProcess
 
         // KScreen answers the read with the layout it just applied, so the page shows what
         // really happened rather than what was asked for.
-        onExited: root.refresh()
+        onExited: {
+            root.refresh();
+            root.layoutApplied();
+        }
     }
 }

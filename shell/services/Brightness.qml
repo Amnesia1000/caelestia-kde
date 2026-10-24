@@ -22,6 +22,15 @@ Singleton {
     readonly property list<Monitor> monitors: variants.instances // qmllint disable incompatible-type
     property bool appleDisplayPresent: false
 
+    /// KWin resets a panel to full brightness after a colour or mode change, and the watcher
+    /// then reports that value back as if someone had set it. Hand the screens their own
+    /// brightness again once the change has settled, so a layout change does not silently
+    /// undo the brightness the user chose.
+    function reassertBrightness(): void {
+        for (const monitor of root.monitors)
+            monitor.scheduleReassert();
+    }
+
     function getMonitorForScreen(screen: ShellScreen): var {
         return monitors.find(m => m.modelData === screen); // qmllint disable missing-property
     }
@@ -97,7 +106,7 @@ Singleton {
 
         function onBrightnessChanged(outputName: string, value: real): void {
             const monitor = root.getMonitor(outputName);
-            if (monitor && monitor.brightness !== value) {
+            if (monitor && !monitor.reasserting && monitor.brightness !== value) {
                 monitor.brightness = value;
             }
         }
@@ -107,6 +116,14 @@ Singleton {
             if (monitor && monitor.dimming !== value) {
                 monitor.dimming = value;
             }
+        }
+    }
+
+    Connections {
+        target: Displays
+
+        function onLayoutApplied(): void {
+            root.reassertBrightness();
         }
     }
 
@@ -201,6 +218,10 @@ Singleton {
         readonly property real effectiveBrightness: brightness * dimming
         property real queuedBrightness: NaN
         property bool verifying: false
+        /// Set while a layout change is being undone, so KWin's reset is not mistaken for
+        /// the user moving the brightness slider.
+        property bool reasserting: false
+        property int reassertAttempts: 0
 
         readonly property Process readProc: Process {
             stdout: StdioCollector {
@@ -247,6 +268,38 @@ Singleton {
                     monitor.timer.restart();
                 }
             }
+        }
+
+        /// KWin applies a colour or mode change asynchronously and puts the panel back to
+        /// full brightness when it does. It also ignores a write that matches the value it
+        /// already holds, and that reset does not change the value it holds, so the panel is
+        /// nudged off it before being set back, and the whole thing repeated for a few
+        /// seconds in case KWin overtakes us again.
+        readonly property Timer reassertTimer: Timer {
+            interval: 400
+            onTriggered: {
+                monitor.reassertAttempts -= 1;
+
+                const settled = monitor.reassertAttempts === 0;
+                const target = monitor.brightness;
+                const value = settled ? target : (target >= 0.99 ? target - 0.01 : target + 0.01);
+
+                monitor.syncKwinRecord(Math.round(value * 100) / 100);
+                monitor.writeBrightness(value);
+
+                if (settled) {
+                    monitor.reasserting = false;
+                    return;
+                }
+
+                monitor.reassertTimer.restart();
+            }
+        }
+
+        function scheduleReassert(): void {
+            reasserting = true;
+            reassertAttempts = 10;
+            reassertTimer.restart();
         }
 
         function syncKwinRecord(value: real): void {
