@@ -46,6 +46,7 @@ QtObject {
                 SubPage { slot: 1; key: "desktopAddons"; Component { DesktopAddonsPage {} } }
                 SubPage { slot: 2; key: "contextMenu"; Component { ContextMenuPage {} } }
                 SubPage { slot: 3; key: "krohnkite"; Component { KrohnkitePage {} } }
+                SubPage { slot: 4; key: "desktopSettings"; Component { DesktopSettingsPage {} } }
             }
         },
         Component {
