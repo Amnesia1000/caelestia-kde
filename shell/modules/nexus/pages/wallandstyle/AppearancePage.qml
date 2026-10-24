@@ -178,22 +178,25 @@ PageBase {
                 Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
                 Layout.fillWidth: true
             }
-            SliderRow {
+            StepperRow {
                 reset: ({ node: GlobalConfig.appearance.transparency, setting: "base" })
-                roomyHeader: true
                 label: qsTr("Base opacity")
-                valueLabel: Math.round(value * 100) + "%"
                 value: GlobalConfig.appearance.transparency.base
+                from: 0.0
+                to: 1.0
+                stepSize: 0.05
                 enabled: GlobalConfig.appearance.transparency.enabled
                 onMoved: v => GlobalConfig.appearance.transparency.base = v
                 Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
             }
-            SliderRow {
+            StepperRow {
                 reset: ({ node: GlobalConfig.appearance.transparency, setting: "layers" })
                 label: qsTr("Layers opacity")
                 subtext: qsTr("Requires shell restart")
-                valueLabel: Math.round(value * 100) + "%"
                 value: GlobalConfig.appearance.transparency.layers
+                from: 0.0
+                to: 1.0
+                stepSize: 0.05
                 enabled: GlobalConfig.appearance.transparency.enabled
                 onMoved: v => GlobalConfig.appearance.transparency.layers = v
                 Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
