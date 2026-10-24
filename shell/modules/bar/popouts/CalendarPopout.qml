@@ -9,6 +9,7 @@ import qs.components
 import qs.components.controls
 import qs.components.effects
 import qs.services
+import qs.modules.nexus
 
 StyledRect {
     id: root
@@ -63,11 +64,26 @@ StyledRect {
 
     function agendaHint(): string {
         if (!CalendarEvents.configured)
-            return qsTr("Add a calendar in Settings → Calendar");
+            return qsTr("No calendars yet — click to add one");
         if (CalendarEvents.errors.length > 0)
-            return qsTr("Could not read %1").arg(CalendarEvents.errors[0].source);
+            return qsTr("Could not read %1 — click to check the address").arg(CalendarEvents.errors[0].source);
 
         return qsTr("Nothing scheduled");
+    }
+
+    /// The empty agenda is the only place a first-time user meets this feature, so it
+    /// leads to the page that fills it rather than naming a menu they have to find.
+    function openCalendarSettings(): void {
+        const pageIdx = PageDictionary.pages.findIndex(page => page.key === "services");
+        if (pageIdx < 0)
+            return;
+
+        if (root.popouts)
+            root.popouts.hasCurrent = false;
+        WindowFactory.create(null, {
+            initialPageIdx: pageIdx,
+            initialSubPageIdx: PageDictionary.subPageIdxFor("services/CalendarPage.qml")
+        });
     }
 
     function shiftMonth(delta: int): void {
@@ -357,6 +373,15 @@ StyledRect {
                         font: Tokens.font.body.builders.small.size(Tokens.font.body.small.pointSize * root.fontScale).build()
                         elide: Text.ElideRight
                     }
+                }
+
+                // Last, so it takes the click rather than the text above it, and it has
+                // to be given the row's size: it is not positioned by the layout.
+                StateLayer {
+                    anchors.fill: parent
+                    radius: Tokens.rounding.medium
+                    disabled: agendaRow.modelData.kind !== "empty"
+                    onClicked: root.openCalendarSettings()
                 }
             }
         }

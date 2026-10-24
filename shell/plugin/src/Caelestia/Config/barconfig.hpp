@@ -27,7 +27,9 @@ class BarPopouts : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, greeter, false)
     CONFIG_PROPERTY(bool, tray, true)
     CONFIG_PROPERTY(bool, statusIcons, true)
-    CONFIG_PROPERTY(bool, clock, false)
+    // On by default: the popout is the only way to reach the calendar, and the month
+    // grid with its agenda is the whole point of the clock being clickable.
+    CONFIG_PROPERTY(bool, clock, true)
 };
 
 class BarWorkspaces : public settings::ObjectNode {

@@ -468,11 +468,17 @@ like a bug rather than a fallback.
 ### 3.11 The Calendar Agenda Stays Empty
 
 The agenda reads iCalendar (`.ics`) sources; the shell has no PIM stack of its own.
-If the popout says *Add a calendar in Settings → Calendar*, nothing is configured
-yet — *Nexus → Services → Calendars & agenda*. For Google Calendar the address is
+It lives in the clock popout — hover the clock or click it — where the month grid is
+followed by an *Upcoming* list, and days with events carry a dot. If the popout says
+*No calendars yet*, nothing is configured: click that row, or go to
+*Nexus → Services → Calendars & agenda*. For Google Calendar the address is
 **Settings → the calendar → "Secret address in iCal format"**; Nextcloud, Fastmail
 and KOrganizer all hand out an equivalent export link, and a local `.ics` path works
 too.
+
+If the popout does not appear at all, the *Calendar popout* switch is off in
+*Nexus → Panels → Clock* — it is on by default, but a `shell.json` written before
+that default may still carry `bar.popouts.clock: false`.
 
 If sources are configured but no events appear:
 

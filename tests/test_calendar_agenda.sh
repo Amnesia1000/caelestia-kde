@@ -9,7 +9,9 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCRIPT="$REPO_ROOT/shell/scripts/calendar_events.py"
 SERVICE="$REPO_ROOT/shell/services/CalendarEvents.qml"
 POPOUT="$REPO_ROOT/shell/modules/bar/popouts/CalendarPopout.qml"
+CLOCK="$REPO_ROOT/shell/modules/bar/components/Clock.qml"
 CONFIG="$REPO_ROOT/shell/plugin/src/Caelestia/Config/serviceconfig.hpp"
+BAR_CONFIG="$REPO_ROOT/shell/plugin/src/Caelestia/Config/barconfig.hpp"
 PAGE="$REPO_ROOT/shell/modules/nexus/pages/services/CalendarPage.qml"
 REGISTRY="$REPO_ROOT/shell/modules/nexus/PageCompRegistry.qml"
 DICTIONARY="$REPO_ROOT/shell/modules/nexus/PageDictionary.qml"
@@ -120,8 +122,8 @@ test_agenda_is_shown_in_the_calendar_popout() {
     assert_contains "$popout" 'CalendarEvents.upcoming(3)' "the popout must list the next days of events"
     assert_contains "$popout" 'CalendarEvents.hasEventsOn(dayItem.model.date)' \
         "days with events must be marked in the grid"
-    assert_contains "$popout" 'qsTr("Add a calendar in Settings → Calendar")' \
-        "an empty agenda must say where to configure one"
+    assert_contains "$popout" 'qsTr("No calendars yet — click to add one")' \
+        "an empty agenda must offer the way to configure one"
     assert_contains "$(cat "$dash")" 'CalendarEvents.hasEventsOn(dayItem.model.date)' \
         "the dashboard grid must mark those days too"
 }
@@ -138,6 +140,26 @@ test_calendar_settings_page_is_reachable() {
         "Google Calendar's export has to be named, or nobody finds it"
     assert_contains "$registry" 'Component { CalendarPage {} }' "the page must be registered"
     assert_contains "$dictionary" 'pagePath: "services/CalendarPage.qml"' "and be searchable"
+}
+
+test_the_clock_reaches_the_calendar_by_click_and_by_hover() {
+    local clock
+    clock="$(cat "$CLOCK")"
+
+    # The popout is the only way to reach the agenda, so both have to open it.
+    assert_contains "$clock" 'onEntered: root.hoverOpen()' \
+        "hovering the clock must open the calendar"
+    assert_contains "$clock" 'Config.bar.showOnHover' "hover opening honours the bar's own setting"
+    assert_contains "$clock" '!Config.bar.popouts.clock' \
+        "and the calendar popout switch"
+    # A big popout must not appear because the pointer crossed the clock on its way
+    # to the tray, so the open is deferred.
+    assert_contains "$clock" 'interval: 150' "hover opening waits before it fires"
+    assert_contains "$clock" 'onExited: root.hoverClose()' \
+        "leaving before the delay cancels it"
+    assert_contains "$clock" 'hoverTimer.stop()' "a click settles a pending hover open"
+    assert_contains "$(cat "$BAR_CONFIG")" 'CONFIG_PROPERTY(bool, clock, true)' \
+        "the calendar popout is on by default, or the agenda is unreachable"
 }
 
 run_tests

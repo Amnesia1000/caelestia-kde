@@ -13,6 +13,21 @@ PageBase {
 
     readonly property var sources: GlobalConfig.services.calendarSources.values ?? []
 
+    readonly property list<MenuItem> lookAheadItems: [
+        MenuItem {
+            text: qsTr("7 days")
+            value: 7
+        },
+        MenuItem {
+            text: qsTr("14 days")
+            value: 14
+        },
+        MenuItem {
+            text: qsTr("30 days")
+            value: 30
+        }
+    ]
+
     function addSource(): void {
         const url = urlField.field.text.trim();
         if (url === "")
@@ -193,20 +208,8 @@ PageBase {
             fallbackIcon: "event_upcoming"
             fallbackText: qsTr("%1 days").arg(GlobalConfig.services.calendarDays)
 
-            menuItems: [
-                MenuItem {
-                    text: qsTr("7 days")
-                    value: 7
-                },
-                MenuItem {
-                    text: qsTr("14 days")
-                    value: 14
-                },
-                MenuItem {
-                    text: qsTr("30 days")
-                    value: 30
-                }
-            ]
+            menuItems: root.lookAheadItems
+            active: root.lookAheadItems.find(item => item.value === GlobalConfig.services.calendarDays) ?? null
 
             onSelected: item => {
                 GlobalConfig.services.calendarDays = item.value;
