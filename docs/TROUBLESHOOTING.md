@@ -496,8 +496,12 @@ python3 ~/.config/quickshell/caelestia/scripts/calendar_events.py \
 * Recurring events are expanded here, and only `DAILY`, `WEEKLY`, `MONTHLY` and
   `YEARLY` rules are understood. A calendar relying on exotic `BY*` combinations will
   show the master event and its plain recurrences, not every exception.
-* Fetched URLs are cached for 15 minutes under `~/.cache/caelestia/calendar`, so
-  pressing *Refresh* right after a change may return the cached copy.
+* Fetched URLs are cached for five minutes under `~/.cache/caelestia/calendar`, and the
+  cache is revalidated with the calendar's `ETag` rather than downloaded again. The
+  agenda re-reads on its own every five minutes and whenever the popout is opened, so
+  an edit in Google shows up within a few minutes; *Refresh* in Nexus forces a re-fetch.
+* The address Google hands out is **read only**: the shell can show the calendar, not
+  write to it. Editing stays in Google Calendar or whatever client you already use.
 
 ### 3.12 Focus Sessions Turn Notifications Off at the Wrong Time
 

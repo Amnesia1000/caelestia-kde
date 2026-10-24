@@ -23,10 +23,18 @@ Singleton {
     property bool loading: false
     property double updatedAt: 0
 
+    /// Set while a forced re-fetch is in flight, so the script skips the cache.
+    property bool _force: false
+    /// A refresh asked for while one was already running, and whether it was forced.
+    property bool _pending: false
+    property bool _pendingForce: false
+
     readonly property bool configured: root.sources.length > 0
 
     readonly property var command: {
         const args = ["python3", Quickshell.shellPath("scripts/calendar_events.py"), "--days", String(root.days)];
+        if (root._force)
+            args.push("--refresh");
         for (const source of root.sources) {
             const name = (source.name || "").trim() || "Calendar";
             const url = (source.url || "").trim();
@@ -73,9 +81,21 @@ Singleton {
         }
     }
 
-    function refresh(): void {
-        if (!root.configured || calendarProcess.running)
+    /// `force` bypasses the on-disk copy and re-asks Google; without it the cached
+    /// calendar is reused, so opening the popout is free.
+    function refresh(force = false): void {
+        if (!root.configured)
             return;
+
+        if (calendarProcess.running) {
+            // A read is already on its way — queue one instead of dropping it, or a
+            // popout opened during the first fetch would keep showing stale events.
+            root._pending = true;
+            root._pendingForce = root._pendingForce || force;
+            return;
+        }
+
+        root._force = force;
         root.loading = true;
         calendarProcess.running = true;
     }
@@ -95,14 +115,24 @@ Singleton {
 
         onExited: code => {
             root.loading = false;
+            root._force = false;
             if (code !== 0 && root.errors.length === 0)
                 root.errors = [{ source: "Calendar", error: `calendar_events.py exited with ${code}` }];
+
+            if (root._pending) {
+                const force = root._pendingForce;
+                root._pending = false;
+                root._pendingForce = false;
+                root.refresh(force);
+            }
         }
     }
 
+    /// A calendar changes when it changes, so the agenda is re-read on its own while
+    /// the shell is open. The fetch is conditional, so most of these cost one 304.
     Timer {
-        interval: 15 * 60 * 1000
-        running: true
+        interval: 5 * 60 * 1000
+        running: root.configured
         repeat: true
         onTriggered: root.refresh()
     }

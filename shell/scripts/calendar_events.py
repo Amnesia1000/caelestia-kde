@@ -21,12 +21,13 @@ import json
 import os
 import sys
 import time
+import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
-CACHE_SECONDS = 900
+CACHE_SECONDS = 300
 TIMEOUT_SECONDS = 15
 USER_AGENT = "caelestia-shell (+https://github.com/ladybug-me/caelestia-kde)"
 WEEKDAYS = ("MO", "TU", "WE", "TH", "FR", "SA", "SU")
@@ -283,19 +284,44 @@ def read_source(source: str) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def cached_source(source: str, cache_dir: Path) -> str:
-    """Local files are read straight; URLs are cached so a flyout does not re-fetch."""
+def cached_source(source: str, cache_dir: Path, force: bool = False) -> str:
+    """Local files are read straight; URLs are cached with a conditional re-fetch.
+
+    A calendar changes rarely, so the copy on disk is reused until it is older than
+    CACHE_SECONDS, and even then the request carries the stored ETag: an unchanged
+    calendar answers 304 and no body is transferred. That is what makes it cheap to
+    poll while the shell is open.
+    """
     if not source.startswith(("http://", "https://", "webcal://")):
         return read_source(source)
 
+    url = source.replace("webcal://", "https://", 1)
     digest = hashlib.sha1(source.encode("utf-8")).hexdigest()[:16]
     cached = cache_dir / f"{digest}.ics"
-    if cached.exists() and time.time() - cached.stat().st_mtime < CACHE_SECONDS:
+    etag_file = cache_dir / f"{digest}.etag"
+
+    if not force and cached.exists() and time.time() - cached.stat().st_mtime < CACHE_SECONDS:
         return cached.read_text(encoding="utf-8", errors="replace")
 
-    text = read_source(source)
+    headers = {"User-Agent": USER_AGENT}
+    etag = etag_file.read_text(encoding="utf-8").strip() if etag_file.exists() else ""
+    if etag:
+        headers["If-None-Match"] = etag
+
+    try:
+        request = urllib.request.Request(url, headers=headers)
+        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+            text = response.read().decode("utf-8", "replace")
+            new_etag = response.headers.get("ETag", "")
+    except urllib.error.HTTPError as error:
+        if error.code == 304 and cached.exists():
+            cached.touch()
+            return cached.read_text(encoding="utf-8", errors="replace")
+        raise
+
     cache_dir.mkdir(parents=True, exist_ok=True)
     cached.write_text(text, encoding="utf-8")
+    etag_file.write_text(new_etag, encoding="utf-8")
     return text
 
 
@@ -310,6 +336,8 @@ def main() -> int:
     parser.add_argument("--source", action="append", default=[], metavar="NAME=URL",
                         help="a calendar to read, repeatable")
     parser.add_argument("--cache-dir", default=str(default_cache_dir()))
+    parser.add_argument("--refresh", action="store_true",
+                        help="ignore the cache and re-fetch, still revalidating with the ETag")
     args = parser.parse_args()
 
     now = datetime.now().astimezone()
@@ -326,7 +354,7 @@ def main() -> int:
         if not sep:
             name, location = "Calendar", entry
         try:
-            text = cached_source(location.strip(), cache_dir)
+            text = cached_source(location.strip(), cache_dir, args.refresh)
             events.extend(build_events(text, name.strip() or "Calendar", window_start, window_end))
         except Exception as error:  # noqa: BLE001 - reported to the UI, never fatal
             errors.append({"source": name, "error": str(error)})

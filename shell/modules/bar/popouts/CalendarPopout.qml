@@ -65,6 +65,19 @@ StyledRect {
         return qsTr("No events");
     }
 
+    /// Cheap when nothing changed: the script reuses its copy of the calendar and only
+    /// revalidates it, so this is safe to run every time the popout is opened.
+    function refreshOnOpen(): void {
+        const popouts = root.popouts;
+        if (!popouts)
+            return;
+        // Name first or flag first depends on how the popout was opened, so either
+        // changing is enough for it to count as opened.
+        if (popouts.currentName !== "clock")
+            return;
+        CalendarEvents.refresh();
+    }
+
     /// The empty agenda is the only place a first-time user meets this feature, so it
     /// leads to the page that fills it rather than naming a menu they have to find.
     function openCalendarSettings(): void {
@@ -98,6 +111,20 @@ StyledRect {
 
         shownDate: root.viewDate
         offset: Tokens.padding.extraLarge * root.scaleOffset
+    }
+
+    // Opening the calendar is the moment its contents matter, so that is when a stale
+    // copy is re-read rather than only on the background timer.
+    Connections {
+        function onHasCurrentChanged(): void {
+            root.refreshOnOpen();
+        }
+
+        function onCurrentNameChanged(): void {
+            root.refreshOnOpen();
+        }
+
+        target: root.popouts
     }
 
     CustomMouseArea {

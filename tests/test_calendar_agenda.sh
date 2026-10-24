@@ -119,7 +119,7 @@ test_service_reads_the_configured_sources() {
         "the reading belongs to the script, not to QML"
     assert_contains "$service" '"--source", `${name}=${url}`' "each source must be passed through"
     assert_contains "$service" 'onSourcesChanged: root.refresh()' "editing the list must refresh"
-    assert_contains "$service" 'interval: 15 * 60 * 1000' "a calendar must not go stale"
+    assert_contains "$service" 'interval: 5 * 60 * 1000' "a calendar must not go stale"
     assert_contains "$service" 'start: new Date(item.startMs)' \
         "the UI needs dates, not raw milliseconds"
 }
@@ -194,6 +194,30 @@ test_the_clock_reaches_the_calendar_by_click_and_by_hover() {
     assert_contains "$clock" 'hoverTimer.stop()' "a click settles a pending hover open"
     assert_contains "$(cat "$BAR_CONFIG")" 'CONFIG_PROPERTY(bool, clock, true)' \
         "the calendar popout is on by default, or the agenda is unreachable"
+}
+
+test_the_calendar_updates_itself() {
+    local script service popout
+
+    script="$(cat "$SCRIPT")"
+    service="$(cat "$SERVICE")"
+    popout="$(cat "$POPOUT")"
+
+    # A Google calendar changes when it changes; the shell has to come back for it
+    # rather than showing whatever it read at startup.
+    assert_contains "$service" 'interval: 5 * 60 * 1000' "the agenda must re-read on a timer"
+    assert_contains "$service" 'running: root.configured' "and only when there is something to read"
+    assert_contains "$popout" 'root.refreshOnOpen()' "opening the popout must refresh what is shown"
+    assert_contains "$popout" 'function onHasCurrentChanged(): void' "the refresh hangs off the popout opening"
+
+    # Revalidation is what makes the frequent poll cheap: an unchanged calendar answers
+    # 304 and no body is transferred.
+    assert_contains "$script" 'headers["If-None-Match"] = etag' "fetches must revalidate with the ETag"
+    assert_contains "$script" 'if error.code == 304 and cached.exists():' "a 304 must reuse the cached copy"
+    assert_contains "$script" 'add_argument("--refresh", action="store_true"' "and a forced re-fetch must be possible"
+    assert_contains "$service" 'calendar_events.py"), "--days", String(root.days)]' "the days window is still passed"
+    assert_contains "$service" 'if (root._force)' "forcing bypasses the on-disk copy"
+    assert_contains "$(cat "$PAGE")" 'CalendarEvents.refresh(true)' "Refresh in Nexus forces a re-fetch"
 }
 
 run_tests

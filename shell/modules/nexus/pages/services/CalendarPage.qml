@@ -87,7 +87,7 @@ PageBase {
                 anchors.margins: Tokens.padding.medium
                 anchors.leftMargin: Tokens.padding.largeIncreased
                 anchors.rightMargin: Tokens.padding.largeIncreased
-                text: qsTr("Add the calendar's iCal address. In Google Calendar that is Settings -> your calendar -> \"Secret address in iCal format\"; Nextcloud and Fastmail call it an export or subscription link. Local .ics files work too.")
+                text: qsTr("Add the calendar's iCal address. In Google Calendar that is Settings -> your calendar -> \"Secret address in iCal format\"; Nextcloud and Fastmail call it an export or subscription link, and a local .ics file works too. The address is read only and re-read every few minutes, so changes made in Google appear here without doing anything.")
                 color: Colours.palette.m3onSurfaceVariant
                 font: NexusStyle.secondaryFont
                 wrapMode: Text.Wrap
@@ -243,7 +243,7 @@ PageBase {
                 TextButton {
                     text: qsTr("Refresh")
                     enabled: CalendarEvents.configured && !CalendarEvents.loading
-                    onClicked: CalendarEvents.refresh()
+                    onClicked: CalendarEvents.refresh(true)
                 }
             }
         }
