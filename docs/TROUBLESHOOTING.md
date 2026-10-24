@@ -586,10 +586,58 @@ path, or an entry restricted with `OnlyShowIn=` to a desktop the session does no
 Removing the user's copy (`--remove NAME`, or the bin icon in Nexus, which only appears for
 entries the user owns) restores whatever the package shipped.
 
+### 3.17 Storage Page Is Empty or a Mount Does Nothing
+
+The page lists what `lsblk` reports and mounts through `udisksctl`, the same path GNOME Disks
+and Dolphin use, so the answer is always a polkit prompt or a refusal instead of a half-mounted
+filesystem:
+
+```bash
+python3 ~/.config/quickshell/caelestia/scripts/disks.py    # what the page shows
+udisksctl mount -b /dev/sdb1                               # what a toggle runs
+journalctl -u polkit --since "5 min ago"                   # when it was refused
+```
+
+Loop devices, zram, swap and device-mapper internals are filtered out on purpose, and
+filesystems the system is running from (anything mounted at `/`, `/boot`, `/usr`, `/var`) are
+shown with the switch disabled: unmounting those is not a settings-page action. Every
+partition inherits its disk's model name and its removable flag, which is also the flag that
+decides whether the disk gets an **Eject** row.
+
+### 3.18 A Captive Portal Is Not Detected or Its Page Does Not Open
+
+Detection is NetworkManager's own verdict, and the sign-in address is found the way plasma-nm
+finds it — ask a known URL and read where the redirect went:
+
+```bash
+nmcli -t -f CONNECTIVITY general                            # full | portal | limited | none
+curl -sS -m 6 -o /dev/null -w '%{url_effective}' http://networkcheck.kde.org/
+```
+
+The **Open sign-in page** row in *Nexus → Network* only appears while NetworkManager reports
+`portal`. If it appears and nothing opens, the second command above tells you why: a URL that
+is still the check URL means nothing intercepted the request (so there is no page to open), and
+`lastError` in the popout shows curl's own message. A hotspot that gates traffic on a DNS
+answer without redirecting HTTP cannot be followed automatically; open its address by hand.
+
+### 3.19 The Dock Menu Lists No Recent Files
+
+The jump list is the application's own history from `~/.local/share/recently-used.xbel`, the
+freedesktop list every toolkit writes to and Plasma's recent-documents runner reads. A file only
+appears under an application that registered itself when it opened it, so a program that does not
+add bookmarks has no jump list at all:
+
+```bash
+python3 ~/.config/quickshell/caelestia/scripts/recents.py --limit 5 --app org.kde.spectacle
+grep -c '<bookmark ' ~/.local/share/recently-used.xbel
+```
+
+Entries whose file has since been deleted are dropped, and so are `http://` bookmarks, because
+a jump list is a list of things that can be opened again. The menu asks for five.
+
 ---
 
 ## 4. Runtime Issues — Lock Screen
-
 ### 4.1 Lock Screen Greeter Diagnostic
 
 The Caelestia lock screen runs as a native KDE Plasma 6 shell package (`caelestia.desktop`), loaded directly by KDE's `kscreenlocker_greet`.
@@ -685,6 +733,21 @@ rm -f "${XDG_RUNTIME_DIR:-/tmp/caelestia-$USER}/caelestia-keepawake.json"   # or
 
 The inhibitor is a Wayland idle inhibitor, so it shows up in neither `systemd-inhibit --list` nor the power
 settings; only the shell knows about it.
+
+### 5.6 The Proxy Page Changes Nothing for a Program
+*Nexus → Network → Proxy* writes `[Proxy Settings]` in `${XDG_CONFIG_HOME:-~/.config}/kioslaverc`,
+because that is the file KIO applications read — Plasma, Dolphin, Konsole and everything else
+built on KIO:
+
+```bash
+python3 ~/.config/quickshell/caelestia/scripts/proxy.py --get
+grep -A6 '\[Proxy Settings\]' ~/.config/kioslaverc
+```
+
+Programs started from a shell inherit `http_proxy` and friends instead, so they keep whatever
+their environment says until they are restarted; changing the mode to *Use environment variables*
+makes KDE read those too. The page edits only the keys it owns and leaves every other section,
+comment and unknown key in the file alone.
 
 ## 6. Network & Proxy Issues
 
