@@ -67,6 +67,18 @@ PageBase {
         return 3;
     }
 
+    /// Whether a KDE settings module is installed. Printing and the on-screen
+    /// keyboard are KDE's to configure; the shell only gives them a front door, and
+    /// says so when the module is missing rather than opening a dead page.
+    function kcmAvailable(name: string): bool {
+        const dirs = ["/usr/lib/qt6/plugins/plasma/kcms/systemsettings", "/usr/lib64/qt6/plugins/plasma/kcms/systemsettings"];
+        for (let i = 0; i < dirs.length; ++i) {
+            if (IUtils.fileExists(`${dirs[i]}/${name}.so`))
+                return true;
+        }
+        return false;
+    }
+
     title: qsTr("Services")
 
     ColumnLayout {
@@ -244,6 +256,33 @@ PageBase {
             label: qsTr("Calendars & agenda")
             status: CalendarEvents.configured ? qsTr("%1 calendar(s)").arg(CalendarEvents.sources.length) : qsTr("No calendar added")
             onClicked: root.nState.openSubPage(2)
+        }
+
+        SectionHeader {
+            text: qsTr("System")
+        }
+
+        NavRow {
+            first: true
+            icon: "print"
+            label: qsTr("Printers")
+            status: root.kcmAvailable("kcm_printer_manager") ? qsTr("Add and manage printers") : qsTr("Install print-manager to enable printing")
+            onClicked: Launch.exec(["systemsettings", "kcm_printer_manager"])
+        }
+
+        NavRow {
+            icon: "keyboard_alt"
+            label: qsTr("On-screen keyboard")
+            status: root.kcmAvailable("kcm_virtualkeyboard") ? qsTr("Touch keyboard, activation and layout") : qsTr("Install plasma-desktop to configure it")
+            onClicked: Launch.exec(["systemsettings", "kcm_virtualkeyboard"])
+        }
+
+        NavRow {
+            last: true
+            icon: "accessibility_new"
+            label: qsTr("System accessibility")
+            status: qsTr("Screen reader, sticky keys, bounce keys")
+            onClicked: Launch.exec(["systemsettings", "kcm_access"])
         }
     }
 }
