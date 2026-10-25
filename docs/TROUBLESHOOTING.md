@@ -600,9 +600,16 @@ journalctl -u polkit --since "5 min ago"                   # when it was refused
 
 Loop devices, zram, swap and device-mapper internals are filtered out on purpose, and
 filesystems the system is running from (anything mounted at `/`, `/boot`, `/usr`, `/var`) are
-shown with the switch disabled: unmounting those is not a settings-page action. Every
-partition inherits its disk's model name and its removable flag, which is also the flag that
-decides whether the disk gets an **Eject** row.
+shown with the switch disabled: unmounting those is not a settings-page action.
+
+The list is one row per disk with its filesystems under it, because every action the page
+offers is a disk action: **Eject** runs `udisksctl power-off -b` on the disk, and a removable
+disk with no filesystem at all — a stick that was never formatted — is still listed and
+ejectable. An optical drive with no disc in it is not, since there is nothing to act on.
+
+A page that says *No disks were reported by lsblk* and a page that shows an error are
+different answers: the script prints nothing and fails when `python3`, `lsblk` or the script
+itself is missing, and that failure is shown rather than reported as an empty machine.
 
 ### 3.18 A Captive Portal Is Not Detected or Its Page Does Not Open
 
@@ -617,7 +624,7 @@ curl -sS -m 6 -o /dev/null -w '%{url_effective}' http://networkcheck.kde.org/
 The **Open sign-in page** row in *Nexus → Network* only appears while NetworkManager reports
 `portal`. If it appears and nothing opens, the second command above tells you why: a URL that
 is still the check URL means nothing intercepted the request (so there is no page to open), and
-`lastError` in the popout shows curl's own message. A hotspot that gates traffic on a DNS
+the row's own status line then shows curl's message. A hotspot that gates traffic on a DNS
 answer without redirecting HTTP cannot be followed automatically; open its address by hand.
 
 ### 3.19 The Dock Menu Lists No Recent Files
@@ -635,9 +642,14 @@ grep -c '<bookmark ' ~/.local/share/recently-used.xbel
 Entries whose file has since been deleted are dropped, and so are `http://` bookmarks, because
 a jump list is a list of things that can be opened again. The menu asks for five.
 
+The list is that application's own history in that application's own order: when the same file
+was opened by two applications, each records its own visit, and the jump list keeps the visit
+that application made rather than dropping the file because something else opened it later.
+
 ---
 
 ## 4. Runtime Issues — Lock Screen
+
 ### 4.1 Lock Screen Greeter Diagnostic
 
 The Caelestia lock screen runs as a native KDE Plasma 6 shell package (`caelestia.desktop`), loaded directly by KDE's `kscreenlocker_greet`.
@@ -747,7 +759,8 @@ grep -A6 '\[Proxy Settings\]' ~/.config/kioslaverc
 Programs started from a shell inherit `http_proxy` and friends instead, so they keep whatever
 their environment says until they are restarted; changing the mode to *Use environment variables*
 makes KDE read those too. The page edits only the keys it owns and leaves every other section,
-comment and unknown key in the file alone.
+comment and unknown key in the file alone, and it replaces the file in one step: a failed write
+leaves the old `kioslaverc` intact and says so on the page instead of emptying it.
 
 ## 6. Network & Proxy Issues
 
@@ -952,7 +965,9 @@ loads its rule groups from, and a group that is present in the file but missing 
 that list is never loaded, and is removed the next time KWin saves the file. The
 installer writes the list with the user's existing rules first, followed by Caelestia's
 rules in priority order, with `count` set to the number of entries, so the user's own
-rules are preserved and keep precedence.
+rules are preserved and keep precedence. The group names and their order are written down
+once, in `scripts/lib/kwin-rules.sh`, which both the installer step and `uninstall.sh`
+read: a second copy is how a group gets written into the file but never evaluated.
 
 To read a value back:
 
