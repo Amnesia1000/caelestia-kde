@@ -12,15 +12,26 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    readonly property string selfAppName: "caelestia-shell"
-
-    property var settings: ({})
-    property bool loaded: false
+    readonly property string scriptPath: Quickshell.shellPath("scripts/proxy.py")
+    readonly property var settings: read.result ?? ({})
+    readonly property bool loaded: read.loaded
+    /// One line for a page to show: what KDE applications will actually do.
+    readonly property string summary: {
+        if (root.mode === "manual")
+            return root.settings.http || qsTr("Manual, no address set");
+        if (root.mode === "pac")
+            return root.settings.pac || qsTr("Automatic script");
+        return root.mode === "none" ? qsTr("Off") : root.mode;
+    }
+    readonly property string mode: root.settings.mode ?? "none"
+    readonly property string lastError: root.writeError || read.error
+    property bool working: false
+    property string writeError: ""
 
     function refresh(): void {
-        if (readProcess.running)
+        if (read.running)
             return;
-        readProcess.running = true;
+        read.start();
     }
 
     function setMode(mode: string): void {
@@ -31,35 +42,40 @@ Singleton {
         root.run(["--set", key, value]);
     }
 
+    /// One write at a time: each one is a read-modify-write of the whole file, so two at
+    /// once would race and one of the two edits would be lost.
     function run(args: list<string>): void {
-        editProcess.command = ["python3", Quickshell.shellPath("scripts/proxy.py"), ...args];
-        editProcess.running = true;
+        if (editor.running)
+            return;
+        root.writeError = "";
+        root.working = true;
+        editor.command = ["python3", root.scriptPath, ...args];
+        editor.running = true;
     }
 
     Component.onCompleted: root.refresh()
 
-    Process {
-        id: readProcess
+    JsonScript {
+        id: read
 
-        command: ["python3", Quickshell.shellPath("scripts/proxy.py"), "--get"]
-
-        stdout: StdioCollector {
-            id: readOutput
-
-            onStreamFinished: {
-                try {
-                    root.settings = JSON.parse(readOutput.text);
-                } catch (error) {
-                    root.settings = {};
-                }
-                root.loaded = true;
-            }
-        }
+        script: "scripts/proxy.py"
+        args: ["--get"]
     }
 
     Process {
-        id: editProcess
+        id: editor
 
-        onExited: root.refresh()
+        stderr: StdioCollector {
+            id: editorStderr
+        }
+
+        onExited: exitCode => {
+            root.working = false;
+            if (exitCode !== 0) {
+                root.writeError = editorStderr.text.trim() || qsTr("The proxy settings could not be written.");
+                return;
+            }
+            root.refresh();
+        }
     }
 }

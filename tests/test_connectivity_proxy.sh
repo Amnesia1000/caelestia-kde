@@ -66,13 +66,40 @@ INI
 }
 
 test_the_proxy_page_and_service_agree_on_the_script() {
-    assert_file_contains "$PROXY_SERVICE" 'Quickshell.shellPath("scripts/proxy.py")' "one owner for the file"
+    assert_file_contains "$PROXY_SERVICE" 'script: "scripts/proxy.py"' "one owner for the file"
     assert_file_contains "$PROXY_SERVICE" '["--set-mode", mode]' "the mode setter goes through it"
     assert_file_contains "$PROXY_SERVICE" '["--set", key, value]' "so do the addresses"
-    assert_file_contains "$PROXY_PAGE" 'onEditingFinished: Proxy.set(' \
+    assert_file_contains "$PROXY_PAGE" 'onEditingFinished: value => Proxy.set(modelData.key, value)' \
         "values are written when the field is done, not on every keystroke"
     assert_file_contains "$REGISTRY" 'key: "proxy"' "the page is reachable"
-    assert_file_contains "$NETWORK_PAGE" 'Proxy.settings.mode' "and the network page reports what it holds"
+    assert_file_contains "$NETWORK_PAGE" 'Proxy.summary' "and the network page reports what it holds"
+}
+
+test_a_broken_proxy_script_is_reported_rather_than_shown_as_off() {
+    assert_file_contains "$PROXY_SERVICE" 'readonly property string lastError: root.writeError || read.error' \
+        "a read that broke and a write that was refused both reach the page"
+    assert_file_contains "$PROXY_PAGE" 'visible: Proxy.lastError !== ""' "and the page shows them"
+    assert_file_contains "$PROXY_SERVICE" 'if (editor.running)' \
+        "one write at a time: each is a read-modify-write of the whole file"
+}
+
+# The file other applications read is replaced in one step, so a failure cannot leave it
+# empty or half written, and the mode the user had on it survives.
+test_a_write_replaces_the_file_and_keeps_its_mode() {
+    export XDG_CONFIG_HOME="$TMP/config2"
+    mkdir -p "$XDG_CONFIG_HOME"
+    printf '[Proxy Settings]\nProxyType=1\nhttpProxy=http://old:3128\n' > "$XDG_CONFIG_HOME/kioslaverc"
+    chmod 600 "$XDG_CONFIG_HOME/kioslaverc"
+
+    local before after
+    before="$(stat -c '%a' "$XDG_CONFIG_HOME/kioslaverc")"
+
+    "$PYTHON" "$PROXY_SCRIPT" --set https https://new:8443
+    after="$(stat -c '%a' "$XDG_CONFIG_HOME/kioslaverc")"
+
+    assert_eq "$before" "$after" "a rewrite must not hand the file a different mode"
+    assert_eq "" "$(ls -A "$XDG_CONFIG_HOME" | grep '^\.kioslaverc\.' || true)" "and must not leave its copy behind"
+    assert_contains "$(cat "$XDG_CONFIG_HOME/kioslaverc")" "httpsProxy=https://new:8443" "the edit landed"
 }
 
 run_tests

@@ -34,7 +34,23 @@ PageBase {
         }
     ]
 
-    readonly property string mode: Proxy.settings.mode ?? "none"
+    /// The addresses the chosen mode reads, so the page and the mode cannot disagree
+    /// about which fields exist.
+    readonly property var fields: {
+        if (root.mode === "manual")
+            return [
+                { label: qsTr("HTTP proxy"), key: "http", hint: "http://host:port" },
+                { label: qsTr("HTTPS proxy"), key: "https", hint: "http://host:port" },
+                { label: qsTr("FTP proxy"), key: "ftp", hint: "http://host:port" },
+                { label: qsTr("SOCKS proxy"), key: "socks", hint: "socks://host:port" },
+                { label: qsTr("No proxy for"), key: "noProxy", hint: qsTr("Comma separated hosts") }
+            ];
+        if (root.mode === "pac")
+            return [{ label: qsTr("Script address"), key: "pac", hint: "http://host/proxy.pac" }];
+        return [];
+    }
+
+    readonly property string mode: Proxy.mode
     readonly property bool manual: root.mode === "manual"
 
     function modeItem(): MenuItem {
@@ -52,11 +68,20 @@ PageBase {
         width: root.cappedWidth
         spacing: Tokens.spacing.extraSmall / 2
 
+        StyledText {
+            Layout.fillWidth: true
+            visible: Proxy.lastError !== ""
+            text: Proxy.lastError
+            color: Colours.palette.m3error
+            font: NexusStyle.secondaryFont
+            wrapMode: Text.Wrap
+        }
+
         SelectRow {
             label: qsTr("Mode")
             subtext: qsTr("How applications decide where to send requests")
             first: true
-            last: !root.manual && root.mode !== "pac"
+            last: root.fields.length === 0
             menuItems: root.modeItems
             active: root.modeItem()
             fallbackText: root.mode
@@ -64,50 +89,18 @@ PageBase {
         }
 
         Repeater {
-            model: root.manual
-                ? [
-                    { label: qsTr("HTTP proxy"), key: "http", hint: "http://host:port" },
-                    { label: qsTr("HTTPS proxy"), key: "https", hint: "http://host:port" },
-                    { label: qsTr("SOCKS proxy"), key: "socks", hint: "socks://host:port" },
-                    { label: qsTr("No proxy for"), key: "noProxy", hint: qsTr("Comma separated hosts") }
-                ]
-                : root.mode === "pac"
-                    ? [{ label: qsTr("Script address"), key: "pac", hint: "http://host/proxy.pac" }]
-                    : []
+            model: root.fields
 
-            delegate: StyledRect {
+            delegate: TextFieldRow {
                 required property var modelData
                 required property int index
 
-                Layout.fillWidth: true
-                implicitHeight: fieldLayout.implicitHeight + Tokens.padding.medium * 2
-                radius: Tokens.rounding.medium
-                color: Colours.tPalette.m3surfaceContainer
-
-                ColumnLayout {
-                    id: fieldLayout
-
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.margins: Tokens.padding.medium
-                    spacing: Tokens.spacing.extraSmall
-
-                    StyledText {
-                        text: modelData.label
-                        color: Colours.palette.m3onSurface
-                        font: Tokens.font.body.medium
-                    }
-
-                    StyledInputField {
-                        Layout.fillWidth: true
-
-                        text: Proxy.settings[modelData.key] ?? ""
-                        placeholderText: modelData.hint
-                        horizontalAlignment: TextInput.AlignLeft
-                        onEditingFinished: Proxy.set(modelData.key, text)
-                    }
-                }
+                first: index === 0
+                last: index === root.fields.length - 1
+                label: modelData.label
+                placeholderText: modelData.hint
+                value: Proxy.settings[modelData.key] ?? ""
+                onEditingFinished: value => Proxy.set(modelData.key, value)
             }
         }
 

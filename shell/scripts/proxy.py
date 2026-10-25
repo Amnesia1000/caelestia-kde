@@ -12,7 +12,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import stat
 import sys
+import tempfile
 
 SECTION = "[Proxy Settings]"
 MODES = {"none": 0, "manual": 1, "pac": 2, "auto": 3, "env": 4}
@@ -93,6 +95,28 @@ def current(lines: list) -> dict:
     return settings
 
 
+def save(path: str, lines: list) -> None:
+    """Replace the file in one step, so a failure cannot leave it half written.
+
+    `kioslaverc` is the only copy of settings other applications read, and truncating it
+    in place leaves a window in which a reader sees an empty file — or, after a crash, a
+    permanently empty one.
+    """
+    directory = os.path.dirname(path) or "."
+    os.makedirs(directory, exist_ok=True)
+    mode = stat.S_IMODE(os.stat(path).st_mode) if os.path.exists(path) else 0o644
+
+    handle_fd, temporary = tempfile.mkstemp(dir=directory, prefix=".kioslaverc.")
+    try:
+        with os.fdopen(handle_fd, "w", encoding="utf-8") as handle:
+            handle.write("\n".join(lines).rstrip("\n") + "\n")
+        os.chmod(temporary, mode)
+        os.replace(temporary, path)
+    except BaseException:
+        os.unlink(temporary)
+        raise
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--get", action="store_true", help="print the current proxy settings as JSON")
@@ -114,9 +138,7 @@ def main() -> int:
         lines = write_key(lines, "ProxyType", str(MODES[args.set_mode]))
 
     if args.set or args.set_mode:
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "w", encoding="utf-8") as handle:
-            handle.write("\n".join(lines).rstrip("\n") + "\n")
+        save(path, lines)
         return 0
 
     settings = current(lines)
