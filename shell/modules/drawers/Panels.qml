@@ -296,12 +296,21 @@ Item {
     Toasts.Toasts {
         id: toasts
 
-        property string vAnchor: "bottom"
-        property string hAnchor: bar.position === "bottom" ? "left" : (bar.position === "right" ? "left" : "right")
+        /// Where the toasts sit. `auto` keeps the bottom corner the shell has always
+        /// used, so nobody's toasts move because this became a setting.
+        readonly property string corner: {
+            const wanted = GlobalConfig.utilities.toasts.position;
+            return wanted === "auto" ? "bottom-right" : wanted;
+        }
+        property string vAnchor: toasts.fromTop ? "top" : "bottom"
+        property string hAnchor: toasts.fromLeft ? "left" : "right"
 
+        position: toasts.corner
         visibilities: root.visibilities
-        anchors.bottom: sidebar.visible ? parent.bottom : utilities.top
-        anchors.right: sidebar.left
+        anchors.top: toasts.fromTop ? parent.top : undefined
+        anchors.bottom: toasts.fromTop ? undefined : (sidebar.visible ? parent.bottom : utilities.top)
+        anchors.left: toasts.fromLeft ? parent.left : undefined
+        anchors.right: toasts.fromLeft ? undefined : sidebar.left
         anchors.margins: Tokens.padding.medium
     }
     Sidebar.Wrapper {

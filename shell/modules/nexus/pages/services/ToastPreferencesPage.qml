@@ -24,6 +24,30 @@ PageBase {
     ]
     readonly property list<string> fullscreenValues: ["off", "important", "all"]
 
+    readonly property list<MenuItem> cornerItems: [
+        MenuItem {
+            text: qsTr("Automatic")
+            icon: "settings_suggest"
+        },
+        MenuItem {
+            text: qsTr("Top left")
+            icon: "north_west"
+        },
+        MenuItem {
+            text: qsTr("Top right")
+            icon: "north_east"
+        },
+        MenuItem {
+            text: qsTr("Bottom left")
+            icon: "south_west"
+        },
+        MenuItem {
+            text: qsTr("Bottom right")
+            icon: "south_east"
+        }
+    ]
+    readonly property list<string> cornerValues: ["auto", "top-left", "top-right", "bottom-left", "bottom-right"]
+
     title: qsTr("Toasts")
     isSubPage: true
 
@@ -55,6 +79,14 @@ PageBase {
             to: 10
             stepSize: 1
             onMoved: value => GlobalConfig.utilities.maxToasts = Math.round(value)
+        }
+
+        SelectRow {
+            label: qsTr("Corner")
+            subtext: qsTr("Where the stack grows from. Automatic keeps the bottom corner, clear of the launcher")
+            menuItems: root.cornerItems
+            active: root.cornerItems[Math.max(0, root.cornerValues.indexOf(GlobalConfig.utilities.toasts.position))]
+            onSelected: item => GlobalConfig.utilities.toasts.position = root.cornerValues[root.cornerItems.indexOf(item)]
         }
 
         ToggleRow {
