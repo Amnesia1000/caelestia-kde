@@ -87,6 +87,8 @@ Item {
     readonly property string ipcBin: "PATH=\"${CAELESTIA_BIN_DIR:-$HOME/.local/bin}:$PATH\" caelestia-shell-ipc"
     property var liveMedia: ({})
     property var liveNotifs: []
+    property bool isDndEnabled: false
+    property bool _dndBeforeGame: false
     property var greetingInfo: getGreeting()
 
     function getLuminance(c) {
@@ -326,7 +328,12 @@ Item {
             if (!stdout) return;
             try {
                 var snapshot = JSON.parse(stdout);
-                if (Array.isArray(snapshot)) lockScreenUi.liveNotifs = snapshot;
+                if (Array.isArray(snapshot)) {
+                    lockScreenUi.liveNotifs = snapshot;
+                } else if (snapshot && Array.isArray(snapshot.items)) {
+                    lockScreenUi.liveNotifs = snapshot.items;
+                    lockScreenUi.isDndEnabled = snapshot.dnd === true;
+                }
             } catch(e) {}
         }
         Component.onCompleted: poll()
@@ -350,6 +357,23 @@ Item {
             // feedback and let the next poll confirm it.
             lockScreenUi.liveNotifs = [];
             connectSource(lockScreenUi.ipcBin + " call notifs clear");
+        }
+
+        engine: "executable"
+        connectedSources: []
+        onNewData: (source, data) => {
+            disconnectSource(source);
+            notifLoader.poll();
+        }
+    }
+
+    /// Do-not-disturb lives in the shell, not here: the dino game asks for it while
+    /// it runs, so it goes over IPC and is restored to whatever it was beforehand.
+    Plasma5Support.DataSource {
+        id: dndSource
+
+        function setEnabled(enabled) {
+            connectSource(lockScreenUi.ipcBin + " call notifs " + (enabled ? "enableDnd" : "disableDnd"));
         }
 
         engine: "executable"
@@ -904,6 +928,14 @@ Item {
                         clSurfaceVariantFg: lockScreenUi.clSurfaceVariantFg
                         clOutline: lockScreenUi.clOutline
                         onClearAllRequested: notifActionSource.clearAll()
+                        onDndRequested: enabled => {
+                            if (enabled) {
+                                lockScreenUi._dndBeforeGame = lockScreenUi.isDndEnabled;
+                                dndSource.setEnabled(true);
+                            } else if (!lockScreenUi._dndBeforeGame) {
+                                dndSource.setEnabled(false);
+                            }
+                        }
                     }
                 }
             }

@@ -200,8 +200,8 @@ Singleton {
         storage.setText("[]");
     }
 
-    function serializeState(): string {
-        return JSON.stringify(root.notClosed().filter(n => !n.shellRaised).map(n => ({
+    function serializeList(): var {
+        return root.notClosed().filter(n => !n.shellRaised).map(n => ({
                         time: n.time,
                         id: n.id,
                         summary: n.summary,
@@ -214,7 +214,11 @@ Singleton {
                         resident: n.resident,
                         hasActionIcons: n.hasActionIcons,
                         actions: n.actions
-                    })));
+                    }));
+    }
+
+    function serializeState(): string {
+        return JSON.stringify(root.serializeList());
     }
 
     onDndChanged: {
@@ -341,8 +345,14 @@ Singleton {
     }
 
     IpcHandler {
+        /// Live snapshot of the list plus do-not-disturb, for out-of-process views
+        /// (the lock screen) that cannot read the in-process model. Same serialiser
+        /// as the persisted history, so both views describe the same notifications.
         function list(): string {
-            return root.serializeState();
+            return JSON.stringify({
+                dnd: props.dnd,
+                items: root.serializeList()
+            });
         }
 
         function clear(): void {
