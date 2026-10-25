@@ -20,6 +20,10 @@ Item {
 
     signal editingFinished
 
+    /// Enter, and only Enter. `editingFinished` also fires when the field loses focus,
+    /// which is the wrong moment to commit something with a side effect.
+    signal accepted
+
     implicitWidth: 70
     implicitHeight: inputField.implicitHeight + Tokens.padding.small
 
@@ -67,6 +71,10 @@ Item {
 
             onEditingFinished: {
                 root.editingFinished();
+            }
+
+            onAccepted: {
+                root.accepted();
             }
 
             Binding {

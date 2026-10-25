@@ -672,6 +672,53 @@ that application made rather than dropping the file because something else opene
 
 ---
 
+### 3.21 A Timer Did Not Fire, or Disappeared
+
+Timers are countdowns, and they live in the utilities drawer (*the card titled Timers*),
+in `~/.local/state/caelestia/timers.json` between shell restarts, and on the CLI:
+
+```bash
+caelestia shell timers startFor 25m "take the bread out"   # same parser as the card
+caelestia shell timers list                                # what is running, seconds left
+caelestia shell timers cancel <id>                         # the id from list
+caelestia shell timers clear                               # all of them
+```
+
+A duration is read the way it is typed: `25` and `25m` are minutes, `90s` is ninety
+seconds, `1h30` is an hour and a half.
+
+What is stored is the moment a timer *ends*, not the time it has left, so restarting the
+shell does not restart the countdown. A timer whose end passed while the shell was not
+running is reported once on the next start ("2 timers finished while the shell was not
+running") instead of replaying every one of them. Timers that end while the shell is
+running are each announced with their own message, since that message is still news.
+
+A timer that ends while the shell is running raises a notification as *Timers*, which
+means it follows the same rules as any other: a banner and a chime, unless Do Not Disturb
+is on.
+
+Typing a duration and pressing Enter starts the timer; leaving the field alone does not,
+so a click elsewhere cannot start a timer nobody asked for. The buttons under the field
+(5m, 10m, 25m, 45m) start one in a press.
+The card can be hidden entirely with *Nexus → Utilities panel → Timers*; the timers keep
+running, they are simply not in the drawer.
+
+### 3.22 Where Unit and Currency Conversion Lives
+
+In the launcher. Its calculator is powered by `libqalculate`, which answers unit and
+currency questions as expressions: typing `10 km to miles`, `3 tbsp in ml` or
+`20 usd in eur` gives the converted value, and <kbd>Enter</kbd> copies it.
+
+```bash
+qalc "10 km to miles"        # the same answer from a terminal
+```
+
+`libqalculate` is a hard dependency of the shell's plugin, so this works wherever the
+shell itself does. Currency rates come from the sources `qalc` knows about and go stale
+when it cannot reach them; `qalc -e "20 usd in eur"` prints the rate it used when asked to
+show its work.
+
+
 ## 4. Runtime Issues — Lock Screen
 
 ### 4.1 Lock Screen Greeter Diagnostic

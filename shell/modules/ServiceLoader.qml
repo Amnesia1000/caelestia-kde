@@ -18,6 +18,7 @@ Scope {
 
         onTriggered: {
             IdleInhibitor;
+            Timers;
             GameMode;
             Players;
             Brightness;

@@ -30,6 +30,14 @@ PageBase {
         }
 
         ToggleRow {
+            text: qsTr("Timers")
+            subtext: qsTr("Show the countdown timers card")
+            reset: ({ node: GlobalConfig.utilities, setting: "showTimers" })
+            checked: Config.utilities.showTimers
+            onToggled: GlobalConfig.utilities.showTimers = checked
+        }
+
+        ToggleRow {
             text: qsTr("Screen Capture")
             subtext: qsTr("Show the screen capture card")
             reset: ({ node: GlobalConfig.utilities, setting: "showScreenRecorder" })
