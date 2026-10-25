@@ -517,6 +517,34 @@ belongs to the day it started on — `22:00–07:00` on a Monday covers Tuesday 
   the application name the notification carries, which is what
   `notify-send -a <name>` and most messaging apps set.
 
+### 3.12.1 An Application's Notifications Stopped Arriving
+
+Two per-app lists can silence an application, and they answer different questions.
+*Nexus → Audio → Muted notification apps* shows both:
+
+* **Notifications turned off** — nothing arrives: no banner, no sound, nothing added to
+  the notification list, and nothing counted as unread. This is what the bell-with-a-slash
+  button on a notification does, so an application can be turned off from the notification
+  itself without opening settings.
+* **Notifications without sound** — the notification still arrives and is still listed;
+  only the chime is skipped.
+
+The first list is `mutedApps` in the notifications config, the second is
+`audio.sounds.disabledNotifApps`; an application can be in both and the stronger answer
+wins. Neither is the same thing as Do Not Disturb, which is a session-wide switch with an
+end time, or as the focus allow-list, which decides who gets through while DND is on:
+
+```bash
+caelestia shell notifs mutedApps                   # the apps that send nothing, as JSON
+caelestia shell notifs mute firefox                # turn one off
+caelestia shell notifs unmute firefox              # and back on
+caelestia shell notifs search invoice              # what the search box would show
+```
+
+The list in the sidebar can be searched: the magnifier beside "Notifications" narrows the
+history (kept across restarts, up to *Nexus → Notifications → Max stored notifications*) by
+application name, summary and body text.
+
 ### 3.13 Shell Text Does Not Follow the System Text Size
 
 The shell draws with its own type tokens, so KDE's font size does not reach it

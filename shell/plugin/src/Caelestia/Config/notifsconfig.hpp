@@ -44,6 +44,12 @@ class NotifsConfig : public settings::ObjectNode {
     CONFIG_GLOBAL_PROPERTY(bool, focusCalendar, false)
     CONFIG_GLOBAL_LIST(FocusScheduleList, focusSchedules, {})
     CONFIG_GLOBAL_PROPERTY(QStringList, focusAllowlist, QStringList())
+
+    // Apps whose notifications are dropped: no banner, no sound, nothing in the list and
+    // nothing added to the unread count. This is the "turn off notifications for this app"
+    // switch, which is a different answer from `audio.sounds.disabledNotifApps` — that one
+    // still shows the notification, quietly.
+    CONFIG_GLOBAL_PROPERTY(QStringList, mutedApps, QStringList())
 };
 
 } // namespace caelestia::config

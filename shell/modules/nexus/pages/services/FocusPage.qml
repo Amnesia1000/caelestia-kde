@@ -334,8 +334,10 @@ PageBase {
             StyledText {
                 id: allowHelper
 
-                anchors.fill: parent
-                anchors.margins: Tokens.padding.medium
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.topMargin: Tokens.padding.medium
                 anchors.leftMargin: Tokens.padding.largeIncreased
                 anchors.rightMargin: Tokens.padding.largeIncreased
                 text: qsTr("Notifications from these apps still pop up during a focus session.")
