@@ -6,6 +6,7 @@ import Quickshell.Io
 import qs.services
 import qs.utils
 import "duration.js" as Duration
+import "timers.js" as TimerList
 
 /// The countdown timers that are running, how long they have left, and what to say
 /// when one ends.
@@ -68,18 +69,21 @@ Singleton {
     }
 
     function tick(): void {
-        root.now = Date.now();
+        // The clock is read once and handed over as a value: asking it again inside a
+        // predicate per timer is how a timer ten minutes out can be called due.
+        const now = Date.now();
+        root.now = now;
 
-        const due = root.list.filter(timer => timer.ends <= root.now);
-        if (due.length === 0)
+        const split = TimerList.split(root.list, now);
+        if (split.due.length === 0)
             return;
 
-        root.list = root.list.filter(timer => timer.ends > root.now);
+        root.list = split.running;
         // One notification per timer that ends while the shell is running: each message
         // is still news. The load path below batches instead, because those timers ended
         // while nobody was watching and their messages are one fact, not several.
-        for (const timer of due)
-            root.announce(timer.message);
+        for (let i = 0; i < split.due.length; i++)
+            root.announce(split.due[i].message);
     }
 
     function serialize(): string {

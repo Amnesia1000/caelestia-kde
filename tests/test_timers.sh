@@ -21,6 +21,8 @@ test_a_timer_is_stored_as_the_moment_it_ends() {
     assert_file_contains "$TIMERS" 'ends: Date.now() + seconds * 1000' "starting a timer records when it ends"
     assert_file_contains "$TIMERS" 'ends: timer.ends' "and that is what is written to disk"
     assert_file_contains "$TIMERS" 'path: `${Paths.state}/timers.json`' "beside the other state the shell keeps"
+    assert_file_contains "$TIMERS" 'const split = TimerList.split(root.list, now)' \
+        "what is due is decided by the pure split, from a clock read once"
     assert_file_contains "$TIMERS" 'root.list = data.filter(timer => timer.ends > Date.now())' \
         "loading keeps the ones that have not ended yet"
 }
@@ -81,6 +83,46 @@ assert.strictEqual(Duration.parse("   "), 0, "whitespace");
 assert.strictEqual(Duration.parse("later"), 0, "words");
 assert.strictEqual(Duration.parse("m"), 0, "a unit with no number");
 assert.strictEqual(Duration.parse(null), 0, "and a missing field does not throw");
+'
+}
+
+# The split that decides what fires is pure too, and this is the case that got it wrong:
+# a timer ten minutes out was announced when an eight second one ended.
+drive_timers() {
+    TIMERS_DIR="$REPO_ROOT/shell/services" node -e '
+const fs = require("fs");
+const assert = require("assert");
+const src = fs.readFileSync(process.env.TIMERS_DIR + "/timers.js", "utf8").replace(/^\.pragma library$/m, "");
+const names = [...src.matchAll(/^(?:function|var) (\w+)/gm)].map(m => m[1]);
+const TimerList = new Function(src + "\nreturn {" + names.join(",") + "};")();
+'"$1"'
+console.log("ok");' 2>&1
+}
+
+check_timers() {
+    local message="$1" script="$2" out
+    out="$(drive_timers "$script")"
+    [[ "$out" == "ok" ]] || fail_with_output "$message" "$out"
+}
+
+test_only_the_timers_that_have_ended_are_due() {
+    check_timers "a timer that has not ended is not due, however many others are" '
+const now = 1000000;
+const short = { id: "short", ends: now - 1, message: "eight seconds" };
+const long = { id: "long", ends: now + 600000, message: "ten minutes" };
+const split = TimerList.split([short, long], now);
+assert.deepStrictEqual(split.due.map(t => t.message), ["eight seconds"], "only the ended one is due");
+assert.deepStrictEqual(split.running.map(t => t.message), ["ten minutes"], "the other keeps running");
+assert.strictEqual(TimerList.split([long], now).due.length, 0, "and nothing is due when nothing has ended");
+assert.strictEqual(TimerList.split([], now).running.length, 0, "an empty list splits into nothing");
+'
+}
+
+test_a_deadline_written_as_text_is_still_a_deadline() {
+    check_timers "a hand-edited or restored file must not change what fires" '
+const now = 1000000;
+const split = TimerList.split([{ id: "a", ends: String(now - 5), message: "text deadline" }], now);
+assert.strictEqual(split.due.length, 1, "a numeric string is compared as a number");
 '
 }
 
