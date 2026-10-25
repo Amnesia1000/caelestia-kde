@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # The KWin rule groups this project owns, in the order KWin evaluates them, with the keys
 # each group writes. Sourced by the installer step and by the uninstaller, so that the
 # names and keys are written down once: a group added to one list and not the other is
