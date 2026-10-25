@@ -10,26 +10,8 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    /// Filesystems grouped by the disk they sit on, because that is what ejecting acts
-    /// on: udisks powers a disk off, never a partition.
-    readonly property var groups: {
-        const result = [];
-        for (const entry of Disks.entries) {
-            let group = result.find(candidate => candidate.disk === entry.disk);
-            if (!group) {
-                group = { disk: entry.disk, model: entry.model, removable: entry.removable, mounted: 0, entries: [] };
-                result.push(group);
-            }
-            if (entry.mounted)
-                group.mounted += 1;
-            group.entries.push(entry);
-        }
-        return result;
-    }
-
-    function groupTitle(group: var): string {
-        const name = group.model || group.disk.replace("/dev/", "");
-        return group.removable ? qsTr("%1 (removable)").arg(name) : name;
+    function diskTitle(disk: var): string {
+        return disk.removable ? qsTr("%1 (removable)").arg(disk.name) : disk.name;
     }
 
     function entryTitle(entry: var): string {
@@ -71,15 +53,15 @@ PageBase {
 
         StyledText {
             Layout.fillWidth: true
-            visible: Disks.loaded && root.groups.length === 0
-            text: qsTr("No filesystems were reported by lsblk.")
+            visible: Disks.loaded && Disks.lastError === "" && Disks.disks.length === 0
+            text: qsTr("No disks were reported by lsblk.")
             color: Colours.palette.m3onSurfaceVariant
             font: NexusStyle.secondaryFont
             wrapMode: Text.Wrap
         }
 
         Repeater {
-            model: root.groups
+            model: Disks.disks
 
             delegate: ColumnLayout {
                 id: diskSection
@@ -87,18 +69,18 @@ PageBase {
                 required property var modelData
                 required property int index
 
-                readonly property var group: diskSection.modelData
+                readonly property var disk: diskSection.modelData
 
                 Layout.fillWidth: true
                 spacing: Tokens.spacing.extraSmall / 2
 
                 SectionHeader {
                     first: diskSection.index === 0
-                    text: root.groupTitle(diskSection.group)
+                    text: root.diskTitle(diskSection.disk)
                 }
 
                 Repeater {
-                    model: diskSection.group.entries
+                    model: diskSection.disk.entries
 
                     delegate: ToggleRow {
                         id: filesystemRow
@@ -107,25 +89,36 @@ PageBase {
                         required property int index
 
                         first: filesystemRow.index === 0
+                        last: filesystemRow.index === diskSection.disk.entries.length - 1 && !diskSection.disk.removable
                         text: root.entryTitle(filesystemRow.modelData)
                         subtext: root.entryStatus(filesystemRow.modelData)
-                        checked: filesystemRow.modelData.mounted
+                        checked: filesystemRow.modelData.mountpoints.length > 0
                         // A filesystem the system is running from is shown, not offered:
                         // unmounting / or /boot is never what the click meant.
                         enabled: !Disks.working && !filesystemRow.modelData.system
-                        onToggled: filesystemRow.modelData.mounted ? Disks.unmount(filesystemRow.modelData) : Disks.mount(filesystemRow.modelData)
+                        onToggled: {
+                            const device = filesystemRow.modelData.device;
+                            if (filesystemRow.modelData.mountpoints.length > 0)
+                                Disks.unmount(device);
+                            else
+                                Disks.mount(device);
+                        }
                     }
                 }
 
+                // Not conditional on the filesystems above: a disk with none at all — a
+                // stick that was never formatted — is exactly the one someone wants to
+                // eject.
                 NavRow {
-                    visible: diskSection.group.removable
+                    visible: diskSection.disk.removable
+                    first: diskSection.disk.entries.length === 0
                     last: true
                     icon: "eject"
                     label: qsTr("Eject")
-                    status: diskSection.group.mounted > 0 ? qsTr("Unmount everything on this disk first") : qsTr("Power the disk off before unplugging it")
+                    status: diskSection.disk.mounted > 0 ? qsTr("Unmount everything on this disk first") : qsTr("Power the disk off before unplugging it")
                     onClicked: {
-                        if (diskSection.group.mounted === 0)
-                            Disks.eject(diskSection.group.entries[0]);
+                        if (diskSection.disk.mounted === 0)
+                            Disks.eject(diskSection.disk.device);
                     }
                 }
             }

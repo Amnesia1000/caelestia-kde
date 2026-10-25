@@ -4,7 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-/// The filesystems the Storage page can mount, unmount and eject.
+/// The disks the Storage page can mount, unmount and eject.
 ///
 /// Deciding what is worth showing belongs to `scripts/disks.py`, which reads the same
 /// `lsblk` data udisks does. Mounting goes through `udisksctl` rather than mounting
@@ -13,71 +13,65 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    property var entries: []
-    property bool loaded: false
+    readonly property var disks: list.result?.disks ?? []
+    readonly property bool loaded: list.loaded
+    readonly property string lastError: root.actionError || list.error
     property bool working: false
-    property string lastError: ""
+    property string actionError: ""
 
     function refresh(): void {
-        if (listProcess.running)
+        if (list.running)
             return;
         root.working = true;
-        listProcess.running = true;
+        list.start();
     }
 
-    function mount(entry: var): void {
-        root.act(["udisksctl", "mount", "-b", entry.device]);
+    function mount(device: string): void {
+        root.act(["udisksctl", "mount", "-b", device]);
     }
 
-    function unmount(entry: var): void {
-        root.act(["udisksctl", "unmount", "-b", entry.device]);
+    function unmount(device: string): void {
+        root.act(["udisksctl", "unmount", "-b", device]);
     }
 
     /// Ejecting is per disk, not per filesystem: udisks refuses to power a disk off
     /// while anything on it is still mounted, which is the protection worth having.
-    function eject(entry: var): void {
-        root.act(["udisksctl", "power-off", "-b", entry.disk]);
+    function eject(device: string): void {
+        root.act(["udisksctl", "power-off", "-b", device]);
     }
 
     function act(command: list<string>): void {
-        root.lastError = "";
+        if (action.running)
+            return;
+        root.actionError = "";
         root.working = true;
-        actionProcess.command = command;
-        actionProcess.running = true;
+        action.command = command;
+        action.running = true;
     }
 
     Component.onCompleted: root.refresh()
 
-    Process {
-        id: listProcess
+    JsonScript {
+        id: list
 
-        command: ["python3", Quickshell.shellPath("scripts/disks.py")]
+        script: "scripts/disks.py"
 
-        stdout: StdioCollector {
-            id: listOutput
-
-            onStreamFinished: {
-                try {
-                    root.entries = JSON.parse(listOutput.text).devices ?? [];
-                } catch (error) {
-                    root.entries = [];
-                }
-                root.loaded = true;
+        onLoadedChanged: {
+            if (list.loaded)
                 root.working = false;
-            }
         }
     }
 
     Process {
-        id: actionProcess
+        id: action
 
         stderr: StdioCollector {
-            id: actionError
+            id: actionStderr
         }
 
         onExited: exitCode => {
             if (exitCode !== 0)
-                root.lastError = actionError.text.trim();
+                root.actionError = actionStderr.text.trim();
             root.refresh();
         }
     }

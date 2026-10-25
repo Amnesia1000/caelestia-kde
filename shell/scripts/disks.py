@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""The filesystems the Storage page can act on, as JSON.
+"""The disks the Storage page can act on, and the filesystems on them, as JSON.
 
 `lsblk` is the source, because it is what udisks and GNOME Disks read as well. The
 decision about what is worth showing is made here rather than in QML so it can be
 tested: loop devices, zram, swap and device-mapper internals are not something anyone
-mounts by hand, and every partition of a disk inherits the disk's model and whether it
-can be pulled out.
+mounts by hand.
+
+The answer is nested, one row per disk with its filesystems under it, because every
+action the page offers is a disk action: `udisksctl power-off` takes a disk, and a disk
+with no filesystem at all — a stick that was never formatted, the usual thing to want
+ejected — still has to be listed to be ejectable.
 
 A filesystem mounted at a path the system needs is reported as `system`, so the page can
 show it without offering to unmount it: unmounting `/` is not a thing a settings page
@@ -18,7 +22,10 @@ import json
 import subprocess
 
 FIELDS = "NAME,PATH,TYPE,FSTYPE,LABEL,MOUNTPOINTS,RM,HOTPLUG,RO,MODEL,SIZE,FSUSE%"
-MOUNTABLE_TYPES = {"part", "disk", "crypt"}
+# Devices that can hold a filesystem. Optical media reports `rom` rather than `part`, both
+# as a drive and as the disc in it.
+DISK_TYPES = {"disk", "rom"}
+MOUNTABLE_TYPES = {"part", "disk", "rom", "crypt"}
 IGNORED_FSTYPES = {"swap"}
 SWAP = "[SWAP]"
 
@@ -53,9 +60,8 @@ def mountpoints(node: dict) -> list:
     return [point for point in found if point and point != SWAP]
 
 
-def entry(node: dict, disk: dict, removable: bool) -> dict:
+def filesystem(node: dict) -> dict:
     points = mountpoints(node)
-    mountpoint = node.get("mountpoint") or (points[0] if points else "")
     return {
         "device": node.get("path") or f"/dev/{node['name']}",
         "label": node.get("label") or "",
@@ -63,27 +69,36 @@ def entry(node: dict, disk: dict, removable: bool) -> dict:
         "size": node.get("size") or "",
         "use": node.get("fsuse%") or "",
         "mountpoints": points,
-        "mountpoint": mountpoint if mountpoint != SWAP else "",
-        "mounted": bool(points) and mountpoint != SWAP,
         "system": any(point in CRITICAL_MOUNTPOINTS for point in points),
         "readOnly": bool(node.get("ro")),
-        "removable": removable,
-        "model": disk.get("model") or "",
-        "disk": disk.get("path") or f"/dev/{disk['name']}",
     }
 
 
-def entries(devices: list) -> list:
+def disk(node: dict) -> dict:
+    filesystems = [filesystem(child) for child in walk(node) if is_mountable(child)]
+    return {
+        "device": node.get("path") or f"/dev/{node['name']}",
+        "name": node.get("model") or node["name"],
+        "removable": bool(node.get("rm")) or bool(node.get("hotplug")),
+        "mounted": sum(1 for entry in filesystems if entry["mountpoints"]),
+        "entries": filesystems,
+    }
+
+
+def disks(devices: list) -> list:
     found = []
-    for disk in devices:
-        if disk.get("type") != "disk":
+    for node in devices:
+        if node.get("type") not in DISK_TYPES:
             continue
-        removable = bool(disk.get("rm")) or bool(disk.get("hotplug"))
-        for node in walk(disk):
-            if node is not disk and is_mountable(node):
-                found.append(entry(node, disk, removable))
-            elif node is disk and is_mountable(disk):
-                found.append(entry(disk, disk, removable))
+        entry = disk(node)
+        # A disk is a row if it has something to mount or something to eject. An unformatted
+        # stick is exactly the thing someone wants to power off before pulling it out; zram,
+        # and an optical drive with no disc in it, are not storage anyone can act on.
+        if node.get("type") == "rom" and not entry["entries"]:
+            continue
+        if not entry["entries"] and not entry["removable"]:
+            continue
+        found.append(entry)
     found.sort(key=lambda item: (not item["removable"], item["device"]))
     return found
 
@@ -93,7 +108,7 @@ def main() -> int:
     parser.add_argument("--file", help="read lsblk JSON from a file instead of running it")
     args = parser.parse_args()
 
-    print(json.dumps({"devices": entries(read_devices(args.file))}))
+    print(json.dumps({"disks": disks(read_devices(args.file))}))
     return 0
 
 
