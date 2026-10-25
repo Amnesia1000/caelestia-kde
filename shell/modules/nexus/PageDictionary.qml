@@ -100,7 +100,9 @@ QtObject {
                 { label: qsTr("IPv4"), keywords: ["ethernet", "ip address", "dhcp", "gateway"] },
                 { label: qsTr("All networks"), keywords: ["list", "available", "scan"], pagePath: "network/AllNetworksPage.qml", subPageIdx: 5 },
                 { label: qsTr("Saved networks"), keywords: ["remembered", "forget", "profiles"], pagePath: "network/SavedNetworksPage.qml", subPageIdx: 6 },
-                { label: qsTr("Hotspot"), keywords: ["hotspot", "tethering", "access point", "share connection"], pagePath: "network/HotspotPage.qml", subPageIdx: 7 }
+                { label: qsTr("Hotspot"), keywords: ["hotspot", "tethering", "access point", "share connection"], pagePath: "network/HotspotPage.qml", subPageIdx: 7 },
+                { label: qsTr("Captive portal"), keywords: ["captive", "portal", "sign in", "login", "hotel", "airport", "wifi"], subPageIdx: 0 },
+                { label: qsTr("Proxy"), keywords: ["proxy", "http", "socks", "pac", "kioslaverc"], pagePath: "network/ProxyPage.qml", subPageIdx: 8 }
             ]
         },
         {
@@ -307,6 +309,19 @@ QtObject {
                 { label: qsTr("Invert colours"), keywords: ["contrast", "invert", "negative"] },
                 { label: qsTr("Colour filters"), keywords: ["colour", "blind", "protanopia", "deuteranopia", "filter"] },
                 { label: qsTr("Screen reader"), keywords: ["orca", "speech", "a11y"] }
+            ]
+        },
+        {
+            label: qsTr("Storage"),
+            key: "storage",
+            icon: "hard_drive",
+            description: qsTr("Mount, unmount and eject filesystems"),
+            category: "system",
+            settings: [
+                { label: qsTr("Mount"), keywords: ["mount", "usb", "disk", "partition", "filesystem", "drive"] },
+                { label: qsTr("Unmount"), keywords: ["unmount", "eject", "safe remove", "usb", "disk"] },
+                { label: qsTr("Eject"), keywords: ["eject", "power off", "unplug", "usb", "drive"] },
+                { label: qsTr("Removable media"), keywords: ["usb", "stick", "sdcard", "external", "removable"] }
             ]
         }
     ]

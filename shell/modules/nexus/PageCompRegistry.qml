@@ -88,6 +88,7 @@ QtObject {
                 SubPage { slot: 5; key: "allNetworks"; Component { AllNetworksPage {} } }
                 SubPage { slot: 6; key: "savedNetworks"; Component { SavedNetworksPage {} } }
                 SubPage { slot: 7; key: "hotspot"; Component { HotspotPage {} } }
+                SubPage { slot: 8; key: "proxy"; Component { ProxyPage {} } }
             }
         },
         Component {
@@ -189,6 +190,11 @@ QtObject {
         Component {
             StackPage {
                 SubPage { slot: 0; key: "accessibility"; Component { AccessibilityPage {} } }
+            }
+        },
+        Component {
+            StackPage {
+                SubPage { slot: 0; key: "storage"; Component { StoragePage {} } }
             }
         }
     ]

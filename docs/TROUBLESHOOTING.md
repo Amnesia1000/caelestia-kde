@@ -610,6 +610,66 @@ reported for as long as they hold a stream open. If the icon is enabled in *Nexu
 icons* but never appears, check `pw-dump` for a `Stream/Input/Audio` node while the application
 claims to be recording — a node that is not there is a capture the shell was not told about.
 
+### 3.18 Storage Page Is Empty or a Mount Does Nothing
+
+The page lists what `lsblk` reports and mounts through `udisksctl`, the same path GNOME Disks
+and Dolphin use, so the answer is always a polkit prompt or a refusal instead of a half-mounted
+filesystem:
+
+```bash
+python3 ~/.config/quickshell/caelestia/scripts/disks.py    # what the page shows
+udisksctl mount -b /dev/sdb1                               # what a toggle runs
+journalctl -u polkit --since "5 min ago"                   # when it was refused
+```
+
+Loop devices, zram, swap and device-mapper internals are filtered out on purpose, and
+filesystems the system is running from (anything mounted at `/`, `/boot`, `/usr`, `/var`) are
+shown with the switch disabled: unmounting those is not a settings-page action.
+
+The list is one row per disk with its filesystems under it, because every action the page
+offers is a disk action: **Eject** runs `udisksctl power-off -b` on the disk, and a removable
+disk with no filesystem at all — a stick that was never formatted — is still listed and
+ejectable. An optical drive with no disc in it is not, since there is nothing to act on.
+
+A page that says *No disks were reported by lsblk* and a page that shows an error are
+different answers: the script prints nothing and fails when `python3`, `lsblk` or the script
+itself is missing, and that failure is shown rather than reported as an empty machine.
+
+### 3.19 A Captive Portal Is Not Detected or Its Page Does Not Open
+
+Detection is NetworkManager's own verdict, and the sign-in address is found the way plasma-nm
+finds it — ask a known URL and read where the redirect went:
+
+```bash
+nmcli -t -f CONNECTIVITY general                            # full | portal | limited | none
+curl -sS -m 6 -o /dev/null -w '%{url_effective}' http://networkcheck.kde.org/
+```
+
+The **Open sign-in page** row in *Nexus → Network* only appears while NetworkManager reports
+`portal`. If it appears and nothing opens, the second command above tells you why: a URL that
+is still the check URL means nothing intercepted the request (so there is no page to open), and
+the row's own status line then shows curl's message. A hotspot that gates traffic on a DNS
+answer without redirecting HTTP cannot be followed automatically; open its address by hand.
+
+### 3.20 The Dock Menu Lists No Recent Files
+
+The jump list is the application's own history from `~/.local/share/recently-used.xbel`, the
+freedesktop list every toolkit writes to and Plasma's recent-documents runner reads. A file only
+appears under an application that registered itself when it opened it, so a program that does not
+add bookmarks has no jump list at all:
+
+```bash
+python3 ~/.config/quickshell/caelestia/scripts/recents.py --limit 5 --app org.kde.spectacle
+grep -c '<bookmark ' ~/.local/share/recently-used.xbel
+```
+
+Entries whose file has since been deleted are dropped, and so are `http://` bookmarks, because
+a jump list is a list of things that can be opened again. The menu asks for five.
+
+The list is that application's own history in that application's own order: when the same file
+was opened by two applications, each records its own visit, and the jump list keeps the visit
+that application made rather than dropping the file because something else opened it later.
+
 ---
 
 ## 4. Runtime Issues — Lock Screen
@@ -709,6 +769,22 @@ rm -f "${XDG_RUNTIME_DIR:-/tmp/caelestia-$USER}/caelestia-keepawake.json"   # or
 
 The inhibitor is a Wayland idle inhibitor, so it shows up in neither `systemd-inhibit --list` nor the power
 settings; only the shell knows about it.
+
+### 5.6 The Proxy Page Changes Nothing for a Program
+*Nexus → Network → Proxy* writes `[Proxy Settings]` in `${XDG_CONFIG_HOME:-~/.config}/kioslaverc`,
+because that is the file KIO applications read — Plasma, Dolphin, Konsole and everything else
+built on KIO:
+
+```bash
+python3 ~/.config/quickshell/caelestia/scripts/proxy.py --get
+grep -A6 '\[Proxy Settings\]' ~/.config/kioslaverc
+```
+
+Programs started from a shell inherit `http_proxy` and friends instead, so they keep whatever
+their environment says until they are restarted; changing the mode to *Use environment variables*
+makes KDE read those too. The page edits only the keys it owns and leaves every other section,
+comment and unknown key in the file alone, and it replaces the file in one step: a failed write
+leaves the old `kioslaverc` intact and says so on the page instead of emptying it.
 
 ## 6. Network & Proxy Issues
 
@@ -885,7 +961,8 @@ themes that ask for it, which is what that optional dependency is for.
 
 ### 7.7 Installer Window Rules
 
-The installer writes four groups into `~/.config/kwinrulesrc` in priority order:
+The installer writes five groups into `~/.config/kwinrulesrc` in priority order:
+`caelestia-shell-opacity` keeps the shell's own toplevels at full opacity,
 `caelestia-xwaylandvideobridge` keeps `xwaylandvideobridge` transparent and uncentered
 out of switchers and taskbars (resolving a black centered box glitch on distros like Fedora; see [issue #1006](https://github.com/ladybug-me/caelestia-kde/issues/1006)),
 `caelestia-pip` keeps windows whose title matches `Picture(-| )in(-| )[Pp]icture` above others,
@@ -896,16 +973,30 @@ conflicts using first-match-wins. Opacity is a per-activation-state key, so a wi
 while it is not focused, and the dialog rule is the one that can disagree with a placement policy
 chosen in System Settings.
 
+`caelestia-opacity` is a catch-all: it dims every normal window and dialog nobody has
+focused, including the shell's own toplevels, which are windows too. The launcher runs
+inside the shell, so opening it takes the keyboard from Nexus without anything being
+switched away from, and Nexus dims to 95 percent over the wallpaper behind it: over a
+bright wallpaper the settings window visibly lightens while the launcher is open and
+darkens again when it closes. `caelestia-shell-opacity` matches those windows by
+`wmclass` (`quickshell`, a substring match) and forces the same keys to 100 percent.
+It has to come first in both the file and the index, because the catch-all forces the
+same opacity keys and the first rule that matches a key wins; a copy of it written
+after `caelestia-opacity` never applies.
+
 A group only takes effect if the index names it. `[General] rules=` is the list KWin
 loads its rule groups from, and a group that is present in the file but missing from
 that list is never loaded, and is removed the next time KWin saves the file. The
 installer writes the list with the user's existing rules first, followed by Caelestia's
 rules in priority order, with `count` set to the number of entries, so the user's own
-rules are preserved and keep precedence.
+rules are preserved and keep precedence. The group names and their order are written down
+once, in `scripts/lib/kwin-rules.sh`, which both the installer step and `uninstall.sh`
+read: a second copy is how a group gets written into the file but never evaluated.
 
 To read a value back:
 
 ```bash
+kreadconfig6 --file kwinrulesrc --group caelestia-shell-opacity --key opacityinactive
 kreadconfig6 --file kwinrulesrc --group caelestia-opacity --key opacityinactive
 kreadconfig6 --file kwinrulesrc --group caelestia-dialogs --key placement
 kreadconfig6 --file kwinrulesrc --group caelestia-pip --key above
@@ -913,14 +1004,16 @@ kreadconfig6 --file kwinrulesrc --group caelestia-xwaylandvideobridge --key opac
 kreadconfig6 --file kwinrulesrc --group General --key rules
 ```
 
-To remove the rules, delete the four `[caelestia-...]` sections out of the file, or
+To remove the rules, delete the five `[caelestia-...]` sections out of the file, or
 delete the key that switches each group on. A group that is deleted has to leave the
 index with it, or the list keeps a name whose group is gone and `count` no longer
-matches it. `uninstall.sh` removes the keys, strips the four names out of the list,
+matches it. `uninstall.sh` removes the keys, strips the five names out of the list,
 rewrites `count`, and deletes both index keys once no name is left. KWin does not
 watch kwinrulesrc, so the reload is not optional:
 
 ```bash
+kwriteconfig6 --file kwinrulesrc --group caelestia-shell-opacity \
+    --key opacityinactiverule --delete
 kwriteconfig6 --file kwinrulesrc --group caelestia-opacity \
     --key opacityinactiverule --delete
 kwriteconfig6 --file kwinrulesrc --group caelestia-dialogs \
