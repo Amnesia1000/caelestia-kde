@@ -586,7 +586,31 @@ path, or an entry restricted with `OnlyShowIn=` to a desktop the session does no
 Removing the user's copy (`--remove NAME`, or the bin icon in Nexus, which only appears for
 entries the user owns) restores whatever the package shipped.
 
-### 3.17 Storage Page Is Empty or a Mount Does Nothing
+### 3.17 The Privacy Indicator Does Not Appear
+
+The privacy icon in the status area is only drawn while an application is capturing, which is
+why it is missing most of the time. It reports two things:
+
+- **Microphone** — every PipeWire capture stream (`media.class` of `Stream/Input/Audio`). These
+  nodes exist only while an application is recording, so the list is the answer; the shell's own
+  capture is excluded so the icon means "somebody else is listening".
+- **Video capture** — the client video streams `PipewireStreamWatcher` reports: screen sharing and
+  apps that open a camera. Camera *devices* are excluded on purpose, because a `Video/Source` node
+  exists even when nothing is looking through it.
+
+```bash
+pw-dump | grep -B4 'Stream/Input/Audio'      # what the microphone row is built from
+pactl -f json list source-outputs            # the same capture streams as PulseAudio sees them
+```
+
+An application that opens the camera or microphone **through V4L2/ALSA directly** rather than
+through PipeWire is invisible to this: the shell can only see what the sound and video servers
+know about. Applications routed through `xdg-desktop-portal` — Firefox, Chromium, Zoom, OBS — are
+reported for as long as they hold a stream open. If the icon is enabled in *Nexus → Panels → Status
+icons* but never appears, check `pw-dump` for a `Stream/Input/Audio` node while the application
+claims to be recording — a node that is not there is a capture the shell was not told about.
+
+### 3.18 Storage Page Is Empty or a Mount Does Nothing
 
 The page lists what `lsblk` reports and mounts through `udisksctl`, the same path GNOME Disks
 and Dolphin use, so the answer is always a polkit prompt or a refusal instead of a half-mounted
@@ -611,7 +635,7 @@ A page that says *No disks were reported by lsblk* and a page that shows an erro
 different answers: the script prints nothing and fails when `python3`, `lsblk` or the script
 itself is missing, and that failure is shown rather than reported as an empty machine.
 
-### 3.18 A Captive Portal Is Not Detected or Its Page Does Not Open
+### 3.19 A Captive Portal Is Not Detected or Its Page Does Not Open
 
 Detection is NetworkManager's own verdict, and the sign-in address is found the way plasma-nm
 finds it — ask a known URL and read where the redirect went:
@@ -627,7 +651,7 @@ is still the check URL means nothing intercepted the request (so there is no pag
 the row's own status line then shows curl's message. A hotspot that gates traffic on a DNS
 answer without redirecting HTTP cannot be followed automatically; open its address by hand.
 
-### 3.19 The Dock Menu Lists No Recent Files
+### 3.20 The Dock Menu Lists No Recent Files
 
 The jump list is the application's own history from `~/.local/share/recently-used.xbel`, the
 freedesktop list every toolkit writes to and Plasma's recent-documents runner reads. A file only
