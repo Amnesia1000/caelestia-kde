@@ -155,6 +155,20 @@ if [[ "${APPLY_WINDOW_RULES:-true}" == "true" ]]; then
     # match wins. Specific rules must come before general catch-all rules so their
     # properties are not overridden.
 
+    # The shell's own toplevels - Nexus, the what's-new window, file dialogs - are not
+    # applications. When the launcher takes the keyboard they go inactive while nothing
+    # was switched away from, and at 95% the wallpaper bleeds through the settings
+    # window: it visibly lightens over a bright wallpaper. They stay opaque instead.
+    # This rule heads the list because the catch-all below sets the same keys and the
+    # first matching rule wins, so an exemption written after it would never be reached.
+    apply_rule_group "caelestia-shell-opacity" "opaque shell windows" \
+        Description "Caelestia: keep the shell's own windows opaque" \
+        types 33 \
+        wmclass quickshell \
+        wmclassmatch 2 \
+        opacityinactive 100 \
+        opacityinactiverule 2
+
     # xwaylandvideobridge creates an idle dummy window marked as a dialog (types=32)
     # or normal window (types=1) with a black background. Force it completely
     # transparent, uncentered (placement=0), below other windows, and stripped
@@ -196,20 +210,6 @@ if [[ "${APPLY_WINDOW_RULES:-true}" == "true" ]]; then
         types 32 \
         placement 5 \
         placementrule 2
-
-    # The shell's own toplevels - Nexus, the what's-new window, file dialogs - are not
-    # applications. When the launcher takes the keyboard they go inactive while nothing
-    # was switched away from, and at 95% the wallpaper bleeds through the settings
-    # window: it visibly lightens over a bright wallpaper. They stay opaque instead.
-    # This rule heads the list because the rule below sets the same keys and the first
-    # matching rule wins, so an exemption written after it would never be reached.
-    apply_rule_group "caelestia-shell-opacity" "opaque shell windows" \
-        Description "Caelestia: keep the shell's own windows opaque" \
-        types 33 \
-        wmclass quickshell \
-        wmclassmatch 2 \
-        opacityinactive 100 \
-        opacityinactiverule 2
 
     # types=33 is Normal|Dialog, so panels, tooltips and the OSD keep full opacity.
     apply_rule_group "caelestia-opacity" "window opacity" \

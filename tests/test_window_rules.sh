@@ -339,7 +339,7 @@ run_uninstall_revert() {
     STATUS=$?
 }
 
-test_a_fresh_run_writes_every_key_of_the_four_groups() {
+test_a_fresh_run_writes_every_key_of_the_five_groups() {
     have_python || return 0
     setup_sandbox
     run_window_rules
@@ -356,7 +356,7 @@ test_the_written_file_carries_the_groups_and_their_values() {
 
     local file="$SANDBOX/$RULES_FILE"
     assert_file_exists "$file"
-    assert_eq "4" "$(grep -c '^\[caelestia-' "$file")" "the file should hold exactly the four named groups"
+    assert_eq "5" "$(grep -c '^\[caelestia-' "$file")" "the file should hold exactly the five named groups"
 
     local content
     content="$(cat "$file")"
@@ -394,16 +394,16 @@ test_the_written_file_carries_the_groups_and_their_values() {
     done
 }
 
-test_a_fresh_file_names_exactly_the_four_groups() {
+test_a_fresh_file_names_exactly_the_five_groups() {
     have_python || return 0
     setup_sandbox
     run_window_rules
 
     local file="$SANDBOX/$RULES_FILE"
     assert_eq "$FRESH_INDEX" "$(ini_value "$file" General rules)" \
-        "a fresh file should name our four groups, in the order they were written"
-    assert_eq "4" "$(ini_value "$file" General count)" "and count them"
-    assert_eq "4" "$(grep -c '^\[caelestia-' "$file")" \
+        "a fresh file should name our five groups, in the order they were written"
+    assert_eq "5" "$(ini_value "$file" General count)" "and count them"
+    assert_eq "5" "$(grep -c '^\[caelestia-' "$file")" \
         "the index should name what the file holds, and nothing else"
 }
 
@@ -428,7 +428,7 @@ test_only_our_groups_and_the_index_are_written() {
         group="$(printf '%s\n' "$call" | awk '{ for (i = 1; i < NF; i++) if ($i == "--group") print $(i + 1) }')"
         case " ${RULE_GROUPS[*]} General " in
             *" $group "*) ;;
-            *) fail "kwriteconfig6 was called outside the four caelestia-* groups and the index: $call" ;;
+            *) fail "kwriteconfig6 was called outside the five caelestia-* groups and the index: $call" ;;
         esac
     done < <(calls_to "$CALLS" kwriteconfig6)
 
@@ -436,7 +436,7 @@ test_only_our_groups_and_the_index_are_written() {
     # rewriting it would reorder the user's own rules.
     assert_eq "$(printf '%s\n' \
         "--file $RULES_FILE --group General --key rules $FRESH_INDEX" \
-        "--file $RULES_FILE --group General --key count 4")" \
+        "--file $RULES_FILE --group General --key count $(count_index "$FRESH_INDEX")")" \
         "$(calls_to "$CALLS" kwriteconfig6 | grep -F -- '--group General')" \
         "the index pair should be the only General keys written"
     assert_not_contains "$(cat "$CALLS")" "--key Order" "Order belongs to KWin and reordering the user's rules is not ours to do"
@@ -454,7 +454,7 @@ test_a_second_run_finds_nothing_to_do() {
         "a config that already holds every value should need no writes"
     assert_contains "$OUTPUT" "already in place" "the second run should report the rules as already in place"
     assert_not_contains "$OUTPUT" "Window rules applied." "the second run should not claim to have applied anything"
-    assert_contains "$OUTPUT" "Rule index names 4 group(s)." \
+    assert_contains "$OUTPUT" "Rule index names 5 group(s)." \
         "the rollup should still report the index a re-run did not have to rebuild"
 }
 
@@ -544,8 +544,8 @@ test_a_group_the_file_holds_is_added_to_the_index() {
     local file="$SANDBOX/$RULES_FILE"
     assert_status 0 "$STATUS" "a file with a group of its own should still succeed"
     assert_eq "steam,$FRESH_INDEX" "$(ini_value "$file" General rules)" \
-        "the group the file holds should be named, before our four"
-    assert_eq "5" "$(ini_value "$file" General count)" "and counted with them"
+        "the group the file holds should be named, before our five"
+    assert_eq "6" "$(ini_value "$file" General count)" "and counted with them"
     assert_eq "steamwebhelper" "$(ini_value "$file" steam wmclass)" \
         "the user's group should be left as it was"
 }
@@ -561,7 +561,7 @@ test_a_user_rule_keeps_its_place_in_the_index() {
     assert_status 0 "$STATUS" "a file with a user rule should still succeed"
     assert_eq "user-rule,$FRESH_INDEX" "$(ini_value "$file" General rules)" \
         "the user's name should keep its place and ours should be appended"
-    assert_eq "5" "$(ini_value "$file" General count)" "count should cover both"
+    assert_eq "6" "$(ini_value "$file" General count)" "count should cover both"
     assert_eq "user-rule" "$(ini_value "$file" General Order)" \
         "Order is KWin's own key and should not be rewritten"
     assert_eq "keepme" "$(ini_value "$file" user-rule wmclass)" "the user's rule should not be touched"
@@ -575,7 +575,7 @@ test_a_user_rule_keeps_its_place_in_the_index() {
 test_the_revert_keeps_the_users_names_and_strips_ours() {
     have_python || return 0
     setup_sandbox
-    write_installed_fixture "user-rule,$FRESH_INDEX" 5
+    write_installed_fixture "user-rule,$FRESH_INDEX" 6
 
     run_uninstall_revert
 
@@ -594,7 +594,7 @@ test_the_revert_keeps_the_users_names_and_strips_ours() {
 test_the_revert_removes_the_index_when_no_names_are_left() {
     have_python || return 0
     setup_sandbox
-    write_installed_fixture "$FRESH_INDEX" 4
+    write_installed_fixture "$FRESH_INDEX" 5
 
     run_uninstall_revert
 
