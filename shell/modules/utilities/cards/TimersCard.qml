@@ -84,7 +84,7 @@ StyledRect {
         }
 
         Repeater {
-            model: [...Timers.list]
+            model: Timers.list
 
             delegate: StyledRect {
                 id: timerRow

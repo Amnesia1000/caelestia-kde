@@ -27,6 +27,15 @@ test_a_timer_is_stored_as_the_moment_it_ends() {
         "loading keeps the ones that have not ended yet"
 }
 
+# The elements of a `list<var>` are views of the sequence, so an array of them read after
+# `list` is reassigned shows the new contents. That announced the wrong timer's message.
+test_the_running_timers_are_plain_values_not_a_sequence_view() {
+    assert_file_contains "$TIMERS" 'property var list: []' \
+        "the list is a plain array, whose elements keep their own values"
+    assert_file_contains "$TIMERS" 'const finished = split.due.map(timer => String(timer.message));' \
+        "and what fired is read out before the list is rewritten"
+}
+
 # A timer that ran out while the shell was down already happened: one message for the
 # batch, not a burst of toasts the moment the shell starts.
 test_timers_that_ran_out_while_the_shell_was_down_are_reported_once() {

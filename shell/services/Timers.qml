@@ -20,7 +20,11 @@ Singleton {
 
     /// `{ id, ends, message }`, soonest first. A timer cannot outlive its message, so
     /// only what it takes to run and to say is stored.
-    property list<var> list: []
+    ///
+    /// A plain `var` array, not `list<var>`: the elements of a `list<var>` are views of
+    /// the sequence, so an array of them taken before `list` is reassigned silently reads
+    /// the *new* contents afterwards. That is how the wrong timer got announced.
+    property var list: []
     /// Read so that every view showing a countdown recomputes with the ticker.
     property double now: Date.now()
     property bool loaded: false
@@ -69,8 +73,8 @@ Singleton {
     }
 
     function tick(): void {
-        // The clock is read once and handed over as a value: asking it again inside a
-        // predicate per timer is how a timer ten minutes out can be called due.
+        // The clock is read once and handed over as a value, and what fired is read out
+        // before the list is rewritten: see the note on `list` for why the order matters.
         const now = Date.now();
         root.now = now;
 
@@ -78,12 +82,13 @@ Singleton {
         if (split.due.length === 0)
             return;
 
+        const finished = split.due.map(timer => String(timer.message));
         root.list = split.running;
         // One notification per timer that ends while the shell is running: each message
         // is still news. The load path below batches instead, because those timers ended
         // while nobody was watching and their messages are one fact, not several.
-        for (let i = 0; i < split.due.length; i++)
-            root.announce(split.due[i].message);
+        for (let i = 0; i < finished.length; i++)
+            root.announce(finished[i]);
     }
 
     function serialize(): string {
