@@ -2,7 +2,6 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
 
 /// The documents an application opened recently, for the dock's jump list.
 ///
@@ -12,33 +11,21 @@ import Quickshell.Io
 Singleton {
     id: root
 
-    property var entries: []
-    property bool loaded: false
+    readonly property var entries: read.result ?? []
+    readonly property bool loaded: read.loaded
+    readonly property string error: read.error
 
     function load(apps: list<string>): void {
-        root.entries = [];
-        root.loaded = false;
-        readProcess.command = ["python3", Quickshell.shellPath("scripts/recents.py"), "--limit", "5"];
+        const args = ["--limit", "5"];
         for (const app of apps)
-            readProcess.command.push("--app", app);
-        readProcess.running = false;
-        readProcess.running = true;
+            args.push("--app", app);
+        read.args = args;
+        read.start();
     }
 
-    Process {
-        id: readProcess
+    JsonScript {
+        id: read
 
-        stdout: StdioCollector {
-            id: readOutput
-
-            onStreamFinished: {
-                try {
-                    root.entries = JSON.parse(readOutput.text);
-                } catch (error) {
-                    root.entries = [];
-                }
-                root.loaded = true;
-            }
-        }
+        script: "scripts/recents.py"
     }
 }

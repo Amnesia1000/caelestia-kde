@@ -14,12 +14,14 @@ PYTHON="$(command -v python3 || command -v python)"
 TMP="$("$PYTHON" -c 'import tempfile; print(tempfile.mkdtemp())')"
 trap 'rm -rf "$TMP"' EXIT
 
-# A recent-documents list with two files that still exist, one that does not, and a web
-# page that is not a file at all.
+# A recent-documents list with two files that still exist, one that does not, a web page that
+# is not a file at all, and the same file recorded twice — once by each application that
+# opened it, which is how the freedesktop list records two visits.
 prepare() {
     mkdir -p "$TMP/files"
     : > "$TMP/files/notes.txt"
     : > "$TMP/files/shot.png"
+    : > "$TMP/files/shared.txt"
 
     "$PYTHON" - "$TMP/recently-used.xbel" "$TMP/files" <<'PY'
 import sys
@@ -34,6 +36,21 @@ template = """<?xml version="1.0" encoding="UTF-8"?>
       <bookmark:applications><bookmark:application name="org.kde.kate" exec="/usr/bin/kate %U" count="2"/></bookmark:applications>
     </metadata></info>
   </bookmark>
+  <bookmark href="file:///{files}/notes.txt" modified="2026-10-09T10:00:00Z">
+    <info><metadata owner="http://freedesktop.org">
+      <mime:mime-type type="text/plain"/>
+      <bookmark:applications><bookmark:application name="org.kde.okular" exec="/usr/bin/okular %U" count="1"/></bookmark:applications>
+    </metadata></info>
+  </bookmark>
+  <bookmark href="file:///{files}/shared.txt" modified="2026-10-07T10:00:00Z">
+    <info><metadata owner="http://freedesktop.org">
+      <mime:mime-type type="text/plain"/>
+      <bookmark:applications>
+        <bookmark:application name="org.kde.kate" exec="/usr/bin/kate %U" count="1" modified="2026-10-01T10:00:00Z"/>
+        <bookmark:application name="org.kde.okular" exec="/usr/bin/okular %U" count="3" modified="2026-10-07T10:00:00Z"/>
+      </bookmark:applications>
+    </metadata></info>
+  </bookmark>
   <bookmark href="file:///{files}/shot.png" modified="2026-10-05T10:00:00Z">
     <info><metadata owner="http://freedesktop.org">
       <mime:mime-type type="image/png"/>
@@ -46,7 +63,7 @@ template = """<?xml version="1.0" encoding="UTF-8"?>
       <bookmark:applications><bookmark:application name="org.kde.kate" exec="/usr/bin/kate %U" count="1"/></bookmark:applications>
     </metadata></info>
   </bookmark>
-  <bookmark href="https://example.com/page" modified="2026-10-07T10:00:00Z"/>
+  <bookmark href="https://example.com/page" modified="2026-10-08T10:00:00Z"/>
 </xbel>
 """
 
@@ -58,34 +75,55 @@ names() {
     "$PYTHON" -c 'import json,sys; print(" ".join(entry["name"] for entry in json.load(sys.stdin)))'
 }
 
+stamps() {
+    "$PYTHON" -c 'import json,sys; print(" ".join(entry["modified"] for entry in json.load(sys.stdin)))'
+}
+
 test_only_files_that_are_still_there_and_newest_first() {
     prepare
 
-    assert_eq "shot.png notes.txt" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" | names)" \
-        "a deleted file and a web page are not documents you can open from a jump list"
+    assert_eq "notes.txt shared.txt shot.png" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" | names)" \
+        "a deleted file and a web page are not documents you can open from a jump list, and the newest visit comes first"
+}
+
+# The same file recorded twice — once per application that opened it — is how the freedesktop
+# list spells two visits. Picking the newest row before asking which application opened it is
+# what silently drops the file from the first application's jump list.
+test_each_application_keeps_its_own_visit_to_the_same_file() {
+    prepare
+
+    assert_eq "notes.txt shared.txt" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --app kate | names)" \
+        "a file another application opened later is still in this application's list"
+    assert_eq "2026-10-03T10:00:00Z 2026-10-01T10:00:00Z" \
+        "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --app kate | stamps)" \
+        "and it is ordered by when this application opened it, not by when anyone last did"
+    assert_eq "2026-10-09T10:00:00Z 2026-10-07T10:00:00Z" \
+        "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --app okular | stamps)" \
+        "the other application sees the same two files at its own times"
 }
 
 test_a_jump_list_is_one_applications_history() {
     prepare
 
-    assert_eq "notes.txt" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --app kate | names)" \
-        "filtering by the name the file records"
     assert_eq "shot.png" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --app org.kde.spectacle.desktop | names)" \
-        "and by the desktop entry id the dock knows, which is spelled differently"
-    assert_eq "shot.png notes.txt" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --app kate --app spectacle | names)" \
+        "filtering by the desktop entry id the dock knows, which is spelled differently"
+    assert_eq "shot.png notes.txt shared.txt" \
+        "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --app kate --app spectacle | names)" \
         "several names for one application still make one list"
+    assert_eq "" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --app nothing-opened-this | names)" \
+        "an application that opened nothing gets nothing, not everything"
 }
 
 test_the_limit_is_the_menu_size() {
     prepare
 
-    assert_eq "shot.png" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --limit 1 | names)" \
+    assert_eq "notes.txt" "$("$PYTHON" "$SCRIPT" --file "$TMP/recently-used.xbel" --limit 1 | names)" \
         "the menu asks for a handful, not the whole history"
     assert_file_contains "$SERVICE" '"--limit", "5"' "and five is what it asks for"
 }
 
 test_the_dock_menu_offers_them() {
-    assert_file_contains "$SERVICE" 'Quickshell.shellPath("scripts/recents.py")' "one owner for the file"
+    assert_file_contains "$SERVICE" 'script: "scripts/recents.py"' "one owner for the file"
     assert_file_contains "$DOCK_MENU" 'Recents.load(root.appNames)' "the menu asks for this application's history when it opens"
     assert_file_contains "$DOCK_MENU" 'Launch.exec(["xdg-open", entry.path])' "and opens the file"
     assert_file_contains "$DOCK_MENU" 'qsTr("Recent files")' "the row has a heading"

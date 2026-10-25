@@ -3,8 +3,14 @@
 
 `recently-used.xbel` is the freedesktop list every toolkit writes to and Plasma's own
 recent-documents runner reads, so the dock's jump list can show the same files. Each
-bookmark records which applications opened it, which is what makes a per-application
-list possible at all.
+bookmark records which applications opened it and when, which is what makes a
+per-application list possible at all.
+
+Parsing and choosing are kept apart: `parse` reports what the file says, and `select`
+answers the question a caller actually asked. The order matters, because a file opened by
+one application and then by another has one bookmark per visit — filtering on the app has
+to happen before two visits are collapsed into one row, or the app that opened it first
+loses its entry to the app that opened it last.
 """
 from __future__ import annotations
 
@@ -42,6 +48,7 @@ def matches(app: str, targets: set) -> bool:
 
 
 def parse(path: str) -> list:
+    """Every bookmark that still points at a file, with the applications that opened it."""
     if not os.path.exists(path):
         return []
 
@@ -60,7 +67,12 @@ def parse(path: str) -> list:
         if not os.path.isfile(file_path):
             continue
 
-        applications = [element.get("name", "") for element in bookmark.iter(f"{BOOKMARK}application")]
+        applications = {}
+        for element in bookmark.iter(f"{BOOKMARK}application"):
+            name = element.get("name", "")
+            if name:
+                applications[name] = max(applications.get(name, ""), element.get("modified", ""))
+
         mime = bookmark.find(f".//{MIME}mime-type")
         entries.append(
             {
@@ -69,18 +81,35 @@ def parse(path: str) -> list:
                 "uri": href,
                 "mime": mime.get("type", "") if mime is not None else "",
                 "modified": bookmark.get("modified", ""),
-                "apps": [app for app in applications if app],
+                "apps": applications,
             }
         )
 
-    # A file opened five times is still one row in a jump list; the newest visit wins.
-    seen = {}
+    return entries
+
+
+def visit(entry: dict, targets: set | None) -> str | None:
+    """When this application opened the file, or None if it never did."""
+    if targets is None:
+        return entry["modified"]
+
+    stamps = [stamp or entry["modified"] for app, stamp in entry["apps"].items() if matches(app, targets)]
+    return max(stamps) if stamps else None
+
+
+def select(entries: list, targets: set | None, limit: int) -> list:
+    """One row per file, newest visit first, as this application saw it."""
+    chosen = {}
     for entry in entries:
-        known = seen.get(entry["path"])
-        if known is None or entry["modified"] > known["modified"]:
-            seen[entry["path"]] = entry
-    ordered = sorted(seen.values(), key=lambda entry: entry["modified"], reverse=True)
-    return ordered
+        stamp = visit(entry, targets)
+        if stamp is None:
+            continue
+        known = chosen.get(entry["path"])
+        if known is None or stamp > known[0]:
+            chosen[entry["path"]] = (stamp, entry)
+
+    ordered = sorted(chosen.values(), key=lambda pair: pair[0], reverse=True)
+    return [{**entry, "modified": stamp, "apps": sorted(entry["apps"])} for stamp, entry in ordered[: max(0, limit)]]
 
 
 def main() -> int:
@@ -90,13 +119,11 @@ def main() -> int:
     parser.add_argument("--file", help="read this xbel file instead of the user's")
     args = parser.parse_args()
 
-    entries = parse(args.file or recent_file())
-
+    targets = None
     if args.app:
         targets = {normalise(name) for name in args.app} | {short_name(name) for name in args.app}
-        entries = [entry for entry in entries if any(matches(app, targets) for app in entry["apps"])]
 
-    print(json.dumps(entries[: max(0, args.limit)]))
+    print(json.dumps(select(parse(args.file or recent_file()), targets, args.limit)))
     return 0
 
 
