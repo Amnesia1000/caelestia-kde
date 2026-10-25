@@ -3,13 +3,13 @@
 set -euo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib/log.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/kwin-rules.sh"
 
 RULES_FILE="kwinrulesrc"
 # kwriteconfig6 resolves a relative file name inside the user's config directory, and
 # KConfig has no query that lists the groups of a file, so the index below is built
 # from the file itself, read at the same path the tools write.
 RULES_PATH="${XDG_CONFIG_HOME:-$HOME/.config}/$RULES_FILE"
-RULE_GROUPS=(caelestia-shell-opacity caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity)
 RULE_INDEX=""
 RULE_INDEX_COUNT=0
 WINDOW_OPACITY="${WINDOW_OPACITY:-95}"
@@ -108,6 +108,17 @@ add_to_rule_index() {
     RULE_INDEX_COUNT=$((RULE_INDEX_COUNT + 1))
 }
 
+# Whether a name is one of ours. `lib/kwin-rules.sh` is the only place the names are
+# written, in evaluation order, because an order that drifts is a rule that stops
+# applying without saying so.
+is_our_rule() {
+    local candidate="$1" name
+    for name in "${CAELESTIA_RULE_GROUPS[@]}"; do
+        [[ "$candidate" == "$name" ]] && return 0
+    done
+    return 1
+}
+
 # The index is what makes the groups take effect. KWin builds its rule book from the
 # names in [General] rules= alone, so a group that is present in the file but left
 # out of that list is never loaded, and the next time KWin saves the rule book it
@@ -122,20 +133,20 @@ build_rule_index() {
     while IFS= read -r name; do
         name="$(trim_rule_name "$name")"
         [[ -n "$name" ]] || continue
-        case "$name" in
-            caelestia-opacity|caelestia-shell-opacity|caelestia-dialogs|caelestia-pip|caelestia-xwaylandvideobridge) continue ;;
-        esac
+        if is_our_rule "$name"; then
+            continue
+        fi
         add_to_rule_index "$name"
     done <<< "$(printf '%s' "$current" | tr ',' '\n')"
     while IFS= read -r name; do
         name="$(trim_rule_name "$name")"
         [[ -n "$name" ]] || continue
-        case "$name" in
-            caelestia-opacity|caelestia-shell-opacity|caelestia-dialogs|caelestia-pip|caelestia-xwaylandvideobridge) continue ;;
-        esac
+        if is_our_rule "$name"; then
+            continue
+        fi
         add_to_rule_index "$name"
     done <<< "$groups"
-    for name in "${RULE_GROUPS[@]}"; do
+    for name in "${CAELESTIA_RULE_GROUPS[@]}"; do
         add_to_rule_index "$name"
     done
 }

@@ -317,11 +317,12 @@ EOF
 }
 
 # uninstall.sh runs from top to bottom and cannot be sourced, so its revert of the window
-# rules is cut out by its own first and last lines - the first delete through the line that
-# reports it - and run against the same stubs the installer step is tested with.
+# rules is cut out by its own first and last lines - the block that walks the shared table
+# through to the line that reports it - and run against the same stubs the installer step is
+# tested with. The table itself comes from the shared library, which is sourced alongside.
 extract_uninstall_revert() {
     awk '
-        /^kwriteconfig6 .*--group "caelestia-opacity"/ { inside = 1 }
+        /^for rule_entry in/ { inside = 1 }
         inside { print }
         inside && /^ok "Removed the Caelestia window rules/ { exit }
     ' "$UNINSTALL_SCRIPT"
@@ -332,6 +333,7 @@ run_uninstall_revert() {
     {
         printf 'set -uo pipefail\n'
         printf 'ok() { printf "  [OK]    %%s\\n" "$*"; }\n'
+        printf 'source %q\n' "$REPO_ROOT/scripts/lib/kwin-rules.sh"
         extract_uninstall_revert
     } > "$revert"
     : > "$CALLS"
@@ -567,6 +569,24 @@ test_a_user_rule_keeps_its_place_in_the_index() {
     assert_eq "keepme" "$(ini_value "$file" user-rule wmclass)" "the user's rule should not be touched"
     assert_not_contains "$(ini_value "$file" General rules)" '$Version' \
         "a group whose name starts with a dollar is KWin's metadata and is not named"
+}
+
+# The groups and their order are written down once, in a file both scripts source. A second
+# copy is how a group gets written into kwinrulesrc but never evaluated, or how a revert
+# leaves one behind.
+test_the_rule_names_are_written_down_once() {
+    local shared="$REPO_ROOT/scripts/lib/kwin-rules.sh"
+
+    assert_file_exists "$shared"
+    assert_eq "${RULE_GROUPS[*]}" \
+        "$("$BASH_BIN" -c 'source "$1"; printf "%s" "${CAELESTIA_RULE_GROUPS[*]}"' _ "$shared")" \
+        "the shared list is the order the index is written in, shell exemption first"
+    assert_file_contains "$SCRIPT" 'lib/kwin-rules.sh' "the installer step reads it"
+    assert_file_contains "$UNINSTALL_SCRIPT" 'lib/kwin-rules.sh' "and so does the uninstaller"
+    assert_not_contains "$(cat "$SCRIPT")" 'caelestia-opacity|caelestia-shell-opacity' \
+        "the installer step keeps no list of its own"
+    assert_not_contains "$(cat "$UNINSTALL_SCRIPT")" 'caelestia-opacity|caelestia-shell-opacity' \
+        "and neither does the uninstaller"
 }
 
 # uninstall.sh strips our names out of the index and leaves the user's rules alone:
