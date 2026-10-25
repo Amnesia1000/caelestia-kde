@@ -66,6 +66,8 @@ PageBase {
 
         NavRow {
             visible: Connectivity.portal
+            first: true
+            last: true
             icon: "wifi_tethering"
             label: Connectivity.working ? qsTr("Looking for the sign-in page...") : qsTr("Open sign-in page")
             status: Connectivity.portalUrl || Connectivity.lastError || qsTr("This network asks you to sign in before it lets traffic through")
@@ -74,7 +76,7 @@ PageBase {
 
         ToggleRow {
             Layout.topMargin: Nmcli.hasAvailableEthernet ? Tokens.spacing.large : 0
-            first: true
+            first: !Connectivity.portal
             text: qsTr("Wi-Fi")
             font: Tokens.font.body.medium
             horizontalPadding: Tokens.padding.largeIncreased
@@ -507,14 +509,7 @@ PageBase {
             last: true
             icon: "lan"
             label: qsTr("Proxy")
-            status: {
-                const mode = Proxy.settings.mode ?? "none";
-                if (mode === "manual")
-                    return Proxy.settings.http || qsTr("Manual, no address set");
-                if (mode === "pac")
-                    return Proxy.settings.pac || qsTr("Automatic script");
-                return mode === "none" ? qsTr("Off") : mode;
-            }
+            status: Proxy.summary
             onClicked: root.nState.openSubPage(8)
         }
     }
