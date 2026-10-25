@@ -14,12 +14,10 @@ Item {
     property bool flag
     required property DrawerVisibilities visibilities
 
-    /// The corner the stack grows from. `auto` is where the shell has always put them:
-    /// the bottom, against the sidebar.
-    property string position: "auto"
-
-    readonly property bool fromTop: root.position.startsWith("top")
-    readonly property bool fromLeft: root.position.endsWith("left")
+    /// Which edges the stack hangs from, and which way it grows. The corner itself is the
+    /// selector's business: a stack only needs to know its two sides.
+    required property bool fromTop
+    required property bool fromLeft
 
     /// How far down (or up) the toast at `index` sits, from the toasts that are already
     /// in front of it.

@@ -4,6 +4,7 @@ import Caelestia.Config
 import qs.components.controls
 import qs.services
 import qs.modules.nexus.common
+import "../../../utilities/toasts/corner.js" as Corner
 
 PageBase {
     id: root
@@ -46,7 +47,9 @@ PageBase {
             icon: "south_east"
         }
     ]
-    readonly property list<string> cornerValues: ["auto", "top-left", "top-right", "bottom-left", "bottom-right"]
+    /// The stored names come from corner.js, which is also what resolves them, so the row
+    /// and the layout cannot disagree about what a corner is called.
+    readonly property list<string> cornerValues: Corner.VALUES
 
     title: qsTr("Toasts")
     isSubPage: true
@@ -85,7 +88,7 @@ PageBase {
             label: qsTr("Corner")
             subtext: qsTr("Where the stack grows from. Automatic keeps the corner the shell has always used")
             menuItems: root.cornerItems
-            active: root.cornerItems[Math.max(0, root.cornerValues.indexOf(GlobalConfig.utilities.toasts.position))]
+            active: root.cornerItems[Corner.index(GlobalConfig.utilities.toasts.position)]
             onSelected: item => GlobalConfig.utilities.toasts.position = root.cornerValues[root.cornerItems.indexOf(item)]
         }
 
