@@ -15,25 +15,9 @@ DOCK_LIST="$REPO_ROOT/shell/modules/sidebar/NotifDockList.qml"
 GROUP="$REPO_ROOT/shell/modules/sidebar/NotifGroup.qml"
 PAGE="$REPO_ROOT/shell/modules/nexus/pages/audio/NotificationSilencingPage.qml"
 
-# What a search looks at is pure, so it is executed rather than grepped:
-# drive_notif_query evaluates notifquery.js the way QML does and runs the given script
-# with node's assert.
-drive_notif_query() {
-    QUERY_DIR="$REPO_ROOT/shell/services" node -e '
-const fs = require("fs");
-const assert = require("assert");
-const src = fs.readFileSync(process.env.QUERY_DIR + "/notifquery.js", "utf8").replace(/^\.pragma library$/m, "");
-const names = [...src.matchAll(/^(?:function|var) (\w+)/gm)].map(m => m[1]);
-const Query = new Function(src + "\nreturn {" + names.join(",") + "};")();
-'"$1"'
-console.log("ok");' 2>&1
-}
-
-check_notif_query() {
-    local message="$1" script="$2" out
-    out="$(drive_notif_query "$script")"
-    [[ "$out" == "ok" ]] || fail_with_output "$message" "$out"
-}
+# What a search looks at is pure, so it is executed rather than grepped: the script
+# below runs against notifquery.js with node's assert.
+check_notif_query() { check_js "$1" "$QUERY_JS" Query "$2"; }
 
 
 test_turning_an_app_off_is_a_setting_not_a_runtime_habit() {

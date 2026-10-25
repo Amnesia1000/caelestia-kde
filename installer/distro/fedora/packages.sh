@@ -76,7 +76,7 @@ THEME_PACKAGES=(
 )
 
 UTILITY_PACKAGES=(
-    fuzzel swappy ddcutil NetworkManager ImageMagick
+    fuzzel swappy ddcutil NetworkManager iw ImageMagick
     tesseract tesseract-langpack-eng spectacle gpu-screen-recorder
     slurp grim brightnessctl power-profiles-daemon
     xdg-utils sassc bat ripgrep xdg-user-dirs

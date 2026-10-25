@@ -14,6 +14,8 @@ PANEL_PAGE="$REPO_ROOT/shell/modules/nexus/pages/utilities/UtilitiesPanelPage.qm
 LOADER="$REPO_ROOT/shell/modules/ServiceLoader.qml"
 AI="$REPO_ROOT/shell/modules/sidebar/AiAssistant.qml"
 STYLED_INPUT="$REPO_ROOT/shell/components/controls/StyledInputField.qml"
+DURATION_JS="$REPO_ROOT/shell/services/duration.js"
+SPLIT_JS="$REPO_ROOT/shell/services/timers.js"
 
 # A timer is a deadline, not a countdown: storing what is left means a restart two
 # minutes into a 25 minute timer silently loses the other 23.
@@ -55,24 +57,9 @@ test_durations_are_read_the_way_they_are_typed() {
     assert_file_contains "$TIMERS" 'return Duration.parse(text);' "and it is the one in duration.js, which a test can run"
 }
 
-# The grammar is pure, so it is executed rather than grepped: drive_duration evaluates
-# duration.js the way QML does and runs the given script with node's assert.
-drive_duration() {
-    DURATION_DIR="$REPO_ROOT/shell/services" node -e '
-const fs = require("fs");
-const assert = require("assert");
-const src = fs.readFileSync(process.env.DURATION_DIR + "/duration.js", "utf8").replace(/^\.pragma library$/m, "");
-const names = [...src.matchAll(/^(?:function|var) (\w+)/gm)].map(m => m[1]);
-const Duration = new Function(src + "\nreturn {" + names.join(",") + "};")();
-'"$1"'
-console.log("ok");' 2>&1
-}
-
-check_duration() {
-    local message="$1" script="$2" out
-    out="$(drive_duration "$script")"
-    [[ "$out" == "ok" ]] || fail_with_output "$message" "$out"
-}
+# The grammar is pure, so it is executed rather than grepped: each script below runs
+# against duration.js with node's assert.
+check_duration() { check_js "$1" "$DURATION_JS" Duration "$2"; }
 
 test_a_bare_number_is_minutes_and_a_unit_is_read_as_written() {
     check_duration "durations have to read the way someone types them" '
@@ -95,24 +82,9 @@ assert.strictEqual(Duration.parse(null), 0, "and a missing field does not throw"
 '
 }
 
-# The split that decides what fires is pure too, and this is the case that got it wrong:
-# a timer ten minutes out was announced when an eight second one ended.
-drive_timers() {
-    TIMERS_DIR="$REPO_ROOT/shell/services" node -e '
-const fs = require("fs");
-const assert = require("assert");
-const src = fs.readFileSync(process.env.TIMERS_DIR + "/timers.js", "utf8").replace(/^\.pragma library$/m, "");
-const names = [...src.matchAll(/^(?:function|var) (\w+)/gm)].map(m => m[1]);
-const TimerList = new Function(src + "\nreturn {" + names.join(",") + "};")();
-'"$1"'
-console.log("ok");' 2>&1
-}
-
-check_timers() {
-    local message="$1" script="$2" out
-    out="$(drive_timers "$script")"
-    [[ "$out" == "ok" ]] || fail_with_output "$message" "$out"
-}
+# The split that decides what fires is pure too (timers.js), and this is the case that got
+# it wrong: a timer ten minutes out was announced when an eight second one ended.
+check_timers() { check_js "$1" "$SPLIT_JS" TimerList "$2"; }
 
 test_only_the_timers_that_have_ended_are_due() {
     check_timers "a timer that has not ended is not due, however many others are" '

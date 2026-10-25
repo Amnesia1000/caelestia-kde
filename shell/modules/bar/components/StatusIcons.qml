@@ -416,7 +416,7 @@ StyledRect {
 
         MaterialIcon {
             animate: true
-            text: Nmcli.active ? Icons.getNetworkIcon(Nmcli.active.strength ?? 0) : "wifi_off"
+            text: Nmcli.active ? Icons.getNetworkIcon(WifiSignal.strength) : "wifi_off"
             color: root.colour
         }
     }

@@ -13,24 +13,9 @@ PAGE="$REPO_ROOT/shell/modules/nexus/pages/services/ToastPreferencesPage.qml"
 SCHEMA="$REPO_ROOT/shell/plugin/src/Caelestia/Config/utilitiesconfig.hpp"
 WINDOW="$REPO_ROOT/shell/modules/drawers/ContentWindow.qml"
 
-# The corner vocabulary is pure, so it is executed rather than grepped: drive_corner
-# evaluates corner.js the way QML does and runs the given script with node's assert.
-drive_corner() {
-    CORNER_DIR="$REPO_ROOT/shell/modules/utilities/toasts" node -e '
-const fs = require("fs");
-const assert = require("assert");
-const src = fs.readFileSync(process.env.CORNER_DIR + "/corner.js", "utf8").replace(/^\.pragma library$/m, "");
-const names = [...src.matchAll(/^(?:function|var) (\w+)/gm)].map(m => m[1]);
-const Corner = new Function(src + "\nreturn {" + names.join(",") + "};")();
-'"$1"'
-console.log("ok");' 2>&1
-}
-
-check_corner() {
-    local message="$1" script="$2" out
-    out="$(drive_corner "$script")"
-    [[ "$out" == "ok" ]] || fail_with_output "$message" "$out"
-}
+# The corner vocabulary is pure, so it is executed rather than grepped: each script
+# below runs against corner.js with node's assert.
+check_corner() { check_js "$1" "$CORNER" Corner "$2"; }
 
 test_the_corner_is_a_setting_with_a_corner_for_every_taste() {
     assert_file_contains "$SCHEMA" "CONFIG_GLOBAL_PROPERTY(QString, position, u\"auto\"_s)" \

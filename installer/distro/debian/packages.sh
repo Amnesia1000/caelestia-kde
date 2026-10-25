@@ -98,7 +98,7 @@ THEME_PACKAGES=(
 )
 
 UTILITY_PACKAGES=(
-    fuzzel swappy ddcutil network-manager imagemagick
+    fuzzel swappy ddcutil network-manager iw imagemagick
     tesseract-ocr tesseract-ocr-eng kde-spectacle slurp grim
     brightnessctl power-profiles-daemon
     xdg-utils sassc python3-venv uv konsave
