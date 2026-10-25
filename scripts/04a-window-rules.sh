@@ -9,7 +9,7 @@ RULES_FILE="kwinrulesrc"
 # KConfig has no query that lists the groups of a file, so the index below is built
 # from the file itself, read at the same path the tools write.
 RULES_PATH="${XDG_CONFIG_HOME:-$HOME/.config}/$RULES_FILE"
-RULE_GROUPS=(caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity caelestia-shell-opacity)
+RULE_GROUPS=(caelestia-shell-opacity caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity)
 RULE_INDEX=""
 RULE_INDEX_COUNT=0
 WINDOW_OPACITY="${WINDOW_OPACITY:-95}"
@@ -197,24 +197,25 @@ if [[ "${APPLY_WINDOW_RULES:-true}" == "true" ]]; then
         placement 5 \
         placementrule 2
 
-    # types=33 is Normal|Dialog, so panels, tooltips and the OSD keep full opacity.
-    apply_rule_group "caelestia-opacity" "window opacity" \
-        Description "Caelestia: window opacity" \
-        types 33 \
-        opacityinactive "$WINDOW_OPACITY" \
-        opacityinactiverule 2
-
     # The shell's own toplevels - Nexus, the what's-new window, file dialogs - are not
     # applications. When the launcher takes the keyboard they go inactive while nothing
     # was switched away from, and at 95% the wallpaper bleeds through the settings
-    # window: it visibly lightens over a bright wallpaper. They stay opaque; this rule
-    # is written after the one above because a later rule wins for the same key.
+    # window: it visibly lightens over a bright wallpaper. They stay opaque instead.
+    # This rule heads the list because the rule below sets the same keys and the first
+    # matching rule wins, so an exemption written after it would never be reached.
     apply_rule_group "caelestia-shell-opacity" "opaque shell windows" \
         Description "Caelestia: keep the shell's own windows opaque" \
         types 33 \
         wmclass quickshell \
         wmclassmatch 2 \
         opacityinactive 100 \
+        opacityinactiverule 2
+
+    # types=33 is Normal|Dialog, so panels, tooltips and the OSD keep full opacity.
+    apply_rule_group "caelestia-opacity" "window opacity" \
+        Description "Caelestia: window opacity" \
+        types 33 \
+        opacityinactive "$WINDOW_OPACITY" \
         opacityinactiverule 2
 
     # Our groups first, then the index that names them, then the reload. The index

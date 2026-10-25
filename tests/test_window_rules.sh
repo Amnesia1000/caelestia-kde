@@ -20,10 +20,11 @@ have_python() {
 }
 
 RULES_FILE="kwinrulesrc"
-RULE_GROUPS=(caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity caelestia-shell-opacity)
-# The index a fresh file has to end up with: our four groups, in the order the
-# script writes them, and no other name.
-FRESH_INDEX="caelestia-xwaylandvideobridge,caelestia-pip,caelestia-dialogs,caelestia-opacity,caelestia-shell-opacity"
+RULE_GROUPS=(caelestia-shell-opacity caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity)
+# The index a fresh file has to end up with: our five groups, in the order the
+# script writes them, and no other name. The shell's exemption heads the list
+# because KWin takes the first matching rule for a key.
+FRESH_INDEX="caelestia-shell-opacity,caelestia-xwaylandvideobridge,caelestia-pip,caelestia-dialogs,caelestia-opacity"
 
 SANDBOX=""
 STUB_DIR=""
@@ -170,12 +171,18 @@ run_window_rules_without_kwriteconfig6() {
 }
 
 # The frozen interface: group, key, value, in the order the script writes them. The
-# index pair comes after the three groups and before the single reload. Only the
+# index pair comes after the five groups and before the single reload. Only the
 # writer and the reload are recorded, so the two reads the script makes per changed
 # key - before the write, and back after it - are not part of the sequence below.
 expected_calls() {
     local opacity="$1" index="${2:-$FRESH_INDEX}"
     printf '%s\n' \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key Description Caelestia: keep the shell's own windows opaque" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key types 33" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key wmclass quickshell" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key wmclassmatch 2" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key opacityinactive 100" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key opacityinactiverule 2" \
         "--file $RULES_FILE --group caelestia-xwaylandvideobridge --key Description Caelestia: hide xwaylandvideobridge" \
         "--file $RULES_FILE --group caelestia-xwaylandvideobridge --key wmclass xwaylandvideobridge" \
         "--file $RULES_FILE --group caelestia-xwaylandvideobridge --key wmclassmatch 2" \
@@ -208,12 +215,6 @@ expected_calls() {
         "--file $RULES_FILE --group caelestia-opacity --key types 33" \
         "--file $RULES_FILE --group caelestia-opacity --key opacityinactive $opacity" \
         "--file $RULES_FILE --group caelestia-opacity --key opacityinactiverule 2" \
-        "--file $RULES_FILE --group caelestia-shell-opacity --key Description Caelestia: keep the shell's own windows opaque" \
-        "--file $RULES_FILE --group caelestia-shell-opacity --key types 33" \
-        "--file $RULES_FILE --group caelestia-shell-opacity --key wmclass quickshell" \
-        "--file $RULES_FILE --group caelestia-shell-opacity --key wmclassmatch 2" \
-        "--file $RULES_FILE --group caelestia-shell-opacity --key opacityinactive 100" \
-        "--file $RULES_FILE --group caelestia-shell-opacity --key opacityinactiverule 2" \
         "--file $RULES_FILE --group General --key rules $index" \
         "--file $RULES_FILE --group General --key count $(count_index "$index")"
 }

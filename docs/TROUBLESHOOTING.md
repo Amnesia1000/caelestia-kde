@@ -924,7 +924,8 @@ themes that ask for it, which is what that optional dependency is for.
 
 ### 7.7 Installer Window Rules
 
-The installer writes four groups into `~/.config/kwinrulesrc` in priority order:
+The installer writes five groups into `~/.config/kwinrulesrc` in priority order:
+`caelestia-shell-opacity` keeps the shell's own toplevels at full opacity,
 `caelestia-xwaylandvideobridge` keeps `xwaylandvideobridge` transparent and uncentered
 out of switchers and taskbars (resolving a black centered box glitch on distros like Fedora; see [issue #1006](https://github.com/ladybug-me/caelestia-kde/issues/1006)),
 `caelestia-pip` keeps windows whose title matches `Picture(-| )in(-| )[Pp]icture` above others,
@@ -934,6 +935,17 @@ indexed before catch-all rules because KWin evaluates rules top-to-bottom and re
 conflicts using first-match-wins. Opacity is a per-activation-state key, so a window is dimmed only
 while it is not focused, and the dialog rule is the one that can disagree with a placement policy
 chosen in System Settings.
+
+`caelestia-opacity` is a catch-all: it dims every normal window and dialog nobody has
+focused, including the shell's own toplevels, which are windows too. The launcher runs
+inside the shell, so opening it takes the keyboard from Nexus without anything being
+switched away from, and Nexus dims to 95 percent over the wallpaper behind it: over a
+bright wallpaper the settings window visibly lightens while the launcher is open and
+darkens again when it closes. `caelestia-shell-opacity` matches those windows by
+`wmclass` (`quickshell`, a substring match) and forces the same keys to 100 percent.
+It has to come first in both the file and the index, because the catch-all forces the
+same opacity keys and the first rule that matches a key wins; a copy of it written
+after `caelestia-opacity` never applies.
 
 A group only takes effect if the index names it. `[General] rules=` is the list KWin
 loads its rule groups from, and a group that is present in the file but missing from
@@ -945,6 +957,7 @@ rules are preserved and keep precedence.
 To read a value back:
 
 ```bash
+kreadconfig6 --file kwinrulesrc --group caelestia-shell-opacity --key opacityinactive
 kreadconfig6 --file kwinrulesrc --group caelestia-opacity --key opacityinactive
 kreadconfig6 --file kwinrulesrc --group caelestia-dialogs --key placement
 kreadconfig6 --file kwinrulesrc --group caelestia-pip --key above
@@ -952,14 +965,16 @@ kreadconfig6 --file kwinrulesrc --group caelestia-xwaylandvideobridge --key opac
 kreadconfig6 --file kwinrulesrc --group General --key rules
 ```
 
-To remove the rules, delete the four `[caelestia-...]` sections out of the file, or
+To remove the rules, delete the five `[caelestia-...]` sections out of the file, or
 delete the key that switches each group on. A group that is deleted has to leave the
 index with it, or the list keeps a name whose group is gone and `count` no longer
-matches it. `uninstall.sh` removes the keys, strips the four names out of the list,
+matches it. `uninstall.sh` removes the keys, strips the five names out of the list,
 rewrites `count`, and deletes both index keys once no name is left. KWin does not
 watch kwinrulesrc, so the reload is not optional:
 
 ```bash
+kwriteconfig6 --file kwinrulesrc --group caelestia-shell-opacity \
+    --key opacityinactiverule --delete
 kwriteconfig6 --file kwinrulesrc --group caelestia-opacity \
     --key opacityinactiverule --delete
 kwriteconfig6 --file kwinrulesrc --group caelestia-dialogs \
