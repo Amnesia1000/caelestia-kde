@@ -36,6 +36,17 @@ ColumnLayout {
     /// desktop entry id, the window class, and whatever the menu model carries.
     readonly property var appNames: [model?.id, model?.appClass, model?.entry?.id].filter(name => typeof name === "string" && name.length > 0)
 
+    /// Whether this application currently has windows to show; the "Show all
+    /// windows" entry is meaningless for an entry that is only pinned.
+    readonly property bool hasWindows: {
+        const windows = Kwin.windowList || [];
+        for (let i = 0; i < windows.length; ++i) {
+            if (Kwin.windowMatchesApp(windows[i], root.appNames))
+                return true;
+        }
+        return false;
+    }
+
     function loadRecents(): void {
         Recents.load(root.appNames);
     }
@@ -112,6 +123,38 @@ ColumnLayout {
 
                     anchors.left: parent.left
                     text: isPinned ? qsTr("Unpin from dock") : qsTr("Pin to dock")
+                    font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
+                }
+            }
+
+            StyledRect {
+                id: allWindowsItem
+
+                Layout.fillWidth: true
+                implicitHeight: allWindowsLabel.implicitHeight
+                visible: root.hasWindows
+
+                radius: Tokens.rounding.full
+                color: "transparent"
+
+                StateLayer {
+                    anchors.margins: -Tokens.padding.medium / 2 * root.scaleOffset
+                    anchors.leftMargin: -Tokens.padding.medium * root.scaleOffset
+                    anchors.rightMargin: -Tokens.padding.medium * root.scaleOffset
+
+                    radius: allWindowsItem.radius
+
+                    onClicked: {
+                        Visibilities.showAppWindows(root.appNames);
+                        root.popouts.hasCurrent = false;
+                    }
+                }
+
+                StyledText {
+                    id: allWindowsLabel
+
+                    anchors.left: parent.left
+                    text: qsTr("Show all windows")
                     font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
                 }
             }

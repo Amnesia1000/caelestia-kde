@@ -199,6 +199,22 @@ Singleton {
         });
     }
 
+    /// Whether a window belongs to the application known by any of `names` — the
+    /// desktop entry id, the window class or an app id, in any casing. Both the
+    /// dock's "Show all windows" entry and the overview's filter use this so they
+    /// always agree on what counts as the same application.
+    function windowMatchesApp(w: var, names: var): bool {
+        const cls = String(w?.class ?? "").toLowerCase().replace(/\.desktop$/, "");
+        if (cls === "" || !names || names.length === 0)
+            return false;
+        for (let i = 0; i < names.length; ++i) {
+            const name = String(names[i]).toLowerCase().replace(/\.desktop$/, "");
+            if (name.length > 0 && (cls === name || cls.startsWith(name + ".") || cls.endsWith("." + name)))
+                return true;
+        }
+        return false;
+    }
+
     function cursorOutputName(): string {
         return KWinActiveWindowBridge.cursorOutputName();
     }

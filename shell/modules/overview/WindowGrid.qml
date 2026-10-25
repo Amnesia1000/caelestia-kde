@@ -58,11 +58,22 @@ Item {
             return [];
         const wsId = wsList[listView.currentIndex].index;
         const _ = Kwin.windowList;
-        return Kwin.filterWindows(Kwin.windowsForWorkspace(wsId, false), null, root.screen.name);
+        // Read the filter inside the binding: a plain function call would not
+        // register it as a dependency, and the grid would keep the stale list.
+        const filter = Visibilities.overviewAppFilter;
+        return root.matchesAppFilter(Kwin.filterWindows(Kwin.windowsForWorkspace(wsId, false), null, root.screen.name), filter);
     }
 
     signal requestWindowInfo(var client)
     signal requestClose()
+
+    /// Limits the grid to one application when the overview was opened from a dock
+    /// entry; without a filter every window is shown.
+    function matchesAppFilter(wins: var, filter: var): var {
+        if (!filter || filter.length === 0)
+            return wins;
+        return wins.filter(w => Kwin.windowMatchesApp(w, filter));
+    }
 
     /// The screen containing a point in global coordinates, or null.
     function screenAtGlobal(gx: real, gy: real): var {
@@ -232,9 +243,11 @@ Item {
             readonly property string wsName: (Kwin.workspaces && index < Kwin.workspaces.length) ? Kwin.workspaces[index].name : wsId.toString()
             property var wsWindows: []
             readonly property var _winTrigger: Kwin.windowList
+            // Read here so a filter change re-runs the page, the way window changes do.
+            readonly property var _appFilter: Visibilities.overviewAppFilter
 
             function _updateWsWindows(): void {
-                const arr = Kwin.filterWindows(Kwin.windowsForWorkspace(wsId, false), null, root.screen.name);
+                const arr = root.matchesAppFilter(Kwin.filterWindows(Kwin.windowsForWorkspace(wsId, false), null, root.screen.name), _appFilter);
 
                 let changed = arr.length !== wsWindows.length;
                 if (!changed) {
@@ -254,6 +267,7 @@ Item {
             }
 
             on_WinTriggerChanged: _updateWsWindows()
+            on_AppFilterChanged: _updateWsWindows()
             onWsIdChanged: _updateWsWindows()
 
             width: listView.width

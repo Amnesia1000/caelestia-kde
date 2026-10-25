@@ -2,11 +2,14 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Caelestia.Config
 import qs.components
 import qs.services
 
 Singleton {
+    id: root
+
     property var screens: new Map()
     property var bars: new Map()
     property var docks: new Map()
@@ -26,6 +29,9 @@ Singleton {
     property int sidebarWidth
     property bool sidebarResizing: false
     property string preOverviewActiveWindowAddress: ""
+    /// The names of the application the overview is limited to, or empty for every
+    /// window. Set by the dock's "Show all windows" action, cleared when it closes.
+    property var overviewAppFilter: []
     property string dragAddress: ""
     property string dragOriginScreen: ""
     property real dragX: 0
@@ -203,8 +209,16 @@ Singleton {
     }
 
     function setOverview(visible: bool): void {
+        if (!visible)
+            overviewAppFilter = [];
         for (const visibilities of screens.values())
             visibilities.overview = visible;
+    }
+
+    /// Opens the overview limited to one application, the way App Exposé does.
+    function showAppWindows(names: var): void {
+        overviewAppFilter = (names || []).filter(name => typeof name === "string" && name.length > 0);
+        setOverview(true);
     }
     function closeContextPopouts(): void {
         for (const bar of bars.values())
@@ -228,5 +242,15 @@ Singleton {
             if (v && GlobalConfig.sidebar.pinned)
                 v.sidebar = true;
         }
+    }
+
+    IpcHandler {
+        /// Opens the overview limited to one application, for keybinds and scripts:
+        /// the names are the desktop entry id or window class, comma separated.
+        function showAppWindows(names: string): void {
+            root.showAppWindows(names.split(","));
+        }
+
+        target: "overview"
     }
 }
