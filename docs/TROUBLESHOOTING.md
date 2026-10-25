@@ -790,13 +790,15 @@ leaves the old `kioslaverc` intact and says so on the page instead of emptying i
 
 Toasts stack in one corner of the focused screen. *Nexus → Notifications → Toasts →
 Corner* offers **automatic**, top-left, top-right, bottom-left and bottom-right;
-**automatic** is the corner the shell has always used — the bottom, on the far side from
-the launcher — so nothing moves until the row is changed. The reset button on the row
-deletes the key and hands the choice back to automatic.
+**automatic** is the corner the shell has always used — the bottom, on the left when the
+bar runs along the bottom, and away from the bar when it runs along a side — so nothing
+moves until the row is changed. The reset button on the row deletes the key and hands the
+choice back to automatic.
 
-The stack grows away from the edge it is pinned to: from a top corner downwards, from a
-bottom corner upwards, newest outermost. A right-hand corner also stays clear of the
-sidebar when it is open.
+The stack grows away from the edge it is anchored to: from a top corner downwards, from a
+bottom corner upwards, newest outermost. A left- or right-hand corner steps aside for the
+sidebar when it is open on that side, and a bottom corner steps aside for the utilities
+drawer when that is open along the bottom.
 
 ### 5.8 Where the Corner Radii Come From
 

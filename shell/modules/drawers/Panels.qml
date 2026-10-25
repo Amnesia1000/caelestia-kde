@@ -128,11 +128,6 @@ Item {
                 anchors.right: undefined
             }
             AnchorChanges {
-                target: toasts
-                anchors.left: sidebar.right
-                anchors.right: undefined
-            }
-            AnchorChanges {
                 target: sidebar
                 anchors.left: parent.left
                 anchors.right: undefined
@@ -146,12 +141,6 @@ Item {
                 target: utilities
                 anchors.bottom: undefined
                 anchors.top: parent.top
-            }
-            AnchorChanges {
-                target: toasts
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: undefined
             }
             AnchorChanges {
                 target: sidebar
@@ -296,29 +285,33 @@ Item {
     Toasts.Toasts {
         id: toasts
 
-        /// Where the toasts sit. `auto` keeps the bottom corner the shell has always
-        /// used, so nobody's toasts move because this became a setting.
+        /// The corner the stack grows from. `auto` is the spot the shell has always used:
+        /// the bottom, on the side away from a vertical bar, which is the left when the
+        /// bar is along the bottom.
         readonly property string corner: {
             const wanted = GlobalConfig.utilities.toasts.position;
-            return wanted === "auto" ? "bottom-right" : wanted;
+            if (wanted !== "auto")
+                return wanted;
+            return bar.position === "bottom" || bar.position === "right" ? "bottom-left" : "bottom-right";
         }
-        /// A chosen corner pins the stack to that edge of the screen; `auto` keeps the
-        /// edge the shell has always used, which is the utilities drawer's instead.
-        readonly property bool pinned: GlobalConfig.utilities.toasts.position !== "auto"
+        /// Which side the sidebar slides in from. It follows the bar, so a right-hand
+        /// corner is not always the sidebar's side.
+        readonly property bool sidebarOnRight: sidebar.hAnchor === "right"
         property string vAnchor: toasts.fromTop ? "top" : "bottom"
         property string hAnchor: toasts.fromLeft ? "left" : "right"
 
         position: toasts.corner
         visibilities: root.visibilities
+        // The corner is the only owner of these edges: the bar-position states below must
+        // not move the stack, or the setting quietly stops meaning anything.
         anchors.top: toasts.fromTop ? parent.top : undefined
-        anchors.bottom: toasts.fromTop
-            ? undefined
-            : (toasts.pinned ? (utilities.visible ? utilities.top : parent.bottom) : (sidebar.visible ? parent.bottom : utilities.top))
+        anchors.bottom: toasts.fromTop ? undefined : parent.bottom
         anchors.left: toasts.fromLeft ? parent.left : undefined
-        anchors.right: toasts.fromLeft
-            ? undefined
-            : (toasts.pinned && !sidebar.visible ? parent.right : sidebar.left)
-        anchors.margins: Tokens.padding.medium
+        anchors.right: toasts.fromLeft ? undefined : parent.right
+        anchors.topMargin: Tokens.padding.medium
+        anchors.leftMargin: Tokens.padding.medium + (toasts.fromLeft && !toasts.sidebarOnRight && sidebar.visible ? sidebar.width : 0)
+        anchors.rightMargin: Tokens.padding.medium + (!toasts.fromLeft && toasts.sidebarOnRight && sidebar.visible ? sidebar.width : 0)
+        anchors.bottomMargin: Tokens.padding.medium + (!toasts.fromTop && utilities.vAnchor === "bottom" && utilities.visible ? utilities.implicitHeight : 0)
     }
     Sidebar.Wrapper {
         id: sidebar

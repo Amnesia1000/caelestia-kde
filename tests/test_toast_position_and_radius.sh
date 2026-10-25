@@ -33,19 +33,19 @@ test_the_stack_grows_from_the_corner_it_was_given() {
     assert_file_contains "$TOASTS" 'Behavior on anchors.topMargin' "and the movement is animated either way"
 }
 
-# The default must not move anyone's toasts: `auto` keeps the edge the shell has always
-# used. A chosen corner pins the stack to the screen's own edge instead, and only steps
-# aside for a panel that is actually open.
+# The default must not move anyone's toasts: `auto` is the corner the shell has always
+# used. A chosen corner is the only owner of the stack's edges, so the bar-position states
+# cannot quietly move it back.
 test_automatic_keeps_the_corner_the_shell_always_used() {
-    assert_file_contains "$PANELS" 'return wanted === "auto" ? "bottom-right" : wanted;' \
-        "automatic means the bottom, clear of the launcher"
+    assert_file_contains "$PANELS" 'return bar.position === "bottom" || bar.position === "right" ? "bottom-left" : "bottom-right";' \
+        "automatic means the bottom, on the side the shell has always used"
     assert_file_contains "$PANELS" 'position: toasts.corner' "the surface is told the resolved corner"
-    assert_file_contains "$PANELS" 'readonly property bool pinned: GlobalConfig.utilities.toasts.position !== "auto"' \
-        "only a corner that was chosen pins the stack"
-    assert_file_contains "$PANELS" ': (toasts.pinned && !sidebar.visible ? parent.right : sidebar.left)' \
-        "so a chosen right corner reaches the edge of the screen, and still clears the sidebar"
-    assert_file_contains "$PANELS" 'toasts.pinned ? (utilities.visible ? utilities.top : parent.bottom)' \
-        "and a chosen bottom corner reaches the bottom, clear of the open utilities drawer"
+    assert_file_contains "$PANELS" 'anchors.right: toasts.fromLeft ? undefined : parent.right' \
+        "a chosen right corner reaches the edge of the screen"
+    assert_file_contains "$PANELS" 'anchors.rightMargin: Tokens.padding.medium + (!toasts.fromLeft && toasts.sidebarOnRight && sidebar.visible ? sidebar.width : 0)' \
+        "and steps aside for the sidebar only when it is open on that side"
+    assert_file_not_contains "$PANELS" 'target: toasts' \
+        "the bar-position states leave the stack where the corner put it"
 }
 
 # The drawer's frame and the surface drawn inside it are one number, not two: a frame
