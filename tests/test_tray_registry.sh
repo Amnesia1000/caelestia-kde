@@ -15,24 +15,8 @@ PAGE_BASE="$REPO_ROOT/shell/modules/nexus/common/PageBase.qml"
 SELECT_ROW="$REPO_ROOT/shell/modules/nexus/common/SelectRow.qml"
 
 # The tray rules that do not need Qt live in a .pragma library file
-# (shell/services/trayicons.js). drive_tray_icons evaluates it the way QML does and
-# runs the given script with node's assert.
-drive_tray_icons() {
-    TRAY_ICONS_DIR="$SERVICES" node -e '
-const fs = require("fs");
-const assert = require("assert");
-const src = fs.readFileSync(process.env.TRAY_ICONS_DIR + "/trayicons.js", "utf8").replace(/^\.pragma library$/m, "");
-const names = [...src.matchAll(/^(?:function|var) (\w+)/gm)].map(m => m[1]);
-const Icons = new Function(src + "\nreturn {" + names.join(",") + "};")();
-'"$1"'
-console.log("ok");' 2>&1
-}
-
-check_tray_icons() {
-    local message="$1" script="$2" out
-    out="$(drive_tray_icons "$script")"
-    [[ "$out" == "ok" ]] || fail_with_output "$message" "$out"
-}
+# (shell/services/trayicons.js), which each script below runs against with node's assert.
+check_tray_icons() { check_js "$1" "$SERVICES/trayicons.js" Icons "$2"; }
 
 test_pid_comes_out_of_the_notifier_id() {
     check_tray_icons "notifier ids start with the pid" '

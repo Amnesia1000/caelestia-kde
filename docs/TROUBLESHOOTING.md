@@ -932,6 +932,39 @@ export https_proxy=http://proxy:port
 export ALL_PROXY=http://proxy:port
 ```
 
+### 6.4 The Wi-Fi Icon Never Shows Full Strength
+
+The bar reads the link's signal from the driver (`iw dev <interface> link`), not from
+NetworkManager, because the two disagree:
+
+```bash
+nmcli -t -f IN-USE,SIGNAL,SSID device wifi list | grep '^\*'   # NetworkManager's view
+iw dev wlan0 link | grep signal                                 # the driver's view
+```
+
+NetworkManager publishes the strength of the *associated* access point as a snapshot
+taken when that BSS was last scanned. On a 6 GHz link that snapshot can read far lower
+than the link really is — a station 40 cm from the router at -45 dBm was published as
+73 %, and 73 % is a three-bar icon. The same SSID's 2.4 GHz radio usually reads 100 %,
+which is what makes the icon look wrong: that is a different BSSID on a different band.
+
+So the icon now follows the driver: -50 dBm and better is full, -100 dBm and worse is
+empty, linear in between. If the driver cannot answer, the shell falls back to
+NetworkManager's percentage — that is also what the first second after the shell starts
+shows, before the first reading lands.
+
+The installer ships `iw` with the other utility packages, so a fresh install needs
+nothing. An install made before it did keeps working, on the old percentage:
+
+```bash
+sudo pacman -S iw      # Arch
+sudo dnf install iw    # Fedora
+sudo apt install iw    # Debian / Ubuntu
+```
+
+A connection whose link quality is genuinely poor still shows fewer bars, and so does a
+roaming client sitting on a weak radio of a strong network.
+
 ---
 
 ## 7. KDE & Plasma Specific Issues
