@@ -83,7 +83,7 @@ PageBase {
 
         SelectRow {
             label: qsTr("Corner")
-            subtext: qsTr("Where the stack grows from. Automatic keeps the bottom corner, clear of the launcher")
+            subtext: qsTr("Where the stack grows from. Automatic keeps the corner the shell has always used")
             menuItems: root.cornerItems
             active: root.cornerItems[Math.max(0, root.cornerValues.indexOf(GlobalConfig.utilities.toasts.position))]
             onSelected: item => GlobalConfig.utilities.toasts.position = root.cornerValues[root.cornerItems.indexOf(item)]
