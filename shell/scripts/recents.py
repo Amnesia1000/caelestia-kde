@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import xml.etree.ElementTree as ElementTree
 from urllib.parse import unquote, urlparse
@@ -47,6 +48,19 @@ def matches(app: str, targets: set) -> bool:
     return normalise(app) in targets or short_name(app) in targets
 
 
+def local_path(href: str) -> str:
+    """The file a `file://` bookmark points at, or "" for one on another host.
+
+    The path is collapsed to one leading slash first: a writer that hands out
+    `file:////home/…` is common enough, and POSIX `url2pathname` refuses a path that
+    starts with two.
+    """
+    parsed = urlparse(href)
+    if parsed.netloc not in ("", "localhost"):
+        return ""
+    return url2pathname(re.sub(r"^/+", "/", unquote(parsed.path)))
+
+
 def parse(path: str) -> list:
     """Every bookmark that still points at a file, with the applications that opened it."""
     if not os.path.exists(path):
@@ -63,8 +77,8 @@ def parse(path: str) -> list:
         if not href.startswith("file://"):
             continue
 
-        file_path = url2pathname(unquote(urlparse(href).path))
-        if not os.path.isfile(file_path):
+        file_path = local_path(href)
+        if not file_path or not os.path.isfile(file_path):
             continue
 
         applications = {}
