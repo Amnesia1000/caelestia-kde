@@ -102,8 +102,8 @@ Item {
         scale: modelData.closed || previewHidden ? 0.7 : 1
         anchors.topMargin: root.fromTop ? root.offsetFor(index) : 0
         anchors.bottomMargin: root.fromTop ? 0 : root.offsetFor(index)
-        anchors.left: root.fromLeft ? parent.left : undefined
-        anchors.right: root.fromLeft ? undefined : parent.right
+        anchors.left: parent.left
+        anchors.right: parent.right
         anchors.top: root.fromTop ? parent.top : undefined
         anchors.bottom: root.fromTop ? undefined : parent.bottom
         implicitHeight: toastInner.implicitHeight

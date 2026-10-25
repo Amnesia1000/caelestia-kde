@@ -30,6 +30,8 @@ test_the_stack_grows_from_the_corner_it_was_given() {
     assert_file_contains "$TOASTS" 'anchors.bottom: root.fromTop ? undefined : parent.bottom' "and a bottom corner from the bottom"
     assert_file_contains "$TOASTS" 'anchors.topMargin: root.fromTop ? root.offsetFor(index) : 0' "each toast clears the ones in front of it"
     assert_file_contains "$TOASTS" 'anchors.bottomMargin: root.fromTop ? 0 : root.offsetFor(index)' "in the direction the stack grows"
+    assert_file_contains "$TOASTS" 'anchors.left: parent.left' "each toast spans the stack's width, so a right-hand corner cannot push it off the screen"
+    assert_file_contains "$TOASTS" 'anchors.right: parent.right' "on both sides, not one"
     assert_file_contains "$TOASTS" 'Behavior on anchors.topMargin' "and the movement is animated either way"
 }
 
