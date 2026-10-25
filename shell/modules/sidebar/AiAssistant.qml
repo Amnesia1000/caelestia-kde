@@ -1646,8 +1646,7 @@ Item {
                                         currentActionText = "Setting timer...";
                                         var secs = Number(args.seconds) || 5;
                                         var msg = String(args.message || "Timer finished");
-                                        var timerQml = "import QtQuick; Timer { interval: " + (secs * 1000) + "; running: true; onTriggered: { root.runAgentCommand(['notify-send', 'Orion Timer', " + JSON.stringify(msg) + "], 'timer_trigger'); destroy(); } }";
-                                        Qt.createQmlObject(timerQml, root, "timer_" + Date.now());
+                                        Timers.start(secs, msg);
                                         AiToolCalls.recordResult("Tool: set_timer\nResult: Timer set for " + secs + " seconds with message: " + msg + "\n\n");
 
                                     } else if (toolName === "get_weather") {

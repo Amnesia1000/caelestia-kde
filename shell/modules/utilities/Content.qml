@@ -17,7 +17,7 @@ Item {
     // The cards that are showing, in the order the layout stacks them: their own
     // non-animated heights, plus the spacing between them.
     readonly property real nonAnimHeight: {
-        const visible = [idleInhibit, capture, quickShare, toggles].filter(card => card.visible);
+        const visible = [idleInhibit, timers, capture, quickShare, toggles].filter(card => card.visible);
         return visible.reduce((total, card) => total + card.nonAnimHeight, 0) + layout.spacing * Math.max(0, visible.length - 1);
     }
 
@@ -34,6 +34,12 @@ Item {
             id: idleInhibit
 
             visible: Config.utilities.showKeepAwake
+        }
+
+        TimersCard {
+            id: timers
+
+            visible: Config.utilities.showTimers
         }
 
         CaptureCard {

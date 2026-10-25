@@ -84,6 +84,7 @@ class UtilitiesConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(UtilitiesVpn, vpn)
     CONFIG_SUBOBJECT(UtilitiesGameMode, gameMode)
     CONFIG_PROPERTY(bool, showKeepAwake, true)
+    CONFIG_PROPERTY(bool, showTimers, true)
     CONFIG_PROPERTY(bool, showScreenRecorder, true)
     CONFIG_PROPERTY(bool, showGifRecorder, true)
     CONFIG_PROPERTY(bool, showQuickShare, true)
