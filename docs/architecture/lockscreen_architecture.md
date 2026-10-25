@@ -69,6 +69,12 @@ The Caelestia lock screen brings the Quickshell lock screen design into native K
    - **Landscape (Default):** 3-column layout (Left: Weather, Caelestiafetch, Media | Center: Clock, Avatar, Password Pill | Right: Resources, Notification Dock).
    - **Portrait:** Centered vertical column adapting automatically on vertical displays.
 
+5. **Notification Sync:**
+   - The dock never reads the shell's persisted `notifs.json`: that file is a debounced copy of the live model and trails it by 3–10 s, which made the lock screen disagree with the desktop notification page.
+   - It polls `caelestia-shell-ipc call notifs list` instead (every 2 s, only while notifications are shown). The shell answers with `{ dnd, items }` — its live list through the same serialiser it persists, plus the current do-not-disturb state — so notifications arriving, expiring or being cleared on the desktop show up or vanish here within a couple of seconds.
+   - Clear-all runs `caelestia-shell-ipc call notifs clear`, so the desktop page empties with it.
+   - Do-not-disturb belongs to the shell too: the dino game asks for it while it runs and the lock screen writes it back over IPC, restoring whatever the user had set once the game ends.
+
 ---
 
 ## 4. Deployment, Testing, and Uninstallation
