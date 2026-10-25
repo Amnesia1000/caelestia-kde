@@ -107,10 +107,59 @@ Singleton {
         return comp;
     }
 
+    /// Whether this app's notifications are turned off entirely.
+    function isMuted(appName: string): bool {
+        return GlobalConfig.notifs.mutedApps.includes(appName);
+    }
+
+    /// Turns an app's notifications off and drops what is already in the list: the
+    /// answer has to be visible immediately, or the next banner looks like the mute
+    /// did not stick.
+    function muteApp(appName: string): void {
+        if (appName === "")
+            return;
+
+        if (!root.isMuted(appName)) {
+            GlobalConfig.notifs.mutedApps = Array.from(GlobalConfig.notifs.mutedApps).concat([appName]);
+            GlobalConfig.save();
+        }
+
+        const dropped = root.list.filter(n => n.appName === appName);
+        if (dropped.length === 0)
+            return;
+
+        root.list = root.list.filter(n => n.appName !== appName);
+        root.openCount = Math.max(0, root.openCount - dropped.filter(n => !n.closed).length);
+        for (const notif of dropped)
+            notif.close();
+    }
+
+    function unmuteApp(appName: string): void {
+        if (!root.isMuted(appName))
+            return;
+
+        GlobalConfig.notifs.mutedApps = Array.from(GlobalConfig.notifs.mutedApps).filter(name => name !== appName);
+        GlobalConfig.save();
+    }
+
+    /// Whether a search for `query` should show this notification. Case insensitive, over
+    /// the app name, the summary and the body without its markup, which is what someone
+    /// reading the list is looking at.
+    function matchesQuery(notif: var, query: string): bool {
+        const needle = query.trim().toLowerCase();
+        if (needle === "")
+            return true;
+
+        return [notif.appName, notif.summaryPlain, notif.bodyPlain].some(field => (field ?? "").toLowerCase().includes(needle));
+    }
+
     /// Whether this app's notification must stay quiet right now. Both the popup and
     /// the sound ask this, so the DND/focus policy and the fullscreen rule are stated
     /// once rather than copied into each decision.
     function isSilenced(appName: string): bool {
+        if (root.isMuted(appName))
+            return true;
+
         if (props.dnd && !Focus.allows(appName))
             return true;
         if (GlobalConfig.notifs.fullscreen !== "off")
@@ -227,6 +276,16 @@ Singleton {
         onNotification: notif => {
             notif.tracked = true;
 
+            // A muted app is answered and dismissed rather than filed: the sender sees a
+            // normal close, and the list, the unread count and the sound never see it.
+            if (root.isMuted(notif.appName)) {
+                notifComp.createObject(root, {
+                    popup: false,
+                    notification: notif
+                }).close();
+                return;
+            }
+
             root.activeTargetOutput = root.getTargetOutput();
 
             const showPopup = root.shouldShowPopup(notif.appName);
@@ -292,6 +351,25 @@ Singleton {
 
         function clear(): void {
             root.clear();
+        }
+
+        /// The apps whose notifications are turned off, as JSON.
+        function mutedApps(): string {
+            return JSON.stringify(GlobalConfig.notifs.mutedApps);
+        }
+
+        function mute(appName: string): void {
+            root.muteApp(appName);
+        }
+
+        function unmute(appName: string): void {
+            root.unmuteApp(appName);
+        }
+
+        /// What the notification search would show, so the filter can be checked
+        /// without a pointer.
+        function search(query: string): string {
+            return JSON.stringify(root.list.filter(n => root.matchesQuery(n, query)).map(n => n.appName));
         }
 
         function isDndEnabled(): bool {

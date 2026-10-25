@@ -19,6 +19,9 @@ Item {
     required property DrawerVisibilities visibilities
     readonly property int notifCount: Notifs.openCount
 
+    /// What the list is being narrowed to, empty when nothing is.
+    property string query: ""
+
     anchors.fill: parent
     anchors.margins: Tokens.padding.medium
 
@@ -32,7 +35,7 @@ Item {
         anchors.right: parent.right
         anchors.margins: Tokens.padding.extraSmall
 
-        implicitHeight: Math.max(count.implicitHeight, titleText.implicitHeight)
+        implicitHeight: Math.max(count.implicitHeight, titleText.implicitHeight, searchButton.implicitHeight)
 
         StyledText {
             id: count
@@ -62,14 +65,54 @@ Item {
 
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: count.right
-            anchors.right: parent.right
+            anchors.right: searchButton.left
             anchors.leftMargin: Tokens.spacing.extraSmall
+            anchors.rightMargin: Tokens.spacing.small
 
             text: root.notifCount > 0 ? qsTr("notification%1").arg(root.notifCount === 1 ? "" : "s") : qsTr("Notifications")
             color: Colours.palette.m3outline
             font: Tokens.font.label.large
             elide: Text.ElideRight
         }
+
+        // Only worth offering once there is something to search through.
+        IconButton {
+            id: searchButton
+
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            opacity: root.notifCount > 0 || root.query !== "" ? 1 : 0
+            enabled: opacity > 0
+
+            icon: searchField.visible ? "search_off" : "search"
+            onClicked: {
+                searchField.visible = !searchField.visible;
+                if (!searchField.visible) {
+                    searchField.text = "";
+                    root.query = "";
+                }
+            }
+            Accessible.name: qsTr("Search notifications")
+
+            Behavior on opacity {
+                Anim {
+                    type: Anim.DefaultEffects
+                }
+            }
+        }
+    }
+
+    StyledInputField {
+        id: searchField
+
+        anchors.top: title.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.topMargin: Tokens.spacing.small
+        visible: false
+        placeholderText: qsTr("Search notifications")
+        horizontalAlignment: TextInput.AlignLeft
+        onTextEdited: text => root.query = text
     }
 
     ClippingRectangle {
@@ -77,7 +120,7 @@ Item {
 
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: title.bottom
+        anchors.top: searchField.visible ? searchField.bottom : title.bottom
         anchors.bottom: clearLoader.opacity > 0 ? clearLoader.top : toggleRect.top
         anchors.bottomMargin: Tokens.padding.medium
         anchors.topMargin: Tokens.spacing.medium
@@ -131,6 +174,7 @@ Item {
                 props: root.props
                 visibilities: root.visibilities
                 container: view
+                filter: root.query
             }
         }
     }

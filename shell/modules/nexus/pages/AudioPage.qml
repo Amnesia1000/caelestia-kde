@@ -151,7 +151,7 @@ PageBase {
             last: true
             icon: "notifications_off"
             label: qsTr("Muted notification apps")
-            status: qsTr("Choose apps that do not play notification sounds")
+            status: qsTr("Applications that send nothing, or send without a sound")
             onClicked: root.nState.openSubPage(3)
         }
     }
