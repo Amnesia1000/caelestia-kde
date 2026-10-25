@@ -786,6 +786,36 @@ makes KDE read those too. The page edits only the keys it owns and leaves every 
 comment and unknown key in the file alone, and it replaces the file in one step: a failed write
 leaves the old `kioslaverc` intact and says so on the page instead of emptying it.
 
+### 5.7 Toasts Appear in the Wrong Corner
+
+Toasts stack in one corner of the focused screen. *Nexus → Notifications → Toasts →
+Corner* offers **automatic**, top-left, top-right, bottom-left and bottom-right;
+**automatic** is the corner the shell has always used — the bottom, on the left when the
+bar runs along the bottom, and away from the bar when it runs along a side — so nothing
+moves until the row is changed. The reset button on the row deletes the key and hands the
+choice back to automatic.
+
+The stack grows away from the edge it is anchored to: from a top corner downwards, from a
+bottom corner upwards, newest outermost. A left- or right-hand corner steps aside for the
+sidebar when it is open on that side, and a bottom corner steps aside for the utilities
+drawer when that is open along the bottom.
+
+### 5.8 Where the Corner Radii Come From
+
+There are two classes of corner, and each has one owner:
+
+* **The shell's own surfaces.** The drawer's frame and the surface drawn inside it use
+  the same value, `border.rounding` (25 by default, `border.smoothing` for the fillet).
+  They are deliberately one number: a frame rounded differently from the panel inside it
+  leaves a sliver of wallpaper at every corner, which is what a mismatch of 25 against a
+  hard-coded 28 does. Changing `border.rounding` moves both.
+* **Cards and rows inside a surface** use `Tokens.rounding.*` (16 for a card, 28 for a
+  grouped list, `full` for a pill). These follow the appearance rounding scale, so they
+  move together when the scale changes.
+
+Anything that is its own surface — the bar island when *islands* is on — keeps a token
+radius, because there is no frame around it to line up with.
+
 ## 6. Network & Proxy Issues
 
 ### 6.1 Package Repository Problems

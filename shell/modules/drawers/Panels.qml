@@ -14,6 +14,7 @@ import qs.modules.sidebar as Sidebar
 import qs.modules.utilities as Utilities
 import qs.modules.bar.popouts as BarPopouts
 import qs.modules.utilities.toasts as Toasts
+import "../utilities/toasts/corner.js" as Corner
 
 Item {
     id: root
@@ -128,11 +129,6 @@ Item {
                 anchors.right: undefined
             }
             AnchorChanges {
-                target: toasts
-                anchors.left: sidebar.right
-                anchors.right: undefined
-            }
-            AnchorChanges {
                 target: sidebar
                 anchors.left: parent.left
                 anchors.right: undefined
@@ -146,12 +142,6 @@ Item {
                 target: utilities
                 anchors.bottom: undefined
                 anchors.top: parent.top
-            }
-            AnchorChanges {
-                target: toasts
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: undefined
             }
             AnchorChanges {
                 target: sidebar
@@ -296,13 +286,30 @@ Item {
     Toasts.Toasts {
         id: toasts
 
-        property string vAnchor: "bottom"
-        property string hAnchor: bar.position === "bottom" ? "left" : (bar.position === "right" ? "left" : "right")
+        /// The corner the stack grows from, with `auto` resolved against the bar and an
+        /// unknown value treated as `auto`: the setting's own vocabulary lives in
+        /// corner.js, so nothing else has to know what a corner is called.
+        readonly property string corner: Corner.resolve(GlobalConfig.utilities.toasts.position, bar.position)
+        /// Which side the sidebar slides in from. It follows the bar, so a right-hand
+        /// corner is not always the sidebar's side.
+        readonly property bool sidebarOnRight: sidebar.hAnchor === "right"
+        /// How much of each edge a panel that is open already occupies.
+        readonly property real sidebarInset: sidebar.visible && Corner.isLeft(toasts.corner) !== toasts.sidebarOnRight ? sidebar.width : 0
+        readonly property real drawerInset: utilities.visible && utilities.vAnchor === "bottom" ? utilities.implicitHeight : 0
 
+        fromTop: Corner.isTop(toasts.corner)
+        fromLeft: Corner.isLeft(toasts.corner)
         visibilities: root.visibilities
-        anchors.bottom: sidebar.visible ? parent.bottom : utilities.top
-        anchors.right: sidebar.left
-        anchors.margins: Tokens.padding.medium
+        // The corner is the only owner of these edges: the bar-position states below must
+        // not move the stack, or the setting quietly stops meaning anything.
+        anchors.top: Corner.isTop(toasts.corner) ? parent.top : undefined
+        anchors.bottom: Corner.isTop(toasts.corner) ? undefined : parent.bottom
+        anchors.left: Corner.isLeft(toasts.corner) ? parent.left : undefined
+        anchors.right: Corner.isLeft(toasts.corner) ? undefined : parent.right
+        anchors.topMargin: Tokens.padding.medium
+        anchors.leftMargin: Tokens.padding.medium + (Corner.isLeft(toasts.corner) ? toasts.sidebarInset : 0)
+        anchors.rightMargin: Tokens.padding.medium + (Corner.isLeft(toasts.corner) ? 0 : toasts.sidebarInset)
+        anchors.bottomMargin: Tokens.padding.medium + (Corner.isTop(toasts.corner) ? 0 : toasts.drawerInset)
     }
     Sidebar.Wrapper {
         id: sidebar
