@@ -450,6 +450,12 @@ kwriteconfig6 --file kwinrulesrc --group "caelestia-opacity" --key "Description"
 kwriteconfig6 --file kwinrulesrc --group "caelestia-opacity" --key "types"               --delete 2>/dev/null || true
 kwriteconfig6 --file kwinrulesrc --group "caelestia-opacity" --key "opacityinactive"     --delete 2>/dev/null || true
 kwriteconfig6 --file kwinrulesrc --group "caelestia-opacity" --key "opacityinactiverule" --delete 2>/dev/null || true
+kwriteconfig6 --file kwinrulesrc --group "caelestia-shell-opacity" --key "Description"         --delete 2>/dev/null || true
+kwriteconfig6 --file kwinrulesrc --group "caelestia-shell-opacity" --key "types"               --delete 2>/dev/null || true
+kwriteconfig6 --file kwinrulesrc --group "caelestia-shell-opacity" --key "wmclass"             --delete 2>/dev/null || true
+kwriteconfig6 --file kwinrulesrc --group "caelestia-shell-opacity" --key "wmclassmatch"        --delete 2>/dev/null || true
+kwriteconfig6 --file kwinrulesrc --group "caelestia-shell-opacity" --key "opacityinactive"     --delete 2>/dev/null || true
+kwriteconfig6 --file kwinrulesrc --group "caelestia-shell-opacity" --key "opacityinactiverule" --delete 2>/dev/null || true
 kwriteconfig6 --file kwinrulesrc --group "caelestia-dialogs" --key "Description"         --delete 2>/dev/null || true
 kwriteconfig6 --file kwinrulesrc --group "caelestia-dialogs" --key "types"               --delete 2>/dev/null || true
 kwriteconfig6 --file kwinrulesrc --group "caelestia-dialogs" --key "placement"           --delete 2>/dev/null || true
@@ -487,7 +493,7 @@ while IFS= read -r rule_name; do
     rule_name="${rule_name%"${rule_name##*[![:space:]]}"}"
     [[ -n "$rule_name" ]] || continue
     case "$rule_name" in
-        caelestia-opacity|caelestia-dialogs|caelestia-pip|caelestia-xwaylandvideobridge) continue ;;
+        caelestia-opacity|caelestia-shell-opacity|caelestia-dialogs|caelestia-pip|caelestia-xwaylandvideobridge) continue ;;
     esac
     KEPT_RULE_NAMES+=("$rule_name")
     KEPT_RULE_COUNT=$((KEPT_RULE_COUNT + 1))

@@ -20,10 +20,10 @@ have_python() {
 }
 
 RULES_FILE="kwinrulesrc"
-RULE_GROUPS=(caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity)
+RULE_GROUPS=(caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity caelestia-shell-opacity)
 # The index a fresh file has to end up with: our four groups, in the order the
 # script writes them, and no other name.
-FRESH_INDEX="caelestia-xwaylandvideobridge,caelestia-pip,caelestia-dialogs,caelestia-opacity"
+FRESH_INDEX="caelestia-xwaylandvideobridge,caelestia-pip,caelestia-dialogs,caelestia-opacity,caelestia-shell-opacity"
 
 SANDBOX=""
 STUB_DIR=""
@@ -208,6 +208,12 @@ expected_calls() {
         "--file $RULES_FILE --group caelestia-opacity --key types 33" \
         "--file $RULES_FILE --group caelestia-opacity --key opacityinactive $opacity" \
         "--file $RULES_FILE --group caelestia-opacity --key opacityinactiverule 2" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key Description Caelestia: keep the shell's own windows opaque" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key types 33" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key wmclass quickshell" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key wmclassmatch 2" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key opacityinactive 100" \
+        "--file $RULES_FILE --group caelestia-shell-opacity --key opacityinactiverule 2" \
         "--file $RULES_FILE --group General --key rules $index" \
         "--file $RULES_FILE --group General --key count $(count_index "$index")"
 }

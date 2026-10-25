@@ -9,7 +9,7 @@ RULES_FILE="kwinrulesrc"
 # KConfig has no query that lists the groups of a file, so the index below is built
 # from the file itself, read at the same path the tools write.
 RULES_PATH="${XDG_CONFIG_HOME:-$HOME/.config}/$RULES_FILE"
-RULE_GROUPS=(caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity)
+RULE_GROUPS=(caelestia-xwaylandvideobridge caelestia-pip caelestia-dialogs caelestia-opacity caelestia-shell-opacity)
 RULE_INDEX=""
 RULE_INDEX_COUNT=0
 WINDOW_OPACITY="${WINDOW_OPACITY:-95}"
@@ -113,7 +113,7 @@ add_to_rule_index() {
 # out of that list is never loaded, and the next time KWin saves the rule book it
 # deletes every group the list does not name. Both KWin 6.7 and master read this
 # key, master as the ordered group list, so the list is rebuilt as the union of the
-# current value, every group the file holds and our three groups. Naming only our
+# current value, every group the file holds and our own groups. Naming only our
 # own would hand KWin a list that drops the user's rules.
 build_rule_index() {
     local current="$1" groups="$2" name
@@ -123,7 +123,7 @@ build_rule_index() {
         name="$(trim_rule_name "$name")"
         [[ -n "$name" ]] || continue
         case "$name" in
-            caelestia-opacity|caelestia-dialogs|caelestia-pip|caelestia-xwaylandvideobridge) continue ;;
+            caelestia-opacity|caelestia-shell-opacity|caelestia-dialogs|caelestia-pip|caelestia-xwaylandvideobridge) continue ;;
         esac
         add_to_rule_index "$name"
     done <<< "$(printf '%s' "$current" | tr ',' '\n')"
@@ -131,7 +131,7 @@ build_rule_index() {
         name="$(trim_rule_name "$name")"
         [[ -n "$name" ]] || continue
         case "$name" in
-            caelestia-opacity|caelestia-dialogs|caelestia-pip|caelestia-xwaylandvideobridge) continue ;;
+            caelestia-opacity|caelestia-shell-opacity|caelestia-dialogs|caelestia-pip|caelestia-xwaylandvideobridge) continue ;;
         esac
         add_to_rule_index "$name"
     done <<< "$groups"
@@ -202,6 +202,19 @@ if [[ "${APPLY_WINDOW_RULES:-true}" == "true" ]]; then
         Description "Caelestia: window opacity" \
         types 33 \
         opacityinactive "$WINDOW_OPACITY" \
+        opacityinactiverule 2
+
+    # The shell's own toplevels - Nexus, the what's-new window, file dialogs - are not
+    # applications. When the launcher takes the keyboard they go inactive while nothing
+    # was switched away from, and at 95% the wallpaper bleeds through the settings
+    # window: it visibly lightens over a bright wallpaper. They stay opaque; this rule
+    # is written after the one above because a later rule wins for the same key.
+    apply_rule_group "caelestia-shell-opacity" "opaque shell windows" \
+        Description "Caelestia: keep the shell's own windows opaque" \
+        types 33 \
+        wmclass quickshell \
+        wmclassmatch 2 \
+        opacityinactive 100 \
         opacityinactiverule 2
 
     # Our groups first, then the index that names them, then the reload. The index
