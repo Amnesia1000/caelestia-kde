@@ -22,6 +22,10 @@ Item {
     /// What the list is being narrowed to, empty when nothing is.
     property string query: ""
 
+    /// Searching only makes sense once there is something to search through, and keeps
+    /// making sense while a query is narrowing what is left.
+    readonly property bool canSearch: root.notifCount > 0 || root.query !== ""
+
     anchors.fill: parent
     anchors.margins: Tokens.padding.medium
 
@@ -81,13 +85,15 @@ Item {
 
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            opacity: root.notifCount > 0 || root.query !== "" ? 1 : 0
-            enabled: opacity > 0
+            opacity: root.canSearch ? 1 : 0
+            enabled: root.canSearch
 
             icon: searchField.visible ? "search_off" : "search"
             onClicked: {
                 searchField.visible = !searchField.visible;
-                if (!searchField.visible) {
+                if (searchField.visible)
+                    searchField.forceActiveFocus();
+                else {
                     searchField.text = "";
                     root.query = "";
                 }

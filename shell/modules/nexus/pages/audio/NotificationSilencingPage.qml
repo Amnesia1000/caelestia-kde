@@ -11,50 +11,6 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    /// The two per-app policies, side by side because they answer different questions:
-    /// one app sends nothing at all, the other still sends, quietly.
-    readonly property var sections: [
-        {
-            kind: "muted",
-            title: qsTr("Notifications turned off"),
-            description: qsTr("Nothing arrives from these applications: no banner, no sound, and nothing added to the notification list."),
-            apps: GlobalConfig.notifs.mutedApps
-        },
-        {
-            kind: "silent",
-            title: qsTr("Notifications without sound"),
-            description: qsTr("These applications still show their notifications. Only the sound is skipped."),
-            apps: GlobalConfig.audio.sounds.disabledNotifApps
-        }
-    ]
-
-    function appsFor(kind: string): var {
-        return kind === "muted" ? GlobalConfig.notifs.mutedApps : GlobalConfig.audio.sounds.disabledNotifApps;
-    }
-
-    function setApps(kind: string, apps: var): void {
-        if (kind === "muted")
-            GlobalConfig.notifs.mutedApps = apps;
-        else
-            GlobalConfig.audio.sounds.disabledNotifApps = apps;
-        GlobalConfig.save();
-    }
-
-    function add(kind: string, name: string): void {
-        const wanted = name.trim();
-        if (wanted === "")
-            return;
-
-        const apps = Array.from(root.appsFor(kind));
-        if (!apps.includes(wanted))
-            apps.push(wanted);
-        root.setApps(kind, apps);
-    }
-
-    function remove(kind: string, name: string): void {
-        root.setApps(kind, Array.from(root.appsFor(kind)).filter(app => app !== name));
-    }
-
     title: qsTr("Muted apps")
     isSubPage: true
 
@@ -64,69 +20,108 @@ PageBase {
         width: root.cappedWidth
         spacing: Tokens.spacing.extraSmall / 2
 
-        Repeater {
-            model: root.sections
+        PolicySection {
+            first: true
+            title: qsTr("Notifications turned off")
+            description: qsTr("Nothing arrives from these applications: no banner, no sound, and nothing added to the notification list.")
+            status: qsTr("Turn its notifications off completely")
+            apps: GlobalConfig.notifs.mutedApps
+            write: apps => {
+                GlobalConfig.notifs.mutedApps = apps;
+                GlobalConfig.save();
+            }
+        }
 
-            delegate: ColumnLayout {
-                id: section
+        PolicySection {
+            title: qsTr("Notifications without sound")
+            description: qsTr("These applications still show their notifications. Only the sound is skipped.")
+            status: qsTr("Keep its notifications, drop the sound")
+            apps: GlobalConfig.audio.sounds.disabledNotifApps
+            write: apps => {
+                GlobalConfig.audio.sounds.disabledNotifApps = apps;
+                GlobalConfig.save();
+            }
+        }
+    }
 
-                required property var modelData
-                required property int index
+    /// One per-app policy: the list it edits, and everything the page says about it.
+    /// Which config list a section owns is one line where the section is used, so there
+    /// is no name for every function to dispatch on and no branch to keep in step.
+    component PolicySection: ColumnLayout {
+        id: section
 
-                readonly property string kind: section.modelData.kind
-                readonly property var apps: section.modelData.apps
+        required property string title
+        required property string description
+        required property string status
+        /// The applications this policy applies to, and what writing them means.
+        required property var apps
+        required property var write
 
-                Layout.fillWidth: true
-                spacing: Tokens.spacing.extraSmall / 2
+        property bool first
 
-                SectionHeader {
-                    first: section.index === 0
-                    text: section.modelData.title
-                }
+        function add(name: string): void {
+            const wanted = name.trim();
+            if (wanted === "" || section.apps.includes(wanted))
+                return;
 
-                ConnectedRect {
-                    Layout.fillWidth: true
-                    first: true
-                    implicitHeight: helper.implicitHeight + Tokens.padding.medium * 2
+            section.write([...section.apps, wanted]);
+        }
 
-                    StyledText {
-                        id: helper
+        function remove(name: string): void {
+            section.write(section.apps.filter(app => app !== name));
+        }
 
-                        anchors.fill: parent
-                        anchors.margins: Tokens.padding.medium
-                        anchors.leftMargin: Tokens.padding.largeIncreased
-                        anchors.rightMargin: Tokens.padding.largeIncreased
-                        text: section.modelData.description
-                        color: Colours.palette.m3onSurfaceVariant
-                        font: NexusStyle.secondaryFont
-                        wrapMode: Text.Wrap
-                    }
-                }
+        Layout.fillWidth: true
+        spacing: Tokens.spacing.extraSmall / 2
 
-                AppPickerRow {
-                    last: true
-                    icon: "add"
-                    label: qsTr("Add an application")
-                    status: section.kind === "muted" ? qsTr("Turn its notifications off completely") : qsTr("Keep its notifications, drop the sound")
-                    exclude: Array.from(section.apps)
-                    onSelected: name => root.add(section.kind, name)
-                }
+        SectionHeader {
+            first: section.first
+            text: section.title
+        }
 
-                Flow {
-                    Layout.fillWidth: true
-                    visible: section.apps.length > 0
-                    spacing: Tokens.spacing.small
+        ConnectedRect {
+            Layout.fillWidth: true
+            first: true
+            implicitHeight: helper.implicitHeight + Tokens.padding.medium * 2
 
-                    Repeater {
-                        model: section.apps
+            StyledText {
+                id: helper
 
-                        delegate: RemovableChip {
-                            required property string modelData
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.topMargin: Tokens.padding.medium
+                anchors.leftMargin: Tokens.padding.largeIncreased
+                anchors.rightMargin: Tokens.padding.largeIncreased
+                text: section.description
+                color: Colours.palette.m3onSurfaceVariant
+                font: NexusStyle.secondaryFont
+                wrapMode: Text.Wrap
+            }
+        }
 
-                            label: modelData
-                            onRemoved: root.remove(section.kind, modelData)
-                        }
-                    }
+        AppPickerRow {
+            last: true
+            icon: "add"
+            label: qsTr("Add an application")
+            status: section.status
+            exclude: Array.from(section.apps)
+            onSelected: name => section.add(name)
+        }
+
+        Flow {
+            Layout.fillWidth: true
+            visible: section.apps.length > 0
+            spacing: Tokens.spacing.small
+
+            Repeater {
+                model: section.apps
+
+                delegate: RemovableChip {
+                    required property string modelData
+
+                    label: modelData
+                    onRemoved: section.remove(modelData)
                 }
             }
         }

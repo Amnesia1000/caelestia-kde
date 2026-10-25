@@ -10,6 +10,7 @@ import Caelestia.Config
 import qs.components.misc
 import qs.services
 import qs.utils
+import "notifquery.js" as NotifQuery
 
 Singleton {
     id: root
@@ -129,7 +130,8 @@ Singleton {
             return;
 
         root.list = root.list.filter(n => n.appName !== appName);
-        root.openCount = Math.max(0, root.openCount - dropped.filter(n => !n.closed).length);
+        // Closing is what keeps the count honest: NotifData reports its own close, so
+        // decrementing here as well would count the same notification twice.
         for (const notif of dropped)
             notif.close();
     }
@@ -142,15 +144,10 @@ Singleton {
         GlobalConfig.save();
     }
 
-    /// Whether a search for `query` should show this notification. Case insensitive, over
-    /// the app name, the summary and the body without its markup, which is what someone
-    /// reading the list is looking at.
-    function matchesQuery(notif: var, query: string): bool {
-        const needle = query.trim().toLowerCase();
-        if (needle === "")
-            return true;
-
-        return [notif.appName, notif.summaryPlain, notif.bodyPlain].some(field => (field ?? "").toLowerCase().includes(needle));
+    /// Whether a search for `query` should show this notification. The fields it reads
+    /// are stated in notifquery.js, where a test can run them without a shell.
+    function matchesQuery(notif: NotifData, query: string): bool {
+        return NotifQuery.matches(notif.appName, notif.summaryPlain, notif.bodyPlain, query);
     }
 
     /// Whether this app's notification must stay quiet right now. Both the popup and
@@ -278,11 +275,10 @@ Singleton {
 
             // A muted app is answered and dismissed rather than filed: the sender sees a
             // normal close, and the list, the unread count and the sound never see it.
+            // No NotifData is built for it, because filing is what counts a
+            // notification and this one is never filed.
             if (root.isMuted(notif.appName)) {
-                notifComp.createObject(root, {
-                    popup: false,
-                    notification: notif
-                }).close();
+                notif.dismiss();
                 return;
             }
 
