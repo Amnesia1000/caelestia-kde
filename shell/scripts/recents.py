@@ -18,7 +18,6 @@ import argparse
 import json
 import os
 import re
-import sys
 import xml.etree.ElementTree as ElementTree
 from urllib.parse import unquote, urlparse
 from urllib.request import url2pathname
