@@ -9,6 +9,9 @@ StyledRect {
     id: root
 
     readonly property real nonAnimHeight: content.implicitHeight + Tokens.padding.large * 2
+    /// The duration as it is typed, so the field, the button and Enter all ask the same
+    /// question of the same string.
+    readonly property int typedSeconds: Timers.parseDuration(durationField.text)
 
     function begin(seconds: int): void {
         if (seconds <= 0)
@@ -17,6 +20,10 @@ StyledRect {
         Timers.start(seconds, messageField.text);
         durationField.text = "";
         messageField.text = "";
+    }
+
+    function beginTyped(): void {
+        root.begin(root.typedSeconds);
     }
 
     Layout.fillWidth: true
@@ -130,7 +137,7 @@ StyledRect {
 
                 Layout.preferredWidth: 84
                 placeholderText: qsTr("25m")
-                onEditingFinished: root.begin(Timers.parseDuration(text))
+                onAccepted: root.beginTyped()
             }
 
             StyledInputField {
@@ -139,13 +146,13 @@ StyledRect {
                 Layout.fillWidth: true
                 horizontalAlignment: TextInput.AlignLeft
                 placeholderText: qsTr("What is it for?")
-                onEditingFinished: root.begin(Timers.parseDuration(durationField.text))
+                onAccepted: root.beginTyped()
             }
 
             IconButton {
                 icon: "play_arrow"
-                enabled: Timers.parseDuration(durationField.text) > 0
-                onClicked: root.begin(Timers.parseDuration(durationField.text))
+                enabled: root.typedSeconds > 0
+                onClicked: root.beginTyped()
                 Accessible.name: qsTr("Start the timer")
             }
         }

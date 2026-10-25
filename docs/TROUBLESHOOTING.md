@@ -690,11 +690,16 @@ seconds, `1h30` is an hour and a half.
 What is stored is the moment a timer *ends*, not the time it has left, so restarting the
 shell does not restart the countdown. A timer whose end passed while the shell was not
 running is reported once on the next start ("2 timers finished while the shell was not
-running") instead of replaying every one of them.
+running") instead of replaying every one of them. Timers that end while the shell is
+running are each announced with their own message, since that message is still news.
 
 A timer that ends while the shell is running raises a notification as *Timers*, which
 means it follows the same rules as any other: a banner and a chime, unless Do Not Disturb
 is on.
+
+Typing a duration and pressing Enter starts the timer; leaving the field alone does not,
+so a click elsewhere cannot start a timer nobody asked for. The buttons under the field
+(5m, 10m, 25m, 45m) start one in a press.
 The card can be hidden entirely with *Nexus → Utilities panel → Timers*; the timers keep
 running, they are simply not in the drawer.
 

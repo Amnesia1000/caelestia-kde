@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs.services
 import qs.utils
+import "duration.js" as Duration
 
 /// The countdown timers that are running, how long they have left, and what to say
 /// when one ends.
@@ -16,7 +17,8 @@ import qs.utils
 Singleton {
     id: root
 
-    /// `{ id, ends, seconds, message }`, soonest first.
+    /// `{ id, ends, message }`, soonest first. A timer cannot outlive its message, so
+    /// only what it takes to run and to say is stored.
     property list<var> list: []
     /// Read so that every view showing a countdown recomputes with the ticker.
     property double now: Date.now()
@@ -37,7 +39,6 @@ Singleton {
         const timer = {
             id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
             ends: Date.now() + seconds * 1000,
-            seconds: seconds,
             message: message.trim()
         };
         root.list = [...root.list, timer].sort((a, b) => a.ends - b.ends);
@@ -51,33 +52,10 @@ Singleton {
         root.list = [];
     }
 
-    /// Reads a duration the way someone types one: `25` and `25m` are minutes, `90s` is
-    /// seconds, and `1h30` is an hour and a half. Returns 0 when there is no number in it.
+    /// Reads a duration the way someone types one. The grammar lives in duration.js, so a
+    /// test can run it without a shell.
     function parseDuration(text: string): int {
-        const value = text.trim().toLowerCase();
-        if (value === "")
-            return 0;
-
-        let seconds = 0;
-        let found = false;
-        const pattern = /(\d+(?:\.\d+)?)\s*(hours?|hrs?|h|minutes?|mins?|m|seconds?|secs?|s)?/g;
-        let match;
-        while ((match = pattern.exec(value)) !== null) {
-            const amount = Number(match[1]);
-            if (!isFinite(amount))
-                continue;
-
-            found = true;
-            const unit = match[2] ?? "";
-            if (unit.startsWith("h"))
-                seconds += amount * 3600;
-            else if (unit.startsWith("s"))
-                seconds += amount;
-            else
-                seconds += amount * 60;
-        }
-
-        return found ? Math.round(seconds) : 0;
+        return Duration.parse(text);
     }
 
     function announce(message: string): void {
@@ -97,6 +75,9 @@ Singleton {
             return;
 
         root.list = root.list.filter(timer => timer.ends > root.now);
+        // One notification per timer that ends while the shell is running: each message
+        // is still news. The load path below batches instead, because those timers ended
+        // while nobody was watching and their messages are one fact, not several.
         for (const timer of due)
             root.announce(timer.message);
     }
@@ -105,7 +86,6 @@ Singleton {
         return JSON.stringify(root.list.map(timer => ({
                         id: timer.id,
                         ends: timer.ends,
-                        seconds: timer.seconds,
                         message: timer.message
                     })));
     }
@@ -153,7 +133,6 @@ Singleton {
             data = data.filter(timer => timer && isFinite(Number(timer.ends))).map(timer => ({
                             id: String(timer.id ?? timer.ends),
                             ends: Number(timer.ends),
-                            seconds: Number(timer.seconds) || 0,
                             message: String(timer.message ?? "")
                         }));
 
@@ -175,7 +154,15 @@ Singleton {
                 root.loaded = true;
                 root.savedState = "[]";
                 Qt.callLater(() => storage.setText("[]"));
+                return;
             }
+
+            // A file that cannot be read cannot be honoured either. Saying so and carrying
+            // on beats never writing a timer again: the timers still tick, so the session
+            // has to be able to save what comes next.
+            Logger.log("[Timers] could not read the saved timers:", err);
+            root.loaded = true;
+            root.savedState = "[]";
         }
     }
 

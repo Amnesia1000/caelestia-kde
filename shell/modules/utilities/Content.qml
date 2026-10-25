@@ -15,9 +15,11 @@ Item {
     required property matrix4x4 deformMatrix
 
     // The cards that are showing, in the order the layout stacks them: their own
-    // non-animated heights, plus the spacing between them.
+    // non-animated heights, plus the spacing between them. Read from the layout rather
+    // than from a list of names, so a new card cannot be added to one and forgotten in
+    // the other.
     readonly property real nonAnimHeight: {
-        const visible = [idleInhibit, timers, capture, quickShare, toggles].filter(card => card.visible);
+        const visible = [...layout.children].filter(card => card.visible && card.nonAnimHeight !== undefined);
         return visible.reduce((total, card) => total + card.nonAnimHeight, 0) + layout.spacing * Math.max(0, visible.length - 1);
     }
 
