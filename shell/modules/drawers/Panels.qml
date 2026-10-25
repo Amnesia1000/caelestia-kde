@@ -302,15 +302,22 @@ Item {
             const wanted = GlobalConfig.utilities.toasts.position;
             return wanted === "auto" ? "bottom-right" : wanted;
         }
+        /// A chosen corner pins the stack to that edge of the screen; `auto` keeps the
+        /// edge the shell has always used, which is the utilities drawer's instead.
+        readonly property bool pinned: GlobalConfig.utilities.toasts.position !== "auto"
         property string vAnchor: toasts.fromTop ? "top" : "bottom"
         property string hAnchor: toasts.fromLeft ? "left" : "right"
 
         position: toasts.corner
         visibilities: root.visibilities
         anchors.top: toasts.fromTop ? parent.top : undefined
-        anchors.bottom: toasts.fromTop ? undefined : (sidebar.visible ? parent.bottom : utilities.top)
+        anchors.bottom: toasts.fromTop
+            ? undefined
+            : (toasts.pinned ? (utilities.visible ? utilities.top : parent.bottom) : (sidebar.visible ? parent.bottom : utilities.top))
         anchors.left: toasts.fromLeft ? parent.left : undefined
-        anchors.right: toasts.fromLeft ? undefined : sidebar.left
+        anchors.right: toasts.fromLeft
+            ? undefined
+            : (toasts.pinned && !sidebar.visible ? parent.right : sidebar.left)
         anchors.margins: Tokens.padding.medium
     }
     Sidebar.Wrapper {

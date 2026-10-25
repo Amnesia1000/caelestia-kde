@@ -33,14 +33,19 @@ test_the_stack_grows_from_the_corner_it_was_given() {
     assert_file_contains "$TOASTS" 'Behavior on anchors.topMargin' "and the movement is animated either way"
 }
 
-# The default must not move anyone's toasts: `auto` resolves to the corner the shell has
-# always used.
+# The default must not move anyone's toasts: `auto` keeps the edge the shell has always
+# used. A chosen corner pins the stack to the screen's own edge instead, and only steps
+# aside for a panel that is actually open.
 test_automatic_keeps_the_corner_the_shell_always_used() {
     assert_file_contains "$PANELS" 'return wanted === "auto" ? "bottom-right" : wanted;' \
         "automatic means the bottom, clear of the launcher"
     assert_file_contains "$PANELS" 'position: toasts.corner' "the surface is told the resolved corner"
-    assert_file_contains "$PANELS" 'anchors.right: toasts.fromLeft ? undefined : sidebar.left' \
-        "and a right-hand corner still sits clear of the sidebar"
+    assert_file_contains "$PANELS" 'readonly property bool pinned: GlobalConfig.utilities.toasts.position !== "auto"' \
+        "only a corner that was chosen pins the stack"
+    assert_file_contains "$PANELS" ': (toasts.pinned && !sidebar.visible ? parent.right : sidebar.left)' \
+        "so a chosen right corner reaches the edge of the screen, and still clears the sidebar"
+    assert_file_contains "$PANELS" 'toasts.pinned ? (utilities.visible ? utilities.top : parent.bottom)' \
+        "and a chosen bottom corner reaches the bottom, clear of the open utilities drawer"
 }
 
 # The drawer's frame and the surface drawn inside it are one number, not two: a frame
