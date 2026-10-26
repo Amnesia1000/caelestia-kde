@@ -64,6 +64,10 @@ Item {
             readOnly: root.readOnly
             enabled: root.enabled
 
+            // The container above is the box; a field that outlines itself as well draws
+            // two of them.
+            flat: true
+
             onTextChanged: {
                 root.text = text;
                 root.textEdited(text);

@@ -16,6 +16,10 @@ TextFieldBase {
 
     property int type: StyledTextField.Outlined
 
+    /// Drops the field's own outline or fill, for the places that already sit in a box
+    /// of their own: two nested outlines read as two fields.
+    property bool flat: false
+
     property int smallFontSize: Tokens.font.label.small.pointSize
     readonly property real smallFontScale: smallFontSize / font.pointSize
 
@@ -63,7 +67,7 @@ TextFieldBase {
         anchors.fill: parent
         anchors.bottomMargin: root.supportingTextOffset
 
-        sourceComponent: root.type === StyledTextField.Filled ? filledComp : outlineComp
+        sourceComponent: root.flat ? null : root.type === StyledTextField.Filled ? filledComp : outlineComp
 
         StateLayer {
             id: stateLayer
@@ -71,6 +75,10 @@ TextFieldBase {
             topLeftRadius: root.clampedRadius
             topRightRadius: root.clampedRadius
             radius: root.type === StyledTextField.Outlined ? root.clampedRadius : 0
+
+            // Flat means the field sits in someone else's box, so the hover and focus
+            // feedback are that box's to draw rather than a second rectangle inside it.
+            showHoverBackground: !root.flat
 
             cursorShape: Qt.IBeamCursor
             disabled: root.activeFocus
