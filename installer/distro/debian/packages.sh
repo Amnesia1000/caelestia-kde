@@ -81,6 +81,10 @@ CORE_PACKAGES=(
     libkf6config-dev libkf6networkmanagerqt-dev libkpipewire-dev
     libepoxy-dev libdrm-dev
 
+    # krunner + baloo6 back the launcher's system search (files, places, web
+    # shortcuts, settings); without them the launcher only finds applications.
+    libkf6runner-dev baloo6
+
     ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
     libqalculate-dev qalc libvulkan-dev libsecret-1-dev ksshaskpass libx11-dev
     libsecret-tools
