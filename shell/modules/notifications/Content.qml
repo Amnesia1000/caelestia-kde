@@ -52,7 +52,7 @@ Item {
     implicitWidth: Tokens.sizes.notifs.width
     /// And how tall it may be: the panels beside it only leave so much, and a stack that
     /// does not fit waits rather than drawing half a notification.
-    implicitHeight: Math.min(root.contentHeight + root.padding + root.clampedPadding, root.room)
+    implicitHeight: root.contentHeight > 0 ? Math.min(root.contentHeight + root.padding + root.clampedPadding, root.room) : 0
 
     ClippingWrapperRectangle {
         anchors.fill: parent
