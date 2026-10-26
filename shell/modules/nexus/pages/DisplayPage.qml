@@ -185,7 +185,7 @@ PageBase {
             icon: "mouse"
             label: qsTr("Mouse & touchpad")
             status: qsTr("Speed, tap to click, natural scrolling")
-            onClicked: Launch.exec(["systemsettings", "kcm_touchpad"])
+            onClicked: Launch.kcm("kcm_touchpad")
         }
 
         NavRow {
@@ -193,7 +193,7 @@ PageBase {
             icon: "keyboard"
             label: qsTr("Keyboard")
             status: qsTr("Repeat rate, layouts, advanced settings")
-            onClicked: Launch.exec(["systemsettings", "kcm_keyboard"])
+            onClicked: Launch.kcm("kcm_keyboard")
         }
     }
 }

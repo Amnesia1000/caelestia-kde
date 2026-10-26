@@ -38,8 +38,10 @@ test_the_links_admit_when_a_module_is_missing() {
     local content
     content="$(cat "$SERVICES_PAGE")"
 
-    assert_contains "$content" 'function kcmAvailable(name: string): bool' \
+    assert_contains "$content" 'Launch.kcmAvailable("kcm_printer_manager")' \
         "the page should check that a settings module exists before promising it"
+    assert_file_contains "$REPO_ROOT/shell/utils/Launch.qml" 'function kcmAvailable(name: string): bool' \
+        "and that check belongs with the launcher, not in one page"
     assert_contains "$content" 'Install print-manager to enable printing' \
         "a missing printing module must be reported, not opened as a dead page"
 }
