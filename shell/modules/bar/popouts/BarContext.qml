@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Caelestia.Config
 import qs.components
+import qs.services
 import qs.modules.nexus
 
 ColumnLayout {
@@ -17,7 +18,7 @@ ColumnLayout {
 
     readonly property bool isPanel: root.popouts.panelIndex >= 0
     readonly property var allEdges: ["top", "bottom", "left", "right"]
-    readonly property var freeEdges: root.allEdges.filter(edge => root.edgesInUse().indexOf(edge) === -1)
+    readonly property var freeEdges: BarPanels.freeEdges("")
 
     function edgeName(edge: string): string {
         switch (edge) {
@@ -31,38 +32,13 @@ ColumnLayout {
             return qsTr("right");
         }
     }
-    function edgesInUse(): var {
-        const used = [Config.bar.position];
-
-        for (let i = 0; i < GlobalConfig.bar.panels.count; ++i) {
-            const panel = GlobalConfig.bar.panels.at(i);
-
-            if (panel)
-                used.push(panel.position);
-        }
-
-        return used;
-    }
     function addBar(position: string): void {
         root.popouts.hasCurrent = false;
-        GlobalConfig.bar.panels.insert({
-            name: qsTr("Bar %1").arg(GlobalConfig.bar.panels.count + 2),
-            position: position,
-            lengthPercent: 100,
-            align: "center",
-            persistent: true,
-            showOnHover: true,
-            screens: [],
-            entries: []
-        });
+        BarPanels.addPanel(position);
     }
     function removeThisPanel(): void {
-        const index = root.popouts.panelIndex;
-        if (index < 0 || index >= GlobalConfig.bar.panels.count)
-            return;
-
         root.popouts.hasCurrent = false;
-        GlobalConfig.bar.panels.remove(index);
+        BarPanels.removePanel(root.popouts.panelIndex);
     }
 
 

@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Caelestia.Config
 import qs.components.controls
+import qs.services
 import qs.modules.nexus.common
 
 PageBase {
@@ -118,33 +119,13 @@ PageBase {
         return items.length > 0 ? items[0] : null;
     }
     function edgesInUse(): var {
-        const used = [Config.bar.position];
-
-        for (let i = 0; i < root.panelCount; ++i) {
-            const panel = GlobalConfig.bar.panels.at(i);
-
-            if (panel)
-                used.push(panel.position);
-        }
-
-        return used;
+        return BarPanels.edgesInUse();
     }
     function freeEdges(keep: string): var {
-        const used = root.edgesInUse();
-
-        return root.allEdges.filter(edge => edge === keep || used.indexOf(edge) === -1);
+        return BarPanels.freeEdges(keep);
     }
     function addBar(position: string): void {
-        GlobalConfig.bar.panels.insert({
-            name: qsTr("Bar %1").arg(root.panelCount + 2),
-            position: position,
-            lengthPercent: 100,
-            align: "center",
-            persistent: true,
-            showOnHover: true,
-            screens: [],
-            entries: []
-        });
+        BarPanels.addPanel(position);
         root.selectedIndex = root.panelCount - 1;
     }
     function removeSelected(): void {
@@ -152,7 +133,7 @@ PageBase {
         if (index < 0 || index >= root.panelCount)
             return;
 
-        GlobalConfig.bar.panels.remove(index);
+        BarPanels.removePanel(index);
         root.selectedIndex = Math.min(index, root.panelCount - 1);
     }
     function queueLength(value: real): void {
