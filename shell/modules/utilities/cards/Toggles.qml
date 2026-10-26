@@ -547,7 +547,7 @@ StyledRect {
                     roleValue: "dnd"
                     delegate: Toggle {
                         icon: "notifications_off"
-                        checked: Notifs.dnd
+                        checked: Notifs.quiet
                         onClicked: Notifs.dnd = !Notifs.dnd
                     }
                 }

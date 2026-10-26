@@ -21,16 +21,30 @@ Singleton {
 
     readonly property int notifCap: Math.max(1, GlobalConfig.notifs.maxNotifs)
 
+    /// The user's own switch, and the only thing the toggle surfaces write.
     property alias dnd: props.dnd
+    /// Why another feature wants quiet: a game, a focus session, a stream. Reasons are
+    /// named so they cannot clobber one another, and none of them touch `dnd`.
+    property var dndHolders: ({})
+    /// What popups, sounds and the indicators read: quiet for any reason at all.
+    readonly property bool quiet: props.dnd || Object.keys(root.dndHolders).length > 0
     property string lastSavedState: ""
-    property bool suppressDndToast: false
     property string activeTargetOutput: ""
     property bool loaded
 
-    function setDndSilently(value: bool): void {
-        suppressDndToast = true;
-        props.dnd = value;
-        suppressDndToast = false;
+    /// Claim or release a named reason to stay quiet. Idempotent, so callers can call it
+    /// on every state change instead of remembering whether they already hold.
+    function setDndHold(reason: string, held: bool): void {
+        if (reason === "" || (reason in root.dndHolders) === held)
+            return;
+
+        const next = Object.assign({}, root.dndHolders);
+        if (held)
+            next[reason] = true;
+        else
+            delete next[reason];
+
+        root.dndHolders = next;
     }
 
     function getCursorOutputName(): string {
@@ -157,7 +171,7 @@ Singleton {
         if (root.isMuted(appName))
             return true;
 
-        if (props.dnd && !Focus.allows(appName))
+        if (root.quiet && !Focus.allows(appName))
             return true;
         if (GlobalConfig.notifs.fullscreen !== "off")
             return false;
@@ -200,7 +214,7 @@ Singleton {
         storage.setText("[]");
     }
 
-    function serializeList(): var {
+    function toPlainList(): var {
         return root.notClosed().filter(n => !n.shellRaised).map(n => ({
                         time: n.time,
                         id: n.id,
@@ -217,14 +231,11 @@ Singleton {
                     }));
     }
 
-    function serializeState(): string {
-        return JSON.stringify(root.serializeList());
+    function persistedJson(): string {
+        return JSON.stringify(root.toPlainList());
     }
 
     onDndChanged: {
-        if (suppressDndToast)
-            return;
-
         if (!GlobalConfig.utilities.toasts.dndChanged)
             return;
 
@@ -244,7 +255,7 @@ Singleton {
 
         interval: Math.min(10000, 3000 + root.list.length * 10)
         onTriggered: {
-            const serialized = root.serializeState();
+            const serialized = root.persistedJson();
             if (serialized === root.lastSavedState)
                 return;
             root.lastSavedState = serialized;
@@ -324,7 +335,7 @@ Singleton {
 
             root.openCount = root.list.filter(n => !n.closed).length;
             root.popupCount = root.list.filter(n => n.popup).length;
-            root.lastSavedState = root.serializeState();
+            root.lastSavedState = root.persistedJson();
             root.loaded = true;
         }
         onLoadFailed: err => {
@@ -345,13 +356,13 @@ Singleton {
     }
 
     IpcHandler {
-        /// Live snapshot of the list plus do-not-disturb, for out-of-process views
-        /// (the lock screen) that cannot read the in-process model. Same serialiser
-        /// as the persisted history, so both views describe the same notifications.
+        /// Live snapshot of the list plus the quiet state, for out-of-process views
+        /// (the lock screen) that cannot read the in-process model. Same `toPlainList()`
+        /// the persisted history uses, so both views describe the same notifications.
         function list(): string {
             return JSON.stringify({
-                dnd: props.dnd,
-                items: root.serializeList()
+                quiet: root.quiet,
+                items: root.toPlainList()
             });
         }
 
@@ -378,8 +389,15 @@ Singleton {
             return JSON.stringify(root.list.filter(n => root.matchesQuery(n, query)).map(n => n.appName));
         }
 
+        /// The quiet state, whoever asked for it.
         function isDndEnabled(): bool {
-            return props.dnd;
+            return root.quiet;
+        }
+
+        /// Claim or release a named reason to stay quiet. The lock screen's game is
+        /// the caller that cannot touch the model directly.
+        function setDndHold(reason: string, held: bool): void {
+            root.setDndHold(reason, held);
         }
 
         function toggleDnd(): void {
