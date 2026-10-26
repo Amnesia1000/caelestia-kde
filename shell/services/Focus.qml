@@ -8,9 +8,9 @@ import qs.services
 /// Focus sessions: Do Not Disturb that turns itself on for the windows configured in
 /// Nexus, while a short list of apps is still allowed through.
 ///
-/// The switch is applied through Notifs' silent setter, so a session does not announce
-/// itself with a toast, and it is only ever undone while it is what turned DND on — a
-/// DND the user set by hand is theirs to clear.
+/// The session holds quiet on Notifs by name rather than flipping the user's switch, so
+/// it cannot announce itself with a toast and cannot switch off a do-not-disturb the
+/// user set by hand — or one another feature is holding.
 Singleton {
     id: root
 
@@ -21,9 +21,6 @@ Singleton {
 
     /// Recomputed on a timer so a session starts on the minute it is due.
     property date now: new Date()
-
-    /// Whether focus is what turned DND on, so it knows whether to undo it.
-    property bool _applied: false
 
     readonly property var activeSchedule: {
         for (const schedule of root.schedules)
@@ -48,7 +45,6 @@ Singleton {
 
         return root.activeSchedule?.name ?? "";
     }
-    readonly property bool applied: root._applied && root.active && Notifs.dnd
 
     function parseTime(value: string): int {
         const parts = (value ?? "").split(":");
@@ -105,7 +101,7 @@ Singleton {
     }
 
     function allows(appName: string): bool {
-        if (!root.applied || appName === "")
+        if (!root.active || appName === "")
             return false;
 
         const name = appName.toLowerCase();
@@ -114,20 +110,7 @@ Singleton {
 
     function sync(): void {
         root.now = new Date();
-
-        if (root.active) {
-            if (!Notifs.dnd) {
-                Notifs.setDndSilently(true);
-                root._applied = true;
-            }
-            return;
-        }
-
-        if (root._applied) {
-            if (Notifs.dnd)
-                Notifs.setDndSilently(false);
-            root._applied = false;
-        }
+        Notifs.setDndHold("focus", root.active);
     }
 
     onEnabledChanged: root.sync()

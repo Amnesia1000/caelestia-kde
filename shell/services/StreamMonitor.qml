@@ -14,8 +14,6 @@ Singleton {
 
     readonly property bool streamActive: PipewireStreamWatcher.streaming || Recorder.running
     property bool sharing: false
-    property bool autoDnd: false
-    property bool autoWriting: false
 
     function evaluate(): void {
         if (root.streamActive) {
@@ -32,22 +30,13 @@ Singleton {
         root.evaluate();
     }
 
+    /// Quiet while sharing, held as its own reason so the user's switch stays theirs.
     function engageAutoDnd(): void {
-        if (root.autoDnd || Notifs.dnd)
-            return;
-        root.autoDnd = true;
-        root.autoWriting = true;
-        Notifs.setDndSilently(true);
-        root.autoWriting = false;
+        Notifs.setDndHold("stream", true);
     }
 
     function releaseAutoDnd(): void {
-        if (!root.autoDnd)
-            return;
-        root.autoDnd = false;
-        root.autoWriting = true;
-        Notifs.setDndSilently(false);
-        root.autoWriting = false;
+        Notifs.setDndHold("stream", false);
     }
 
     onStreamActiveChanged: root.evaluate()
@@ -83,14 +72,5 @@ Singleton {
         }
 
         target: Config.utilities.toasts
-    }
-
-    Connections {
-        function onDndChanged(): void {
-            if (!root.autoWriting)
-                root.autoDnd = false;
-        }
-
-        target: Notifs
     }
 }

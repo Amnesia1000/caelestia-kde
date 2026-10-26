@@ -23,7 +23,7 @@ test_lockscreen_polls_the_media_snapshot() {
     local content
     content="$(cat "$LOCK_UI")"
 
-    assert_contains "$content" 'call mpris status' \
+    assert_contains "$content" 'send("mpris status")' \
         "the lock screen must poll the shell for the live media state"
     assert_not_contains "$content" 'call mpris getActive' \
         "the lock screen must not fetch media fields one call at a time"

@@ -36,6 +36,13 @@ ColumnLayout {
     /// desktop entry id, the window class, and whatever the menu model carries.
     readonly property var appNames: [model?.id, model?.appClass, model?.entry?.id].filter(name => typeof name === "string" && name.length > 0)
 
+    /// Whether the overview would show anything for this application when opened from
+    /// here: it opens on the active workspace, so windows parked elsewhere do not count.
+    readonly property bool hasWindows: {
+        const wins = Kwin.filterWindows(Kwin.windowList || [], Kwin.activeWsId, "");
+        return wins.some(w => Kwin.windowMatchesApp(w, root.appNames));
+    }
+
     function loadRecents(): void {
         Recents.load(root.appNames);
     }
@@ -69,83 +76,54 @@ ColumnLayout {
             anchors.margins: Tokens.padding.medium * root.scaleOffset
             spacing: Tokens.spacing.small * root.scaleOffset
 
-            StyledRect {
-                id: pinItem
+            DockAction {
+                label: root.isPinned ? qsTr("Unpin from dock") : qsTr("Pin to dock")
+                scaleOffset: root.scaleOffset
+                fontScale: root.fontScale
 
-                Layout.fillWidth: true
-                implicitHeight: pinLabel.implicitHeight
+                onActivated: {
+                    const current = GlobalConfig.bar.dock.pinnedApps ? [...GlobalConfig.bar.dock.pinnedApps] : [];
+                    const idToPin = model.entry ? model.entry.id : model.id;
 
-                radius: Tokens.rounding.full
-                color: "transparent"
-
-                StateLayer {
-                    anchors.margins: -Tokens.padding.medium / 2 * root.scaleOffset
-                    anchors.leftMargin: -Tokens.padding.medium * root.scaleOffset
-                    anchors.rightMargin: -Tokens.padding.medium * root.scaleOffset
-
-                    radius: pinItem.radius
-
-                    onClicked: {
-                        if (isPinned) {
-                            const current = GlobalConfig.bar.dock.pinnedApps ? [...GlobalConfig.bar.dock.pinnedApps] : [];
-                            let index = current.indexOf(model.id);
-                            if (index === -1 && model.entry)
-                                index = current.indexOf(model.entry.id);
-                            if (index !== -1) {
-                                current.splice(index, 1);
-                                GlobalConfig.bar.dock.pinnedApps = current;
-                            }
-                        } else {
-                            const current = GlobalConfig.bar.dock.pinnedApps ? [...GlobalConfig.bar.dock.pinnedApps] : [];
-                            const idToPin = model.entry ? model.entry.id : model.id;
-                            if (!current.includes(idToPin)) {
-                                current.push(idToPin);
-                                GlobalConfig.bar.dock.pinnedApps = current;
-                            }
+                    if (root.isPinned) {
+                        let index = current.indexOf(model.id);
+                        if (index === -1)
+                            index = current.indexOf(idToPin);
+                        if (index !== -1) {
+                            current.splice(index, 1);
+                            GlobalConfig.bar.dock.pinnedApps = current;
                         }
-                        root.popouts.hasCurrent = false;
+                    } else if (!current.includes(idToPin)) {
+                        current.push(idToPin);
+                        GlobalConfig.bar.dock.pinnedApps = current;
                     }
-                }
 
-                StyledText {
-                    id: pinLabel
-
-                    anchors.left: parent.left
-                    text: isPinned ? qsTr("Unpin from dock") : qsTr("Pin to dock")
-                    font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
+                    root.popouts.hasCurrent = false;
                 }
             }
 
-            StyledRect {
-                id: newWinItem
+            DockAction {
+                visible: root.hasWindows
+                label: qsTr("Show all windows")
+                scaleOffset: root.scaleOffset
+                fontScale: root.fontScale
 
-                Layout.fillWidth: true
-                implicitHeight: newWinLabel.implicitHeight
-
-                radius: Tokens.rounding.full
-                color: "transparent"
-
-                StateLayer {
-                    anchors.margins: -Tokens.padding.medium / 2 * root.scaleOffset
-                    anchors.leftMargin: -Tokens.padding.medium * root.scaleOffset
-                    anchors.rightMargin: -Tokens.padding.medium * root.scaleOffset
-
-                    radius: newWinItem.radius
-
-                    onClicked: {
-                        if (model.entry)
-                            Launch.launchEntry(model.entry);
-
-                        root.popouts.hasCurrent = false;
-                    }
+                onActivated: {
+                    Visibilities.showAppWindows(root.appNames);
+                    root.popouts.hasCurrent = false;
                 }
+            }
 
-                StyledText {
-                    id: newWinLabel
+            DockAction {
+                label: qsTr("Open new window")
+                scaleOffset: root.scaleOffset
+                fontScale: root.fontScale
 
-                    anchors.left: parent.left
-                    text: qsTr("Open new window")
-                    font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
+                onActivated: {
+                    if (model.entry)
+                        Launch.launchEntry(model.entry);
+
+                    root.popouts.hasCurrent = false;
                 }
             }
         }
@@ -236,6 +214,41 @@ ColumnLayout {
                 }
             }
             root.popouts.hasCurrent = false;
+        }
+    }
+
+    /// One tappable line in the application card. The menu is a list of these, and
+    /// only what it says and does differs.
+    component DockAction: StyledRect {
+        id: action
+
+        required property string label
+        property real scaleOffset: 1
+        property real fontScale: 1
+
+        signal activated
+
+        Layout.fillWidth: true
+        implicitHeight: actionLabel.implicitHeight
+        radius: Tokens.rounding.full
+        color: "transparent"
+
+        StateLayer {
+            anchors.margins: -Tokens.padding.medium / 2 * action.scaleOffset
+            anchors.leftMargin: -Tokens.padding.medium * action.scaleOffset
+            anchors.rightMargin: -Tokens.padding.medium * action.scaleOffset
+
+            radius: action.radius
+
+            onClicked: action.activated()
+        }
+
+        StyledText {
+            id: actionLabel
+
+            anchors.left: parent.left
+            text: action.label
+            font.pointSize: Tokens.font.body.medium.pointSize * action.fontScale
         }
     }
 }

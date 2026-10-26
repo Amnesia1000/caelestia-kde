@@ -108,8 +108,10 @@ Item {
         }
     }
 
-    StyledInputField {
+    StyledTextField {
         id: searchField
+
+        type: StyledTextField.Boxed
 
         anchors.top: title.bottom
         anchors.left: parent.left

@@ -73,16 +73,14 @@ test_overnight_windows_belong_to_the_day_they_started() {
         "a window without days has to mean every day"
 }
 
-test_focus_only_undoes_the_dnd_it_turned_on() {
+test_focus_holds_quiet_without_touching_the_users_switch() {
     local service
     service="$(cat "$SERVICE")"
 
-    assert_contains "$service" 'Notifs.setDndSilently(true)' \
-        "a session must not announce itself with a toast"
-    assert_contains "$service" 'if (root._applied)' \
-        "DND the user set by hand must survive the session ending"
-    assert_contains "$service" 'if (Notifs.dnd)' \
-        "clearing DND twice must not fight the user"
+    assert_contains "$service" 'Notifs.setDndHold("focus", root.active)' \
+        "a session must hold quiet by name, so the user's own switch survives it"
+    assert_not_contains "$service" '_applied' \
+        "remembering what DND was before is the shell's job, not the session's"
     assert_contains "$service" 'interval: 30 * 1000' "the window has to be re-evaluated as time passes"
 }
 
@@ -94,7 +92,7 @@ test_allowlisted_apps_pass_through_the_session() {
     # policy is stated once instead of copied into each decision.
     assert_contains "$notifs" 'function isSilenced(appName: string): bool' \
         "silencing must be one predicate"
-    assert_contains "$notifs" 'if (props.dnd && !Focus.allows(appName))' \
+    assert_contains "$notifs" 'if (root.quiet && !Focus.allows(appName))' \
         "an allowlisted app must still be heard during a session"
     assert_contains "$notifs" 'return !root.isSilenced(appName);' \
         "the popup decision must go through that predicate"

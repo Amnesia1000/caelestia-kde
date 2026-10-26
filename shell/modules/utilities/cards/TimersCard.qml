@@ -132,16 +132,21 @@ StyledRect {
             Layout.topMargin: Timers.count > 0 ? Tokens.spacing.extraSmall : 0
             spacing: Tokens.spacing.small
 
-            StyledInputField {
+            StyledTextField {
                 id: durationField
 
+                type: StyledTextField.Boxed
+
                 Layout.preferredWidth: 84
+                horizontalAlignment: TextInput.AlignHCenter
                 placeholderText: qsTr("25m")
                 onAccepted: root.beginTyped()
             }
 
-            StyledInputField {
+            StyledTextField {
                 id: messageField
+
+                type: StyledTextField.Boxed
 
                 Layout.fillWidth: true
                 horizontalAlignment: TextInput.AlignLeft

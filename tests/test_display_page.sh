@@ -70,9 +70,9 @@ test_the_page_is_driven_by_the_service() {
     assert_contains "$page" 'enabled: Displays.enabled.length > 1 || !outputSection.output.enabled' \
         "the last enabled screen cannot be switched off"
     assert_contains "$page" 'fallbackText:' "a scale or rotation outside the menu still shows the truth"
-    assert_contains "$page" 'Launch.exec(["systemsettings", "kcm_touchpad"])' \
+    assert_contains "$page" 'Launch.kcm("kcm_touchpad")' \
         "input settings stay with the KCM that owns them"
-    assert_contains "$page" 'Launch.exec(["systemsettings", "kcm_keyboard"])' "and so does the keyboard"
+    assert_contains "$page" 'Launch.kcm("kcm_keyboard")' "and so does the keyboard"
 }
 
 test_the_mode_list_marks_and_applies() {

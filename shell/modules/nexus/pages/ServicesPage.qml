@@ -245,5 +245,32 @@ PageBase {
             status: CalendarEvents.configured ? qsTr("%1 calendar(s)").arg(CalendarEvents.sources.length) : qsTr("No calendar added")
             onClicked: root.nState.openSubPage(2)
         }
+
+        SectionHeader {
+            text: qsTr("System")
+        }
+
+        NavRow {
+            first: true
+            icon: "print"
+            label: qsTr("Printers")
+            status: Launch.kcmAvailable("kcm_printer_manager") ? qsTr("Add and manage printers") : qsTr("Install print-manager to enable printing")
+            onClicked: Launch.kcm("kcm_printer_manager")
+        }
+
+        NavRow {
+            icon: "keyboard_alt"
+            label: qsTr("On-screen keyboard")
+            status: Launch.kcmAvailable("kcm_virtualkeyboard") ? qsTr("Touch keyboard, activation and layout") : qsTr("Install plasma-desktop to configure it")
+            onClicked: Launch.kcm("kcm_virtualkeyboard")
+        }
+
+        NavRow {
+            last: true
+            icon: "accessibility_new"
+            label: qsTr("System accessibility")
+            status: qsTr("Screen reader, sticky keys, bounce keys")
+            onClicked: Launch.kcm("kcm_access")
+        }
     }
 }

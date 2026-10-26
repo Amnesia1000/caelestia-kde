@@ -80,7 +80,9 @@ StyledWindow {
         return Math.max(...thresholds);
     }
 
-    readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || (panels.popouts.hasCurrent && !panels.popouts.isDockPopout)
+    // The window takes the keyboard while a panel that owns text is open, and that is
+    // Panels' answer to give: it is the one place that has them all.
+    readonly property bool wantsKeyboard: panels.wantsKeyboard
 
     onHasFullscreenChanged: {
         if (!hasFullscreen)
@@ -435,6 +437,11 @@ StyledWindow {
             id: notifsBg
 
             panel: panels.notifications
+            // A notification is transient and the drawer is not: keeping them out of one
+            // another's blob stops the two backgrounds bridging into a shape that is
+            // neither panel when they share the corner. Exclusion is symmetric, so this
+            // side stating it is enough.
+            exclude: [utilsBg]
         }
         PanelBg {
             id: utilsBg

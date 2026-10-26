@@ -56,6 +56,29 @@ Item {
     readonly property bool notifAtBottom: notifPosition.startsWith("bottom")
     readonly property real notifReservedHeight: notifications.implicitHeight > 0 ? notifications.implicitHeight + Tokens.spacing.extraLarge : 0
 
+    /// How tall the notification stack may grow before it would run into a panel that is
+    /// open beside it. Measured here because this is the only place that holds every
+    /// panel in one coordinate space; the stack gets a number instead of guessing at each
+    /// panel in turn.
+    readonly property real notifRoom: {
+        const bottom = root.height;
+        let lowestPanelEdge = 0;
+        if (osd.offsetScale < 1)
+            lowestPanelEdge = Math.max(lowestPanelEdge, osdWrapper.y + osdWrapper.height);
+        if (session.offsetScale < 1)
+            lowestPanelEdge = Math.max(lowestPanelEdge, sessionWrapper.y + sessionWrapper.height);
+        if (utilities.offsetScale < 1)
+            lowestPanelEdge = Math.max(lowestPanelEdge, utilities.y + utilities.height);
+
+        return Math.max(0, bottom - lowestPanelEdge);
+    }
+
+    /// Whether this window has to take the keyboard: a panel that owns text fields is
+    /// open. The OSD is deliberately absent, because it only ever shows things, and so is
+    /// the notification stack. Panels say it here, where they are built, so the next panel
+    /// to grow a text field cannot be forgotten in another file.
+    readonly property bool wantsKeyboard: launcher.offsetScale < 1 || session.offsetScale < 1 || dashboard.offsetScale < 1 || sidebar.offsetScale < 1 || overview.visible || utilities.offsetScale < 1 || (popouts.hasCurrent && !popouts.isDockPopout)
+
     readonly property bool popoutIntersectsRight: {
         if (!popoutsWrapper.visible || popoutsWrapper.offsetScale >= 1) return false;
         if (bar.isHorizontal) {
@@ -196,9 +219,7 @@ Item {
         visibilities: root.visibilities
         screen: root.screen
         sidebarPanel: sidebar
-        osdPanel: osdWrapper
-        sessionPanel: sessionWrapper
-        utilitiesPanel: utilities
+        room: root.notifRoom
 
         width: implicitWidth
         height: implicitHeight
