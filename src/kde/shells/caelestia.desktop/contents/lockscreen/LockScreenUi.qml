@@ -84,11 +84,7 @@ Item {
     readonly property int liveTemp: Math.round(Cpu.temperature ?? 0)
     readonly property int liveRam: Math.round((Memory.percentage ?? 0) * 100)
     readonly property int liveDisk: Math.round((Storage.percentage ?? 0) * 100)
-    readonly property string ipcBin: "PATH=\"${CAELESTIA_BIN_DIR:-$HOME/.local/bin}:$PATH\" caelestia-shell-ipc"
     property var liveMedia: ({})
-    property var liveNotifs: []
-    property bool isDndEnabled: false
-    property bool _dndBeforeGame: false
     property var greetingInfo: getGreeting()
 
     function getLuminance(c) {
@@ -256,25 +252,15 @@ Item {
         }
     }
 
-    Plasma5Support.DataSource {
+    ShellCall {
         id: mprisSource
 
-        function poll() {
-            connectSource(lockScreenUi.ipcBin + " call mpris status");
-        }
-
-        engine: "executable"
-        connectedSources: []
-        onNewData: (source, data) => {
-            var stdout = data["stdout"] || "";
-            disconnectSource(source);
-            if (!stdout) return;
+        onReplied: output => {
             try {
-                var info = JSON.parse(stdout);
-                if (info && typeof info === "object") {
+                const info = JSON.parse(output);
+                if (info && typeof info === "object")
                     lockScreenUi.liveMedia = info;
-                }
-            } catch(e) {}
+            } catch (e) {}
         }
     }
 
@@ -285,103 +271,26 @@ Item {
         repeat: true
         running: true
         triggeredOnStart: true
-        onTriggered: mprisSource.poll()
+        onTriggered: mprisSource.send("mpris status")
     }
 
-    Plasma5Support.DataSource {
+    ShellCall {
         id: mediaActionSource
 
-        readonly property var actionCmds: ({
-            "previous":  lockScreenUi.ipcBin + " call mpris previous",
-            "playPause": lockScreenUi.ipcBin + " call mpris playPause",
-            "next":      lockScreenUi.ipcBin + " call mpris next"
-        })
+        readonly property var actions: ["previous", "playPause", "next"]
 
-        function send(action) {
-            var cmd = actionCmds[action];
-            if (cmd) connectSource(cmd);
+        function sendAction(action) {
+            if (root.actions.includes(action))
+                root.send("mpris " + action);
         }
 
-        engine: "executable"
-        connectedSources: []
-        onNewData: (source, data) => {
-            disconnectSource(source);
-            mprisSource.poll();
-        }
+        onReplied: mprisSource.send("mpris status")
     }
 
-    /// The shell owns the live notification list; notifs.json is only its debounced
-    /// persistence copy, so reading the file makes this dock lag seconds behind the
-    /// notification page. Ask the shell for the live snapshot instead.
-    Plasma5Support.DataSource {
-        id: notifLoader
+    NotifSync {
+        id: notifSync
 
-        function poll() {
-            connectSource(lockScreenUi.ipcBin + " call notifs list");
-        }
-
-        engine: "executable"
-        connectedSources: []
-        onNewData: (source, data) => {
-            var stdout = data["stdout"] || "";
-            disconnectSource(source);
-            if (!stdout) return;
-            try {
-                var snapshot = JSON.parse(stdout);
-                if (Array.isArray(snapshot)) {
-                    lockScreenUi.liveNotifs = snapshot;
-                } else if (snapshot && Array.isArray(snapshot.items)) {
-                    lockScreenUi.liveNotifs = snapshot.items;
-                    lockScreenUi.isDndEnabled = snapshot.dnd === true;
-                }
-            } catch(e) {}
-        }
-        Component.onCompleted: poll()
-    }
-
-    Timer {
-        id: notifTimer
-
-        interval: 2000
-        repeat: true
-        running: !lockScreenUi.hideNotifs
-        onRunningChanged: if (running) notifLoader.poll()
-        onTriggered: notifLoader.poll()
-    }
-
-    Plasma5Support.DataSource {
-        id: notifActionSource
-
-        function clearAll() {
-            // The snapshot is authoritative, so drop the local copy for instant
-            // feedback and let the next poll confirm it.
-            lockScreenUi.liveNotifs = [];
-            connectSource(lockScreenUi.ipcBin + " call notifs clear");
-        }
-
-        engine: "executable"
-        connectedSources: []
-        onNewData: (source, data) => {
-            disconnectSource(source);
-            notifLoader.poll();
-        }
-    }
-
-    /// Do-not-disturb lives in the shell, not here: the dino game asks for it while
-    /// it runs, so it goes over IPC and is restored to whatever it was beforehand.
-    Plasma5Support.DataSource {
-        id: dndSource
-
-        function setEnabled(enabled) {
-            connectSource(lockScreenUi.ipcBin + " call notifs " + (enabled ? "enableDnd" : "disableDnd"));
-        }
-
-        engine: "executable"
-        connectedSources: []
-        onNewData: (source, data) => {
-            disconnectSource(source);
-            notifLoader.poll();
-        }
+        active: !lockScreenUi.hideNotifs
     }
 
     Timer {
@@ -706,9 +615,9 @@ Item {
                         clSurfaceFg: lockScreenUi.clSurfaceFg
                         clSurfaceVariantFg: lockScreenUi.clSurfaceVariantFg
                         clPrimary: lockScreenUi.clPrimary
-                        onPreviousRequested: mediaActionSource.send("previous")
-                        onPlayPauseRequested: mediaActionSource.send("playPause")
-                        onNextRequested: mediaActionSource.send("next")
+                        onPreviousRequested: mediaActionSource.sendAction("previous")
+                        onPlayPauseRequested: mediaActionSource.sendAction("playPause")
+                        onNextRequested: mediaActionSource.sendAction("next")
                     }
                 }
 
@@ -917,7 +826,7 @@ Item {
                         Layout.preferredHeight: Math.max(0, landscapeContent.rightCardPool - resourcesCard.Layout.preferredHeight)
                         cardRadius: lockScreenUi.cardRadius
                         centerScale: lockScreenUi.centerScale
-                        liveNotifs: lockScreenUi.liveNotifs
+                        liveNotifs: notifSync.items
                         isCaelestiaMode: lockScreenUi.isCaelestiaMode
                         hideNotifs: lockScreenUi.hideNotifs
                         clSurfaceContainer: lockScreenUi.clCardBg
@@ -927,15 +836,8 @@ Item {
                         clSurfaceFg: lockScreenUi.clSurfaceFg
                         clSurfaceVariantFg: lockScreenUi.clSurfaceVariantFg
                         clOutline: lockScreenUi.clOutline
-                        onClearAllRequested: notifActionSource.clearAll()
-                        onDndRequested: enabled => {
-                            if (enabled) {
-                                lockScreenUi._dndBeforeGame = lockScreenUi.isDndEnabled;
-                                dndSource.setEnabled(true);
-                            } else if (!lockScreenUi._dndBeforeGame) {
-                                dndSource.setEnabled(false);
-                            }
-                        }
+                        onClearAllRequested: notifSync.clearAll()
+                        onDndRequested: enabled => notifSync.setGameQuiet(enabled)
                     }
                 }
             }

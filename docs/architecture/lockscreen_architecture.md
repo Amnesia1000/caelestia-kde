@@ -40,7 +40,9 @@ src/kde/shells/caelestia.desktop/
         │   ├── CaelestiafetchCard.qml     # System information card with Caelestia logo & palette dots
         │   ├── MediaCard.qml              # MPRIS media player with rounded album art and playback controls
         │   ├── ResourcesCard.qml          # CPU, RAM, and Disk resource meters with live temp badge
-        │   └── NotifDock.qml              # Categorized notification dock with expandable groups
+        │   ├── NotifDock.qml              # Categorized notification dock with expandable groups
+        │   ├── NotifSync.qml              # The dock's live snapshot: polling, clear-all and the game's DND hold
+        │   └── ShellCall.qml              # One caelestia-shell-ipc call, stdout only
         └── scripts/
             └── sysinfo.py                 # system info fetch script
 ```
@@ -71,9 +73,10 @@ The Caelestia lock screen brings the Quickshell lock screen design into native K
 
 5. **Notification Sync:**
    - The dock never reads the shell's persisted `notifs.json`: that file is a debounced copy of the live model and trails it by 3–10 s, which made the lock screen disagree with the desktop notification page.
-   - It polls `caelestia-shell-ipc call notifs list` instead (every 2 s, only while notifications are shown). The shell answers with `{ dnd, items }` — its live list through the same serialiser it persists, plus the current do-not-disturb state — so notifications arriving, expiring or being cleared on the desktop show up or vanish here within a couple of seconds.
-   - Clear-all runs `caelestia-shell-ipc call notifs clear`, so the desktop page empties with it.
-   - Do-not-disturb belongs to the shell too: the dino game asks for it while it runs and the lock screen writes it back over IPC, restoring whatever the user had set once the game ends.
+   - `components/NotifSync.qml` owns the dock's data: it polls `notifs list` every 2 s (only while notifications are shown) and holds the snapshot the page hands to `NotifDock`. The shell answers with `{ quiet, items }` — its live list through the same `toPlainList()` it persists, plus whether popups are quiet — so notifications arriving, expiring or being cleared on the desktop show up or vanish here within a couple of seconds.
+   - Clear-all runs `notifs clear`, so the desktop page empties with it.
+   - Do-not-disturb stays the shell's, held by name: the dino game claims `notifs setDndHold lockGame true` while it runs and releases that hold afterwards. The shell keeps holds apart from the user's own switch, so a game ending can neither switch off a do-not-disturb the user set nor one a focus session is holding.
+   - Every call goes through `components/ShellCall.qml`, which hands back stdout alone; the greeter cannot see the shell's models, and a non-UTF-8 locale used to put Qt's warning on stdout in front of the JSON.
 
 ---
 
