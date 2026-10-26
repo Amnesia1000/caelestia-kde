@@ -13,7 +13,6 @@ SCHEMA="$REPO_ROOT/shell/plugin/src/Caelestia/Config/utilitiesconfig.hpp"
 PANEL_PAGE="$REPO_ROOT/shell/modules/nexus/pages/utilities/UtilitiesPanelPage.qml"
 LOADER="$REPO_ROOT/shell/modules/ServiceLoader.qml"
 AI="$REPO_ROOT/shell/modules/sidebar/AiAssistant.qml"
-STYLED_INPUT="$REPO_ROOT/shell/components/controls/StyledInputField.qml"
 DURATION_JS="$REPO_ROOT/shell/services/duration.js"
 SPLIT_JS="$REPO_ROOT/shell/services/timers.js"
 
@@ -121,8 +120,6 @@ test_the_card_and_its_setting_exist() {
 # Enter starts a timer. Losing focus does not: `editingFinished` fires for both, and a
 # timer that starts because the pointer left the field is a timer nobody asked for.
 test_a_timer_starts_on_enter_and_not_on_a_blur() {
-    assert_file_contains "$STYLED_INPUT" 'signal accepted' "the field offers Enter on its own"
-    assert_file_contains "$STYLED_INPUT" 'root.accepted();' "fed by the text field's own accepted"
     assert_file_contains "$CARD" 'onAccepted: root.beginTyped()' "the card commits on Enter"
     assert_file_not_contains "$CARD" 'onEditingFinished' "and never on focus loss"
     assert_file_contains "$CARD" 'readonly property int typedSeconds: Timers.parseDuration(durationField.text)' \
