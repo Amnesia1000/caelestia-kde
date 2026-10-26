@@ -78,8 +78,12 @@ CORE_PACKAGES=(
 
     libkf6globalaccel-dev libkf6windowsystem-dev libkf6guiaddons-dev
     libkf6coreaddons-dev kwin-dev libkf6pulseaudioqt-dev libpulse-dev
-    libkf6config-dev libkf6networkmanagerqt-dev libkpipewire-dev libkf6runner-dev
+    libkf6config-dev libkf6networkmanagerqt-dev libkpipewire-dev
     libepoxy-dev libdrm-dev
+
+    # krunner + baloo6 back the launcher's system search (files, places, web
+    # shortcuts, settings); without them the launcher only finds applications.
+    libkf6runner-dev baloo6
 
     ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
     libqalculate-dev qalc libvulkan-dev libsecret-1-dev ksshaskpass libx11-dev

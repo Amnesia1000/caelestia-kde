@@ -58,8 +58,11 @@ CORE_PACKAGES=(
     kf6-kglobalaccel-devel kf6-kwindowsystem-devel kf6-kguiaddons-devel
     kf6-kcoreaddons-devel kwin-devel kf6-kconfig-devel
     kf6-networkmanager-qt-devel kpipewire kpipewire-devel
-    kf6-krunner-devel kf6-baloo
     libepoxy-devel libdrm-devel
+
+    # krunner + baloo back the launcher's system search (files, places, web
+    # shortcuts, settings); without them the launcher only finds applications.
+    kf6-krunner-devel kf6-baloo
 
     libqalculate libqalculate-devel libsecret vulkan-headers ksshaskpass libX11-devel
 
