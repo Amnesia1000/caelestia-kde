@@ -1,6 +1,7 @@
 pragma Singleton
 
 import QtQuick
+import Quickshell
 import Caelestia.Config
 
 /// The bar panels live in one list, so every place that adds or removes one has to agree on
