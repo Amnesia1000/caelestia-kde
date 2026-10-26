@@ -48,8 +48,10 @@ PageBase {
                     font: Tokens.font.body.small
                     color: Colours.palette.m3onSurface
                 }
-                StyledInputField {
+                StyledTextField {
                     id: keyInput
+
+                    type: StyledTextField.Boxed
 
                     Layout.fillWidth: true
                     horizontalAlignment: TextInput.AlignLeft
@@ -681,7 +683,7 @@ exit $status`]
                 if (!root.claudeInstalled)
                     return qsTr("Not installed");
                 if (UpdateChecker.claudeCodeHasUpdate)
-                    return root.claudeVersionShort + " → " + UpdateChecker.claudeCodeLatestVersion;
+                    return root.claudeVersionShort + " -> " + UpdateChecker.claudeCodeLatestVersion;
                 return root.claudeVersionShort;
             }
         }

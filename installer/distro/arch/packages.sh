@@ -50,6 +50,10 @@ CORE_PACKAGES=(
     kglobalaccel kglobalacceld kguiaddons kwindowsystem
     kcoreaddons kconfig networkmanager-qt kpipewire kwin
 
+    # krunner + baloo back the launcher's system search (files, places, web
+    # shortcuts, settings); without them the launcher only finds applications.
+    krunner baloo
+
     ffmpeg libqalculate libsecret ksshaskpass libx11 vulkan-headers
 
     protobuf openssl avahi
@@ -69,9 +73,12 @@ THEME_PACKAGES=(
 )
 
 UTILITY_PACKAGES=(
-    fuzzel swappy ddcutil networkmanager imagemagick tesseract tesseract-data-eng
+    fuzzel swappy ddcutil networkmanager iw imagemagick tesseract tesseract-data-eng
     satty spectacle gpu-screen-recorder slurp grim brightnessctl power-profiles-daemon
     xdg-utils sassc bat ripgrep lazygit xdg-user-dirs
+    # print-manager is the only printing surface on the system, and
+    # maliit-keyboard is the only on-screen keyboard for touch input.
+    print-manager maliit-keyboard
 )
 
 PACKAGES=()

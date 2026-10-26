@@ -14,6 +14,13 @@ if(Cava_FOUND)
     list(APPEND CAVA_LIBRARIES PkgConfig::Cava)
 endif()
 
+# KRunner powers the launcher's system-wide search: files, recent documents,
+# places, bookmarks, web shortcuts, the dictionary, unit and currency conversion
+# and settings modules. Optional on purpose — KRunner's D-Bus service exposes only
+# UI control, so this needs the library, and a distribution without libKF6Runner
+# should still build a shell whose launcher simply lacks that one mode.
+find_package(KF6Runner QUIET)
+
 qml_module(caelestia-services
     URI Caelestia.Services
     SOURCES
@@ -56,6 +63,8 @@ qml_module(caelestia-services
         pipewirestreamwatcher.hpp
         clipboardmanager.cpp
         clipboardmanager.hpp
+        krunnerbridge.cpp
+        krunnerbridge.hpp
         schemeloader.cpp
         schemeloader.hpp
         palettemanager.cpp
@@ -112,6 +121,11 @@ qml_module(caelestia-services
         caelestia-core
         caelestia-config
 )
+
+if(KF6Runner_FOUND)
+    target_link_libraries(caelestia-services PRIVATE KF6::Runner)
+    target_compile_definitions(caelestia-services PRIVATE CAELESTIA_HAVE_KRUNNER)
+endif()
 
 qt6_generate_wayland_protocol_client_sources(caelestia-services FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/../protocols/zkde-screencast-unstable-v1.xml

@@ -37,9 +37,9 @@ QtObject {
             description: qsTr("KDE Desktop, addons, right click menu"),
             category: "personalization",
             settings: [
-                { label: qsTr("KDE Desktop Integration"), keywords: ["plasma", "icons", "desktop"] },
-                { label: qsTr("Right Click Menu"), pagePath: "wallandstyle/ContextMenuPage.qml", subPageIdx: 2 },
-                { label: qsTr("Desktop Addons"), pagePath: "wallandstyle/DesktopAddonsPage.qml", subPageIdx: 1 },
+                { label: qsTr("Desktop"), pagePath: "desktop/DesktopSettingsPage.qml", keywords: ["plasma", "icons", "desktop", "integration"], subPageIdx: 4 },
+                { label: qsTr("Desktop Addons"), pagePath: "desktop/DesktopAddonsPage.qml", subPageIdx: 1 },
+                { label: qsTr("Right Click Menu"), pagePath: "desktop/ContextMenuPage.qml", subPageIdx: 2 },
                 { label: qsTr("Window Tiling"), pagePath: "desktop/KrohnkitePage.qml", keywords: ["krohnkite", "tiling", "layouts"], subPageIdx: 3 },
                 { label: qsTr("Floating windows"), keywords: ["floating", "float", "krohnkite"], pagePath: "desktop/KrohnkitePage.qml", subPageIdx: 3 },
                 { label: qsTr("Virtual Workspaces"), keywords: ["desktops", "virtual", "switcher"] }
@@ -101,7 +101,9 @@ QtObject {
                 { label: qsTr("IPv4"), keywords: ["ethernet", "ip address", "dhcp", "gateway"] },
                 { label: qsTr("All networks"), keywords: ["list", "available", "scan"], pagePath: "network/AllNetworksPage.qml", subPageIdx: 5 },
                 { label: qsTr("Saved networks"), keywords: ["remembered", "forget", "profiles"], pagePath: "network/SavedNetworksPage.qml", subPageIdx: 6 },
-                { label: qsTr("Hotspot"), keywords: ["hotspot", "tethering", "access point", "share connection"], pagePath: "network/HotspotPage.qml", subPageIdx: 7 }
+                { label: qsTr("Hotspot"), keywords: ["hotspot", "tethering", "access point", "share connection"], pagePath: "network/HotspotPage.qml", subPageIdx: 7 },
+                { label: qsTr("Captive portal"), keywords: ["captive", "portal", "sign in", "login", "hotel", "airport", "wifi"], subPageIdx: 0 },
+                { label: qsTr("Proxy"), keywords: ["proxy", "http", "socks", "pac", "kioslaverc"], pagePath: "network/ProxyPage.qml", subPageIdx: 8 }
             ]
         },
         {
@@ -118,6 +120,22 @@ QtObject {
             ]
         },
         {
+            label: qsTr("Displays"),
+            key: "displays",
+            icon: "monitor",
+            description: qsTr("Resolution, scale, rotation, HDR"),
+            category: "connectivity",
+            settings: [
+                { label: qsTr("Resolution"), keywords: ["mode", "refresh rate", "hz", "screen", "monitor"], subPageIdx: 1 },
+                { label: qsTr("Refresh rate"), keywords: ["hz", "mode", "screen", "monitor"], subPageIdx: 1 },
+                { label: qsTr("Scale"), keywords: ["scaling", "fractional", "zoom", "hidpi", "screen"] },
+                { label: qsTr("Rotation"), keywords: ["rotate", "orientation", "portrait", "screen"] },
+                { label: qsTr("HDR"), keywords: ["hdr", "dynamic range", "screen"] },
+                { label: qsTr("Mouse & touchpad"), keywords: ["pointer", "input", "tap to click", "natural scrolling"] },
+                { label: qsTr("Keyboard"), keywords: ["input", "repeat rate", "layouts"] }
+            ]
+        },
+        {
             label: qsTr("Audio & Sound"),
             key: "audio",
             icon: "volume_up",
@@ -128,7 +146,7 @@ QtObject {
                 { label: qsTr("Microphones"), keywords: ["input", "recording", "source"] },
                 { label: qsTr("App Volumes"), pagePath: "audio/AppVolumes.qml", subPageIdx: 1 },
                 { label: qsTr("Sound Effects"), pagePath: "audio/SoundEffectsPage.qml", subPageIdx: 2, keywords: ["sfx", "feedback", "camera", "screen lock"] },
-                { label: qsTr("Muted Notification Apps"), pagePath: "audio/NotificationSilencingPage.qml", subPageIdx: 3, keywords: ["silence", "mute", "notification sound"] }
+                { label: qsTr("Muted Notification Apps"), pagePath: "audio/NotificationSilencingPage.qml", subPageIdx: 3, keywords: ["silence", "mute", "muted", "turn off notifications", "hide notifications", "notification sound", "do not disturb"] }
             ]
         },
         {
@@ -140,7 +158,8 @@ QtObject {
             settings: [
                 { label: qsTr("Notification behavior"), pagePath: "services/NotificationPreferencesPage.qml", subPageIdx: 1, keywords: ["fullscreen", "position", "timeout", "taskbar"] },
                 { label: qsTr("Toasts"), pagePath: "services/ToastPreferencesPage.qml", subPageIdx: 2, keywords: ["popup", "banner", "sound", "volume"] },
-                { label: qsTr("Toast events"), pagePath: "services/ToastEventsPage.qml", subPageIdx: 3, keywords: ["charging", "clipboard", "vpn", "keyboard", "audio"] }
+                { label: qsTr("Toast events"), pagePath: "services/ToastEventsPage.qml", subPageIdx: 3, keywords: ["charging", "clipboard", "vpn", "keyboard", "audio"] },
+                { label: qsTr("Focus sessions"), pagePath: "services/FocusPage.qml", subPageIdx: 4, keywords: ["do not disturb", "dnd", "schedule", "focus", "quiet"] }
             ]
         },
         {
@@ -179,7 +198,7 @@ QtObject {
             settings: [
                 { label: qsTr("System Shortcuts"), keywords: ["global", "keys", "hotkeys"] },
                 { label: qsTr("App Shortcuts"), keywords: ["launch", "open", "binding"] },
-                { label: qsTr("Custom Keybinds"), pagePath: "wallandstyle/AddShortcutDialog.qml", keywords: ["scripts", "commands", "actions"] }
+                { label: qsTr("Custom Keybinds"), pagePath: "desktop/AddShortcutDialog.qml", keywords: ["scripts", "commands", "actions"] }
             ]
         },
         {
@@ -204,7 +223,8 @@ QtObject {
             settings: [
                 { label: qsTr("Background Services"), keywords: ["daemons", "systemd", "tuning"] },
                 { label: qsTr("Visualiser Input"), keywords: ["visualiser", "microphone", "cava", "audio"] },
-                { label: qsTr("Rich Presence"), keywords: ["discord", "steamgriddb", "activity"], pagePath: "services/ArpcPage.qml", subPageIdx: 1 }
+                { label: qsTr("Rich Presence"), keywords: ["discord", "steamgriddb", "activity"], pagePath: "services/ArpcPage.qml", subPageIdx: 1 },
+                { label: qsTr("Calendar"), keywords: ["agenda", "events", "ics", "ical", "google", "nextcloud", "reminder"], pagePath: "services/CalendarPage.qml", subPageIdx: 2 }
             ]
         },
         {
@@ -228,6 +248,17 @@ QtObject {
             settings: [
                 { label: qsTr("Software Updates"), keywords: ["upgrade", "packages", "pacman", "dnf", "apt"] },
                 { label: qsTr("Firmware Updates"), keywords: ["bios", "fwupd", "hardware"] }
+            ]
+        },
+        {
+            label: qsTr("Startup"),
+            key: "startup",
+            icon: "rocket_launch",
+            description: qsTr("Programs that run at log-in"),
+            category: "system",
+            settings: [
+                { label: qsTr("Autostart"), keywords: ["login", "startup", "autostart", "boot", "session"] },
+                { label: qsTr("Add to startup"), keywords: ["add", "application", "login"], pagePath: "startup/AutostartAppPicker.qml", subPageIdx: 1 }
             ]
         },
         {
@@ -264,8 +295,47 @@ QtObject {
                 { label: qsTr("Accounts"), keywords: ["claude", "account", "login", "switch"] },
                 { label: qsTr("Providers"), keywords: ["ollama", "openai", "chatgpt", "gemini", "openrouter", "api key"] }
             ]
+        },
+        {
+            label: qsTr("Accessibility"),
+            key: "accessibility",
+            icon: "accessibility_new",
+            description: qsTr("Text size, motion, magnifier, screen reader"),
+            category: "accessibility",
+            settings: [
+                { label: qsTr("Follow system text size"), keywords: ["font", "scale", "bigger", "text", "kde"] },
+                { label: qsTr("Font scale"), keywords: ["font", "size", "zoom", "text"] },
+                { label: qsTr("Reduce motion"), keywords: ["animation", "motion", "vestibular", "reduce"] },
+                { label: qsTr("Magnifier"), keywords: ["zoom", "magnify", "loupe", "kwin"] },
+                { label: qsTr("Invert colours"), keywords: ["contrast", "invert", "negative"] },
+                { label: qsTr("Colour filters"), keywords: ["colour", "blind", "protanopia", "deuteranopia", "filter"] },
+                { label: qsTr("Screen reader"), keywords: ["orca", "speech", "a11y"] }
+            ]
+        },
+        {
+            label: qsTr("Storage"),
+            key: "storage",
+            icon: "hard_drive",
+            description: qsTr("Mount, unmount and eject filesystems"),
+            category: "system",
+            settings: [
+                { label: qsTr("Mount"), keywords: ["mount", "usb", "disk", "partition", "filesystem", "drive"] },
+                { label: qsTr("Unmount"), keywords: ["unmount", "eject", "safe remove", "usb", "disk"] },
+                { label: qsTr("Eject"), keywords: ["eject", "power off", "unplug", "usb", "drive"] },
+                { label: qsTr("Removable media"), keywords: ["usb", "stick", "sdcard", "external", "removable"] }
+            ]
         }
     ]
+
+    /// Index of the page with this key, so shortcuts do not have to remember a position
+    /// that shifts whenever a page is added.
+    function pageIdxFor(key: string): int {
+        for (let i = 0; i < pages.length; i++) {
+            if (pages[i].key === key)
+                return i;
+        }
+        return -1;
+    }
 
     // Sub page index of the first entry pointing at the given page, or -1 when
     // no entry does. Callers that jump to a sub page should look it up instead

@@ -134,7 +134,7 @@ assets/        the logo and screenshots used by the docs
 - [luisbocanegra](https://github.com/luisbocanegra/plasma-audio-visualizer) - plasma-audio-visualizer
 - [dim-ghub](https://github.com/dim-ghub/caelestia-shell) - v2.0.0 features
 - [dharmx](https://github.com/dharmx/walls) - default wallpapers
-  
+
 ## License
 
 GPL-3.0-or-later - see [LICENSE](LICENSE).

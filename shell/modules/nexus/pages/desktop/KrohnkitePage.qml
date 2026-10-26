@@ -16,11 +16,6 @@ PageBase {
     id: root
 
     property bool showLogout: false
-
-    title: qsTr("Window Tiling")
-    isSubPage: true
-
-
     property list<MenuItem> layoutItems: [
         MenuItem { text: qsTr("BTree"); visible: KrohnkiteConfig.binaryTreeLayoutEnabled },
         MenuItem { text: qsTr("Monocle"); visible: KrohnkiteConfig.monocleLayoutEnabled },
@@ -34,11 +29,13 @@ PageBase {
         MenuItem { text: qsTr("Spiral"); visible: KrohnkiteConfig.spiralLayoutEnabled },
         MenuItem { text: qsTr("Tile"); visible: KrohnkiteConfig.tileLayoutEnabled }
     ]
-
     property list<string> layoutValues: [
         "BTree", "Monocle", "Floating", "Quarter", "Spread",
         "Stacked", "Stair", "Columns", "ThreeColumn", "Spiral", "Tile"
     ]
+
+    title: qsTr("Window Tiling")
+    isSubPage: true
 
     headerActions: [
         IconTextButton {
@@ -112,7 +109,6 @@ PageBase {
         }
 
         SelectRow {
-            last: true
             label: qsTr("Switch Layout")
             subtext: qsTr("Triggers the KWin shortcut to switch layout")
             menuItems: root.layoutItems
@@ -127,6 +123,33 @@ PageBase {
                 GlobalConfig.general.krohnkiteLastLayout = layoutName;
                 GlobalConfig.save();
                 Quickshell.execDetached(["qdbus6", "org.kde.kglobalaccel", "/component/kwin", "org.kde.kglobalaccel.Component.invokeShortcut", "Krohnkite" + layoutName + "Layout"]);
+            }
+        }
+
+        ToggleRow {
+            Layout.fillWidth: true
+            last: true
+            text: qsTr("Magic Lamp Minimize")
+            subtext: qsTr("Enable the magic lamp effect when minimizing windows")
+            reset: ({
+                node: GlobalConfig.general,
+                setting: "magicLampEnabled"
+            })
+            checked: Config.general.magicLampEnabled
+            onToggled: {
+                GlobalConfig.general.magicLampEnabled = checked;
+                GlobalConfig.save();
+                Quickshell.execDetached(["bash", "-c", `
+                    kwriteconfig6 --file kwinrc --group "Plugins" --key "magiclampEnabled" "${checked ? 'true' : 'false'}" 2>/dev/null || true
+                    if [[ "${checked ? 'true' : 'false'}" == "true" ]]; then
+                        kwriteconfig6 --file kwinrc --group "Plugins" --key "squashEnabled" "false" 2>/dev/null || true
+                        qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.unloadEffect "squash" 2>/dev/null || true
+                        qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.loadEffect "magiclamp" 2>/dev/null || true
+                    else
+                        qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.unloadEffect "magiclamp" 2>/dev/null || true
+                    fi
+                    qdbus6 org.kde.KWin /KWin reconfigure 2>/dev/null || true
+                `]);
             }
         }
 

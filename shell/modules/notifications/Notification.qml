@@ -491,6 +491,19 @@ StyledRect {
                         fillWidth: root.modelData.actions.length === 0
                         inactiveColour: root.modelData.urgency === NotificationUrgency.Critical ? Colours.palette.m3secondary : Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
                         inactiveOnColour: root.modelData.urgency === NotificationUrgency.Critical ? Colours.palette.m3onSecondary : Colours.palette.m3onSurfaceVariant
+                        icon: "notifications_off"
+                        padding: Tokens.padding.extraSmall
+                        onClicked: Notifs.muteApp(root.modelData.appName)
+                        label.animate: true
+                        Accessible.name: qsTr("Turn off notifications from %1").arg(root.modelData.appName)
+                    }
+
+                    IconButton {
+                        isRound: true
+                        shapeMorph: true
+                        fillWidth: root.modelData.actions.length === 0
+                        inactiveColour: root.modelData.urgency === NotificationUrgency.Critical ? Colours.palette.m3secondary : Colours.layer(Colours.palette.m3surfaceContainerHighest, 2)
+                        inactiveOnColour: root.modelData.urgency === NotificationUrgency.Critical ? Colours.palette.m3onSecondary : Colours.palette.m3onSurfaceVariant
                         icon: "close"
                         padding: Tokens.padding.extraSmall
                         onClicked: root.modelData.close()

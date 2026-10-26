@@ -92,6 +92,7 @@ class BackgroundConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, desktopIconsEnabled, true)
     CONFIG_PROPERTY(bool, materialYouIconsEnabled, true)
     CONFIG_PROPERTY(bool, materialYouIconsVibrant, true)
+    CONFIG_PROPERTY(qreal, materialYouIconsVibrancy, 1.0)
     CONFIG_PROPERTY(bool, disableQuickshellDesktop, false)
     CONFIG_SUBOBJECT(DesktopClock, desktopClock)
     CONFIG_SUBOBJECT(DesktopLyrics, desktopLyrics)

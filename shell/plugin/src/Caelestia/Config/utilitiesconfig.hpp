@@ -15,6 +15,9 @@ class UtilitiesToasts : public settings::ObjectNode {
     CONFIG_NODE(UtilitiesToasts, settings::ObjectNode)
 
     CONFIG_GLOBAL_PROPERTY(QString, fullscreen, u"off"_s)
+    // Which corner the toasts stack in: auto, top-left, top-right, bottom-left or
+    // bottom-right. `auto` keeps them in the bottom corner the shell has always used.
+    CONFIG_GLOBAL_PROPERTY(QString, position, u"auto"_s)
     CONFIG_GLOBAL_PROPERTY(bool, configLoaded, false)
     CONFIG_GLOBAL_PROPERTY(bool, chargingChanged, true)
     CONFIG_GLOBAL_PROPERTY(bool, gameModeChanged, true)
@@ -84,6 +87,7 @@ class UtilitiesConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(UtilitiesVpn, vpn)
     CONFIG_SUBOBJECT(UtilitiesGameMode, gameMode)
     CONFIG_PROPERTY(bool, showKeepAwake, true)
+    CONFIG_PROPERTY(bool, showTimers, true)
     CONFIG_PROPERTY(bool, showScreenRecorder, true)
     CONFIG_PROPERTY(bool, showGifRecorder, true)
     CONFIG_PROPERTY(bool, showQuickShare, true)

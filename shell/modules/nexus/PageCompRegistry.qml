@@ -11,9 +11,11 @@ import qs.modules.nexus.pages.apps
 import qs.modules.nexus.pages.audio
 import qs.modules.nexus.pages.bluetooth
 import qs.modules.nexus.pages.desktop
+import qs.modules.nexus.pages.display
 import qs.modules.nexus.pages.network
 import qs.modules.nexus.pages.panels
 import qs.modules.nexus.pages.services
+import qs.modules.nexus.pages.startup
 import qs.modules.nexus.pages.utilities
 import qs.modules.nexus.pages.wallandstyle
 import qs.modules.nexus.pages.panels.taskbar
@@ -45,6 +47,7 @@ QtObject {
                 SubPage { slot: 1; key: "desktopAddons"; Component { DesktopAddonsPage {} } }
                 SubPage { slot: 2; key: "contextMenu"; Component { ContextMenuPage {} } }
                 SubPage { slot: 3; key: "krohnkite"; Component { KrohnkitePage {} } }
+                SubPage { slot: 4; key: "desktopSettings"; Component { DesktopSettingsPage {} } }
             }
         },
         Component {
@@ -86,6 +89,7 @@ QtObject {
                 SubPage { slot: 5; key: "allNetworks"; Component { AllNetworksPage {} } }
                 SubPage { slot: 6; key: "savedNetworks"; Component { SavedNetworksPage {} } }
                 SubPage { slot: 7; key: "hotspot"; Component { HotspotPage {} } }
+                SubPage { slot: 8; key: "proxy"; Component { ProxyPage {} } }
             }
         },
         Component {
@@ -93,6 +97,12 @@ QtObject {
                 SubPage { slot: 0; key: "bluetooth"; Component { BluetoothPage {} } }
                 SubPage { slot: 1; key: "btDeviceInfo"; Component { BtDeviceInfo {} } }
                 SubPage { slot: 2; key: "bluetoothPairing"; Component { BluetoothPairing {} } }
+            }
+        },
+        Component {
+            StackPage {
+                SubPage { slot: 0; key: "displays"; Component { DisplayPage {} } }
+                SubPage { slot: 1; key: "displayModes"; Component { DisplayModesPage {} } }
             }
         },
         Component {
@@ -109,6 +119,7 @@ QtObject {
                 SubPage { slot: 1; key: "notificationPreferences"; Component { NotificationPreferencesPage {} } }
                 SubPage { slot: 2; key: "toastPreferences"; Component { ToastPreferencesPage {} } }
                 SubPage { slot: 3; key: "toastEvents"; Component { ToastEventsPage {} } }
+                SubPage { slot: 4; key: "focus"; Component { FocusPage {} } }
             }
         },
         Component {
@@ -143,6 +154,7 @@ QtObject {
             StackPage {
                 SubPage { slot: 0; key: "services"; Component { ServicesPage {} } }
                 SubPage { slot: 1; key: "arpc"; Component { ArpcPage {} } }
+                SubPage { slot: 2; key: "calendar"; Component { CalendarPage {} } }
             }
         },
         Component {
@@ -153,6 +165,12 @@ QtObject {
         Component {
             StackPage {
                 SubPage { slot: 0; key: "updates"; Component { UpdatesPage {} } }
+            }
+        },
+        Component {
+            StackPage {
+                SubPage { slot: 0; key: "startup"; Component { AutostartPage {} } }
+                SubPage { slot: 1; key: "startupAppPicker"; Component { AutostartAppPicker {} } }
             }
         },
         Component {
@@ -168,6 +186,16 @@ QtObject {
         Component {
             StackPage {
                 SubPage { slot: 0; key: "ai"; Component { AiSettingsPage {} } }
+            }
+        },
+        Component {
+            StackPage {
+                SubPage { slot: 0; key: "accessibility"; Component { AccessibilityPage {} } }
+            }
+        },
+        Component {
+            StackPage {
+                SubPage { slot: 0; key: "storage"; Component { StoragePage {} } }
             }
         }
     ]

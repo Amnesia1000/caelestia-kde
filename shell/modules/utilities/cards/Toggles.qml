@@ -288,7 +288,7 @@ StyledRect {
                 icon: "tune"
                 type: IconButton.Text
                 onClicked: {
-                    const pageIdx = PageDictionary.pages.findIndex(p => p.key === "utilities");
+                    const pageIdx = PageDictionary.pageIdxFor("utilities");
                     root.visibilities.utilities = false;
                     execTimer.pendingAction = () => WindowFactory.create(null, {
                         initialPageIdx: pageIdx,
@@ -547,7 +547,7 @@ StyledRect {
                     roleValue: "dnd"
                     delegate: Toggle {
                         icon: "notifications_off"
-                        checked: Notifs.dnd
+                        checked: Notifs.quiet
                         onClicked: Notifs.dnd = !Notifs.dnd
                     }
                 }

@@ -12,6 +12,7 @@ import qs.components
 import qs.components.controls
 import qs.services
 import qs.utils
+import qs.modules.nexus
 import qs.modules.nexus.common
 
 PageBase {
@@ -48,7 +49,7 @@ PageBase {
             text: qsTr("Restart Shell")
             icon: "restart_alt"
             type: TextButton.Filled
-            onClicked: Launch.exec(["bash", "-c", `bash "${Quickshell.shellPath("scripts/restart_shell.sh")}"; sleep 1; caelestia shell nexus openPage 0 8`])
+            onClicked: Launch.exec(["bash", "-c", `bash "${Quickshell.shellPath("scripts/restart_shell.sh")}"; sleep 1; caelestia shell nexus openPage ${PageDictionary.pageIdxFor("appearance")} 8`])
         },
         IconTextButton {
             id: resetBtn
@@ -177,22 +178,25 @@ PageBase {
                 Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
                 Layout.fillWidth: true
             }
-            SliderRow {
+            StepperRow {
                 reset: ({ node: GlobalConfig.appearance.transparency, setting: "base" })
-                roomyHeader: true
                 label: qsTr("Base opacity")
-                valueLabel: Math.round(value * 100) + "%"
                 value: GlobalConfig.appearance.transparency.base
+                from: 0.0
+                to: 1.0
+                stepSize: 0.05
                 enabled: GlobalConfig.appearance.transparency.enabled
                 onMoved: v => GlobalConfig.appearance.transparency.base = v
                 Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
             }
-            SliderRow {
+            StepperRow {
                 reset: ({ node: GlobalConfig.appearance.transparency, setting: "layers" })
                 label: qsTr("Layers opacity")
                 subtext: qsTr("Requires shell restart")
-                valueLabel: Math.round(value * 100) + "%"
                 value: GlobalConfig.appearance.transparency.layers
+                from: 0.0
+                to: 1.0
+                stepSize: 0.05
                 enabled: GlobalConfig.appearance.transparency.enabled
                 onMoved: v => GlobalConfig.appearance.transparency.layers = v
                 Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
@@ -280,16 +284,32 @@ PageBase {
             Layout.fillWidth: true
             spacing: 0
 
+            ToggleRow {
+                first: true
+                Layout.fillWidth: true
+                text: qsTr("Follow system text size")
+                subtext: qsTr("Match the text size set in KDE's settings")
+                reset: ({ node: GlobalConfig.appearance.font, setting: "followSystemScale" })
+                checked: GlobalConfig.appearance.font.followSystemScale
+                onToggled: {
+                    GlobalConfig.appearance.font.followSystemScale = checked;
+                    GlobalConfig.save();
+                }
+            }
+
             StepperRow {
                 reset: ({ node: GlobalConfig.appearance.font, setting: "scale" })
-                first: true
                 Layout.fillWidth: true
                 label: qsTr("Font scale")
                 value: GlobalConfig.appearance.font.scale
                 from: 0.5
                 to: 2
                 stepSize: 0.05
-                onMoved: v => GlobalConfig.appearance.font.scale = v
+                onMoved: v => {
+                    GlobalConfig.appearance.font.scale = v;
+                    GlobalConfig.appearance.font.followSystemScale = false;
+                    GlobalConfig.save();
+                }
             }
 
             StepperRow {
