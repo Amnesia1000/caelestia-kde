@@ -78,7 +78,7 @@ CORE_PACKAGES=(
 
     libkf6globalaccel-dev libkf6windowsystem-dev libkf6guiaddons-dev
     libkf6coreaddons-dev kwin-dev libkf6pulseaudioqt-dev libpulse-dev
-    libkf6config-dev libkf6networkmanagerqt-dev libkpipewire-dev
+    libkf6config-dev libkf6networkmanagerqt-dev libkpipewire-dev libkf6runner-dev
     libepoxy-dev libdrm-dev
 
     ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
