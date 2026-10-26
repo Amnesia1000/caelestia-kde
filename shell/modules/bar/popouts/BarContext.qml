@@ -16,11 +16,59 @@ ColumnLayout {
     property real fontScale: 1.0
 
     readonly property bool isPanel: root.popouts.panelIndex >= 0
+    readonly property var allEdges: ["top", "bottom", "left", "right"]
+    readonly property var freeEdges: root.allEdges.filter(edge => root.edgesInUse().indexOf(edge) === -1)
+
+    function edgeName(edge: string): string {
+        switch (edge) {
+        case "top":
+            return qsTr("top");
+        case "bottom":
+            return qsTr("bottom");
+        case "left":
+            return qsTr("left");
+        default:
+            return qsTr("right");
+        }
+    }
+    function edgesInUse(): var {
+        const used = [Config.bar.position];
+
+        for (let i = 0; i < GlobalConfig.bar.panels.count; ++i) {
+            const panel = GlobalConfig.bar.panels.at(i);
+
+            if (panel)
+                used.push(panel.position);
+        }
+
+        return used;
+    }
+    function addBar(position: string): void {
+        root.popouts.hasCurrent = false;
+        GlobalConfig.bar.panels.insert({
+            name: qsTr("Bar %1").arg(GlobalConfig.bar.panels.count + 2),
+            position: position,
+            lengthPercent: 100,
+            align: "center",
+            persistent: true,
+            showOnHover: true,
+            screens: [],
+            entries: []
+        });
+    }
+    function removeThisPanel(): void {
+        const index = root.popouts.panelIndex;
+        if (index < 0 || index >= GlobalConfig.bar.panels.count)
+            return;
+
+        root.popouts.hasCurrent = false;
+        GlobalConfig.bar.panels.remove(index);
+    }
+
 
     width: card.implicitWidth
     implicitWidth: card.implicitWidth
     spacing: Tokens.spacing.medium * scaleOffset
-
 
     StyledRect {
         id: card
@@ -81,6 +129,95 @@ ColumnLayout {
                     StyledText {
                         Layout.alignment: Qt.AlignVCenter
                         text: root.isPanel ? qsTr("Edit this panel") : qsTr("Edit this bar")
+                        color: Colours.palette.m3onSurface
+                        font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
+                    }
+                }
+            }
+            Repeater {
+                model: root.freeEdges
+
+            StyledRect {
+                id: addRow
+
+                required property string modelData
+
+                Layout.fillWidth: true
+                implicitHeight: addRowLayout.implicitHeight + Tokens.padding.small * 2 * root.scaleOffset
+                radius: Tokens.rounding.medium * root.scaleOffset
+                color: "transparent"
+
+                StateLayer {
+                    anchors.fill: parent
+                    radius: addRow.radius
+
+                    onClicked: root.addBar(modelData)
+                }
+
+                RowLayout {
+                    id: addRowLayout
+
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: Tokens.padding.medium * root.scaleOffset
+                    anchors.rightMargin: Tokens.padding.medium * root.scaleOffset
+                    spacing: Tokens.spacing.small * root.scaleOffset
+
+                    MaterialIcon {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: "add"
+                        color: Colours.palette.m3onSurfaceVariant
+                        fontStyle.pointSize: Tokens.font.icon.medium.pointSize * root.fontScale
+                    }
+
+                    StyledText {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: qsTr("Add bar on the %1").arg(root.edgeName(modelData))
+                        color: Colours.palette.m3onSurface
+                        font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
+                    }
+                }
+            }
+            }
+
+            StyledRect {
+                id: removeRow
+
+                visible: root.isPanel
+
+                Layout.fillWidth: true
+                implicitHeight: removeRowLayout.implicitHeight + Tokens.padding.small * 2 * root.scaleOffset
+                radius: Tokens.rounding.medium * root.scaleOffset
+                color: "transparent"
+
+                StateLayer {
+                    anchors.fill: parent
+                    radius: removeRow.radius
+
+                    onClicked: root.removeThisPanel()
+                }
+
+                RowLayout {
+                    id: removeRowLayout
+
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: Tokens.padding.medium * root.scaleOffset
+                    anchors.rightMargin: Tokens.padding.medium * root.scaleOffset
+                    spacing: Tokens.spacing.small * root.scaleOffset
+
+                    MaterialIcon {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: "delete"
+                        color: Colours.palette.m3onSurfaceVariant
+                        fontStyle.pointSize: Tokens.font.icon.medium.pointSize * root.fontScale
+                    }
+
+                    StyledText {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: qsTr("Remove this panel")
                         color: Colours.palette.m3onSurface
                         font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
                     }
