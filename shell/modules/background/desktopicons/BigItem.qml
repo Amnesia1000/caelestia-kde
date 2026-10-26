@@ -19,6 +19,9 @@ Item {
     readonly property bool isGroup: controller.isGroupKey(key)
     readonly property string itemId: controller.nameOf(key)
     readonly property var widget: isGroup ? null : (DesktopLayout.widgets[itemId] ?? null)
+    // A widget's own settings. Groups have none, so they read an empty object and
+    // every `config.x` below stays a plain lookup instead of a ReferenceError.
+    readonly property var config: widget?.config ?? ({})
     readonly property var info: controller.widgetCatalog.infoForGrid(isGroup ? "group" : (widget?.type ?? ""), controller.cols, controller.rows)
     readonly property var span: {
         const raw = controller.displaySpans[key] ?? info.size;
@@ -34,7 +37,7 @@ Item {
     // is empty (or hidden by its own condition) can still be located. It does not
     // follow the desktop icons toggle: widgets stay on the desktop without them.
     // Edit mode outlines every card for the same reason.
-    readonly property bool outlineAlways: !isGroup && (DesktopLayout.widgetOutlines || editMode)
+    readonly property bool outlined: !isGroup && (DesktopLayout.widgetOutlines || widgetEditMode)
 
     property bool selected: false
     property bool focusVisible: false
@@ -42,8 +45,8 @@ Item {
     property bool mergeTarget: false
     property real appear: 0
     // Set while the desktop is in widget edit mode: the content stops taking
-    // input, so the card itself becomes the drag handle and the borders show.
-    property bool editMode: false
+    // input and this card's own area is raised over it, so the whole card drags.
+    property bool widgetEditMode: false
     readonly property bool hovered: hover.hovered
     // True while any border of the card is dragged.
     readonly property bool resizing: resizeGrips.some(grip => grip.pressed)
@@ -155,7 +158,9 @@ Item {
         border.color: root.selected || root.mergeTarget || root.focusVisible ? Qt.darker(Colours.palette.m3primary, 1.45) : Qt.alpha(Colours.palette.m3onSurface, 0.12)
 
         // Background of the card: selects, opens, drags and resizes the item.
-        // Controls inside the content take their own clicks first.
+        // Controls inside the content take their own clicks first. In edit mode the
+        // content above is disabled and this area is raised over it, so a press
+        // anywhere on the card starts a move.
         MouseArea {
             id: bgArea
 
@@ -164,6 +169,8 @@ Item {
 
             anchors.fill: parent
             acceptedButtons: Qt.LeftButton | Qt.RightButton
+            z: root.widgetEditMode ? 1 : 0
+            cursorShape: root.widgetEditMode && !root.locked ? Qt.OpenHandCursor : Qt.ArrowCursor
             onPressed: mouse => {
                 pressPos = Qt.point(mouse.x, mouse.y);
                 dragSent = false;
@@ -216,57 +223,12 @@ Item {
             anchors.fill: parent
             anchors.margins: root.frameless ? 0 : (root.isGroup ? Tokens.padding.small : Tokens.padding.large)
             asynchronous: true
-            // Edit mode drives the card, so the widget's own controls must not take
-            // the clicks that start a drag.
-            enabled: !root.editMode
+            // Edit mode owns the card: the widget's controls must not keep hover,
+            // focus or a text cursor while it is being moved.
+            enabled: !root.widgetEditMode
 
             onWantedChanged: load()
             Component.onCompleted: load()
-        }
-
-        // Edit mode: the whole card drags, on top of the content but under the
-        // resize grips, so every border and the body are reachable without aiming.
-        MouseArea {
-            id: editArea
-
-            property point pressPos
-            property bool dragSent: false
-
-            anchors.fill: parent
-            acceptedButtons: Qt.LeftButton | Qt.RightButton
-            enabled: root.editMode
-            visible: root.editMode
-            preventStealing: true
-            z: 1
-            cursorShape: root.locked ? Qt.ArrowCursor : Qt.OpenHandCursor
-            onPressed: mouse => {
-                pressPos = Qt.point(mouse.x, mouse.y);
-                dragSent = false;
-                root.pressed({
-                    x: mouse.x + card.x,
-                    y: mouse.y + card.y,
-                    button: mouse.button,
-                    modifiers: mouse.modifiers
-                });
-            }
-            onPositionChanged: mouse => {
-                if (root.locked || !(pressedButtons & Qt.LeftButton) || dragSent)
-                    return;
-                const dx = mouse.x - pressPos.x;
-                const dy = mouse.y - pressPos.y;
-                if (dx * dx + dy * dy >= Qt.styleHints.startDragDistance * Qt.styleHints.startDragDistance) {
-                    dragSent = true;
-                    root.dragRequested(pressPos.x + card.x, pressPos.y + card.y);
-                }
-            }
-            onClicked: mouse => {
-                if (dragSent)
-                    return;
-                if (mouse.button === Qt.RightButton)
-                    root.contextMenuRequested(mouse.x + card.x, mouse.y + card.y);
-                else
-                    root.clicked(mouse);
-            }
         }
 
         // Edit mode: names the widget and its size, so a card whose content is
@@ -276,7 +238,7 @@ Item {
 
             readonly property int inset: Tokens.padding.small / 2
 
-            visible: root.editMode && !root.isGroup && card.width > 90 && card.height > 32
+            visible: root.widgetEditMode && !root.isGroup && card.width > 90 && card.height > 32
             anchors.top: card.top
             anchors.left: card.left
             anchors.margins: inset
@@ -325,7 +287,7 @@ Item {
         id: outline
 
         anchors.fill: card
-        visible: root.outlineAlways && !root.selected && !root.mergeTarget && !root.focusVisible
+        visible: root.outlined && !root.selected && !root.mergeTarget && !root.focusVisible
         color: "transparent"
         radius: card.radius
         border.width: 2
@@ -523,7 +485,7 @@ Item {
         enabled: !root.locked
         visible: !root.locked && opacity > 0
         // Edit mode keeps every border grabbable without hovering the card first.
-        opacity: root.locked ? 0 : (root.hovered || root.selected || root.editMode || pressed ? 1 : 0)
+        opacity: root.locked ? 0 : (root.hovered || root.selected || root.widgetEditMode || pressed ? 1 : 0)
         cursorShape: {
             if (root.locked)
                 return Qt.ArrowCursor;

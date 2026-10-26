@@ -47,15 +47,15 @@ Controls.Menu {
             return;
         }
         if (entry.action === "EnterEditMode") {
-            DesktopLayout.setWidgetEditMode(false);
+            WidgetEditor.close();
             ContextMenuStore.editMode = true;
             return;
         }
         if (entry.action === "EditWidgets") {
-            DesktopLayout.toggleWidgetEditMode();
+            WidgetEditor.toggle();
             // The menu held the keyboard while it was open, so the desktop has to
             // take it back for Escape and Delete to reach the editor.
-            if (DesktopLayout.widgetEditMode)
+            if (WidgetEditor.active)
                 DesktopLayout.controllerFor(root.screenName)?.grabKeyboard();
             return;
         }
@@ -110,8 +110,8 @@ Controls.Menu {
         }
 
         if (entry.action === "EditWidgets") {
-            item.text = Qt.binding(() => DesktopLayout.widgetEditMode ? qsTr("Done Editing Widgets") : (entry.label || qsTr("Edit Widgets")));
-            item.icon = Qt.binding(() => DesktopLayout.widgetEditMode ? "check" : (entry.icon || "edit"));
+            item.text = Qt.binding(() => WidgetEditor.active ? qsTr("Done Editing Widgets") : (entry.label || qsTr("Edit Widgets")));
+            item.icon = Qt.binding(() => WidgetEditor.active ? "check" : (entry.icon || "edit"));
             item.visible = Qt.binding(() => !Config.background.disableQuickshellDesktop);
         } else if (entry.action === "AddWidget") {
             item.text = entry.label;

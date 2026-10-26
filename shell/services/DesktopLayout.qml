@@ -43,14 +43,6 @@ Singleton {
     property var controllers: ({})
     property string pendingWallpaperSyncMode: ""
 
-    // Desktop widget editing. While on, widget content stops taking input so the
-    // whole card drags and every border resizes without hovering it first. It is
-    // kept here rather than per screen, so one toggle covers the whole desktop.
-    property bool widgetEditMode: false
-    // Widgets copied with Ctrl+C while editing, shared so a paste can land on a
-    // different screen than the copy came from.
-    property var widgetClipboard: []
-
     signal pasteRequested(string screenName, real x, real y)
     signal viewOptionsRequested(string screenName, real x, real y)
     signal addWidgetRequested(string screenName, real x, real y)
@@ -131,30 +123,6 @@ Singleton {
             if (widgets[id].locked !== true)
                 return true;
         return false;
-    }
-
-    // Each screen settles its own state first, so that the first click of the
-    // mode is not swallowed by a group popup or a pending rename.
-    function setWidgetEditMode(on: bool): void {
-        if (widgetEditMode === on)
-            return;
-        // Both edit modes take the desktop over, so only one of them can be on.
-        if (on)
-            ContextMenuStore.editMode = false;
-        widgetEditMode = on;
-        for (const name in controllers) {
-            const controller = controllers[name];
-            if (!controller)
-                continue;
-            if (on)
-                controller.prepareWidgetEdit();
-            else
-                controller.finishWidgetEdit();
-        }
-    }
-
-    function toggleWidgetEditMode(): void {
-        setWidgetEditMode(!widgetEditMode);
     }
 
     function setPositions(next: var): void {
@@ -428,29 +396,5 @@ Singleton {
             }
             root.singleClick = single;
         }
-    }
-
-    IpcHandler {
-        function editWidgets(): void {
-            root.setWidgetEditMode(true);
-        }
-
-        function exitWidgetEdit(): void {
-            root.setWidgetEditMode(false);
-        }
-
-        function toggleWidgetEdit(): void {
-            root.toggleWidgetEditMode();
-        }
-
-        function widgetOutlines(): bool {
-            return root.widgetOutlines;
-        }
-
-        function setWidgetOutlines(on: bool): void {
-            root.setWidgetOutlines(on);
-        }
-
-        target: "desktop"
     }
 }
