@@ -61,7 +61,12 @@ Item {
         }
 
         if (visibilities.utilities) {
-            const h = ((QsWindow.window as QsWindow)?.screen.height ?? 0) - (utilitiesPanel as Utilities.Wrapper).nonAnimHeight - Config.border.thickness * 2 - padding * 2 - Tokens.spacing.extraLarge;
+            // The drawer hangs in the corner the stack grows from, so the stack takes what
+            // is left under it. Measured from the drawer's bottom edge in window
+            // coordinates: its height alone says nothing about where it ends, and the
+            // difference is what was slicing notifications in half.
+            const drawerBottom = (utilitiesPanel as Utilities.Wrapper).mapToItem(null, 0, utilitiesPanel.height).y;
+            const h = Math.max(0, ((QsWindow.window as QsWindow)?.screen.height ?? 0) - drawerBottom - Config.border.thickness * 2 - padding * 2 - Tokens.spacing.extraLarge);
             if (height > h)
                 height = h;
         }

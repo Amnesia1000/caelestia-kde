@@ -80,7 +80,9 @@ StyledWindow {
         return Math.max(...thresholds);
     }
 
-    readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || (panels.popouts.hasCurrent && !panels.popouts.isDockPopout)
+    // The utilities drawer owns text fields (the timers), so the drawer window has to be
+    // able to take the keyboard while it is open.
+    readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || visibilities.utilities || (panels.popouts.hasCurrent && !panels.popouts.isDockPopout)
 
     onHasFullscreenChanged: {
         if (!hasFullscreen)
@@ -435,13 +437,17 @@ StyledWindow {
             id: notifsBg
 
             panel: panels.notifications
+            // A notification is transient and the drawer is not: keeping them out of one
+            // another's blob stops the two backgrounds bridging into a shape that is
+            // neither panel when they share the corner.
+            exclude: [utilsBg]
         }
         PanelBg {
             id: utilsBg
 
             panel: panels.utilities
             deformAmount: panels.sidebar.visible ? 0.1 : 0.15
-            exclude: panels.sidebar.offsetScale > 0.08 ? [] : [sidebarBg]
+            exclude: (panels.sidebar.offsetScale > 0.08 ? [] : [sidebarBg]).concat([notifsBg])
             topLeftRadius: GlobalConfig.appearance.islands ? radius : (bar.position === "right" ? radius : (bar.position === "bottom" ? radius : Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius))
             topRightRadius: GlobalConfig.appearance.islands ? radius : (bar.position === "right" ? Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius : (bar.position === "bottom" ? radius : Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius))
             bottomLeftRadius: GlobalConfig.appearance.islands ? radius : (bar.position === "bottom" ? Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius : radius)
