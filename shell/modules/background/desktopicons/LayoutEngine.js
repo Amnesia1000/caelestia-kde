@@ -329,3 +329,20 @@ function occupantAt(positions, col, row, exclude, spans) {
     }
     return "";
 }
+
+// Cells for a run of new items of the given spans, each at the free place nearest
+// to `from`. One entry per spec, in order, clamped to the grid. `positions` is not
+// modified: the caller writes the cells it wants to keep.
+function placeSpecs(positions, from, specs, cols, rows, spans) {
+    const occ = occupancy(positions, null, spans);
+    const start = from ?? { col: 0, row: 0 };
+    const out = [];
+    for (const spec of specs) {
+        const w = Math.max(1, Math.min(spec.w | 0 || 1, cols));
+        const h = Math.max(1, Math.min(spec.h | 0 || 1, rows));
+        const at = nearestFree(occ, start.col, start.row, cols, rows, { w: w, h: h });
+        markRect(occ, at, { w: w, h: h }, "spec" + out.length);
+        out.push({ col: at.col, row: at.row, w: w, h: h });
+    }
+    return out;
+}
