@@ -80,9 +80,9 @@ StyledWindow {
         return Math.max(...thresholds);
     }
 
-    // The utilities drawer owns text fields (the timers), so the drawer window has to be
-    // able to take the keyboard while it is open.
-    readonly property bool wantsKeyboard: visibilities.launcher || visibilities.session || visibilities.dashboard || visibilities.sidebar || visibilities.overview || visibilities.utilities || (panels.popouts.hasCurrent && !panels.popouts.isDockPopout)
+    // The window takes the keyboard while a panel that owns text is open, and that is
+    // Panels' answer to give: it is the one place that has them all.
+    readonly property bool wantsKeyboard: panels.wantsKeyboard
 
     onHasFullscreenChanged: {
         if (!hasFullscreen)
@@ -439,7 +439,8 @@ StyledWindow {
             panel: panels.notifications
             // A notification is transient and the drawer is not: keeping them out of one
             // another's blob stops the two backgrounds bridging into a shape that is
-            // neither panel when they share the corner.
+            // neither panel when they share the corner. Exclusion is symmetric, so this
+            // side stating it is enough.
             exclude: [utilsBg]
         }
         PanelBg {
@@ -447,7 +448,7 @@ StyledWindow {
 
             panel: panels.utilities
             deformAmount: panels.sidebar.visible ? 0.1 : 0.15
-            exclude: (panels.sidebar.offsetScale > 0.08 ? [] : [sidebarBg]).concat([notifsBg])
+            exclude: panels.sidebar.offsetScale > 0.08 ? [] : [sidebarBg]
             topLeftRadius: GlobalConfig.appearance.islands ? radius : (bar.position === "right" ? radius : (bar.position === "bottom" ? radius : Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius))
             topRightRadius: GlobalConfig.appearance.islands ? radius : (bar.position === "right" ? Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius : (bar.position === "bottom" ? radius : Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius))
             bottomLeftRadius: GlobalConfig.appearance.islands ? radius : (bar.position === "bottom" ? Math.max(0, Math.min(1, panels.sidebar.offsetScale / 0.3)) * radius : radius)

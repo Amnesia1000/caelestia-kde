@@ -476,8 +476,10 @@ PageBase {
                     Layout.fillWidth: true
 
                     StyledText { text: qsTr("App/game name"); color: Colours.palette.m3onSurface }
-                    StyledInputField {
+                    StyledTextField {
                         id: manualAppName
+
+                        type: StyledTextField.Boxed
                         Layout.fillWidth: true
 
                         text: GlobalConfig.services.arpcAppName
@@ -490,8 +492,10 @@ PageBase {
                     Layout.fillWidth: true
 
                     StyledText { text: qsTr("Details"); color: Colours.palette.m3onSurface }
-                    StyledInputField {
+                    StyledTextField {
                         id: manualDetails
+
+                        type: StyledTextField.Boxed
                         Layout.fillWidth: true
 
                         text: GlobalConfig.services.arpcDetails
@@ -504,8 +508,10 @@ PageBase {
                     Layout.fillWidth: true
 
                     StyledText { text: qsTr("State"); color: Colours.palette.m3onSurface }
-                    StyledInputField {
+                    StyledTextField {
                         id: manualState
+
+                        type: StyledTextField.Boxed
                         Layout.fillWidth: true
 
                         text: GlobalConfig.services.arpcState
@@ -518,8 +524,10 @@ PageBase {
                     Layout.fillWidth: true
 
                     StyledText { text: qsTr("Large image key/URL"); color: Colours.palette.m3onSurface }
-                    StyledInputField {
+                    StyledTextField {
                         id: manualLargeImage
+
+                        type: StyledTextField.Boxed
                         Layout.fillWidth: true
 
                         text: GlobalConfig.services.arpcLargeImage
@@ -532,8 +540,10 @@ PageBase {
                     Layout.fillWidth: true
 
                     StyledText { text: qsTr("Small image key/URL"); color: Colours.palette.m3onSurface }
-                    StyledInputField {
+                    StyledTextField {
                         id: manualSmallImage
+
+                        type: StyledTextField.Boxed
                         Layout.fillWidth: true
 
                         text: GlobalConfig.services.arpcSmallImage

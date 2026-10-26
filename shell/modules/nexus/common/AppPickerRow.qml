@@ -50,8 +50,10 @@ PopupRow {
                 anchors.fill: parent
                 spacing: Tokens.spacing.extraSmall
 
-                StyledInputField {
+                StyledTextField {
                     id: query
+
+                    type: StyledTextField.Boxed
 
                     Layout.fillWidth: true
                     horizontalAlignment: TextInput.AlignLeft

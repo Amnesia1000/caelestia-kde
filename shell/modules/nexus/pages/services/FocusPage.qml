@@ -289,8 +289,10 @@ PageBase {
                     font: NexusStyle.secondaryFont
                 }
 
-                StyledInputField {
+                StyledTextField {
                     id: startField
+
+                    type: StyledTextField.Boxed
 
                     implicitWidth: 96
                     text: root.defaultStart
@@ -302,8 +304,10 @@ PageBase {
                     font: NexusStyle.secondaryFont
                 }
 
-                StyledInputField {
+                StyledTextField {
                     id: endField
+
+                    type: StyledTextField.Boxed
 
                     implicitWidth: 96
                     text: root.defaultEnd
