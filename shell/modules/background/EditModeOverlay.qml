@@ -90,7 +90,7 @@ Variants {
                 }
 
                 StyledText {
-                    text: qsTr("Exit edit mode")
+                    text: qsTr("Exit Plasma edit mode")
                     font: Tokens.font.label.large
                     color: Colours.palette.m3onSurface
                 }

@@ -2,6 +2,7 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import QtQuick.Effects
+import QtQuick.Layouts
 import Caelestia.Config
 import qs.components
 import qs.services
@@ -32,13 +33,17 @@ Item {
     // Keeps the outline on every widget while the option is on, so that one that
     // is empty (or hidden by its own condition) can still be located. It does not
     // follow the desktop icons toggle: widgets stay on the desktop without them.
-    readonly property bool outlineAlways: !isGroup && DesktopLayout.widgetOutlines
+    // Edit mode outlines every card for the same reason.
+    readonly property bool outlineAlways: !isGroup && (DesktopLayout.widgetOutlines || editMode)
 
     property bool selected: false
     property bool focusVisible: false
     property bool dimmed: false
     property bool mergeTarget: false
     property real appear: 0
+    // Set while the desktop is in widget edit mode: the content stops taking
+    // input, so the card itself becomes the drag handle and the borders show.
+    property bool editMode: false
     readonly property bool hovered: hover.hovered
     // True while any border of the card is dragged.
     readonly property bool resizing: resizeGrips.some(grip => grip.pressed)
@@ -211,9 +216,106 @@ Item {
             anchors.fill: parent
             anchors.margins: root.frameless ? 0 : (root.isGroup ? Tokens.padding.small : Tokens.padding.large)
             asynchronous: true
+            // Edit mode drives the card, so the widget's own controls must not take
+            // the clicks that start a drag.
+            enabled: !root.editMode
 
             onWantedChanged: load()
             Component.onCompleted: load()
+        }
+
+        // Edit mode: the whole card drags, on top of the content but under the
+        // resize grips, so every border and the body are reachable without aiming.
+        MouseArea {
+            id: editArea
+
+            property point pressPos
+            property bool dragSent: false
+
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            enabled: root.editMode
+            visible: root.editMode
+            preventStealing: true
+            z: 1
+            cursorShape: root.locked ? Qt.ArrowCursor : Qt.OpenHandCursor
+            onPressed: mouse => {
+                pressPos = Qt.point(mouse.x, mouse.y);
+                dragSent = false;
+                root.pressed({
+                    x: mouse.x + card.x,
+                    y: mouse.y + card.y,
+                    button: mouse.button,
+                    modifiers: mouse.modifiers
+                });
+            }
+            onPositionChanged: mouse => {
+                if (root.locked || !(pressedButtons & Qt.LeftButton) || dragSent)
+                    return;
+                const dx = mouse.x - pressPos.x;
+                const dy = mouse.y - pressPos.y;
+                if (dx * dx + dy * dy >= Qt.styleHints.startDragDistance * Qt.styleHints.startDragDistance) {
+                    dragSent = true;
+                    root.dragRequested(pressPos.x + card.x, pressPos.y + card.y);
+                }
+            }
+            onClicked: mouse => {
+                if (dragSent)
+                    return;
+                if (mouse.button === Qt.RightButton)
+                    root.contextMenuRequested(mouse.x + card.x, mouse.y + card.y);
+                else
+                    root.clicked(mouse);
+            }
+        }
+
+        // Edit mode: names the widget and its size, so a card whose content is
+        // empty (or hidden by its own condition) can still be told apart.
+        StyledRect {
+            id: badge
+
+            readonly property int inset: Tokens.padding.small / 2
+
+            visible: root.editMode && !root.isGroup && card.width > 90 && card.height > 32
+            anchors.top: card.top
+            anchors.left: card.left
+            anchors.margins: inset
+            implicitWidth: Math.min(badgeRow.implicitWidth + Tokens.padding.medium, card.width - inset * 2)
+            implicitHeight: badgeRow.implicitHeight + Tokens.padding.extraSmall
+            radius: Tokens.rounding.small
+            color: Qt.alpha(Colours.palette.m3surfaceContainerHighest, 0.92)
+            border.width: 1
+            border.color: Qt.alpha(Colours.palette.m3outline, 0.3)
+            z: 2
+
+            RowLayout {
+                id: badgeRow
+
+                anchors.centerIn: parent
+                width: Math.max(0, parent.implicitWidth - Tokens.padding.medium)
+                spacing: Tokens.padding.extraSmall
+
+                MaterialIcon {
+                    visible: root.locked
+                    text: "lock"
+                    color: Colours.palette.m3primary
+                    fontStyle: Tokens.font.icon.small
+                }
+
+                StyledText {
+                    Layout.fillWidth: true
+                    text: root.label
+                    font: Tokens.font.label.small
+                    color: Colours.palette.m3onSurface
+                    elide: Text.ElideRight
+                }
+
+                StyledText {
+                    text: `${root.span.w} × ${root.span.h}`
+                    font: Tokens.font.label.small
+                    color: Colours.palette.m3onSurfaceVariant
+                }
+            }
         }
     }
 
@@ -420,7 +522,8 @@ Item {
         preventStealing: true
         enabled: !root.locked
         visible: !root.locked && opacity > 0
-        opacity: root.locked ? 0 : (root.hovered || root.selected || pressed ? 1 : 0)
+        // Edit mode keeps every border grabbable without hovering the card first.
+        opacity: root.locked ? 0 : (root.hovered || root.selected || root.editMode || pressed ? 1 : 0)
         cursorShape: {
             if (root.locked)
                 return Qt.ArrowCursor;

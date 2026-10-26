@@ -28,6 +28,13 @@ QtObject {
             "icon": "lock",
             "title": qsTr("Widget Locking & Outlines"),
             "description": qsTr("Desktop widgets can now be locked individually or altogether directly from their context menus, preventing accidental dragging or resizing while interacting with them. In addition, a new widget outlines toggle highlights widget boundaries on your wallpaper, making it effortless to locate empty or conditionally hidden widgets across your desktop.")
+        },
+        {
+            "id": "desktop_widget_edit_mode",
+            "revision": 65,
+            "icon": "edit",
+            "title": qsTr("Desktop Widget Edit Mode"),
+            "description": qsTr("Desktop widgets now have an edit mode of their own. The controls inside a widget step aside, so the whole card can be dragged from anywhere, every border resizes, the cells are outlined underneath, and each card names itself and its size. A toolbar adds widgets, locks or unlocks all of them, and ends the mode. Right-click the desktop and choose Widgets → Edit Widgets to start; Escape leaves it. Ctrl+C and Ctrl+V copy and paste widgets, and Delete removes them without touching your files.")
         }
     ]
 

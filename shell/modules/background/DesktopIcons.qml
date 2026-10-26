@@ -26,6 +26,8 @@ Item {
 
     readonly property var screenConfig: GlobalConfig.forScreen(screenData.name).background
     readonly property bool iconsEnabled: screenConfig.desktopIconsEnabled
+    // Widget editing is a desktop-wide mode; this screen only follows it.
+    readonly property bool widgetEditMode: DesktopLayout.widgetEditMode
     readonly property bool materialYou: screenConfig.materialYouIconsEnabled
     readonly property bool vibrant: screenConfig.materialYouIconsVibrant
     readonly property real vibrancy: screenConfig.materialYouIconsVibrancy
@@ -623,6 +625,10 @@ Item {
     }
 
     function openKeys(keys: var): void {
+        // Edit mode arranges the desktop; launching something from it is never
+        // what the click meant.
+        if (widgetEditMode)
+            return;
         let launched = false;
         for (const key of keys) {
             if (isWidgetKey(key))
@@ -945,6 +951,78 @@ Item {
         DesktopLayout.setWidgets(widgets);
         DesktopLayout.setPositions(positions);
         Qt.callLater(syncEntries);
+    }
+
+    // Settles the desktop into the mode, so its first click belongs to the
+    // editor: no group popup over the grid, no half-finished rename, and no
+    // selection left over from before that a Delete would act on.
+    function prepareWidgetEdit(): void {
+        if (openGroupId !== "")
+            closeGroup();
+        if (renameActive)
+            renamingDelegate.commitRename();
+        endResizePreview();
+        clearDropPreview();
+        clearSelection();
+    }
+
+    function finishWidgetEdit(): void {
+        endResizePreview();
+        clearDropPreview();
+    }
+
+    // Edit mode copies widgets, not files: type, size and config travel, ids do not.
+    function copyWidgets(keys: var): void {
+        const items = [];
+        for (const key of keys) {
+            const widget = widgetOf(key);
+            if (!widget)
+                continue;
+            items.push({
+                type: widget.type,
+                size: { w: widget.size?.w ?? 1, h: widget.size?.h ?? 1 },
+                config: JSON.parse(JSON.stringify(widget.config ?? {}))
+            });
+        }
+        DesktopLayout.widgetClipboard = items;
+    }
+
+    function pasteWidgets(): void {
+        const clipboard = DesktopLayout.widgetClipboard;
+        if (clipboard.length === 0)
+            return;
+        const widgets = Object.assign({}, DesktopLayout.widgets);
+        const positions = Object.assign({}, DesktopLayout.positions);
+        const occ = Engine.occupancy(contextPositionsTopLevel(), null, spans);
+        // Land next to whatever is selected, so a paste reads as a duplicate.
+        const anchor = selectedKeys().map(key => DesktopLayout.positions[key]).find(pos => !!pos) ?? { col: 0, row: 0 };
+        const keys = [];
+        for (const item of clipboard) {
+            let id;
+            do
+                id = DesktopLayout.newGroupId();
+            while (id in widgets);
+            const key = DesktopLayout.widgetKey(id);
+            const size = {
+                w: Math.max(1, Math.min(item.size?.w ?? 1, cols)),
+                h: Math.max(1, Math.min(item.size?.h ?? 1, rows))
+            };
+            widgets[id] = {
+                type: item.type,
+                size: size,
+                config: JSON.parse(JSON.stringify(item.config))
+            };
+            const at = Engine.nearestFree(occ, anchor.col + 1, anchor.row, cols, rows, size);
+            positions[key] = Object.assign({}, at, { screen: screenData.name });
+            Engine.markRect(occ, at, size, key);
+            keys.push(key);
+        }
+        DesktopLayout.setWidgets(widgets);
+        DesktopLayout.setPositions(positions);
+        Qt.callLater(() => {
+            syncEntries();
+            setSelection(keys);
+        });
     }
 
     // ---- Renaming ---------------------------------------------------------
@@ -1394,23 +1472,37 @@ Item {
             if (keys.length === 1)
                 startRename(keys[0]);
         } else if (event.key === Qt.Key_Delete) {
-            // Widgets go too, except notes that hold text.
             const keys = selectedKeys();
-            trashKeys(keys);
-            removeWidgets(keys.filter(k => isWidgetKey(k) && !(widgetOf(k)?.type === "note" && (widgetOf(k)?.config.text ?? "").length > 0)));
+            if (widgetEditMode) {
+                // The mode is explicit, so notes go with the rest.
+                removeWidgets(keys.filter(isWidgetKey));
+            } else {
+                // Widgets go too, except notes that hold text.
+                trashKeys(keys);
+                removeWidgets(keys.filter(k => isWidgetKey(k) && !(widgetOf(k)?.type === "note" && (widgetOf(k)?.config.text ?? "").length > 0)));
+            }
         } else if (event.key === Qt.Key_Escape) {
             if (openGroupId !== "")
                 closeGroup();
+            else if (widgetEditMode)
+                DesktopLayout.setWidgetEditMode(false);
             else
                 clearSelection();
         } else if (ctrl && event.key === Qt.Key_A) {
-            setSelection(order);
+            setSelection(widgetEditMode ? order.filter(isWidgetKey) : order);
         } else if (ctrl && event.key === Qt.Key_C) {
-            copyKeys(selectedKeys(), false);
+            if (widgetEditMode)
+                copyWidgets(selectedKeys());
+            else
+                copyKeys(selectedKeys(), false);
         } else if (ctrl && event.key === Qt.Key_X) {
-            copyKeys(selectedKeys(), true);
+            if (!widgetEditMode)
+                copyKeys(selectedKeys(), true);
         } else if (ctrl && event.key === Qt.Key_V) {
-            paste(null);
+            if (widgetEditMode)
+                pasteWidgets();
+            else
+                paste(null);
         } else if (ctrl && event.key === Qt.Key_G) {
             if (shift)
                 selectedKeys().filter(isGroupKey).forEach(k => ungroup(nameOf(k)));
@@ -1734,6 +1826,41 @@ wl-paste --no-newline --type text/uri-list`]
         width: root.cols * root.cellWidth
         height: root.rows * root.cellHeight
 
+        // Edit mode shows the cells the widgets snap to, which is what makes the
+        // grid readable while dragging. Only built while the mode is on.
+        Loader {
+            anchors.fill: parent
+            active: root.widgetEditMode
+
+            sourceComponent: Item {
+                Repeater {
+                    model: root.cols + 1
+
+                    StyledRect {
+                        required property int index
+
+                        x: index * root.cellWidth
+                        width: 1
+                        height: parent.height
+                        color: Qt.alpha(Colours.palette.m3outline, 0.12)
+                    }
+                }
+
+                Repeater {
+                    model: root.rows + 1
+
+                    StyledRect {
+                        required property int index
+
+                        y: index * root.cellHeight
+                        width: parent.width
+                        height: 1
+                        color: Qt.alpha(Colours.palette.m3outline, 0.12)
+                    }
+                }
+            }
+        }
+
         // Where the dragged items would land.
         Repeater {
             model: root.dropCells
@@ -1761,6 +1888,7 @@ wl-paste --no-newline --type text/uri-list`]
                 readonly property var pos: root.displayPositions[key] ?? DesktopLayout.positions[key] ?? null
 
                 controller: root
+                editMode: root.widgetEditMode
                 visible: (!isGroup || root.iconsEnabled) && pos !== null
                 width: span.w * root.cellWidth
                 height: span.h * root.cellHeight

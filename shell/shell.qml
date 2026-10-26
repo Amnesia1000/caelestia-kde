@@ -73,6 +73,8 @@ ShellRoot {
 
     EditModeOverlay {}
 
+    WidgetEditOverlay {}
+
     Drawers {}
 
     IpcHandler {
