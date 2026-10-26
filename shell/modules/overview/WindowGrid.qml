@@ -51,28 +51,25 @@ Item {
     readonly property real hoverScale: 1.02
     property int selectedIndex: -1
     readonly property var currentWindows: {
-        if (listView.currentIndex < 0)
+        // The trigger and the filter are read here, not inside gridWindows(): a
+        // property read inside a function does not register as a dependency.
+        const _winTrigger = Kwin.windowList;
+        const _appFilter = Visibilities.overviewAppFilter;
+        if (listView.currentIndex < 0 || listView.currentIndex >= Kwin.workspaces.length)
             return [];
-        const wsList = Kwin.workspaces;
-        if (listView.currentIndex >= wsList.length)
-            return [];
-        const wsId = wsList[listView.currentIndex].index;
-        const _ = Kwin.windowList;
-        // Read the filter inside the binding: a plain function call would not
-        // register it as a dependency, and the grid would keep the stale list.
-        const filter = Visibilities.overviewAppFilter;
-        return root.matchesAppFilter(Kwin.filterWindows(Kwin.windowsForWorkspace(wsId, false), null, root.screen.name), filter);
+        return root.gridWindows(Kwin.workspaces[listView.currentIndex].index);
     }
 
     signal requestWindowInfo(var client)
     signal requestClose()
 
-    /// Limits the grid to one application when the overview was opened from a dock
-    /// entry; without a filter every window is shown.
-    function matchesAppFilter(wins: var, filter: var): var {
-        if (!filter || filter.length === 0)
-            return wins;
-        return wins.filter(w => Kwin.windowMatchesApp(w, filter));
+    /// What one page lays out: this screen, one workspace, and — when the overview was
+    /// opened from a dock entry — one application. The grid and the selection both ask
+    /// this, so they cannot disagree about what is on a page.
+    function gridWindows(wsId: int): var {
+        const wins = Kwin.filterWindows(Kwin.windowsForWorkspace(wsId, false), null, root.screen.name);
+        const filter = Visibilities.overviewAppFilter;
+        return filter.length === 0 ? wins : wins.filter(w => Kwin.windowMatchesApp(w, filter));
     }
 
     /// The screen containing a point in global coordinates, or null.
@@ -247,7 +244,7 @@ Item {
             readonly property var _appFilter: Visibilities.overviewAppFilter
 
             function _updateWsWindows(): void {
-                const arr = root.matchesAppFilter(Kwin.filterWindows(Kwin.windowsForWorkspace(wsId, false), null, root.screen.name), _appFilter);
+                const arr = root.gridWindows(wsId);
 
                 let changed = arr.length !== wsWindows.length;
                 if (!changed) {

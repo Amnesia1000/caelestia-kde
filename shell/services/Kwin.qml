@@ -199,20 +199,38 @@ Singleton {
         });
     }
 
-    /// Whether a window belongs to the application known by any of `names` — the
-    /// desktop entry id, the window class or an app id, in any casing. Both the
-    /// dock's "Show all windows" entry and the overview's filter use this so they
-    /// always agree on what counts as the same application.
-    function windowMatchesApp(w: var, names: var): bool {
-        const cls = String(w?.class ?? "").toLowerCase().replace(/\.desktop$/, "");
-        if (cls === "" || !names || names.length === 0)
+    /// Whether a window class names the application known by `names` — the desktop
+    /// entry id, the window class, or an app id. Steam launches each game under its own
+    /// `steam_app_<id>` class, so a steam class only ever matches itself; otherwise one
+    /// game would claim every other. The dock's grouping, the dock's menu and the
+    /// overview's filter all ask this, so they cannot disagree about what counts as the
+    /// same application.
+    function classNamesApp(cls: string, names: var): bool {
+        const normalise = name => String(name ?? "").toLowerCase().replace(/\.desktop$/, "");
+        const klass = normalise(cls);
+        if (klass === "")
             return false;
-        for (let i = 0; i < names.length; ++i) {
-            const name = String(names[i]).toLowerCase().replace(/\.desktop$/, "");
-            if (name.length > 0 && (cls === name || cls.startsWith(name + ".") || cls.endsWith("." + name)))
+
+        const game = klass.startsWith("steam_app_");
+        const list = Array.isArray(names) ? names : [names];
+        for (let i = 0; i < list.length; ++i) {
+            const name = normalise(list[i]);
+            if (name === "")
+                continue;
+            if (game) {
+                if (name === klass)
+                    return true;
+            } else if (!name.startsWith("steam_app_") && (klass === name || name.includes(klass) || klass.includes(name))) {
                 return true;
+            }
         }
+
         return false;
+    }
+
+    /// Whether a window belongs to the application known by any of `names`.
+    function windowMatchesApp(w: var, names: var): bool {
+        return root.classNamesApp(w?.class ?? "", names);
     }
 
     function cursorOutputName(): string {
