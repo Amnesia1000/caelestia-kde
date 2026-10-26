@@ -122,6 +122,8 @@ Item {
     }
     // Sizes shown while a resize is being dragged.
     property var previewSpans: null
+    // Cell the resized item is held to while its left or top edge is dragged.
+    property var previewOrigin: null
     readonly property var displaySpans: previewSpans ?? spans
     readonly property WidgetCatalog widgetCatalog: WidgetCatalog {}
 
@@ -841,44 +843,53 @@ Item {
         return out;
     }
 
-    function resizePlan(key: string, w: int, h: int): var {
+    // `origin` is the cell the item keeps while a drag grows it from its left or
+    // top edge; without one it stays where it is placed.
+    function resizePlan(key: string, w: int, h: int, origin: var): var {
         const current = contextPositionsTopLevel();
         const s = spansWith(key, w, h);
         if (DesktopLayout.autoArrange)
             return Engine.compact(Engine.orderedKeys(current, rows), rows, s);
-        return Engine.planMove(current, [key], key, current[key], cols, rows, s);
+        return Engine.planMove(current, [key], key, origin ?? current[key], cols, rows, s);
     }
 
     function isKeyLocked(key: string): bool {
         return isWidgetKey(key) && DesktopLayout.isWidgetLocked(nameOf(key));
     }
 
-    function previewResize(key: string, w: int, h: int): void {
+    function previewResize(key: string, w: int, h: int, origin: var): void {
         if (isKeyLocked(key))
             return;
         if (!DesktopLayout.positions[key])
             return;
         const span = previewSpans?.[key];
-        if (span && span.w === w && span.h === h)
-            return;
-        const next = resizePlan(key, w, h);
+        if (span && span.w === w && span.h === h) {
+            // A drag from a left or top edge moves the item as well, so the same
+            // span can still be a different plan.
+            const sameOrigin = origin === undefined || (previewOrigin !== null && previewOrigin.col === origin.col && previewOrigin.row === origin.row);
+            if (sameOrigin)
+                return;
+        }
+        const next = resizePlan(key, w, h, origin);
         previewSpans = spansWith(key, w, h);
+        previewOrigin = origin ?? null;
         previewPositions = Object.assign({}, DesktopLayout.positions, next);
     }
 
     function endResizePreview(): void {
         previewSpans = null;
+        previewOrigin = null;
         previewPositions = null;
     }
 
-    function resizeItem(key: string, w: int, h: int): void {
+    function resizeItem(key: string, w: int, h: int, origin: var): void {
         endResizePreview();
         if (isKeyLocked(key))
             return;
         const pos = DesktopLayout.positions[key];
         if (!pos)
             return;
-        const next = Object.assign({}, DesktopLayout.positions, resizePlan(key, w, h));
+        const next = Object.assign({}, DesktopLayout.positions, resizePlan(key, w, h, origin));
         if (isGroupKey(key)) {
             const id = nameOf(key);
             const groups = Object.assign({}, DesktopLayout.groups);
