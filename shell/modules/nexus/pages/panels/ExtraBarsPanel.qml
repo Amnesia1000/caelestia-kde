@@ -11,21 +11,10 @@ import qs.modules.nexus.common
 PageBase {
     id: root
 
-    readonly property list<string> allEdges: ["top", "bottom", "left", "right"]
     readonly property int panelCount: GlobalConfig.bar.panels.count
     readonly property bool hasPanel: root.selectedIndex >= 0 && root.selectedIndex < root.panelCount
     readonly property var selectedPanel: root.hasPanel ? GlobalConfig.bar.panels.at(root.selectedIndex) : null
-    readonly property var barRows: [{
-        index: -1,
-        name: qsTr("Bar 1"),
-        edge: Config.bar.position,
-        screens: []
-    }].concat(GlobalConfig.bar.panels.values.map((panel, i) => ({
-        index: i,
-        name: panel.name || qsTr("Bar %1").arg(i + 2),
-        edge: panel.position,
-        screens: panel.screens ?? []
-    })))
+    readonly property var barRows: BarPanels.rows
     readonly property var alignItems: root.itemsOf(alignInstantiator)
     readonly property var positionItems: root.itemsOf(edgeInstantiator)
     readonly property var screenItems: root.itemsOf(screenInstantiator)
@@ -93,30 +82,18 @@ PageBase {
 
         return items;
     }
-    function alignLabel(align: string): string {
-        if (align === "start")
-            return qsTr("Start");
-        if (align === "end")
-            return qsTr("End");
-        return qsTr("Center");
-    }
-    function edgeLabel(edge: string): string {
-        if (edge === "top")
-            return qsTr("Top");
-        if (edge === "bottom")
-            return qsTr("Bottom");
-        if (edge === "left")
-            return qsTr("Left");
-        if (edge === "right")
-            return qsTr("Right");
-        return edge;
-    }
     function itemFor(items: var, value: string): MenuItem {
         for (let i = 0; i < items.length; ++i)
             if (items[i].value === value)
                 return items[i];
 
         return items.length > 0 ? items[0] : null;
+    }
+    function alignLabel(align: string): string {
+        return BarPanels.alignLabel(align);
+    }
+    function edgeLabel(edge: string): string {
+        return BarPanels.edgeLabel(edge);
     }
     function edgesInUse(): var {
         return BarPanels.edgesInUse();
@@ -145,6 +122,13 @@ PageBase {
     isSubPage: true
 
     onSelectedIndexChanged: root.lengthDraft = -1
+
+    Component.onCompleted: {
+        if (root.nState && root.nState.extraBarsTarget >= 0) {
+            root.selectedIndex = root.nState.extraBarsTarget;
+            root.nState.extraBarsTarget = -1;
+        }
+    }
 
     ColumnLayout {
         anchors.horizontalCenter: parent.horizontalCenter

@@ -36,6 +36,11 @@ ColumnLayout {
         root.popouts.hasCurrent = false;
         BarPanels.addPanel(position);
     }
+    function openBarSettings(): void {
+        const target = root.popouts.panelIndex;
+        root.popouts.hasCurrent = false;
+        WindowFactory.openBarSettings(target);
+    }
     function removeThisPanel(): void {
         root.popouts.hasCurrent = false;
         BarPanels.removePanel(root.popouts.panelIndex);
@@ -155,6 +160,47 @@ ColumnLayout {
                     }
                 }
             }
+            }
+
+            StyledRect {
+                id: settingsRow
+
+                Layout.fillWidth: true
+                implicitHeight: settingsRowLayout.implicitHeight + Tokens.padding.small * 2 * root.scaleOffset
+                radius: Tokens.rounding.medium * root.scaleOffset
+                color: "transparent"
+
+                StateLayer {
+                    anchors.fill: parent
+                    radius: settingsRow.radius
+
+                    onClicked: root.openBarSettings()
+                }
+
+                RowLayout {
+                    id: settingsRowLayout
+
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.leftMargin: Tokens.padding.medium * root.scaleOffset
+                    anchors.rightMargin: Tokens.padding.medium * root.scaleOffset
+                    spacing: Tokens.spacing.small * root.scaleOffset
+
+                    MaterialIcon {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: "settings"
+                        color: Colours.palette.m3onSurfaceVariant
+                        fontStyle.pointSize: Tokens.font.icon.medium.pointSize * root.fontScale
+                    }
+
+                    StyledText {
+                        Layout.alignment: Qt.AlignVCenter
+                        text: root.isPanel ? qsTr("Settings of this panel") : qsTr("Settings of this bar")
+                        color: Colours.palette.m3onSurface
+                        font.pointSize: Tokens.font.body.medium.pointSize * root.fontScale
+                    }
+                }
             }
 
             StyledRect {

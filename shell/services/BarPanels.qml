@@ -10,6 +10,38 @@ Singleton {
 
     readonly property list<string> edges: ["top", "bottom", "left", "right"]
 
+    /// Every bar the user can edit: the one on `bar.position` (index -1) plus the
+    /// extra panels from `bar.panels`.
+    readonly property var rows: [{
+        index: -1,
+        name: qsTr("Bar 1"),
+        edge: Config.bar.position,
+        screens: []
+    }].concat(GlobalConfig.bar.panels.values.map((panel, i) => ({
+        index: i,
+        name: panel.name || qsTr("Bar %1").arg(i + 2),
+        edge: panel.position,
+        screens: panel.screens ?? []
+    })))
+
+    function edgeLabel(edge: string): string {
+        if (edge === "top")
+            return qsTr("Top");
+        if (edge === "bottom")
+            return qsTr("Bottom");
+        if (edge === "left")
+            return qsTr("Left");
+        if (edge === "right")
+            return qsTr("Right");
+        return edge;
+    }
+    function alignLabel(align: string): string {
+        if (align === "start")
+            return qsTr("Start");
+        if (align === "end")
+            return qsTr("End");
+        return qsTr("Center");
+    }
     function edgesInUse(): var {
         const used = [Config.bar.position];
 
