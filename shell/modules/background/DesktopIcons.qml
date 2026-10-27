@@ -964,7 +964,8 @@ Item {
         placeWidgets([
             {
                 type: type,
-                size: info.size,
+                w: info.size.w,
+                h: info.size.h,
                 config: info.config ?? {}
             }
         ], cell);
