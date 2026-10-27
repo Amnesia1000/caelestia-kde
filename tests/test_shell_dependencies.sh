@@ -31,10 +31,14 @@ test_installer_pulls_the_peers_those_features_need() {
         "Fedora has to ship the runner headers the bridge compiles against"
     assert_contains "$fedora" 'kf6-baloo' \
         "and the indexer behind its file results"
+    assert_contains "$fedora" 'plasma-print-manager plasma-keyboard' \
+        "Fedora needs printing and touch typing peers installed"
     assert_contains "$debian" 'libkf6runner-dev' \
         "Debian has to ship the runner headers too"
     assert_contains "$debian" 'baloo6' \
         "and baloo6, which is what its indexer binary is packaged as"
+    assert_contains "$debian" 'print-manager plasma-keyboard' \
+        "Debian needs printing and touch typing peers installed"
 }
 
 test_nexus_points_at_the_kde_owned_subsystems() {
