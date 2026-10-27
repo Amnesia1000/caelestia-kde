@@ -77,8 +77,8 @@ UTILITY_PACKAGES=(
     satty spectacle gpu-screen-recorder slurp grim brightnessctl power-profiles-daemon
     xdg-utils sassc bat ripgrep lazygit xdg-user-dirs
     # print-manager is the only printing surface on the system, and
-    # maliit-keyboard is the only on-screen keyboard for touch input.
-    print-manager maliit-keyboard
+    # plasma-keyboard is the native on-screen keyboard for touch input.
+    print-manager plasma-keyboard
 )
 
 PACKAGES=()

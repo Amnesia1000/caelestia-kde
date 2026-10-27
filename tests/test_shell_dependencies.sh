@@ -22,7 +22,7 @@ test_installer_pulls_the_peers_those_features_need() {
 
     assert_contains "$arch" 'krunner baloo' \
         "launcher search needs krunner and baloo installed"
-    assert_contains "$arch" 'print-manager maliit-keyboard' \
+    assert_contains "$arch" 'print-manager plasma-keyboard' \
         "printing and touch typing need their KDE peers installed"
 
     # KF6Runner is optional in the build, so a list that forgets it loses the
