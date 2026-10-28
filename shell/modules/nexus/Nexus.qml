@@ -30,11 +30,26 @@ Item {
         onClose: root.requestClose()
     }
     property color blobColour: Colours.tPalette.m3surfaceContainerLow
+    readonly property bool hasActiveInputField: root.isInputField(Window.window ? Window.window.activeFocusItem : null)
 
     signal close
 
     function requestClose(): void {
         root.close();
+    }
+
+    function isInputField(item: var): bool {
+        let cur = item;
+        while (cur) {
+            if (cur.cursorPosition !== undefined || cur.inputMethodHints !== undefined || cur.capturedKey !== undefined)
+                return true;
+            cur = cur.parent ?? null;
+        }
+        return false;
+    }
+
+    function focusSearchBar(): void {
+        navPane.focusSearchBar();
     }
 
     function currentFlickable(): var {
@@ -139,5 +154,13 @@ Item {
             WindowFactory.goBack();
             mouse.accepted = true;
         }
+    }
+
+    Shortcut {
+        sequence: "/"
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: false
+
+        onActivated: root.focusSearchBar()
     }
 }

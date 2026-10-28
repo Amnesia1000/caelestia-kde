@@ -23,6 +23,11 @@ ColumnLayout {
         root.nState.searchQuery = "";
     }
 
+    function focusSearchBar(): void {
+        searchField.forceActiveFocus();
+        searchField.selectAll();
+    }
+
     spacing: Tokens.spacing.large
 
     SearchBar {
@@ -31,7 +36,7 @@ ColumnLayout {
         z: 1
         Layout.fillWidth: true
 
-        placeholderText: qsTr("Search settings")
+        placeholderText: qsTr("Press / to Search Settings")
         font: Tokens.font.body.large
 
         bg.color: Colours.tPalette.m3surfaceContainerLowest
