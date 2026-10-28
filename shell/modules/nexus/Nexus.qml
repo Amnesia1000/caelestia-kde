@@ -57,6 +57,18 @@ Item {
         root.forceActiveFocus();
     }
 
+    function moveUp(): void {
+        navPane.moveUp();
+    }
+
+    function moveDown(): void {
+        navPane.moveDown();
+    }
+
+    function activateSelected(): void {
+        navPane.activateSelected();
+    }
+
     function currentFlickable(): var {
         let item = pages.currentItem;
         while (item) {
@@ -183,5 +195,50 @@ Item {
         autoRepeat: false
 
         onActivated: root.focusSearchBar()
+    }
+
+    Shortcut {
+        sequences: ["Up", "k"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: true
+
+        onActivated: root.moveUp()
+    }
+
+    Shortcut {
+        sequences: ["Down", "j"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: true
+
+        onActivated: root.moveDown()
+    }
+
+    Shortcut {
+        sequence: "Escape"
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: false
+
+        onActivated: {
+            if (root.nState.subPageIdxStack.length > 0)
+                WindowFactory.goBack();
+            else
+                root.requestClose();
+        }
+    }
+
+    Shortcut {
+        sequence: "Backspace"
+        enabled: root.windowActive && !root.hasActiveInputField && root.nState.subPageIdxStack.length > 0
+        autoRepeat: false
+
+        onActivated: WindowFactory.goBack()
+    }
+
+    Shortcut {
+        sequences: ["Return", "Enter", "Right", "l"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: false
+
+        onActivated: root.activateSelected()
     }
 }
