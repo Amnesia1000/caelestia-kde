@@ -341,6 +341,8 @@ MouseArea {
         property real hScale: root.submenuOpen ? 1 : 0
         property bool flushTop: false
         property bool flushBottom: false
+        property string vAnchor: "none"
+        property string hAnchor: opensRight ? "left" : "right"
 
         /* Same stacking and backdrop as the menu itself: over it, and drawn by
            whoever paints the menu background when that one is transparent. */
