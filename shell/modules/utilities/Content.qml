@@ -42,6 +42,7 @@ Item {
             id: timers
 
             visible: Config.utilities.showTimers
+            visibilities: root.visibilities
         }
 
         CaptureCard {
