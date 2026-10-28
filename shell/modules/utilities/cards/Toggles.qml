@@ -44,6 +44,9 @@ StyledRect {
             },
             {
                 id: "easyeffects"
+            },
+            {
+                id: "keepAwake"
             }
         ].filter(t => !disabledIds.has(t.id));
 
@@ -108,6 +111,7 @@ StyledRect {
         case "visualiser": return "equalizer";
         case "easyeffects": return "graphic_eq";
         case "nightlight": return "bedtime";
+        case "keepAwake": return "coffee";
         case "hotspot": return "wifi_tethering";
         case "dnd": return "notifications_off";
         case "vpn": return "vpn_key";
@@ -651,6 +655,14 @@ StyledRect {
                         onClicked: {
                             HyprSunset.toggleNightLight();
                         }
+                    }
+                }
+                DelegateChoice {
+                    roleValue: "keepAwake"
+                    delegate: Toggle {
+                        icon: "coffee"
+                        checked: IdleInhibitor.enabled
+                        onClicked: IdleInhibitor.setEnabled(!IdleInhibitor.enabled)
                     }
                 }
             }
