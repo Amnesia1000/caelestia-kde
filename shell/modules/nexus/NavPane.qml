@@ -143,7 +143,7 @@ ColumnLayout {
         Timer {
             id: searchDebounce
 
-            interval: 50
+            interval: 300
             onTriggered: root.publishQuery()
         }
     }
