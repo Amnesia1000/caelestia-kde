@@ -172,13 +172,11 @@ StyledRect {
 
             RowLayout {
                 Layout.fillWidth: true
-                Layout.topMargin: Timers.count > 0 ? Tokens.spacing.extraSmall : 0
+                Layout.topMargin: Tokens.spacing.extraSmall
                 spacing: Tokens.spacing.small
 
                 StyledTextField {
                     id: durationField
-
-                    type: StyledTextField.Boxed
 
                     Layout.preferredWidth: 84
                     horizontalAlignment: TextInput.AlignHCenter
@@ -188,8 +186,6 @@ StyledRect {
 
                 StyledTextField {
                     id: messageField
-
-                    type: StyledTextField.Boxed
 
                     Layout.fillWidth: true
                     horizontalAlignment: TextInput.AlignLeft
