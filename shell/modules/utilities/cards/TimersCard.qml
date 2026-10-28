@@ -110,6 +110,19 @@ StyledRect {
                     elide: Text.ElideRight
                 }
             }
+
+            StyledText {
+                visible: Timers.pinnedTimer !== null
+                Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+                Layout.rightMargin: Tokens.spacing.medium
+                Layout.preferredWidth: Math.max(84, implicitWidth)
+                horizontalAlignment: Text.AlignRight
+                text: Timers.pinnedTimer ? Units.formatDuration(Timers.remaining(Timers.pinnedTimer)) : ""
+                color: Colours.palette.m3primary
+                font: Tokens.font.title.large
+
+                Component.onCompleted: font.features = { "tnum": 1 }
+            }
         }
 
         ColumnLayout {
@@ -159,6 +172,19 @@ StyledRect {
                             color: Colours.palette.m3onSurfaceVariant
                             font: Tokens.font.body.small
                             elide: Text.ElideRight
+                        }
+
+                        IconButton {
+                            id: pinBtn
+
+                            icon: "push_pin"
+                            isToggle: true
+                            checked: Timers.pinnedId === timerRow.modelData.id
+                            onClicked: {
+                                Timers.pin(timerRow.modelData.id);
+                                pinBtn.internalChecked = Timers.pinnedId === timerRow.modelData.id;
+                            }
+                            Accessible.name: checked ? qsTr("Unpin this timer") : qsTr("Pin this timer")
                         }
 
                         IconButton {
