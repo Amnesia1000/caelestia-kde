@@ -16,7 +16,12 @@ Row {
     property real verticalPadding: Tokens.padding.small
     property int type: SplitButton.Filled
     property bool disabled
-    property bool menuOnTop
+    property var menuOnTop: undefined
+    readonly property bool isMenuOnTop: {
+        if (root.menuOnTop !== undefined)
+            return Boolean(root.menuOnTop);
+        return menu.flippedY;
+    }
     property string fallbackIcon
     property string fallbackText
     property real minLeftWidth
@@ -142,8 +147,9 @@ Row {
         id: menu
 
         attachTo: expandBtn
-        attachSideY: root.menuOnTop ? Menu.Top : Menu.Bottom
-        thisSideY: root.menuOnTop ? Menu.Bottom : Menu.Top
-        marginY: Tokens.spacing.small * (root.menuOnTop ? -1 : 1)
+        autoFlipY: root.menuOnTop === undefined
+        attachSideY: root.isMenuOnTop ? Menu.Top : Menu.Bottom
+        thisSideY: root.isMenuOnTop ? Menu.Bottom : Menu.Top
+        marginY: Tokens.spacing.small * (root.isMenuOnTop ? -1 : 1)
     }
 }

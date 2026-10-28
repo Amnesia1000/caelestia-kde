@@ -23,10 +23,29 @@ MouseArea {
     }
 
     required property Item attachTo
+    property bool autoFlipY: true
+    readonly property real _menuH: menu && menu.implicitHeight > 0 ? menu.implicitHeight : 200
+    readonly property bool flippedY: {
+        if (!autoFlipY || !attachTo || !parent)
+            return false;
+        watcher.transform;
+        try {
+            const pt = attachTo.mapToItem(parent, 0, attachTo.height);
+            if (!pt)
+                return false;
+            const spaceBelow = parent.height - pt.y;
+            const ptTop = attachTo.mapToItem(parent, 0, 0);
+            const spaceAbove = ptTop ? ptTop.y : 0;
+            return (spaceBelow < _menuH + Tokens.spacing.small + Tokens.padding.small) && (spaceAbove > spaceBelow);
+        } catch (e) {
+            return false;
+        }
+    }
+
     property int attachSideX: Menu.Right
-    property int attachSideY: Menu.Bottom
+    property int attachSideY: autoFlipY && flippedY ? Menu.Top : Menu.Bottom
     property int thisSideX: Menu.Right
-    property int thisSideY: Menu.Top
+    property int thisSideY: autoFlipY && flippedY ? Menu.Bottom : Menu.Top
     property real marginX
     property real marginY
 
