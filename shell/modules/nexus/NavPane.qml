@@ -11,6 +11,7 @@ ColumnLayout {
     id: root
 
     required property NexusState nState
+    readonly property bool isSearchActive: searchField.activeFocus
 
     // Rapid keystrokes are batched with a brief debounce before publishing.
     function publishQuery(): void {
@@ -26,6 +27,36 @@ ColumnLayout {
     function focusSearchBar(): void {
         searchField.forceActiveFocus();
         searchField.selectAll();
+    }
+
+    function clearSearchFocus(): void {
+        searchField.focus = false;
+        root.forceActiveFocus();
+    }
+
+    function isInsideSearchRegion(item: Item, x: real, y: real): bool {
+        if (!item)
+            return false;
+
+        const pt = root.mapFromItem(item, x, y);
+        if (pt.x < 0 || pt.x > root.width || pt.y < 0 || pt.y > root.height)
+            return false;
+
+        const searchPt = searchField.mapFromItem(root, pt.x, pt.y);
+        if (searchPt.x >= 0 && searchPt.x <= searchField.width &&
+            searchPt.y >= 0 && searchPt.y <= searchField.height) {
+            return true;
+        }
+
+        if (root.nState.searchOpen && searchResults.visible) {
+            const resultsPt = searchResults.mapFromItem(root, pt.x, pt.y);
+            if (resultsPt.x >= 0 && resultsPt.x <= searchResults.width &&
+                resultsPt.y >= 0 && resultsPt.y <= searchResults.height) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     spacing: Tokens.spacing.large
@@ -53,10 +84,25 @@ ColumnLayout {
                 searchDebounce.restart();
         }
 
+        Keys.onEscapePressed: event => {
+            if (searchField.text !== "")
+                searchField.clear();
+            root.clearSearchFocus();
+            event.accepted = true;
+        }
+
+        Keys.onPressed: event => {
+            if (event.key === Qt.Key_Backspace && searchField.text === "") {
+                root.clearSearchFocus();
+                event.accepted = true;
+            }
+        }
+
         Keys.onReturnPressed: {
             if (root.nState.searchOpen) {
                 root.publishQuery();
                 searchResults.executeSelected();
+                root.clearSearchFocus();
             }
         }
 
@@ -86,6 +132,8 @@ ColumnLayout {
             function onSearchQueryChanged() {
                 if (root.nState.searchQuery !== searchField.text) {
                     searchField.text = root.nState.searchQuery;
+                    if (root.nState.searchQuery === "")
+                        root.clearSearchFocus();
                 }
             }
 

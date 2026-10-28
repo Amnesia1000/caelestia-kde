@@ -52,6 +52,11 @@ Item {
         navPane.focusSearchBar();
     }
 
+    function clearSearchFocus(): void {
+        navPane.clearSearchFocus();
+        root.forceActiveFocus();
+    }
+
     function currentFlickable(): var {
         let item = pages.currentItem;
         while (item) {
@@ -153,6 +158,22 @@ Item {
         onPressed: mouse => {
             WindowFactory.goBack();
             mouse.accepted = true;
+        }
+    }
+
+    TapHandler {
+        id: outsideTapHandler
+
+        enabled: navPane.isSearchActive
+
+        onPressedChanged: {
+            if (pressed && !navPane.isInsideSearchRegion(root, point.position.x, point.position.y))
+                root.clearSearchFocus();
+        }
+
+        onTapped: (eventPoint, button) => {
+            if (!navPane.isInsideSearchRegion(root, eventPoint.position.x, eventPoint.position.y))
+                root.clearSearchFocus();
         }
     }
 
