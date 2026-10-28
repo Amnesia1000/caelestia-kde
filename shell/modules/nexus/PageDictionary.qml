@@ -149,6 +149,19 @@ QtObject {
             ]
         },
         {
+            label: qsTr("Storage"),
+            key: "storage",
+            icon: "hard_drive",
+            description: qsTr("Mount, unmount and eject filesystems"),
+            category: "connectivity",
+            settings: [
+                { label: qsTr("Mount"), keywords: ["mount", "usb", "disk", "partition", "filesystem", "drive"] },
+                { label: qsTr("Unmount"), keywords: ["unmount", "eject", "safe remove", "usb", "disk"] },
+                { label: qsTr("Eject"), keywords: ["eject", "power off", "unplug", "usb", "drive"] },
+                { label: qsTr("Removable media"), keywords: ["usb", "stick", "sdcard", "external", "removable"] }
+            ]
+        },
+        {
             label: qsTr("Notifications"),
             key: "notifications",
             icon: "notifications",
@@ -239,6 +252,22 @@ QtObject {
             ]
         },
         {
+            label: qsTr("Accessibility"),
+            key: "accessibility",
+            icon: "accessibility_new",
+            description: qsTr("Text size, motion, magnifier, screen reader"),
+            category: "shell",
+            settings: [
+                { label: qsTr("Follow system text size"), keywords: ["font", "scale", "bigger", "text", "kde"] },
+                { label: qsTr("Font scale"), keywords: ["font", "size", "zoom", "text"] },
+                { label: qsTr("Reduce motion"), keywords: ["animation", "motion", "vestibular", "reduce"] },
+                { label: qsTr("Magnifier"), keywords: ["zoom", "magnify", "loupe", "kwin"] },
+                { label: qsTr("Invert colours"), keywords: ["contrast", "invert", "negative"] },
+                { label: qsTr("Colour filters"), keywords: ["colour", "blind", "protanopia", "deuteranopia", "filter"] },
+                { label: qsTr("Screen reader"), keywords: ["orca", "speech", "a11y"] }
+            ]
+        },
+        {
             label: qsTr("Updates"),
             key: "updates",
             icon: "update",
@@ -293,35 +322,6 @@ QtObject {
                 { label: qsTr("Let the CLI run its own tools"), keywords: ["claude", "permissions", "tools", "bypass", "dangerous"] },
                 { label: qsTr("Accounts"), keywords: ["claude", "account", "login", "switch"] },
                 { label: qsTr("Providers"), keywords: ["ollama", "openai", "chatgpt", "gemini", "openrouter", "api key"] }
-            ]
-        },
-        {
-            label: qsTr("Accessibility"),
-            key: "accessibility",
-            icon: "accessibility_new",
-            description: qsTr("Text size, motion, magnifier, screen reader"),
-            category: "accessibility",
-            settings: [
-                { label: qsTr("Follow system text size"), keywords: ["font", "scale", "bigger", "text", "kde"] },
-                { label: qsTr("Font scale"), keywords: ["font", "size", "zoom", "text"] },
-                { label: qsTr("Reduce motion"), keywords: ["animation", "motion", "vestibular", "reduce"] },
-                { label: qsTr("Magnifier"), keywords: ["zoom", "magnify", "loupe", "kwin"] },
-                { label: qsTr("Invert colours"), keywords: ["contrast", "invert", "negative"] },
-                { label: qsTr("Colour filters"), keywords: ["colour", "blind", "protanopia", "deuteranopia", "filter"] },
-                { label: qsTr("Screen reader"), keywords: ["orca", "speech", "a11y"] }
-            ]
-        },
-        {
-            label: qsTr("Storage"),
-            key: "storage",
-            icon: "hard_drive",
-            description: qsTr("Mount, unmount and eject filesystems"),
-            category: "system",
-            settings: [
-                { label: qsTr("Mount"), keywords: ["mount", "usb", "disk", "partition", "filesystem", "drive"] },
-                { label: qsTr("Unmount"), keywords: ["unmount", "eject", "safe remove", "usb", "disk"] },
-                { label: qsTr("Eject"), keywords: ["eject", "power off", "unplug", "usb", "drive"] },
-                { label: qsTr("Removable media"), keywords: ["usb", "stick", "sdcard", "external", "removable"] }
             ]
         }
     ]

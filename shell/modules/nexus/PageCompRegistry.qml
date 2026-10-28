@@ -114,6 +114,11 @@ QtObject {
         },
         Component {
             StackPage {
+                SubPage { slot: 0; key: "storage"; Component { StoragePage {} } }
+            }
+        },
+        Component {
+            StackPage {
                 SubPage { slot: 0; key: "notifications"; Component { NotificationsPage {} } }
                 SubPage { slot: 1; key: "notificationPreferences"; Component { NotificationPreferencesPage {} } }
                 SubPage { slot: 2; key: "toastPreferences"; Component { ToastPreferencesPage {} } }
@@ -163,6 +168,11 @@ QtObject {
         },
         Component {
             StackPage {
+                SubPage { slot: 0; key: "accessibility"; Component { AccessibilityPage {} } }
+            }
+        },
+        Component {
+            StackPage {
                 SubPage { slot: 0; key: "updates"; Component { UpdatesPage {} } }
             }
         },
@@ -185,16 +195,6 @@ QtObject {
         Component {
             StackPage {
                 SubPage { slot: 0; key: "ai"; Component { AiSettingsPage {} } }
-            }
-        },
-        Component {
-            StackPage {
-                SubPage { slot: 0; key: "accessibility"; Component { AccessibilityPage {} } }
-            }
-        },
-        Component {
-            StackPage {
-                SubPage { slot: 0; key: "storage"; Component { StoragePage {} } }
             }
         }
     ]
