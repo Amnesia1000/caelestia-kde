@@ -15,11 +15,13 @@ VerticalFadeFlickable {
     required property NexusState nState
     readonly property var filteredPages: PageRegistry.allPages
     property int selectedIndex: 0
+    property bool selectionActive: false
 
     function moveUp(): void {
         const pages = root.filteredPages;
         if (!pages || pages.length === 0)
             return;
+        root.selectionActive = true;
         root.selectedIndex = root.selectedIndex > 0 ? root.selectedIndex - 1 : pages.length - 1;
         ensureVisible(list.itemAt(root.selectedIndex));
     }
@@ -28,14 +30,18 @@ VerticalFadeFlickable {
         const pages = root.filteredPages;
         if (!pages || pages.length === 0)
             return;
+        root.selectionActive = true;
         root.selectedIndex = (root.selectedIndex >= 0 && root.selectedIndex < pages.length - 1) ? root.selectedIndex + 1 : 0;
         ensureVisible(list.itemAt(root.selectedIndex));
     }
 
     function activateSelected(): void {
+        if (!root.selectionActive)
+            return;
         const pages = root.filteredPages;
         if (!pages || root.selectedIndex < 0 || root.selectedIndex >= pages.length)
             return;
+        root.selectionActive = false;
         root.nState.goToPage(pages[root.selectedIndex].pageIdx);
     }
 
@@ -63,6 +69,7 @@ VerticalFadeFlickable {
     Keys.onRightPressed: activateSelected()
 
     Component.onCompleted: {
+        root.selectionActive = false;
         const pages = root.filteredPages;
         if (!pages)
             return;
@@ -73,6 +80,7 @@ VerticalFadeFlickable {
 
     Connections {
         function onCurrentPageIdxChanged(): void {
+            root.selectionActive = false;
             const pages = root.filteredPages;
             if (!pages)
                 return;
@@ -85,7 +93,10 @@ VerticalFadeFlickable {
     }
 
     TapHandler {
-        onTapped: root.focus = true
+        onTapped: {
+            root.selectionActive = false;
+            root.focus = true;
+        }
     }
 
     ColumnLayout {
@@ -109,7 +120,7 @@ VerticalFadeFlickable {
                 readonly property int pageIdx: modelData.pageIdx
 
                 readonly property bool isCurrentPage: pageIdx === root.nState.currentPageIdx
-                readonly property bool isSelected: index === root.selectedIndex
+                readonly property bool isSelected: root.selectionActive && index === root.selectedIndex
                 readonly property bool isCategoryStart: index === 0 || root.filteredPages[index - 1]?.page?.category !== page?.category
                 readonly property bool isCategoryEnd: index === root.filteredPages.length - 1 || root.filteredPages[index + 1]?.page?.category !== page?.category
 
@@ -150,6 +161,7 @@ VerticalFadeFlickable {
                     manualHoverOverride: item.isSelected
 
                     onClicked: {
+                        root.selectionActive = false;
                         root.selectedIndex = item.index;
                         root.nState.goToPage(item.pageIdx);
                     }

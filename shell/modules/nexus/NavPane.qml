@@ -25,6 +25,7 @@ ColumnLayout {
     }
 
     function focusSearchBar(): void {
+        navLocations.selectionActive = false;
         searchField.forceActiveFocus();
         searchField.selectAll();
     }
