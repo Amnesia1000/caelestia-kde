@@ -94,9 +94,9 @@ ColumnLayout {
             return;
         if (item.isSelected !== undefined)
             item.isSelected = selected;
-        else if (item.bg !== undefined && item.bg.isSelected !== undefined)
+        else if (item.bg && item.bg.isSelected !== undefined)
             item.bg.isSelected = selected;
-        else if (item.background !== undefined && item.background.isSelected !== undefined)
+        else if (item.background && item.background.isSelected !== undefined)
             item.background.isSelected = selected;
     }
 
