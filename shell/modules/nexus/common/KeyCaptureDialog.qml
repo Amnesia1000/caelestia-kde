@@ -19,6 +19,9 @@ Popup {
     property string currentKey: ""
     property string capturedKey: ""
     property var targetItem: null
+    property real popupX: 0
+    property real popupY: 0
+    property bool isClosing: false
     property bool escHolding: false
     property real escHoldProgress: 0
     property string escHeldMods: ""
@@ -70,10 +73,25 @@ Popup {
                 KeybindsModel.setKey(root.conflict, parts.join("; "));
             }
         }
-        root.confirm(root.shortcutName, finalKey);
+        root.isClosing = true;
         root.close();
+        root.confirm(root.shortcutName, finalKey);
     }
 
+    function updatePosition(): void {
+        if (!parent || root.isClosing)
+            return;
+        if (targetItem) {
+            root.popupX = Math.min(parent.width - width - 16, Math.max(16, targetItem.mapToItem(parent, targetItem.width - width, targetItem.height + 8).x));
+            root.popupY = Math.min(parent.height - height - 16, Math.max(16, targetItem.mapToItem(parent, 0, targetItem.height + 8).y));
+        } else {
+            root.popupX = Math.round((parent.width - width) / 2);
+            root.popupY = Math.round((parent.height - height) / 2);
+        }
+    }
+
+    x: root.popupX
+    y: root.popupY
     width: 300
     padding: 16
     height: contentColumn.implicitHeight + 28
@@ -88,8 +106,17 @@ Popup {
         exiting: true
     }
 
-    x: targetItem && parent ? Math.min(parent.width - width - 16, Math.max(16, targetItem.mapToItem(parent, targetItem.width - width, targetItem.height + 8).x)) : (parent ? Math.round((parent.width - width) / 2) : 0)
-    y: targetItem && parent ? Math.min(parent.height - height - 16, Math.max(16, targetItem.mapToItem(parent, 0, targetItem.height + 8).y)) : (parent ? Math.round((parent.height - height) / 2) : 0)
+    onAboutToShow: {
+        root.isClosing = false;
+        updatePosition();
+    }
+    onAboutToHide: {
+        root.isClosing = true;
+    }
+
+    onTargetItemChanged: updatePosition()
+    onHeightChanged: updatePosition()
+    onWidthChanged: updatePosition()
 
     onConflictChanged: {
         // The error text below is what names the conflict; the shake only drives it home.
@@ -121,28 +148,31 @@ Popup {
     }
 
     onOpened: {
-        capturedKey = ""
-        escHoldAnim.stop()
-        enterHoldAnim.stop()
-        root.escHolding = false
-        root.escHoldProgress = 0
-        root.escHeldMods = ""
-        root.enterHolding = false
-        root.enterHoldProgress = 0
-        root.enterHeldMods = ""
-        blockShortcutsProc.running = true
+        root.isClosing = false;
+        updatePosition();
+        capturedKey = "";
+        escHoldAnim.stop();
+        enterHoldAnim.stop();
+        root.escHolding = false;
+        root.escHoldProgress = 0;
+        root.escHeldMods = "";
+        root.enterHolding = false;
+        root.enterHoldProgress = 0;
+        root.enterHeldMods = "";
+        blockShortcutsProc.running = true;
     }
 
     onClosed: {
-        escHoldAnim.stop()
-        enterHoldAnim.stop()
-        root.escHolding = false
-        root.escHoldProgress = 0
-        root.escHeldMods = ""
-        root.enterHolding = false
-        root.enterHoldProgress = 0
-        root.enterHeldMods = ""
-        unblockShortcutsProc.running = true
+        root.isClosing = false;
+        escHoldAnim.stop();
+        enterHoldAnim.stop();
+        root.escHolding = false;
+        root.escHoldProgress = 0;
+        root.escHeldMods = "";
+        root.enterHolding = false;
+        root.enterHoldProgress = 0;
+        root.enterHeldMods = "";
+        unblockShortcutsProc.running = true;
     }
 
     contentItem: ColumnLayout {
