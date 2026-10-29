@@ -101,21 +101,18 @@ VerticalFadeListView {
         }
 
         Behavior on radius {
-            NumberAnimation {
-                duration: 150
-                easing.type: Easing.OutCubic
+            Anim {
+                type: Anim.DefaultEffects
             }
         }
 
         Behavior on color {
-            ColorAnimation {
-                duration: 150
-            }
+            CAnim {}
         }
 
         Behavior on border.width {
-            NumberAnimation {
-                duration: 150
+            Anim {
+                type: Anim.DefaultEffects
             }
         }
 
@@ -152,9 +149,7 @@ VerticalFadeListView {
                 color: item.isSelected ? Colours.palette.m3primary : Colours.palette.m3secondaryContainer
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: 150
-                    }
+                    CAnim {}
                 }
 
                 MaterialIcon {
@@ -167,9 +162,7 @@ VerticalFadeListView {
                     grade: 25
 
                     Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
+                        CAnim {}
                     }
                 }
             }
@@ -202,9 +195,7 @@ VerticalFadeListView {
                 opacity: item.isSelected ? 1 : 0.6
 
                 Behavior on color {
-                    ColorAnimation {
-                        duration: 150
-                    }
+                    CAnim {}
                 }
             }
         }
@@ -215,22 +206,22 @@ VerticalFadeListView {
             PauseAnimation {
                 duration: Math.min(item.index * 24, 200)
             }
+
             ParallelAnimation {
-                NumberAnimation {
+                Anim {
                     target: slideTrans
                     property: "x"
                     from: -24
                     to: 0
-                    duration: 220
-                    easing.type: Easing.OutCubic
+                    type: Anim.FastSpatial
                 }
-                NumberAnimation {
+
+                Anim {
                     target: item
                     property: "opacity"
                     from: 0
                     to: 1
-                    duration: 180
-                    easing.type: Easing.OutCubic
+                    type: Anim.DefaultEffects
                 }
             }
         }
