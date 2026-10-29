@@ -28,8 +28,13 @@ Item {
         }
 
         onClose: root.requestClose()
+        onCurrentPageIdxChanged: {
+            root.activePane = 0;
+            pages.clearSelection();
+        }
     }
     property color blobColour: Colours.tPalette.m3surfaceContainerLow
+    property int activePane: 0
     readonly property bool hasActiveInputField: root.isInputField(Window.window ? Window.window.activeFocusItem : null)
 
     signal close
@@ -49,6 +54,8 @@ Item {
     }
 
     function focusSearchBar(): void {
+        root.activePane = 0;
+        pages.clearSelection();
         navPane.focusSearchBar();
     }
 
@@ -58,15 +65,35 @@ Item {
     }
 
     function moveUp(): void {
-        navPane.moveUp();
+        if (root.activePane === 1)
+            pages.moveUp();
+        else
+            navPane.moveUp();
     }
 
     function moveDown(): void {
-        navPane.moveDown();
+        if (root.activePane === 1)
+            pages.moveDown();
+        else
+            navPane.moveDown();
     }
 
     function activateSelected(): void {
-        navPane.activateSelected();
+        if (root.activePane === 1) {
+            pages.activateSelected();
+        } else {
+            navPane.activateSelected();
+            root.activePane = 1;
+        }
+    }
+
+    function goLeft(): void {
+        if (root.nState.subPageIdxStack.length > 0) {
+            WindowFactory.goBack();
+        } else if (root.activePane === 1) {
+            root.activePane = 0;
+            pages.clearSelection();
+        }
     }
 
     function currentFlickable(): var {
@@ -213,25 +240,64 @@ Item {
         onActivated: root.moveDown()
     }
 
+    TapHandler {
+        gesturePolicy: TapHandler.Passive
+        target: navPane
+
+        onTapped: {
+            root.activePane = 0;
+            pages.clearSelection();
+        }
+    }
+
+    TapHandler {
+        gesturePolicy: TapHandler.Passive
+        target: pages
+
+        onTapped: {
+            root.activePane = 1;
+            navPane.clearSelection();
+        }
+    }
+
     Shortcut {
         sequence: "Escape"
         enabled: root.windowActive && !root.hasActiveInputField
         autoRepeat: false
 
         onActivated: {
-            if (root.nState.subPageIdxStack.length > 0)
+            if (root.nState.subPageIdxStack.length > 0) {
                 WindowFactory.goBack();
-            else
+            } else if (root.activePane === 1) {
+                root.activePane = 0;
+                pages.clearSelection();
+            } else {
                 root.requestClose();
+            }
         }
     }
 
     Shortcut {
         sequence: "Backspace"
-        enabled: root.windowActive && !root.hasActiveInputField && root.nState.subPageIdxStack.length > 0
+        enabled: root.windowActive && !root.hasActiveInputField && (root.nState.subPageIdxStack.length > 0 || root.activePane === 1)
         autoRepeat: false
 
-        onActivated: WindowFactory.goBack()
+        onActivated: {
+            if (root.nState.subPageIdxStack.length > 0) {
+                WindowFactory.goBack();
+            } else if (root.activePane === 1) {
+                root.activePane = 0;
+                pages.clearSelection();
+            }
+        }
+    }
+
+    Shortcut {
+        sequences: ["Left", "h"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: false
+
+        onActivated: root.goLeft()
     }
 
     Shortcut {

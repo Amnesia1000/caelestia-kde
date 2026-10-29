@@ -56,6 +56,10 @@ ColumnLayout {
             navLocations.activateSelected();
     }
 
+    function clearSelection(): void {
+        navLocations.clearSelection();
+    }
+
     function isInsideSearchRegion(item: Item, x: real, y: real): bool {
         if (!item)
             return false;

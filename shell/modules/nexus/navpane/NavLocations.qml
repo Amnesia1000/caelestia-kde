@@ -45,6 +45,10 @@ VerticalFadeFlickable {
         root.nState.goToPage(pages[root.selectedIndex].pageIdx);
     }
 
+    function clearSelection(): void {
+        root.selectionActive = false;
+    }
+
     function ensureVisible(item: Item): void {
         if (!item)
             return;

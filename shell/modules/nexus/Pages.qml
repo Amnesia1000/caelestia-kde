@@ -51,6 +51,40 @@ Item {
             };
     }
 
+    function activePage(): var {
+        let item = root.currentItem;
+        while (item) {
+            if (item.contentChild !== undefined && item.flickable !== undefined)
+                return item;
+            item = item.currentItem ?? null;
+        }
+        return null;
+    }
+
+    function moveUp(): void {
+        const page = activePage();
+        if (page && typeof page.moveUp === "function")
+            page.moveUp();
+    }
+
+    function moveDown(): void {
+        const page = activePage();
+        if (page && typeof page.moveDown === "function")
+            page.moveDown();
+    }
+
+    function activateSelected(): void {
+        const page = activePage();
+        if (page && typeof page.activateSelected === "function")
+            page.activateSelected();
+    }
+
+    function clearSelection(): void {
+        const page = activePage();
+        if (page && typeof page.clearSelection === "function")
+            page.clearSelection();
+    }
+
     Item {
         id: container
 
@@ -62,6 +96,7 @@ Item {
 
     Connections {
         function onCurrentPageIdxChanged(): void {
+            root.clearSelection();
             switchAnim.complete();
             root.animOff = root.animMovement * (root.nState.currentPageIdx > root.lastPageIdx ? 1 : -1);
             switchAnim.start();

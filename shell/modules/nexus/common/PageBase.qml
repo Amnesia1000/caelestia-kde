@@ -21,6 +21,152 @@ ColumnLayout {
     property list<Item> headerActions
 
     default property Item contentChild
+    property int selectedIndex: -1
+    property bool selectionActive: false
+    property Item selectedItem: null
+
+    function getNavigableItems(): var {
+        const items = [];
+        collectItems(root.contentChild, items);
+        items.sort((a, b) => {
+            try {
+                const ptA = a.mapToItem(flickable.contentItem, 0, 0);
+                const ptB = b.mapToItem(flickable.contentItem, 0, 0);
+                if (Math.abs(ptA.y - ptB.y) > 4)
+                    return ptA.y - ptB.y;
+                return ptA.x - ptB.x;
+            } catch (e) {
+                return 0;
+            }
+        });
+        return items;
+    }
+
+    function collectItems(item: var, list: var): void {
+        if (!item || !item.visible || item.opacity === 0 || item.enabled === false)
+            return;
+
+        if (item.contentItem !== undefined && item.interactive !== undefined && item !== flickable) {
+            const content = item.contentItem;
+            if (content && content.children) {
+                for (let i = 0; i < content.children.length; i++)
+                    collectItems(content.children[i], list);
+            }
+            return;
+        }
+
+        const isRow = (typeof item.clicked === "function" && item.parent !== null) ||
+                      (typeof item.toggle === "function") ||
+                      (typeof item.toggled === "function") ||
+                      (item.first !== undefined && item.last !== undefined) ||
+                      (item.spacious !== undefined);
+
+        const isContainer = item.children && item.children.length > 0 &&
+                            (item.toString().indexOf("QQuickColumnLayout") >= 0 ||
+                             item.toString().indexOf("QQuickRowLayout") >= 0 ||
+                             item.toString().indexOf("QQuickColumn") >= 0 ||
+                             item.toString().indexOf("QQuickRow") >= 0);
+
+        const isSectionHeader = item.font !== undefined && item.text !== undefined &&
+                                typeof item.clicked !== "function" && typeof item.toggle !== "function";
+
+        if (isRow && !isContainer && !isSectionHeader) {
+            list.push(item);
+            return;
+        }
+
+        if (item.children) {
+            for (let i = 0; i < item.children.length; i++)
+                collectItems(item.children[i], list);
+        }
+    }
+
+    function setItemSelection(item: var, selected: bool): void {
+        if (!item)
+            return;
+        if (item.isSelected !== undefined)
+            item.isSelected = selected;
+        else if (item.bg !== undefined && item.bg.isSelected !== undefined)
+            item.bg.isSelected = selected;
+        else if (item.background !== undefined && item.background.isSelected !== undefined)
+            item.background.isSelected = selected;
+    }
+
+    function moveUp(): void {
+        const items = getNavigableItems();
+        if (items.length === 0)
+            return;
+        setItemSelection(root.selectedItem, false);
+        root.selectionActive = true;
+        if (root.selectedIndex <= 0 || root.selectedIndex >= items.length)
+            root.selectedIndex = items.length - 1;
+        else
+            root.selectedIndex = root.selectedIndex - 1;
+        root.selectedItem = items[root.selectedIndex];
+        setItemSelection(root.selectedItem, true);
+        ensureVisible(root.selectedItem);
+    }
+
+    function moveDown(): void {
+        const items = getNavigableItems();
+        if (items.length === 0)
+            return;
+        setItemSelection(root.selectedItem, false);
+        root.selectionActive = true;
+        if (root.selectedIndex < 0 || root.selectedIndex >= items.length - 1)
+            root.selectedIndex = 0;
+        else
+            root.selectedIndex = root.selectedIndex + 1;
+        root.selectedItem = items[root.selectedIndex];
+        setItemSelection(root.selectedItem, true);
+        ensureVisible(root.selectedItem);
+    }
+
+    function activateSelected(): void {
+        if (!root.selectionActive || !root.selectedItem)
+            return;
+        const item = root.selectedItem;
+        if (typeof item.toggle === "function") {
+            item.toggle();
+        } else if (typeof item.clicked === "function") {
+            item.clicked();
+        } else if (typeof item.toggled === "function") {
+            item.checked = !item.checked;
+            item.toggled(item.checked);
+        } else if (item.splitButton !== undefined) {
+            item.splitButton.expanded = !item.splitButton.expanded;
+        } else if (item.children) {
+            for (let i = 0; i < item.children.length; i++) {
+                const child = item.children[i];
+                if (child && typeof child.clicked === "function" && child.enabled) {
+                    child.clicked(null);
+                    return;
+                }
+            }
+        }
+    }
+
+    function clearSelection(): void {
+        setItemSelection(root.selectedItem, false);
+        root.selectionActive = false;
+        root.selectedIndex = -1;
+        root.selectedItem = null;
+    }
+
+    function ensureVisible(item: Item): void {
+        if (!item)
+            return;
+        try {
+            const pt = item.mapToItem(flickable.contentItem, 0, 0);
+            const top = pt.y;
+            const bottom = pt.y + item.height;
+            if (top < flickable.contentY) {
+                flickable.contentY = Math.max(0, top - Tokens.padding.medium);
+            } else if (bottom > flickable.contentY + flickable.height) {
+                flickable.contentY = bottom - flickable.height + Tokens.padding.medium;
+            }
+        } catch (e) {}
+    }
 
     spacing: Tokens.spacing.extraLargeIncreased
 
@@ -79,6 +225,48 @@ ColumnLayout {
         bottomMargin: Tokens.padding.extraLarge
 
         contentHeight: root.scrollable ? (root.contentChild?.implicitHeight ?? 0) : height
-        contentItem.children: [root.contentChild]
+        contentItem.children: [root.contentChild, selectorOutline]
+
+        StyledRect {
+            id: selectorOutline
+
+            readonly property var itemPos: {
+                if (!root.selectedItem || !root.selectedItem.parent)
+                    return { x: 0, y: 0 };
+                try {
+                    return root.selectedItem.mapToItem(flickable.contentItem, 0, 0);
+                } catch (e) {
+                    return { x: 0, y: 0 };
+                }
+            }
+
+            visible: root.selectionActive && root.selectedItem !== null && root.selectedItem.isSelected === undefined && root.selectedItem.bg?.isSelected === undefined && root.selectedItem.background?.isSelected === undefined
+            z: 999
+            x: itemPos.x
+            y: itemPos.y
+            width: root.selectedItem ? root.selectedItem.width : 0
+            height: root.selectedItem ? root.selectedItem.height : 0
+            color: "transparent"
+            border.width: 2
+            border.color: Colours.palette.m3primary
+
+            topLeftRadius: root.selectedItem?.topLeftRadius ?? root.selectedItem?.radius ?? Tokens.rounding.large
+            topRightRadius: root.selectedItem?.topRightRadius ?? root.selectedItem?.radius ?? Tokens.rounding.large
+            bottomLeftRadius: root.selectedItem?.bottomLeftRadius ?? root.selectedItem?.radius ?? Tokens.rounding.large
+            bottomRightRadius: root.selectedItem?.bottomRightRadius ?? root.selectedItem?.radius ?? Tokens.rounding.large
+
+            Behavior on x { CAnim {} }
+            Behavior on y { CAnim {} }
+            Behavior on width { CAnim {} }
+            Behavior on height { CAnim {} }
+            Behavior on topLeftRadius { CAnim {} }
+            Behavior on topRightRadius { CAnim {} }
+            Behavior on bottomLeftRadius { CAnim {} }
+            Behavior on bottomRightRadius { CAnim {} }
+        }
+    }
+
+    TapHandler {
+        onTapped: root.clearSelection()
     }
 }

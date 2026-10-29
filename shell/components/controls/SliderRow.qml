@@ -19,6 +19,7 @@ StyledRect {
     property var reset
     property bool first
     property bool last
+    property bool isSelected: false
     property bool iconClickable: false
     property bool spacious: false
     property bool roomyHeader: false
@@ -30,11 +31,33 @@ StyledRect {
 
     Layout.fillWidth: true
     implicitHeight: rowLayout.implicitHeight + rowLayout.anchors.margins + rowLayout.anchors.topMargin
-    color: Colours.tPalette.m3surfaceContainer
-    topLeftRadius: first ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
-    topRightRadius: first ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
-    bottomLeftRadius: last ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
-    bottomRightRadius: last ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
+    color: isSelected ? Colours.layer(Colours.palette.m3surfaceContainerHigh, 4) : Colours.tPalette.m3surfaceContainer
+    border.width: isSelected ? 2 : 0
+    border.color: Colours.palette.m3primary
+    topLeftRadius: isSelected ? Tokens.rounding.extraLargeIncreased : first ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
+    topRightRadius: isSelected ? Tokens.rounding.extraLargeIncreased : first ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
+    bottomLeftRadius: isSelected ? Tokens.rounding.extraLargeIncreased : last ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
+    bottomRightRadius: isSelected ? Tokens.rounding.extraLargeIncreased : last ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
+
+    Behavior on topLeftRadius {
+        CAnim {}
+    }
+    Behavior on topRightRadius {
+        CAnim {}
+    }
+    Behavior on bottomLeftRadius {
+        CAnim {}
+    }
+    Behavior on bottomRightRadius {
+        CAnim {}
+    }
+
+    Behavior on color {
+        CAnim {}
+    }
+    Behavior on border.width {
+        CAnim {}
+    }
 
     RowLayout {
         id: rowLayout
