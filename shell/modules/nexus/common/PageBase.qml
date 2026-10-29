@@ -154,12 +154,14 @@ ColumnLayout {
         ensureVisible(root.selectedItem);
     }
 
-    function selectItemByLabel(labelStr: string): bool {
+    function selectItemByLabel(labelStr: string, retryCount = 0): bool {
         const items = getNavigableItems();
         if (items.length === 0) {
-            Qt.callLater(() => {
-                root.selectItemByLabel(labelStr);
-            });
+            if (retryCount < 5) {
+                Qt.callLater(() => {
+                    root.selectItemByLabel(labelStr, retryCount + 1);
+                });
+            }
             return false;
         }
         if (!labelStr) {
@@ -276,10 +278,6 @@ ColumnLayout {
             item.isExpanded = !item.isExpanded;
         } else if (typeof item.toggle === "function") {
             item.toggle();
-            if (typeof item.toggled === "function")
-                item.toggled();
-            if (typeof item.clicked === "function")
-                item.clicked();
         } else if (typeof item.clicked === "function") {
             item.clicked();
         } else if (typeof item.toggled === "function") {
