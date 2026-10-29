@@ -40,22 +40,19 @@ StyledRect {
     bottomRightRadius: isSelected ? Tokens.rounding.extraLargeIncreased : last ? (spacious ? Tokens.rounding.extraLarge : Tokens.rounding.large) : Tokens.rounding.extraSmall
 
     Behavior on topLeftRadius {
-        CAnim {}
+        Anim {}
     }
     Behavior on topRightRadius {
-        CAnim {}
+        Anim {}
     }
     Behavior on bottomLeftRadius {
-        CAnim {}
+        Anim {}
     }
     Behavior on bottomRightRadius {
-        CAnim {}
+        Anim {}
     }
 
     Behavior on color {
-        CAnim {}
-    }
-    Behavior on border.width {
         CAnim {}
     }
 

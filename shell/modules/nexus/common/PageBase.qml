@@ -225,45 +225,7 @@ ColumnLayout {
         bottomMargin: Tokens.padding.extraLarge
 
         contentHeight: root.scrollable ? (root.contentChild?.implicitHeight ?? 0) : height
-        contentItem.children: [root.contentChild, selectorOutline]
-
-        StyledRect {
-            id: selectorOutline
-
-            readonly property var itemPos: {
-                if (!root.selectedItem || !root.selectedItem.parent)
-                    return { x: 0, y: 0 };
-                try {
-                    return root.selectedItem.mapToItem(flickable.contentItem, 0, 0);
-                } catch (e) {
-                    return { x: 0, y: 0 };
-                }
-            }
-
-            visible: root.selectionActive && root.selectedItem !== null && root.selectedItem.isSelected === undefined && root.selectedItem.bg?.isSelected === undefined && root.selectedItem.background?.isSelected === undefined
-            z: 999
-            x: itemPos.x
-            y: itemPos.y
-            width: root.selectedItem ? root.selectedItem.width : 0
-            height: root.selectedItem ? root.selectedItem.height : 0
-            color: "transparent"
-            border.width: 2
-            border.color: Colours.palette.m3primary
-
-            topLeftRadius: root.selectedItem?.topLeftRadius ?? root.selectedItem?.radius ?? Tokens.rounding.large
-            topRightRadius: root.selectedItem?.topRightRadius ?? root.selectedItem?.radius ?? Tokens.rounding.large
-            bottomLeftRadius: root.selectedItem?.bottomLeftRadius ?? root.selectedItem?.radius ?? Tokens.rounding.large
-            bottomRightRadius: root.selectedItem?.bottomRightRadius ?? root.selectedItem?.radius ?? Tokens.rounding.large
-
-            Behavior on x { CAnim {} }
-            Behavior on y { CAnim {} }
-            Behavior on width { CAnim {} }
-            Behavior on height { CAnim {} }
-            Behavior on topLeftRadius { CAnim {} }
-            Behavior on topRightRadius { CAnim {} }
-            Behavior on bottomLeftRadius { CAnim {} }
-            Behavior on bottomRightRadius { CAnim {} }
-        }
+        contentItem.children: [root.contentChild]
     }
 
     TapHandler {
