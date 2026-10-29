@@ -59,7 +59,12 @@ ColumnLayout {
                       (typeof item.toggle === "function") ||
                       (typeof item.toggled === "function") ||
                       (item.first !== undefined && item.last !== undefined) ||
-                      (item.spacious !== undefined);
+                      (item.spacious !== undefined) ||
+                      (item.menuItems !== undefined) ||
+                      (item.field !== undefined && item.smallField !== undefined) ||
+                      (item.popup !== undefined && item.keepPopupAsChild !== undefined) ||
+                      (item.isExpanded !== undefined && item.titleText !== undefined) ||
+                      (item.value !== undefined && (item.stepSize !== undefined || item.reset !== undefined || item.moved !== undefined));
 
         const isContainer = item.children && item.children.length > 0 &&
                             (item.toString().indexOf("QQuickColumnLayout") >= 0 ||
@@ -74,6 +79,9 @@ ColumnLayout {
             list.push(item);
             return;
         }
+
+        if (item.item !== undefined && item.item)
+            collectItems(item.item, list);
 
         if (item.children) {
             for (let i = 0; i < item.children.length; i++)
@@ -93,6 +101,12 @@ ColumnLayout {
     }
 
     function moveUp(): void {
+        if (root.selectionActive && root.selectedItem?.splitButton?.expanded) {
+            if (typeof root.selectedItem.cyclePrev === "function") {
+                root.selectedItem.cyclePrev();
+                return;
+            }
+        }
         const items = getNavigableItems();
         if (items.length === 0)
             return;
@@ -108,6 +122,12 @@ ColumnLayout {
     }
 
     function moveDown(): void {
+        if (root.selectionActive && root.selectedItem?.splitButton?.expanded) {
+            if (typeof root.selectedItem.cycleNext === "function") {
+                root.selectedItem.cycleNext();
+                return;
+            }
+        }
         const items = getNavigableItems();
         if (items.length === 0)
             return;
@@ -122,19 +142,94 @@ ColumnLayout {
         ensureVisible(root.selectedItem);
     }
 
+    function stepLeft(): bool {
+        if (!root.selectionActive || !root.selectedItem)
+            return false;
+        if (root.selectedItem?.splitButton?.expanded) {
+            if (typeof root.selectedItem.closeMenu === "function")
+                root.selectedItem.closeMenu(true);
+            else if (root.selectedItem.splitButton)
+                root.selectedItem.splitButton.expanded = false;
+            return true;
+        }
+        const item = root.selectedItem;
+        if (typeof item.stepLeft === "function") {
+            item.stepLeft();
+            return true;
+        }
+        return false;
+    }
+
+    function stepRight(): bool {
+        if (!root.selectionActive || !root.selectedItem)
+            return false;
+        if (root.selectedItem?.splitButton?.expanded) {
+            if (typeof root.selectedItem.closeMenu === "function")
+                root.selectedItem.closeMenu(false);
+            else if (root.selectedItem.splitButton)
+                root.selectedItem.splitButton.expanded = false;
+            return true;
+        }
+        const item = root.selectedItem;
+        if (typeof item.stepRight === "function") {
+            item.stepRight();
+            return true;
+        }
+        return false;
+    }
+
+    function handleEscape(): bool {
+        if (root.selectedItem?.splitButton?.expanded) {
+            if (typeof root.selectedItem.closeMenu === "function")
+                root.selectedItem.closeMenu(true);
+            else
+                root.selectedItem.splitButton.expanded = false;
+            return true;
+        }
+        if (root.selectedItem?.popup?.open) {
+            root.selectedItem.popup.open = false;
+            return true;
+        }
+        if (root.selectedItem?.open && root.selectedItem?.rootParent) {
+            root.selectedItem.open = false;
+            return true;
+        }
+        return false;
+    }
+
     function activateSelected(): void {
         if (!root.selectionActive || !root.selectedItem)
             return;
         const item = root.selectedItem;
-        if (typeof item.toggle === "function") {
+        if (item.splitButton !== undefined) {
+            if (item.splitButton.expanded) {
+                if (typeof item.closeMenu === "function")
+                    item.closeMenu(false);
+                else
+                    item.splitButton.expanded = false;
+            } else {
+                if (typeof item.openMenu === "function")
+                    item.openMenu();
+                else
+                    item.splitButton.expanded = true;
+            }
+        } else if (item.field !== undefined && typeof item.field.forceActiveFocus === "function") {
+            item.field.forceActiveFocus();
+            if (typeof item.field.selectAll === "function")
+                item.field.selectAll();
+        } else if (item.popup !== undefined) {
+            item.popup.open = !item.popup.open;
+        } else if (item.isExpanded !== undefined) {
+            item.isExpanded = !item.isExpanded;
+        } else if (typeof item.toggle === "function") {
             item.toggle();
         } else if (typeof item.clicked === "function") {
             item.clicked();
         } else if (typeof item.toggled === "function") {
             item.checked = !item.checked;
             item.toggled(item.checked);
-        } else if (item.splitButton !== undefined) {
-            item.splitButton.expanded = !item.splitButton.expanded;
+        } else if (item.iconClickable && typeof item.iconClicked === "function") {
+            item.iconClicked();
         } else if (item.children) {
             for (let i = 0; i < item.children.length; i++) {
                 const child = item.children[i];

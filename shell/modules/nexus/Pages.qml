@@ -85,6 +85,27 @@ Item {
             page.clearSelection();
     }
 
+    function stepLeft(): bool {
+        const page = activePage();
+        if (page && typeof page.stepLeft === "function")
+            return page.stepLeft();
+        return false;
+    }
+
+    function stepRight(): bool {
+        const page = activePage();
+        if (page && typeof page.stepRight === "function")
+            return page.stepRight();
+        return false;
+    }
+
+    function handleEscape(): bool {
+        const page = activePage();
+        if (page && typeof page.handleEscape === "function")
+            return page.handleEscape();
+        return false;
+    }
+
     Item {
         id: container
 

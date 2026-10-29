@@ -29,6 +29,20 @@ StyledRect {
     signal released(value: real)
     signal iconClicked
 
+    function stepLeft(): void {
+        const step = 0.05;
+        const next = Math.max(0, Math.round((root.value - step) * 100) / 100);
+        root.moved(next);
+        root.interaction(next);
+    }
+
+    function stepRight(): void {
+        const step = 0.05;
+        const next = Math.min(1, Math.round((root.value + step) * 100) / 100);
+        root.moved(next);
+        root.interaction(next);
+    }
+
     Layout.fillWidth: true
     implicitHeight: rowLayout.implicitHeight + rowLayout.anchors.margins + rowLayout.anchors.topMargin
     color: isSelected ? Colours.layer(Colours.palette.m3surfaceContainerHigh, 4) : Colours.tPalette.m3surfaceContainer

@@ -88,11 +88,23 @@ Item {
     }
 
     function goLeft(): void {
+        if (root.activePane === 1 && pages.stepLeft())
+            return;
         if (root.nState.subPageIdxStack.length > 0) {
             WindowFactory.goBack();
         } else if (root.activePane === 1) {
             root.activePane = 0;
             pages.clearSelection();
+        }
+    }
+
+    function goRight(): void {
+        if (root.activePane === 1) {
+            if (!pages.stepRight())
+                pages.activateSelected();
+        } else {
+            navPane.activateSelected();
+            root.activePane = 1;
         }
     }
 
@@ -266,6 +278,8 @@ Item {
         autoRepeat: false
 
         onActivated: {
+            if (pages.handleEscape())
+                return;
             if (root.nState.subPageIdxStack.length > 0) {
                 WindowFactory.goBack();
             } else if (root.activePane === 1) {
@@ -283,6 +297,8 @@ Item {
         autoRepeat: false
 
         onActivated: {
+            if (pages.handleEscape())
+                return;
             if (root.nState.subPageIdxStack.length > 0) {
                 WindowFactory.goBack();
             } else if (root.activePane === 1) {
@@ -295,16 +311,24 @@ Item {
     Shortcut {
         sequences: ["Left", "h"]
         enabled: root.windowActive && !root.hasActiveInputField
-        autoRepeat: false
+        autoRepeat: true
 
         onActivated: root.goLeft()
     }
 
     Shortcut {
-        sequences: ["Return", "Enter", "Right", "l"]
+        sequences: ["Return", "Enter"]
         enabled: root.windowActive && !root.hasActiveInputField
         autoRepeat: false
 
         onActivated: root.activateSelected()
+    }
+
+    Shortcut {
+        sequences: ["Right", "l"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: true
+
+        onActivated: root.goRight()
     }
 }
