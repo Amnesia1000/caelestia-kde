@@ -253,8 +253,7 @@ Item {
     }
 
     TapHandler {
-        gesturePolicy: TapHandler.Passive
-        target: navPane
+        parent: navPane
 
         onTapped: {
             root.activePane = 0;
@@ -263,8 +262,7 @@ Item {
     }
 
     TapHandler {
-        gesturePolicy: TapHandler.Passive
-        target: pages
+        parent: pages
 
         onTapped: {
             root.activePane = 1;
