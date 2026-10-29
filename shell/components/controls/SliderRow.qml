@@ -34,6 +34,7 @@ StyledRect {
         const next = Math.max(0, Math.round((root.value - step) * 100) / 100);
         root.moved(next);
         root.interaction(next);
+        root.released(next);
     }
 
     function stepRight(): void {
@@ -41,6 +42,7 @@ StyledRect {
         const next = Math.min(1, Math.round((root.value + step) * 100) / 100);
         root.moved(next);
         root.interaction(next);
+        root.released(next);
     }
 
     Layout.fillWidth: true
