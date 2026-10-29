@@ -309,6 +309,17 @@ Item {
     }
 
     Shortcut {
+        sequence: "Delete"
+        enabled: root.windowActive && !root.hasActiveInputField && root.activePane === 1
+        autoRepeat: false
+
+        onActivated: {
+            if (pages.handleDelete())
+                return;
+        }
+    }
+
+    Shortcut {
         sequences: ["Left", "h"]
         enabled: root.windowActive && !root.hasActiveInputField
         autoRepeat: true

@@ -106,6 +106,13 @@ Item {
         return false;
     }
 
+    function handleDelete(): bool {
+        const page = activePage();
+        if (page && typeof page.handleDelete === "function")
+            return page.handleDelete();
+        return false;
+    }
+
     Item {
         id: container
 

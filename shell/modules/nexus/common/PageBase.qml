@@ -154,8 +154,8 @@ ColumnLayout {
         }
         const item = root.selectedItem;
         if (typeof item.stepLeft === "function") {
-            item.stepLeft();
-            return true;
+            const res = item.stepLeft();
+            return res !== undefined ? Boolean(res) : true;
         }
         return false;
     }
@@ -172,8 +172,8 @@ ColumnLayout {
         }
         const item = root.selectedItem;
         if (typeof item.stepRight === "function") {
-            item.stepRight();
-            return true;
+            const res = item.stepRight();
+            return res !== undefined ? Boolean(res) : true;
         }
         return false;
     }
@@ -194,6 +194,17 @@ ColumnLayout {
             root.selectedItem.open = false;
             return true;
         }
+        if (typeof root.selectedItem?.handleEscape === "function" && root.selectedItem.handleEscape())
+            return true;
+        return false;
+    }
+
+    function handleDelete(): bool {
+        if (!root.selectionActive || !root.selectedItem)
+            return false;
+        const item = root.selectedItem;
+        if (typeof item.handleDelete === "function")
+            return Boolean(item.handleDelete());
         return false;
     }
 

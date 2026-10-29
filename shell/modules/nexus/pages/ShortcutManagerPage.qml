@@ -127,6 +127,27 @@ PageBase {
             clearIcon.font: Tokens.font.icon.medium
             clearIcon.padding: Tokens.padding.extraSmall
             onTextChanged: root.shortcutQuery = text
+
+            Keys.onDownPressed: {
+                focus = false;
+                root.moveDown();
+            }
+            Keys.onEscapePressed: event => {
+                if (text !== "") {
+                    text = "";
+                    event.accepted = true;
+                } else {
+                    focus = false;
+                }
+            }
+            Keys.onReturnPressed: {
+                focus = false;
+                root.moveDown();
+            }
+            Keys.onEnterPressed: {
+                focus = false;
+                root.moveDown();
+            }
         }
 
         SectionHeader {
