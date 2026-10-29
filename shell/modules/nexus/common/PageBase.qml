@@ -142,6 +142,48 @@ ColumnLayout {
         ensureVisible(root.selectedItem);
     }
 
+    function selectFirst(): void {
+        const items = getNavigableItems();
+        if (items.length === 0)
+            return;
+        setItemSelection(root.selectedItem, false);
+        root.selectionActive = true;
+        root.selectedIndex = 0;
+        root.selectedItem = items[0];
+        setItemSelection(root.selectedItem, true);
+        ensureVisible(root.selectedItem);
+    }
+
+    function selectItemByLabel(labelStr: string): bool {
+        const items = getNavigableItems();
+        if (items.length === 0) {
+            Qt.callLater(() => {
+                root.selectItemByLabel(labelStr);
+            });
+            return false;
+        }
+        if (!labelStr) {
+            selectFirst();
+            return true;
+        }
+        const target = labelStr.trim().toLowerCase();
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            const itemLabel = String(item.label?.text || item.label || item.titleText || item.text || item.actionName || "").trim().toLowerCase();
+            if (itemLabel === target || (itemLabel && target && (itemLabel.indexOf(target) >= 0 || target.indexOf(itemLabel) >= 0))) {
+                setItemSelection(root.selectedItem, false);
+                root.selectionActive = true;
+                root.selectedIndex = i;
+                root.selectedItem = item;
+                setItemSelection(root.selectedItem, true);
+                ensureVisible(root.selectedItem);
+                return true;
+            }
+        }
+        selectFirst();
+        return true;
+    }
+
     function stepLeft(): bool {
         if (!root.selectionActive || !root.selectedItem)
             return false;

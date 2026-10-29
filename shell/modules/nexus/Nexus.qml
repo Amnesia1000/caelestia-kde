@@ -29,12 +29,15 @@ Item {
 
         onClose: root.requestClose()
         onCurrentPageIdxChanged: {
+            if (root.navigatingFromSearch)
+                return;
             root.activePane = 0;
             pages.clearSelection();
         }
     }
     property color blobColour: Colours.tPalette.m3surfaceContainerLow
     property int activePane: 0
+    property bool navigatingFromSearch: false
     readonly property bool hasActiveInputField: root.isInputField(Window.window ? Window.window.activeFocusItem : null)
 
     signal close
@@ -175,6 +178,14 @@ Item {
 
         nState: nState
         width: Math.min(Tokens.sizes.nexus.maxNavWidth, Math.round(root.width / 3))
+
+        onSearchResultSelected: (entry) => {
+            root.navigatingFromSearch = true;
+            root.activePane = 1;
+            navPane.clearSelection();
+            pages.selectEntry(entry);
+            root.navigatingFromSearch = false;
+        }
     }
 
     Pages {

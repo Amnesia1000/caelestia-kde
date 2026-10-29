@@ -13,6 +13,7 @@ Item {
     readonly property int animMovement: Tokens.padding.extraExtraLarge * 2
     property Item currentItem
     property int loadGeneration: 0
+    property var pendingEntry: null
 
     function loadPage(idx: int): void {
         const generation = ++loadGeneration;
@@ -38,6 +39,9 @@ Item {
             incubator.object.anchors.fill = container;
             incubator.object.visible = true;
             currentItem = incubator.object;
+            if (root.pendingEntry) {
+                root.selectEntry(root.pendingEntry);
+            }
         };
 
         if (incubator.status === Component.Ready)
@@ -80,9 +84,23 @@ Item {
     }
 
     function clearSelection(): void {
+        root.pendingEntry = null;
         const page = activePage();
         if (page && typeof page.clearSelection === "function")
             page.clearSelection();
+    }
+
+    function selectEntry(entry: var): void {
+        root.pendingEntry = entry;
+        const page = activePage();
+        if (page && typeof page.selectItemByLabel === "function") {
+            const label = entry?.settingLabel || entry?.pageLabel || "";
+            page.selectItemByLabel(label);
+            root.pendingEntry = null;
+        } else if (page && typeof page.selectFirst === "function") {
+            page.selectFirst();
+            root.pendingEntry = null;
+        }
     }
 
     function stepLeft(): bool {

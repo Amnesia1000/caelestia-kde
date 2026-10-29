@@ -13,6 +13,8 @@ ColumnLayout {
     required property NexusState nState
     readonly property bool isSearchActive: searchField.activeFocus
 
+    signal searchResultSelected(var entry)
+
     // Rapid keystrokes are batched with a brief debounce before publishing.
     function publishQuery(): void {
         searchDebounce.stop();
@@ -197,5 +199,7 @@ ColumnLayout {
         Layout.topMargin: -topMargin
         Layout.bottomMargin: -bottomMargin
         nState: root.nState
+
+        onEntrySelected: (entry) => root.searchResultSelected(entry)
     }
 }
