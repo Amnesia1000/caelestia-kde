@@ -175,6 +175,10 @@ Popup {
         unblockShortcutsProc.running = true;
     }
 
+    Component.onDestruction: {
+        Quickshell.execDetached(["bash", "-c", "gdbus call --session --dest=org.kde.kglobalaccel --object-path=/kglobalaccel --method=org.kde.KGlobalAccel.blockGlobalShortcuts 'false'"]);
+    }
+
     contentItem: ColumnLayout {
         id: contentColumn
 
