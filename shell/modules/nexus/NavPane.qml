@@ -13,6 +13,8 @@ ColumnLayout {
     required property NexusState nState
     readonly property bool isSearchActive: searchField.activeFocus
 
+    signal searchResultSelected(var entry)
+
     // Rapid keystrokes are batched with a brief debounce before publishing.
     function publishQuery(): void {
         searchDebounce.stop();
@@ -25,6 +27,7 @@ ColumnLayout {
     }
 
     function focusSearchBar(): void {
+        navLocations.selectionActive = false;
         searchField.forceActiveFocus();
         searchField.selectAll();
     }
@@ -32,6 +35,31 @@ ColumnLayout {
     function clearSearchFocus(): void {
         searchField.focus = false;
         root.forceActiveFocus();
+    }
+
+    function moveUp(): void {
+        if (root.nState.searchOpen)
+            searchResults.moveUp();
+        else
+            navLocations.moveUp();
+    }
+
+    function moveDown(): void {
+        if (root.nState.searchOpen)
+            searchResults.moveDown();
+        else
+            navLocations.moveDown();
+    }
+
+    function activateSelected(): void {
+        if (root.nState.searchOpen)
+            searchResults.executeSelected();
+        else
+            navLocations.activateSelected();
+    }
+
+    function clearSelection(): void {
+        navLocations.clearSelection();
     }
 
     function isInsideSearchRegion(item: Item, x: real, y: real): bool {
@@ -99,24 +127,25 @@ ColumnLayout {
         }
 
         Keys.onReturnPressed: {
-            if (root.nState.searchOpen) {
-                root.publishQuery();
-                searchResults.executeSelected();
+            root.activateSelected();
+            root.clearSearchFocus();
+        }
+
+        Keys.onEnterPressed: {
+            root.activateSelected();
+            root.clearSearchFocus();
+        }
+
+        Keys.onRightPressed: event => {
+            if (!root.nState.searchOpen && searchField.text === "") {
+                root.activateSelected();
                 root.clearSearchFocus();
+                event.accepted = true;
             }
         }
 
-        Keys.onUpPressed: {
-            if (root.nState.searchOpen) {
-                searchResults.moveUp();
-            }
-        }
-
-        Keys.onDownPressed: {
-            if (root.nState.searchOpen) {
-                searchResults.moveDown();
-            }
-        }
+        Keys.onUpPressed: root.moveUp()
+        Keys.onDownPressed: root.moveDown()
 
         Behavior on bg.border.color {
             CAnim {}
@@ -149,6 +178,8 @@ ColumnLayout {
     }
 
     NavLocations {
+        id: navLocations
+
         visible: !root.nState.searchOpen
 
         Layout.fillWidth: true
@@ -168,5 +199,7 @@ ColumnLayout {
         Layout.topMargin: -topMargin
         Layout.bottomMargin: -bottomMargin
         nState: root.nState
+
+        onEntrySelected: (entry) => root.searchResultSelected(entry)
     }
 }
