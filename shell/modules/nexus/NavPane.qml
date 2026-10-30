@@ -24,16 +24,17 @@ ColumnLayout {
         root.nState.searchQuery = "";
     }
 
-    spacing: Tokens.spacing.large
+    spacing: Tokens.spacing.medium
 
     SearchBar {
         id: searchField
 
         z: 1
         Layout.fillWidth: true
+        Layout.preferredHeight: 46
 
         placeholderText: qsTr("Search settings")
-        font: Tokens.font.body.large
+        font: Tokens.font.body.medium
 
         bg.color: Colours.tPalette.m3surfaceContainerLowest
         bg.border.color: Colours.palette.m3outlineVariant
@@ -101,8 +102,6 @@ ColumnLayout {
 
         Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.topMargin: -topMargin
-        Layout.bottomMargin: -bottomMargin
         nState: root.nState
     }
 

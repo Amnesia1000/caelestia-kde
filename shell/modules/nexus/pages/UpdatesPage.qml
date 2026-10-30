@@ -139,6 +139,7 @@ PageBase {
     }
 
     title: qsTr("Updates")
+    showTitle: false
 
     headerActions: [
         IconTextButton {

@@ -88,6 +88,7 @@ PageBase {
 
     isSubPage: true
     title: qsTr("Wallpaper Settings")
+    showTitle: false
 
     headerActions: [
         IconTextButton {
@@ -151,11 +152,6 @@ PageBase {
                     dialogLoader.active = false;
                 }
             }
-        }
-
-        SectionHeader {
-            first: true
-            text: Wallpapers.hasSkwd ? qsTr("Configuration & Tools") : qsTr("General Settings")
         }
 
         ColumnLayout {

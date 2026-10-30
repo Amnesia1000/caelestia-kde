@@ -17,10 +17,12 @@ Item {
     property int initialPageIdx: 0
     property var initialSubPageIdx: -1
     readonly property bool windowActive: Window.window ? Window.window.active : false
+    readonly property bool compact: root.width < 1120
 
     readonly property NexusState nState: NexusState {
         id: nState
 
+        compact: root.compact
         currentPageIdx: root.initialPageIdx
         Component.onCompleted: {
             if (root.initialSubPageIdx !== -1 && root.initialSubPageIdx !== undefined && root.initialSubPageIdx !== "")
@@ -48,7 +50,7 @@ Item {
     }
 
     function scrollCurrentPage(event: var): bool {
-        if (event.x <= navPane.x + navPane.width)
+        if (event.x <= subcategoryPane.x + subcategoryPane.width)
             return false;
 
         const f = root.currentFlickable();
@@ -68,8 +70,9 @@ Item {
         return true;
     }
 
+    readonly property var targetScreen: nState.screen ?? Window.window?.screen ?? Quickshell.screens[0]
+    implicitHeight: (targetScreen ? targetScreen.height : 1080) * Tokens.sizes.nexus.heightMult
     implicitWidth: implicitHeight * Tokens.sizes.nexus.ratio
-    implicitHeight: nState.screen.height * Tokens.sizes.nexus.heightMult
 
     Behavior on blobColour {
         CAnim {}
@@ -88,7 +91,7 @@ Item {
         opacity: root.blobColour.a
         radius: Tokens.rounding.large
 
-        borderLeft: navPane.width + navPane.anchors.margins * 2
+        borderLeft: pages.x - Tokens.padding.small
         borderRight: Tokens.padding.medium
         borderTop: Tokens.padding.medium
         borderBottom: Tokens.padding.medium
@@ -103,18 +106,51 @@ Item {
         anchors.margins: Tokens.padding.large
 
         nState: nState
-        width: Math.min(Tokens.sizes.nexus.maxNavWidth, Math.round(root.width / 3))
+        width: root.compact ? Math.min(340, Math.round(root.width * 0.45)) : Math.min(285, Math.round(root.width * 0.21))
+        opacity: root.compact && root.nState.compactSubcategories ? 0 : 1
+        enabled: opacity > 0.5
+
+        Behavior on opacity {
+            Anim {
+                type: Anim.DefaultEffects
+            }
+        }
+    }
+
+    SubcategoryPane {
+        id: subcategoryPane
+
+        anchors.left: root.compact ? parent.left : navPane.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: Tokens.padding.large
+        anchors.topMargin: navPane.anchors.margins
+        anchors.bottomMargin: navPane.anchors.margins
+
+        width: root.compact ? Math.min(340, Math.round(root.width * 0.45)) : Math.min(300, Math.round(root.width * 0.22))
+        opacity: root.compact && !root.nState.compactSubcategories ? 0 : 1
+        enabled: opacity > 0.5
+        z: 1
+        nState: nState
+
+        Behavior on opacity {
+            Anim {
+                type: Anim.DefaultEffects
+            }
+        }
     }
 
     Pages {
         id: pages
 
-        anchors.left: navPane.right
+        anchors.left: subcategoryPane.right
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.bottom: parent.bottom
-        anchors.leftMargin: navPane.anchors.margins + anchors.margins
-        anchors.margins: Tokens.padding.extraLarge
+        anchors.leftMargin: Tokens.padding.large
+        anchors.topMargin: navPane.anchors.margins
+        anchors.bottomMargin: navPane.anchors.margins
+        anchors.rightMargin: navPane.anchors.margins
 
         nState: nState
     }
