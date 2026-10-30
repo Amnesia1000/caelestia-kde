@@ -155,9 +155,12 @@ function planMove(positions, moving, anchor, target, cols, rows, spans) {
 }
 
 // Packs the keys in column-major order, each into the first place it fits.
-function compact(keys, rows, spans) {
+function compact(keys, rows, spans, obstacles) {
     const out = {};
     const occ = {};
+    if (obstacles)
+        for (const key in obstacles)
+            markRect(occ, obstacles[key], spanOf(spans, key), key);
     for (const key of keys) {
         const s = spanOf(spans, key);
         const pos = firstFree(occ, Infinity, rows, s);

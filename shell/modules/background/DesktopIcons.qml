@@ -286,9 +286,17 @@ Item {
     }
 
     function arranged(positions: var, newKeys: var): var {
+        // Widgets are furniture, not files: automatic arrangement leaves them where
+        // the user put them and packs the icons around them.
+        const movable = key => describe(key).kind !== "widget";
+        const obstacles = {};
+        for (const key of Object.keys(positions)) {
+            if (!movable(key))
+                obstacles[key] = positions[key];
+        }
         if (DesktopLayout.sortKey !== "")
-            return Engine.compact(Engine.sortItems(Object.keys(positions).concat(newKeys).map(describe), DesktopLayout.sortKey).map(i => i.key), rows, spans);
-        return Engine.compact(Engine.orderedKeys(positions, rows).concat(newKeys), rows, spans);
+            return Engine.compact(Engine.sortItems(Object.keys(positions).concat(newKeys).filter(movable).map(describe), DesktopLayout.sortKey).map(i => i.key), rows, spans, obstacles);
+        return Engine.compact(Engine.orderedKeys(positions, rows).filter(movable).concat(newKeys), rows, spans, obstacles);
     }
 
     function samePositions(a: var, b: var): bool {
@@ -487,8 +495,14 @@ Item {
     function sortBy(key: string): void {
         DesktopLayout.setSortKey(key);
         const current = contextPositionsTopLevel();
-        const order = Engine.sortItems(Object.keys(current).map(describe), key).map(i => i.key);
-        const next = Engine.compact(order, rows, spans);
+        const movable = k => describe(k).kind !== "widget";
+        const obstacles = {};
+        for (const k of Object.keys(current)) {
+            if (!movable(k))
+                obstacles[k] = current[k];
+        }
+        const order = Engine.sortItems(Object.keys(current).filter(movable).map(describe), key).map(i => i.key);
+        const next = Engine.compact(order, rows, spans, obstacles);
         for (const k in next) {
             if (next[k])
                 next[k] = Object.assign({}, next[k], { screen: screenData.name });
@@ -1388,7 +1402,10 @@ Item {
             anchor = moving.indexOf(dragAnchor) !== -1 ? dragAnchor : moving[0];
             moving.forEach((k, i) => base[k] = { col: plan.cell.col, row: plan.cell.row + i });
         }
-        const next = DesktopLayout.autoArrange ? Engine.planInsert(base, moving, plan.place, rows, spans) : Engine.planMove(base, moving, anchor, plan.place, cols, rows, spans);
+        // Widgets are placed by hand: auto arrangement must not re-pack them into
+        // the first free cells next to the icons.
+        const widgetMove = moving.some(k => isWidgetKey(k));
+        const next = DesktopLayout.autoArrange && !widgetMove ? Engine.planInsert(base, moving, plan.place, rows, spans) : Engine.planMove(base, moving, anchor, plan.place, cols, rows, spans);
         dropCells = moving.map(k => Object.assign({}, next[k], spanOf(k)));
         // The dragged items stay faded where they were; only the others move aside.
         const shown = Object.assign({}, DesktopLayout.positions, next);
@@ -1438,7 +1455,8 @@ Item {
             removeFromGroup(fromGroup, keys.filter(k => !isGroupKey(k)).map(nameOf), plan.cell);
             return;
         }
-        const landed = DesktopLayout.autoArrange ? Engine.planInsert(contextPositionsTopLevel(), keys, plan.place, rows, spans) : Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], plan.place, cols, rows, spans);
+        const widgetMove = keys.some(k => isWidgetKey(k));
+        const landed = DesktopLayout.autoArrange && !widgetMove ? Engine.planInsert(contextPositionsTopLevel(), keys, plan.place, rows, spans) : Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], plan.place, cols, rows, spans);
         for (const k of keys) {
             if (landed[k])
                 landed[k] = Object.assign({}, landed[k], { screen: screenData.name });
@@ -1836,7 +1854,7 @@ wl-paste --no-newline --type text/uri-list`]
         readonly property bool barEnabled: !Strings.testRegexList(barConfig.excludedScreens, root.screenData.name)
         readonly property string barPosition: barConfig.position ?? Config.bar.position
         readonly property int barZone: barEnabled ? (Visibilities.bars.get(root.screenData.name)?.visualThickness ?? (Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness))) : 0
-        readonly property int baseMargin: Math.round(Tokens.padding.large * 2 * root.effectiveScale)
+        readonly property int baseMargin: Math.round(Tokens.padding.large * 0.5 * root.effectiveScale)
         readonly property int marginLeft: barPosition === "left" ? baseMargin + barZone : baseMargin
         readonly property int marginRight: barPosition === "right" ? baseMargin + barZone : baseMargin
         readonly property int marginTop: barPosition === "top" ? baseMargin + barZone : baseMargin
@@ -1846,8 +1864,8 @@ wl-paste --no-newline --type text/uri-list`]
         readonly property real areaWidth: root.width - marginLeft - marginRight
         readonly property real areaHeight: root.height - marginTop - marginBottom
 
-        x: marginLeft + Math.floor((areaWidth - width) / 2)
-        y: marginTop + Math.floor((areaHeight - height) / 2)
+        x: marginLeft
+        y: marginTop
         width: root.cols * root.cellWidth
         height: root.rows * root.cellHeight
 
