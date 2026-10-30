@@ -40,3 +40,5 @@ test_download_url_is_https_kwinscript() {
         [[ "$dl_url" =~ ^https://.*\.kwinscript$ ]] || fail "download URL must be HTTPS and end with .kwinscript, got $dl_url"
     fi
 }
+
+run_tests
