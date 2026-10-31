@@ -1405,7 +1405,17 @@ Item {
         // Widgets are placed by hand: auto arrangement must not re-pack them into
         // the first free cells next to the icons.
         const widgetMove = moving.some(k => isWidgetKey(k));
-        const next = DesktopLayout.autoArrange && !widgetMove ? Engine.planInsert(base, moving, plan.place, rows, spans) : Engine.planMove(base, moving, anchor, plan.place, cols, rows, spans);
+        let next;
+        if (DesktopLayout.autoArrange && !widgetMove) {
+            const iconObstacles = {};
+            for (const k of Object.keys(base)) {
+                if (isWidgetKey(k))
+                    iconObstacles[k] = base[k];
+            }
+            next = Engine.planInsert(base, moving, plan.place, rows, spans, iconObstacles);
+        } else {
+            next = Engine.planMove(base, moving, anchor, plan.place, cols, rows, spans);
+        }
         dropCells = moving.map(k => Object.assign({}, next[k], spanOf(k)));
         // The dragged items stay faded where they were; only the others move aside.
         const shown = Object.assign({}, DesktopLayout.positions, next);
@@ -1456,7 +1466,18 @@ Item {
             return;
         }
         const widgetMove = keys.some(k => isWidgetKey(k));
-        const landed = DesktopLayout.autoArrange && !widgetMove ? Engine.planInsert(contextPositionsTopLevel(), keys, plan.place, rows, spans) : Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], plan.place, cols, rows, spans);
+        let landed;
+        if (DesktopLayout.autoArrange && !widgetMove) {
+            const current = contextPositionsTopLevel();
+            const iconObstacles = {};
+            for (const k of Object.keys(current)) {
+                if (isWidgetKey(k))
+                    iconObstacles[k] = current[k];
+            }
+            landed = Engine.planInsert(current, keys, plan.place, rows, spans, iconObstacles);
+        } else {
+            landed = Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], plan.place, cols, rows, spans);
+        }
         for (const k of keys) {
             if (landed[k])
                 landed[k] = Object.assign({}, landed[k], { screen: screenData.name });
