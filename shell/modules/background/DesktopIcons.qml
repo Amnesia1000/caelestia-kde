@@ -892,27 +892,27 @@ Item {
         return out;
     }
 
-    // If `place` falls inside a locked widget's footprint, snap it to the
-    // nearest free cell outside that footprint. `movingSpan` is the span of
-    // the item being dragged so the snapped cell fits it without overlap.
-    function snapOutOfLocked(place: var, movingSpan: var): var {
-        const current = contextPositionsTopLevel();
-        const locked = lockedKeys();
-        if (locked.length === 0)
+    // If `place` falls inside any of `occupiedKeys`' footprints (looked up from
+    // `positionMap`), snap it to the nearest free cell outside them.
+    // `movingSpan` is the span of the item being dragged.
+    function snapOutOf(place: var, movingSpan: var, occupiedKeys: var, positionMap: var): var {
+        if (!occupiedKeys || occupiedKeys.length === 0)
             return place;
-        // Build an occupancy map of every locked widget's cells.
         const occ = {};
-        for (const key of locked) {
-            const p = current[key];
+        for (const key of occupiedKeys) {
+            const p = positionMap[key];
             if (p)
                 Engine.markRect(occ, p, spanOf(key), key);
         }
         const s = movingSpan ?? { w: 1, h: 1 };
-        // If the intended cell is free of locked cells, keep it as-is.
         if (Engine.rectFree(occ, place, s))
             return place;
-        // Otherwise find the nearest free cell.
         return Engine.nearestFree(occ, place.col, place.row, cols, rows, s);
+    }
+
+    // Convenience: snap away from locked widgets only (icon-drag path).
+    function snapOutOfLocked(place: var, movingSpan: var): var {
+        return snapOutOf(place, movingSpan, lockedKeys(), contextPositionsTopLevel());
     }
 
     function previewResize(key: string, w: int, h: int, origin: var): void {
@@ -1443,9 +1443,22 @@ Item {
         // Widgets are placed by hand: auto arrangement must not re-pack them into
         // the first free cells next to the icons.
         const widgetMove = moving.some(k => isWidgetKey(k));
-        // Non-widget drags must not preview inside a locked widget's footprint;
-        // snap the intended target to the nearest free cell outside it.
-        const safePlace = widgetMove ? plan.place : snapOutOfLocked(plan.place, spanOf(dragAnchor));
+        // Compute the safe drop target:
+        //   – icon drag: snap away from locked-widget cells
+        //   – widget drag + autoArrange: snap away from all icon/group cells (they are fixed)
+        let safePlace;
+        let immovable;
+        if (widgetMove && DesktopLayout.autoArrange) {
+            const iconKeys = Object.keys(base).filter(k => !isWidgetKey(k));
+            safePlace = snapOutOf(plan.place, spanOf(dragAnchor), iconKeys, base);
+            immovable = lockedKeys().concat(iconKeys);
+        } else if (!widgetMove) {
+            safePlace = snapOutOfLocked(plan.place, spanOf(dragAnchor));
+            immovable = lockedKeys();
+        } else {
+            safePlace = plan.place;
+            immovable = lockedKeys();
+        }
         let next;
         if (DesktopLayout.autoArrange && !widgetMove) {
             const iconObstacles = {};
@@ -1455,7 +1468,7 @@ Item {
             }
             next = Engine.planInsert(base, moving, safePlace, rows, spans, iconObstacles);
         } else {
-            next = Engine.planMove(base, moving, anchor, safePlace, cols, rows, spans, lockedKeys());
+            next = Engine.planMove(base, moving, anchor, safePlace, cols, rows, spans, immovable);
         }
         dropCells = moving.map(k => Object.assign({}, next[k], spanOf(k)));
         // The dragged items stay faded where they were; only the others move aside.
@@ -1508,7 +1521,21 @@ Item {
         }
         const widgetMove = keys.some(k => isWidgetKey(k));
         // Non-widget drags must not land inside a locked widget's footprint.
-        const safePlace = widgetMove ? plan.place : snapOutOfLocked(plan.place, spanOf(dragAnchor || keys[0]));
+        // Widget drags with autoArrange must not displace auto-arranged icons.
+        let safePlace;
+        let immovable;
+        if (widgetMove && DesktopLayout.autoArrange) {
+            const current = contextPositionsTopLevel();
+            const iconKeys = Object.keys(current).filter(k => !isWidgetKey(k));
+            safePlace = snapOutOf(plan.place, spanOf(dragAnchor || keys[0]), iconKeys, current);
+            immovable = lockedKeys().concat(iconKeys);
+        } else if (!widgetMove) {
+            safePlace = snapOutOfLocked(plan.place, spanOf(dragAnchor || keys[0]));
+            immovable = lockedKeys();
+        } else {
+            safePlace = plan.place;
+            immovable = lockedKeys();
+        }
         let landed;
         if (DesktopLayout.autoArrange && !widgetMove) {
             const current = contextPositionsTopLevel();
@@ -1519,7 +1546,7 @@ Item {
             }
             landed = Engine.planInsert(current, keys, safePlace, rows, spans, iconObstacles);
         } else {
-            landed = Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], safePlace, cols, rows, spans, lockedKeys());
+            landed = Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], safePlace, cols, rows, spans, immovable);
         }
         for (const k of keys) {
             if (landed[k])
