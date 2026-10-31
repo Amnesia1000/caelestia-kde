@@ -105,8 +105,9 @@ function rectsOverlap(a, sa, b, sb) {
 // relative placement. The shift is clamped so every moved item stays on the
 // grid. Items overlapping a destination step aside to the free place nearest
 // to where they were. `spans` may give new sizes, which also makes this the
-// resize operation.
-function planMove(positions, moving, anchor, target, cols, rows, spans) {
+// resize operation. `immovable` is an optional array of keys that must never
+// be displaced, e.g. locked widgets; they stay in place and block movers.
+function planMove(positions, moving, anchor, target, cols, rows, spans, immovable) {
     const out = copyPositions(positions);
     const from = positions[anchor];
     if (!from)
@@ -124,7 +125,16 @@ function planMove(positions, moving, anchor, target, cols, rows, spans) {
         dr = Math.min(dr, Math.max(-p.row, rows - s.h - p.row));
     }
 
+    // Mark immovable cells first so the mover's landing zone can't overlap them.
     const occ = {};
+    if (immovable) {
+        for (const key of immovable) {
+            const p = positions[key];
+            if (p)
+                markRect(occ, p, spanOf(spans, key), key);
+        }
+    }
+
     const moved = [];
     for (const key of moving) {
         const p = positions[key];
@@ -136,10 +146,15 @@ function planMove(positions, moving, anchor, target, cols, rows, spans) {
     }
 
     // Everyone that is not moving keeps their place unless a mover covers it.
+    // Immovable items are never displaced; they stay locked in their cell.
     const displaced = [];
     for (const key of orderedKeys(positions, rows)) {
         if (moving.indexOf(key) !== -1)
             continue;
+        if (immovable && immovable.indexOf(key) !== -1) {
+            markRect(occ, positions[key], spanOf(spans, key), key);
+            continue;
+        }
         const s = spanOf(spans, key);
         if (moved.some(m => rectsOverlap(positions[key], s, out[m], spanOf(spans, m))))
             displaced.push(key);

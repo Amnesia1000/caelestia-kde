@@ -874,11 +874,45 @@ Item {
         const s = spansWith(key, w, h);
         if (DesktopLayout.autoArrange)
             return Engine.compact(Engine.orderedKeys(current, rows), rows, s);
-        return Engine.planMove(current, [key], key, origin ?? current[key], cols, rows, s);
+        return Engine.planMove(current, [key], key, origin ?? current[key], cols, rows, s, lockedKeys());
     }
 
     function isKeyLocked(key: string): bool {
         return isWidgetKey(key) && DesktopLayout.isWidgetLocked(nameOf(key));
+    }
+
+    // Keys from the current top-level positions that must never be displaced,
+    // i.e. locked widgets. Passed to Engine.planMove as the immovable list.
+    function lockedKeys(): var {
+        const out = [];
+        for (const key of topLevelKeys()) {
+            if (isKeyLocked(key))
+                out.push(key);
+        }
+        return out;
+    }
+
+    // If `place` falls inside a locked widget's footprint, snap it to the
+    // nearest free cell outside that footprint. `movingSpan` is the span of
+    // the item being dragged so the snapped cell fits it without overlap.
+    function snapOutOfLocked(place: var, movingSpan: var): var {
+        const current = contextPositionsTopLevel();
+        const locked = lockedKeys();
+        if (locked.length === 0)
+            return place;
+        // Build an occupancy map of every locked widget's cells.
+        const occ = {};
+        for (const key of locked) {
+            const p = current[key];
+            if (p)
+                Engine.markRect(occ, p, spanOf(key), key);
+        }
+        const s = movingSpan ?? { w: 1, h: 1 };
+        // If the intended cell is free of locked cells, keep it as-is.
+        if (Engine.rectFree(occ, place, s))
+            return place;
+        // Otherwise find the nearest free cell.
+        return Engine.nearestFree(occ, place.col, place.row, cols, rows, s);
     }
 
     function previewResize(key: string, w: int, h: int, origin: var): void {
@@ -1409,6 +1443,9 @@ Item {
         // Widgets are placed by hand: auto arrangement must not re-pack them into
         // the first free cells next to the icons.
         const widgetMove = moving.some(k => isWidgetKey(k));
+        // Non-widget drags must not preview inside a locked widget's footprint;
+        // snap the intended target to the nearest free cell outside it.
+        const safePlace = widgetMove ? plan.place : snapOutOfLocked(plan.place, spanOf(dragAnchor));
         let next;
         if (DesktopLayout.autoArrange && !widgetMove) {
             const iconObstacles = {};
@@ -1416,9 +1453,9 @@ Item {
                 if (isWidgetKey(k))
                     iconObstacles[k] = base[k];
             }
-            next = Engine.planInsert(base, moving, plan.place, rows, spans, iconObstacles);
+            next = Engine.planInsert(base, moving, safePlace, rows, spans, iconObstacles);
         } else {
-            next = Engine.planMove(base, moving, anchor, plan.place, cols, rows, spans);
+            next = Engine.planMove(base, moving, anchor, safePlace, cols, rows, spans, lockedKeys());
         }
         dropCells = moving.map(k => Object.assign({}, next[k], spanOf(k)));
         // The dragged items stay faded where they were; only the others move aside.
@@ -1470,6 +1507,8 @@ Item {
             return;
         }
         const widgetMove = keys.some(k => isWidgetKey(k));
+        // Non-widget drags must not land inside a locked widget's footprint.
+        const safePlace = widgetMove ? plan.place : snapOutOfLocked(plan.place, spanOf(dragAnchor || keys[0]));
         let landed;
         if (DesktopLayout.autoArrange && !widgetMove) {
             const current = contextPositionsTopLevel();
@@ -1478,9 +1517,9 @@ Item {
                 if (isWidgetKey(k))
                     iconObstacles[k] = current[k];
             }
-            landed = Engine.planInsert(current, keys, plan.place, rows, spans, iconObstacles);
+            landed = Engine.planInsert(current, keys, safePlace, rows, spans, iconObstacles);
         } else {
-            landed = Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], plan.place, cols, rows, spans);
+            landed = Engine.planMove(contextPositionsTopLevel(), keys, dragAnchor || keys[0], safePlace, cols, rows, spans, lockedKeys());
         }
         for (const k of keys) {
             if (landed[k])
