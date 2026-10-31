@@ -101,7 +101,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: 46
 
-        placeholderText: qsTr("Press / to Search Settings")
+        placeholderText: qsTr("Press / to Search")
         font: Tokens.font.body.medium
 
         bg.color: Colours.tPalette.m3surfaceContainerLowest

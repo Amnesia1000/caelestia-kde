@@ -9,6 +9,7 @@ TextFieldBase {
     readonly property alias bg: bg
     readonly property alias searchIcon: searchIcon
     readonly property alias clearIcon: clearIcon
+    readonly property alias placeholder: placeholder
 
     leftPadding: searchIcon.width + searchIcon.anchors.leftMargin + Tokens.spacing.medium
     rightPadding: clearIcon.width + clearIcon.anchors.rightMargin + Tokens.spacing.medium
@@ -41,12 +42,15 @@ TextFieldBase {
         id: placeholder
 
         anchors.left: parent.left
+        anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: root.leftPadding
+        anchors.rightMargin: Tokens.padding.large
 
         text: root.placeholderText
         color: root.placeholderTextColor
         font: root.font
+        elide: Text.ElideRight
 
         opacity: root.text ? 0 : 1
 
