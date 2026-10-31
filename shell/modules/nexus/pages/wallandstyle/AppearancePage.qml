@@ -70,7 +70,6 @@ PageBase {
 
     isSubPage: true
     title: qsTr("Theme & Effects")
-    showTitle: false
 
     headerActions: [
         IconTextButton {

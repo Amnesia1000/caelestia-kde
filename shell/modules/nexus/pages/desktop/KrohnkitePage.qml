@@ -51,7 +51,6 @@ PageBase {
     }
 
     title: qsTr("Window Tiling")
-    showTitle: false
     isSubPage: true
 
     headerActions: [

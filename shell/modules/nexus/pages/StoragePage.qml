@@ -31,7 +31,6 @@ PageBase {
     }
 
     title: qsTr("Storage")
-    showTitle: false
 
     // A stick can be plugged in while the page is open, so the list is re-read every
     // time the page is shown instead of trusting what was read last time.

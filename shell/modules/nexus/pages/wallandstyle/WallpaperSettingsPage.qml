@@ -88,7 +88,6 @@ PageBase {
 
     isSubPage: true
     title: qsTr("Wallpaper Settings")
-    showTitle: false
 
     headerActions: [
         IconTextButton {

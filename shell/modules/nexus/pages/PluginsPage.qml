@@ -85,7 +85,6 @@ PageBase {
     }
 
     title: qsTr("Plugins")
-    showTitle: false
 
     headerActions: [
         TextButton {
