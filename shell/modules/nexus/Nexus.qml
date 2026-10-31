@@ -67,6 +67,8 @@ Item {
     }
 
     function focusSearchBar(): void {
+        if (root.compact && root.nState.compactSubcategories)
+            root.nState.exitCompactPage();
         root.activePane = 0;
         subcategoryPane.clearSelection();
         pages.clearSelection();
@@ -223,7 +225,7 @@ Item {
         nState: nState
         width: root.compact ? Math.min(340, Math.round(root.width * 0.45)) : Math.min(285, Math.round(root.width * 0.21))
         opacity: root.compact && root.nState.compactSubcategories ? 0 : 1
-        enabled: opacity > 0.5
+        enabled: !root.compact || !root.nState.compactSubcategories
 
         onSearchResultSelected: (entry) => {
             root.navigatingFromSearch = true;
@@ -253,7 +255,7 @@ Item {
 
         width: root.compact ? Math.min(340, Math.round(root.width * 0.45)) : Math.min(300, Math.round(root.width * 0.22))
         opacity: root.compact && !root.nState.compactSubcategories ? 0 : 1
-        enabled: opacity > 0.5
+        enabled: !root.compact || root.nState.compactSubcategories
         z: 1
         nState: nState
 

@@ -27,6 +27,8 @@ ColumnLayout {
     }
 
     function focusSearchBar(): void {
+        if (root.nState.compact && root.nState.compactSubcategories)
+            root.nState.exitCompactPage();
         navLocations.selectionActive = false;
         searchField.forceActiveFocus();
         searchField.selectAll();

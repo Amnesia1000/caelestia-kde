@@ -180,4 +180,10 @@ QtObject {
             }
         }
     }
+
+    onSearchOpenChanged: {
+        if (searchOpen && compact && compactSubcategories) {
+            exitCompactPage();
+        }
+    }
 }
