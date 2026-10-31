@@ -24,7 +24,10 @@ Singleton {
                 const pageIdx = isKey
                     ? PageRegistry.indexForKey(props.initialPageIdx)
                     : props.initialPageIdx;
-                const subIdx = props.initialSubPageIdx ?? (isKey ? PageRegistry.defaultSubPageForKey(props.initialPageIdx) : -1);
+                const rawSub = (props.initialSubPageIdx !== undefined && props.initialSubPageIdx !== -1)
+                    ? props.initialSubPageIdx
+                    : (isKey ? PageRegistry.defaultSubPageForKey(props.initialPageIdx) : -1);
+                const subIdx = (typeof rawSub === "number") ? rawSub : PageDictionary.defaultSubPageForKey(rawSub);
                 win.nexus.nState.goToSubPage(pageIdx, subIdx);
             }
             win.visible = true;
@@ -39,6 +42,11 @@ Singleton {
             resolvedProps.initialPageIdx = PageRegistry.indexForKey(key);
             if (resolvedProps.initialSubPageIdx === undefined || resolvedProps.initialSubPageIdx === -1)
                 resolvedProps.initialSubPageIdx = PageRegistry.defaultSubPageForKey(key);
+        }
+        if (typeof resolvedProps.initialSubPageIdx === "string") {
+            const mapped = PageDictionary.defaultSubPageForKey(resolvedProps.initialSubPageIdx);
+            if (mapped >= 0)
+                resolvedProps.initialSubPageIdx = mapped;
         }
         const win = nexusComp.createObject(parent ?? dummy, resolvedProps);
         root.openWindow = win;

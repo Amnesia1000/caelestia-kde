@@ -236,7 +236,18 @@ QtObject {
         "plugins": 9,
         "updates": 10,
         "about": 11,
-        "system": 0
+        "system": 0,
+        "startupAppPicker": 7,
+        "btDeviceInfo": 11,
+        "bluetoothPairing": 12,
+        "appVolumes": 3,
+        "soundEffects": 4,
+        "notificationSilencing": 5,
+        "notificationPreferences": 6,
+        "toastPreferences": 7,
+        "toastEvents": 8,
+        "focus": 9,
+        "quickToggles": 5
     })
 
     function defaultSubPageForKey(key: string): int {

@@ -23,11 +23,14 @@ Item {
         id: nState
 
         compact: root.compact
-        currentPageIdx: root.initialPageIdx
-        Component.onCompleted: {
-            if (root.initialSubPageIdx !== -1 && root.initialSubPageIdx !== undefined && root.initialSubPageIdx !== "")
-                openSubPage(root.initialSubPageIdx);
+        pendingSubPageIdx: {
+            if (root.initialSubPageIdx === -1 || root.initialSubPageIdx === undefined || root.initialSubPageIdx === "")
+                return -1;
+            return (typeof root.initialSubPageIdx === "number")
+                ? root.initialSubPageIdx
+                : PageDictionary.defaultSubPageForKey(root.initialSubPageIdx);
         }
+        currentPageIdx: root.initialPageIdx
 
         onClose: root.requestClose()
         onCurrentPageIdxChanged: {

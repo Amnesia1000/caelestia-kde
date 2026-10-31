@@ -8,7 +8,7 @@ QtObject {
     property ShellScreen screen
     property bool isWindow
     property bool animatingContainer
-    property int currentPageIdx
+    property int currentPageIdx: -1
     property var subPageIdxStack: []
     property bool searchOpen
     property string searchQuery
@@ -26,7 +26,7 @@ QtObject {
     property string pendingNetworkSsid: ""
 
     property int pendingSubPageIdx: -1
-    property int activeSubPageSlot: 1
+    property int activeSubPageSlot: -1
     property bool compact: false
     property bool compactSubcategories: false
 
@@ -107,6 +107,8 @@ QtObject {
     }
 
     function openSubPage(target: var): void {
+        if (compact)
+            compactSubcategories = true;
         subPageIdxStack.push(target);
         subPageOpened(target);
     }
@@ -136,22 +138,23 @@ QtObject {
     // Navigation that changes page, such as a search result. Landing on the
     // page that is already showing still opens immediately: nothing to wait for.
     function goToSubPage(pageIdx: int, subPageIdx: int): void {
+        const subIdx = subPageIdx;
         if (pageIdx === currentPageIdx) {
             pendingSubPageIdx = -1;
             if (compact)
                 compactSubcategories = true;
-            if (subPageIdx >= 0) {
-                const parentSlot = parentSubCategorySlot(pageIdx, subPageIdx);
+            if (subIdx >= 0) {
+                const parentSlot = parentSubCategorySlot(pageIdx, subIdx);
                 selectSubCategory(parentSlot);
-                if (subPageIdx !== parentSlot) {
-                    openSubPage(subPageIdx);
+                if (subIdx !== parentSlot) {
+                    openSubPage(subIdx);
                 }
             } else {
                 goToPage(pageIdx);
             }
             return;
         }
-        pendingSubPageIdx = subPageIdx;
+        pendingSubPageIdx = subIdx;
         currentPageIdx = pageIdx;
     }
 
@@ -167,10 +170,30 @@ QtObject {
         openSubPage(3);
     }
 
+    Component.onCompleted: {
+        if (currentPageIdx < 0) {
+            currentPageIdx = 0;
+        } else if (activeSubPageSlot < 0) {
+            if (pendingSubPageIdx >= 0) {
+                const target = pendingSubPageIdx;
+                pendingSubPageIdx = -1;
+                activeSubPageSlot = parentSubCategorySlot(currentPageIdx, target);
+                subPageIdxStack.length = 0;
+                if (target !== activeSubPageSlot) {
+                    subPageIdxStack.push(target);
+                }
+            } else {
+                activeSubPageSlot = defaultSlotForPage(currentPageIdx);
+            }
+            subCategorySelected(activeSubPageSlot);
+        }
+    }
+
     onCurrentPageIdxChanged: {
+        if (currentPageIdx < 0)
+            return;
         compactSubcategories = compact;
         subPageIdxStack.length = 0;
-        activeSubPageSlot = defaultSlotForPage(currentPageIdx);
         if (pendingSubPageIdx >= 0) {
             const target = pendingSubPageIdx;
             pendingSubPageIdx = -1;
@@ -178,7 +201,10 @@ QtObject {
             if (target !== activeSubPageSlot) {
                 subPageIdxStack.push(target);
             }
+        } else {
+            activeSubPageSlot = defaultSlotForPage(currentPageIdx);
         }
+        subCategorySelected(activeSubPageSlot);
     }
 
     onSearchOpenChanged: {
