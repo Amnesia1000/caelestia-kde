@@ -138,6 +138,8 @@ QtObject {
     function goToSubPage(pageIdx: int, subPageIdx: int): void {
         if (pageIdx === currentPageIdx) {
             pendingSubPageIdx = -1;
+            if (compact)
+                compactSubcategories = true;
             if (subPageIdx >= 0) {
                 const parentSlot = parentSubCategorySlot(pageIdx, subPageIdx);
                 selectSubCategory(parentSlot);
@@ -149,8 +151,8 @@ QtObject {
             }
             return;
         }
-        currentPageIdx = pageIdx;
         pendingSubPageIdx = subPageIdx;
+        currentPageIdx = pageIdx;
     }
 
     function closeSubPage(): void {

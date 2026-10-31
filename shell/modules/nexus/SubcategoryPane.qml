@@ -118,11 +118,26 @@ ColumnLayout {
         }
     }
 
+    function ensureActiveCardVisible(): void {
+        const cards = currentCards();
+        for (let i = 0; i < cards.length; i++) {
+            if (cards[i].slot === root.nState.activeSubPageSlot) {
+                ensureVisible(cards[i]);
+                break;
+            }
+        }
+    }
+
     spacing: Tokens.spacing.medium
 
     Connections {
         function onCurrentPageIdxChanged(): void {
             root.clearSelection();
+            Qt.callLater(root.ensureActiveCardVisible);
+        }
+
+        function onActiveSubPageSlotChanged(): void {
+            Qt.callLater(root.ensureActiveCardVisible);
         }
 
         target: root.nState
