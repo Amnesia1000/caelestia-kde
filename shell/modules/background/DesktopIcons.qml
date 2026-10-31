@@ -1445,18 +1445,23 @@ Item {
         const widgetMove = moving.some(k => isWidgetKey(k));
         // Compute the safe drop target:
         //   – icon drag: snap away from locked-widget cells
-        //   – widget drag + autoArrange: snap away from all icon/group cells (they are fixed)
+        //   – widget drag: always snap away from locked-widget cells
+        //   – widget drag + autoArrange: also snap away from all icon/group cells
         let safePlace;
         let immovable;
         if (widgetMove && DesktopLayout.autoArrange) {
+            const locked = lockedKeys();
             const iconKeys = Object.keys(base).filter(k => !isWidgetKey(k));
-            safePlace = snapOutOf(plan.place, spanOf(dragAnchor), iconKeys, base);
-            immovable = lockedKeys().concat(iconKeys);
-        } else if (!widgetMove) {
+            // Avoid both locked widgets AND icon cells; exclude self from avoid list.
+            const avoidKeys = locked.filter(k => !moving.includes(k)).concat(iconKeys);
+            safePlace = snapOutOf(plan.place, spanOf(dragAnchor), avoidKeys, base);
+            immovable = locked.concat(iconKeys);
+        } else if (widgetMove) {
+            // No autoArrange but still must not land on a locked widget.
             safePlace = snapOutOfLocked(plan.place, spanOf(dragAnchor));
             immovable = lockedKeys();
         } else {
-            safePlace = plan.place;
+            safePlace = snapOutOfLocked(plan.place, spanOf(dragAnchor));
             immovable = lockedKeys();
         }
         let next;
@@ -1521,19 +1526,22 @@ Item {
         }
         const widgetMove = keys.some(k => isWidgetKey(k));
         // Non-widget drags must not land inside a locked widget's footprint.
-        // Widget drags with autoArrange must not displace auto-arranged icons.
+        // Widget drags must not land on a locked widget; with autoArrange they
+        // also must not displace auto-arranged icons.
         let safePlace;
         let immovable;
         if (widgetMove && DesktopLayout.autoArrange) {
             const current = contextPositionsTopLevel();
+            const locked = lockedKeys();
             const iconKeys = Object.keys(current).filter(k => !isWidgetKey(k));
-            safePlace = snapOutOf(plan.place, spanOf(dragAnchor || keys[0]), iconKeys, current);
-            immovable = lockedKeys().concat(iconKeys);
-        } else if (!widgetMove) {
+            const avoidKeys = locked.filter(k => !keys.includes(k)).concat(iconKeys);
+            safePlace = snapOutOf(plan.place, spanOf(dragAnchor || keys[0]), avoidKeys, current);
+            immovable = locked.concat(iconKeys);
+        } else if (widgetMove) {
             safePlace = snapOutOfLocked(plan.place, spanOf(dragAnchor || keys[0]));
             immovable = lockedKeys();
         } else {
-            safePlace = plan.place;
+            safePlace = snapOutOfLocked(plan.place, spanOf(dragAnchor || keys[0]));
             immovable = lockedKeys();
         }
         let landed;
