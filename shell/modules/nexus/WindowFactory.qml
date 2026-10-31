@@ -74,8 +74,6 @@ Singleton {
             id: win
 
             property alias nexus: nexus
-
-            visible: true
             property int initialPageIdx: 0
             property var initialSubPageIdx: -1
 
@@ -85,6 +83,8 @@ Singleton {
                 if (target?.address)
                     Kwin.focusWindow(target.address);
             }
+
+            visible: true
 
             Component.onDestruction: {
                 Logger.mark("nexus=destroyed");
