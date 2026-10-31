@@ -294,9 +294,13 @@ Item {
             if (!movable(key))
                 obstacles[key] = positions[key];
         }
-        if (DesktopLayout.sortKey !== "")
-            return Engine.compact(Engine.sortItems(Object.keys(positions).concat(newKeys).filter(movable).map(describe), DesktopLayout.sortKey).map(i => i.key), rows, spans, obstacles);
-        return Engine.compact(Engine.orderedKeys(positions, rows).filter(movable).concat(newKeys), rows, spans, obstacles);
+        // compact() writes only the keys it was given — obstacles are excluded from
+        // its output but must be present in the return value so that samePositions()
+        // gets the full key set and avoids spurious setPositions() / disk-save calls.
+        const packed = DesktopLayout.sortKey !== ""
+            ? Engine.compact(Engine.sortItems(Object.keys(positions).concat(newKeys).filter(movable).map(describe), DesktopLayout.sortKey).map(i => i.key), rows, spans, obstacles)
+            : Engine.compact(Engine.orderedKeys(positions, rows).filter(movable).concat(newKeys), rows, spans, obstacles);
+        return Object.assign({}, obstacles, packed);
     }
 
     function samePositions(a: var, b: var): bool {
