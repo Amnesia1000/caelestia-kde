@@ -11,10 +11,11 @@ TextFieldBase {
     readonly property alias clearIcon: clearIcon
     readonly property alias placeholder: placeholder
 
+    implicitHeight: Math.max(46, contentHeight + Tokens.padding.medium * 2)
     leftPadding: searchIcon.width + searchIcon.anchors.leftMargin + Tokens.spacing.medium
     rightPadding: clearIcon.width + clearIcon.anchors.rightMargin + Tokens.spacing.medium
-    topPadding: Tokens.padding.large
-    bottomPadding: Tokens.padding.large
+    topPadding: 0
+    bottomPadding: 0
 
     onPressed: {
         if (!stateLayer.disabled)
