@@ -62,6 +62,11 @@ ColumnLayout {
         navLocations.clearSelection();
     }
 
+    function selectCurrentOrFirst(): void {
+        if (!root.nState.searchOpen)
+            navLocations.selectCurrentOrFirst();
+    }
+
     function isInsideSearchRegion(item: Item, x: real, y: real): bool {
         if (!item)
             return false;

@@ -34,7 +34,14 @@ Item {
             if (root.navigatingFromSearch)
                 return;
             root.activePane = 0;
+            subcategoryPane.clearSelection();
             pages.clearSelection();
+        }
+        onCompactSubcategoriesChanged: {
+            if (!compactSubcategories && root.compact && root.activePane === 1) {
+                root.activePane = 0;
+                subcategoryPane.clearSelection();
+            }
         }
     }
     property color blobColour: Colours.tPalette.m3surfaceContainerLow
@@ -61,6 +68,7 @@ Item {
 
     function focusSearchBar(): void {
         root.activePane = 0;
+        subcategoryPane.clearSelection();
         pages.clearSelection();
         navPane.focusSearchBar();
     }
@@ -71,46 +79,79 @@ Item {
     }
 
     function moveUp(): void {
-        if (root.activePane === 1)
+        if (root.activePane === 2)
             pages.moveUp();
+        else if (root.activePane === 1)
+            subcategoryPane.moveUp();
         else
             navPane.moveUp();
     }
 
     function moveDown(): void {
-        if (root.activePane === 1)
+        if (root.activePane === 2)
             pages.moveDown();
+        else if (root.activePane === 1)
+            subcategoryPane.moveDown();
         else
             navPane.moveDown();
     }
 
     function activateSelected(): void {
-        if (root.activePane === 1) {
+        if (root.activePane === 2) {
             pages.activateSelected();
+        } else if (root.activePane === 1) {
+            subcategoryPane.activateSelected();
+            root.activePane = 2;
+            pages.selectFirst();
         } else {
+            const wasSearchOpen = root.nState.searchOpen;
             navPane.activateSelected();
-            root.activePane = 1;
+            if (!wasSearchOpen) {
+                if (root.compact)
+                    root.nState.enterCompactPage();
+                root.activePane = 1;
+                subcategoryPane.selectCurrentOrFirst();
+            }
         }
     }
 
     function goLeft(): void {
-        if (root.activePane === 1 && pages.stepLeft())
-            return;
-        if (root.nState.subPageIdxStack.length > 0) {
-            WindowFactory.goBack();
+        if (root.activePane === 2) {
+            if (pages.stepLeft())
+                return;
+            if (root.nState.subPageIdxStack.length > 0) {
+                WindowFactory.goBack();
+            } else {
+                root.activePane = 1;
+                pages.clearSelection();
+                subcategoryPane.selectCurrentOrFirst();
+            }
         } else if (root.activePane === 1) {
+            if (root.compact)
+                root.nState.exitCompactPage();
             root.activePane = 0;
-            pages.clearSelection();
+            subcategoryPane.clearSelection();
+            navPane.selectCurrentOrFirst();
         }
     }
 
     function goRight(): void {
-        if (root.activePane === 1) {
+        if (root.activePane === 2) {
             if (!pages.stepRight())
                 pages.activateSelected();
+        } else if (root.activePane === 1) {
+            subcategoryPane.activateSelected();
+            root.activePane = 2;
+            pages.selectFirst();
         } else {
+            const wasSearchOpen = root.nState.searchOpen;
             navPane.activateSelected();
-            root.activePane = 1;
+            if (!wasSearchOpen) {
+                if (root.compact)
+                    root.nState.enterCompactPage();
+                root.activePane = 1;
+                subcategoryPane.selectCurrentOrFirst();
+            }
         }
     }
 
@@ -186,8 +227,9 @@ Item {
 
         onSearchResultSelected: (entry) => {
             root.navigatingFromSearch = true;
-            root.activePane = 1;
+            root.activePane = 2;
             navPane.clearSelection();
+            subcategoryPane.clearSelection();
             pages.selectEntry(entry);
             root.navigatingFromSearch = false;
         }
@@ -304,6 +346,17 @@ Item {
 
         onTapped: {
             root.activePane = 0;
+            subcategoryPane.clearSelection();
+            pages.clearSelection();
+        }
+    }
+
+    TapHandler {
+        parent: subcategoryPane
+
+        onTapped: {
+            root.activePane = 1;
+            navPane.clearSelection();
             pages.clearSelection();
         }
     }
@@ -312,8 +365,9 @@ Item {
         parent: pages
 
         onTapped: {
-            root.activePane = 1;
+            root.activePane = 2;
             navPane.clearSelection();
+            subcategoryPane.clearSelection();
         }
     }
 
@@ -327,9 +381,16 @@ Item {
                 return;
             if (root.nState.subPageIdxStack.length > 0) {
                 WindowFactory.goBack();
-            } else if (root.activePane === 1) {
-                root.activePane = 0;
+            } else if (root.activePane === 2) {
+                root.activePane = 1;
                 pages.clearSelection();
+                subcategoryPane.selectCurrentOrFirst();
+            } else if (root.activePane === 1) {
+                if (root.compact)
+                    root.nState.exitCompactPage();
+                root.activePane = 0;
+                subcategoryPane.clearSelection();
+                navPane.selectCurrentOrFirst();
             } else {
                 root.requestClose();
             }
@@ -338,7 +399,7 @@ Item {
 
     Shortcut {
         sequence: "Backspace"
-        enabled: root.windowActive && !root.hasActiveInputField && (root.nState.subPageIdxStack.length > 0 || root.activePane === 1)
+        enabled: root.windowActive && !root.hasActiveInputField && (root.nState.subPageIdxStack.length > 0 || root.activePane > 0)
         autoRepeat: false
 
         onActivated: {
@@ -346,16 +407,23 @@ Item {
                 return;
             if (root.nState.subPageIdxStack.length > 0) {
                 WindowFactory.goBack();
-            } else if (root.activePane === 1) {
-                root.activePane = 0;
+            } else if (root.activePane === 2) {
+                root.activePane = 1;
                 pages.clearSelection();
+                subcategoryPane.selectCurrentOrFirst();
+            } else if (root.activePane === 1) {
+                if (root.compact)
+                    root.nState.exitCompactPage();
+                root.activePane = 0;
+                subcategoryPane.clearSelection();
+                navPane.selectCurrentOrFirst();
             }
         }
     }
 
     Shortcut {
         sequence: "Delete"
-        enabled: root.windowActive && !root.hasActiveInputField && root.activePane === 1
+        enabled: root.windowActive && !root.hasActiveInputField && root.activePane === 2
         autoRepeat: false
 
         onActivated: {

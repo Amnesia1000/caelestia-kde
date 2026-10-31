@@ -51,6 +51,16 @@ VerticalFadeFlickable {
         root.selectionActive = false;
     }
 
+    function selectCurrentOrFirst(): void {
+        root.selectionActive = true;
+        const pages = root.filteredPages;
+        if (!pages || pages.length === 0)
+            return;
+        const idx = pages.findIndex(p => p.pageIdx === root.nState.currentPageIdx);
+        root.selectedIndex = idx >= 0 ? idx : 0;
+        ensureVisible(list.itemAt(root.selectedIndex));
+    }
+
     function ensureVisible(item: Item): void {
         if (!item)
             return;
