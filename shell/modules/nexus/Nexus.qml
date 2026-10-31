@@ -30,13 +30,88 @@ Item {
         }
 
         onClose: root.requestClose()
+        onCurrentPageIdxChanged: {
+            if (root.navigatingFromSearch)
+                return;
+            root.activePane = 0;
+            pages.clearSelection();
+        }
     }
     property color blobColour: Colours.tPalette.m3surfaceContainerLow
+    property int activePane: 0
+    property bool navigatingFromSearch: false
+    readonly property bool hasActiveInputField: root.isInputField(Window.window ? Window.window.activeFocusItem : null)
+    readonly property var targetScreen: nState.screen ?? Window.window?.screen ?? Quickshell.screens[0]
 
     signal close
 
     function requestClose(): void {
         root.close();
+    }
+
+    function isInputField(item: var): bool {
+        let cur = item;
+        while (cur) {
+            if (cur.cursorPosition !== undefined || cur.inputMethodHints !== undefined || cur.capturedKey !== undefined)
+                return true;
+            cur = cur.parent ?? null;
+        }
+        return false;
+    }
+
+    function focusSearchBar(): void {
+        root.activePane = 0;
+        pages.clearSelection();
+        navPane.focusSearchBar();
+    }
+
+    function clearSearchFocus(): void {
+        navPane.clearSearchFocus();
+        root.forceActiveFocus();
+    }
+
+    function moveUp(): void {
+        if (root.activePane === 1)
+            pages.moveUp();
+        else
+            navPane.moveUp();
+    }
+
+    function moveDown(): void {
+        if (root.activePane === 1)
+            pages.moveDown();
+        else
+            navPane.moveDown();
+    }
+
+    function activateSelected(): void {
+        if (root.activePane === 1) {
+            pages.activateSelected();
+        } else {
+            navPane.activateSelected();
+            root.activePane = 1;
+        }
+    }
+
+    function goLeft(): void {
+        if (root.activePane === 1 && pages.stepLeft())
+            return;
+        if (root.nState.subPageIdxStack.length > 0) {
+            WindowFactory.goBack();
+        } else if (root.activePane === 1) {
+            root.activePane = 0;
+            pages.clearSelection();
+        }
+    }
+
+    function goRight(): void {
+        if (root.activePane === 1) {
+            if (!pages.stepRight())
+                pages.activateSelected();
+        } else {
+            navPane.activateSelected();
+            root.activePane = 1;
+        }
     }
 
     function currentFlickable(): var {
@@ -70,7 +145,6 @@ Item {
         return true;
     }
 
-    readonly property var targetScreen: nState.screen ?? Window.window?.screen ?? Quickshell.screens[0]
     implicitHeight: (targetScreen ? targetScreen.height : 1080) * Tokens.sizes.nexus.heightMult
     implicitWidth: implicitHeight * Tokens.sizes.nexus.ratio
 
@@ -109,6 +183,14 @@ Item {
         width: root.compact ? Math.min(340, Math.round(root.width * 0.45)) : Math.min(285, Math.round(root.width * 0.21))
         opacity: root.compact && root.nState.compactSubcategories ? 0 : 1
         enabled: opacity > 0.5
+
+        onSearchResultSelected: (entry) => {
+            root.navigatingFromSearch = true;
+            root.activePane = 1;
+            navPane.clearSelection();
+            pages.selectEntry(entry);
+            root.navigatingFromSearch = false;
+        }
 
         Behavior on opacity {
             Anim {
@@ -175,5 +257,134 @@ Item {
             WindowFactory.goBack();
             mouse.accepted = true;
         }
+    }
+
+    TapHandler {
+        id: outsideTapHandler
+
+        enabled: navPane.isSearchActive
+
+        onPressedChanged: {
+            if (pressed && !navPane.isInsideSearchRegion(root, point.position.x, point.position.y))
+                root.clearSearchFocus();
+        }
+
+        onTapped: (eventPoint, button) => {
+            if (!navPane.isInsideSearchRegion(root, eventPoint.position.x, eventPoint.position.y))
+                root.clearSearchFocus();
+        }
+    }
+
+    Shortcut {
+        sequence: "/"
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: false
+
+        onActivated: root.focusSearchBar()
+    }
+
+    Shortcut {
+        sequences: ["Up", "k"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: true
+
+        onActivated: root.moveUp()
+    }
+
+    Shortcut {
+        sequences: ["Down", "j"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: true
+
+        onActivated: root.moveDown()
+    }
+
+    TapHandler {
+        parent: navPane
+
+        onTapped: {
+            root.activePane = 0;
+            pages.clearSelection();
+        }
+    }
+
+    TapHandler {
+        parent: pages
+
+        onTapped: {
+            root.activePane = 1;
+            navPane.clearSelection();
+        }
+    }
+
+    Shortcut {
+        sequence: "Escape"
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: false
+
+        onActivated: {
+            if (pages.handleEscape())
+                return;
+            if (root.nState.subPageIdxStack.length > 0) {
+                WindowFactory.goBack();
+            } else if (root.activePane === 1) {
+                root.activePane = 0;
+                pages.clearSelection();
+            } else {
+                root.requestClose();
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "Backspace"
+        enabled: root.windowActive && !root.hasActiveInputField && (root.nState.subPageIdxStack.length > 0 || root.activePane === 1)
+        autoRepeat: false
+
+        onActivated: {
+            if (pages.handleEscape())
+                return;
+            if (root.nState.subPageIdxStack.length > 0) {
+                WindowFactory.goBack();
+            } else if (root.activePane === 1) {
+                root.activePane = 0;
+                pages.clearSelection();
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "Delete"
+        enabled: root.windowActive && !root.hasActiveInputField && root.activePane === 1
+        autoRepeat: false
+
+        onActivated: {
+            if (pages.handleDelete())
+                return;
+        }
+    }
+
+    Shortcut {
+        sequences: ["Left", "h"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: true
+
+        onActivated: root.goLeft()
+    }
+
+    Shortcut {
+        sequences: ["Return", "Enter"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: false
+
+        onActivated: root.activateSelected()
+    }
+
+    Shortcut {
+        sequences: ["Right", "l"]
+        enabled: root.windowActive && !root.hasActiveInputField
+        autoRepeat: true
+
+        onActivated: root.goRight()
     }
 }

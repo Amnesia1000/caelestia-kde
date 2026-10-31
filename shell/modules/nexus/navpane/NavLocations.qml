@@ -13,15 +13,96 @@ VerticalFadeFlickable {
     id: root
 
     required property NexusState nState
-    readonly property string normalizedQuery: root.nState.searchQuery.trim().toLowerCase()
-    readonly property var filteredPages: PageRegistry.fuzzyPages(root.normalizedQuery)
+    readonly property var filteredPages: PageRegistry.allPages
+    property int selectedIndex: 0
+    property bool selectionActive: false
+
+    function moveUp(): void {
+        const pages = root.filteredPages;
+        if (!pages || pages.length === 0)
+            return;
+        root.selectionActive = true;
+        root.selectedIndex = root.selectedIndex > 0 ? root.selectedIndex - 1 : pages.length - 1;
+        ensureVisible(list.itemAt(root.selectedIndex));
+    }
+
+    function moveDown(): void {
+        const pages = root.filteredPages;
+        if (!pages || pages.length === 0)
+            return;
+        root.selectionActive = true;
+        root.selectedIndex = (root.selectedIndex >= 0 && root.selectedIndex < pages.length - 1) ? root.selectedIndex + 1 : 0;
+        ensureVisible(list.itemAt(root.selectedIndex));
+    }
+
+    function activateSelected(): void {
+        if (!root.selectionActive)
+            return;
+        const pages = root.filteredPages;
+        if (!pages || root.selectedIndex < 0 || root.selectedIndex >= pages.length)
+            return;
+        root.selectionActive = false;
+        root.nState.goToPage(pages[root.selectedIndex].pageIdx);
+        if (root.nState.compact)
+            root.nState.enterCompactPage();
+    }
+
+    function clearSelection(): void {
+        root.selectionActive = false;
+    }
+
+    function ensureVisible(item: Item): void {
+        if (!item)
+            return;
+        const top = item.y;
+        const bottom = item.y + item.height;
+        if (top < root.contentY) {
+            root.contentY = top;
+        } else if (bottom > root.contentY + root.height) {
+            root.contentY = bottom - root.height;
+        }
+    }
 
     topMargin: 0
     bottomMargin: Tokens.padding.large
     contentHeight: content.implicitHeight
+    focus: true
+
+    Keys.onUpPressed: moveUp()
+    Keys.onDownPressed: moveDown()
+    Keys.onReturnPressed: activateSelected()
+    Keys.onEnterPressed: activateSelected()
+    Keys.onRightPressed: activateSelected()
+
+    Component.onCompleted: {
+        root.selectionActive = false;
+        const pages = root.filteredPages;
+        if (!pages)
+            return;
+        const idx = pages.findIndex(p => p.pageIdx === root.nState.currentPageIdx);
+        if (idx >= 0)
+            root.selectedIndex = idx;
+    }
+
+    Connections {
+        function onCurrentPageIdxChanged(): void {
+            root.selectionActive = false;
+            const pages = root.filteredPages;
+            if (!pages)
+                return;
+            const idx = pages.findIndex(p => p.pageIdx === root.nState.currentPageIdx);
+            if (idx >= 0)
+                root.selectedIndex = idx;
+        }
+
+        target: root.nState
+    }
 
     TapHandler {
-        onTapped: root.focus = true
+        onTapped: {
+            root.selectionActive = false;
+            root.focus = true;
+        }
     }
 
     ColumnLayout {
@@ -45,12 +126,19 @@ VerticalFadeFlickable {
                 readonly property int pageIdx: modelData.pageIdx
 
                 readonly property bool isCurrentPage: pageIdx === root.nState.currentPageIdx
+                readonly property bool isSelected: root.selectionActive && index === root.selectedIndex
 
                 Layout.fillWidth: true
                 implicitHeight: 66
 
-                color: isCurrentPage ? Colours.palette.m3secondaryContainer : Colours.layer(Colours.palette.m3surfaceContainerHigh, 2)
+                color: isCurrentPage
+                    ? Colours.palette.m3secondaryContainer
+                    : isSelected
+                        ? Colours.layer(Colours.palette.m3surfaceContainerHigh, 4)
+                        : Colours.layer(Colours.palette.m3surfaceContainerHigh, 2)
 
+                border.width: isSelected ? 2 : 0
+                border.color: Colours.palette.m3primary
                 radius: stateLayer.pressed ? Tokens.rounding.medium : Tokens.rounding.large
 
                 Behavior on radius {
@@ -64,8 +152,11 @@ VerticalFadeFlickable {
 
                     anchors.fill: parent
                     radius: parent.radius
+                    manualHoverOverride: item.isSelected
 
                     onClicked: {
+                        root.selectionActive = false;
+                        root.selectedIndex = item.index;
                         root.nState.goToPage(item.pageIdx);
                         if (root.nState.compact)
                             root.nState.enterCompactPage();

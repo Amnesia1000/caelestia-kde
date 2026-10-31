@@ -14,6 +14,7 @@ import qs.components.controls
 import qs.services
 import qs.utils
 import qs.modules.nexus
+import qs.modules.launcher.services
 import qs.modules.nexus.common
 
 PageBase {
@@ -410,6 +411,7 @@ PageBase {
             }
 
             StepperRow {
+                last: true
                 reset: ({ node: GlobalConfig.appearance.padding, setting: "scale" })
                 Layout.fillWidth: true
                 label: qsTr("Padding scale")
@@ -419,26 +421,61 @@ PageBase {
                 stepSize: 0.05
                 onMoved: v => GlobalConfig.appearance.padding.scale = v
             }
+        }
+
+        SectionHeader {
+            text: qsTr("Animations")
+        }
+
+        ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 0
+
+            ToggleRow {
+                first: true
+                Layout.fillWidth: true
+                reset: ({ node: GlobalConfig.appearance.anim, setting: "enabled" })
+                text: qsTr("Enable animations")
+                subtext: qsTr("Toggle fluid animations across the shell")
+                checked: GlobalConfig.appearance.anim.enabled
+                onToggled: GlobalConfig.appearance.anim.enabled = checked
+            }
+
+            SelectRow {
+                Layout.fillWidth: true
+                enabled: GlobalConfig.appearance.anim.enabled
+                label: qsTr("Animation preset")
+                subtext: qsTr("Motion curves and timing profile")
+                fallbackText: Animations.currentName
+                fallbackIcon: "animation"
+                menuItems: Animations.menuItems
+                active: {
+                    const items = Animations.menuItems || [];
+                    for (let i = 0; i < items.length; i++) {
+                        if (items[i].value === Animations.currentPath || items[i].text === Animations.currentName)
+                            return items[i];
+                    }
+                    return items[0] || null;
+                }
+                onSelected: item => {
+                    if (item && item.value !== undefined) {
+                        Animations.applyPreset(item.value, item.text);
+                    }
+                }
+            }
 
             StepperRow {
+                last: true
                 reset: ({ node: GlobalConfig.appearance.anim.durations, setting: "scale" })
                 Layout.fillWidth: true
+                enabled: GlobalConfig.appearance.anim.enabled
                 label: qsTr("Animation speed scale")
+                subtext: qsTr("Speed multiplier applied to all animation durations")
                 value: GlobalConfig.appearance.anim.durations.scale
                 from: 0.25
                 to: 4
                 stepSize: 0.05
                 onMoved: v => GlobalConfig.appearance.anim.durations.scale = v
-            }
-
-            ToggleRow {
-                reset: ({ node: GlobalConfig.appearance.anim, setting: "enabled" })
-                last: true
-                Layout.fillWidth: true
-                text: qsTr("Animations")
-                subtext: qsTr("Toggle animations on/off")
-                checked: GlobalConfig.appearance.anim.enabled
-                onToggled: GlobalConfig.appearance.anim.enabled = checked
             }
         }
 

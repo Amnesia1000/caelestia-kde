@@ -995,6 +995,17 @@ StyledWindow {
             vAnchor: "both"
             hAnchor: "both"
         }
+        BlurMask {
+            target: desktopContextMenu.visible && (desktopContextMenu.submenuOpen || desktopContextMenu.submenuPanel.hScale > 0) ? desktopContextMenu.submenuPanel : null
+            contentItem: root.contentItem
+            blurOffsetTop: root.blurOffsetTop
+            blurOffsetBottom: root.blurOffsetBottom
+            blurOffsetLeft: root.blurOffsetLeft
+            blurOffsetRight: root.blurOffsetRight
+            vAnchor: desktopContextMenu.submenuPanel.vAnchor
+            hAnchor: desktopContextMenu.submenuPanel.hAnchor
+            deformMatrix: contextSubmenuBg.deformMatrix
+        }
     }
 
     component PanelBg: BlobRect {

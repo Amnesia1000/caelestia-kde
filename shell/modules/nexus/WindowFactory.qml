@@ -29,6 +29,7 @@ Singleton {
             }
             win.visible = true;
             win.raise();
+            win.nexus.forceActiveFocus();
             Logger.mark("nexus=reused");
             return win;
         }
