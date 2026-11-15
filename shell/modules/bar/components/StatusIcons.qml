@@ -34,7 +34,9 @@ StyledRect {
     property real hoverSpacing: Tokens.spacing.small
 
     readonly property bool isHovering: hoverPos !== -1
-    property real currentHoverSpacing: isHovering ? hoverSpacing : 0
+    // A fixed spacing between both states: opening the gaps on hover moved every
+    // icon around, so the module now sits halfway between collapsed and expanded.
+    readonly property real currentHoverSpacing: hoverSpacing / 2
 
     readonly property var activeEntries: Config.bar.statusIcons.values.filter(entry => entry.enabled && root.entryActive(entry.id))
 
@@ -106,7 +108,6 @@ StyledRect {
     implicitWidth: isHorizontal ? (iconColumn.implicitWidth + Tokens.padding.medium * 2) : barThickness
     implicitHeight: isHorizontal ? barThickness : (iconColumn.implicitHeight + Tokens.padding.medium * 2)
 
-    Behavior on currentHoverSpacing { Anim { type: Anim.DefaultEffects } }
 
     MouseArea {
         anchors.fill: parent
