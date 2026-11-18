@@ -30,6 +30,7 @@ StyledWindow {
     readonly property alias bar: bar
     readonly property alias interactionWrapper: interactions
     readonly property alias visibilities: visibilities
+
     // The per-screen state object the drawers share. The dashboard's tab and the
     // month its calendar is showing live in it, which is where upstream keeps
     // them, so both survive the dashboard closing and a shell reload.
@@ -128,6 +129,33 @@ StyledWindow {
         }
     }
 
+    // Escape dismisses whatever Caelestia surface is open instead of reaching the
+    // window underneath. Children that use Escape themselves — text fields,
+    // dialogs, the launcher and the bar popouts — see it first; it only reaches
+    // this handler when they leave the key unhandled. A pinned sidebar closes too.
+    FocusScope {
+        id: keyReceiver
+
+        anchors.fill: parent
+        focus: root.wantsKeyboard
+
+        Keys.onEscapePressed: event => {
+            if (!root.wantsKeyboard)
+                return;
+            focusGrabState.clear(true);
+            event.accepted = true;
+        }
+    }
+
+    Connections {
+        function onWantsKeyboardChanged(): void {
+            if (root.wantsKeyboard && !keyReceiver.activeFocus)
+                keyReceiver.forceActiveFocus();
+        }
+
+        target: root
+    }
+
     FocusReturn {
         active: root.wantsKeyboard
     }
@@ -185,10 +213,10 @@ StyledWindow {
 
         property bool active: (visibilities.launcher && Config.launcher.enabled) || (visibilities.session && Config.session.enabled) || (visibilities.sidebar && Config.sidebar.enabled) || (!Config.dashboard.showOnHover && visibilities.dashboard && Config.dashboard.enabled) || (!Config.utilities.showOnHover && visibilities.utilities && Config.utilities.enabled) || (TrayRegistry.isTrayPopout(panels.popouts.currentName) && (panels.popouts.current as StackView)?.depth > 1)
 
-        function clear() {
+        function clear(forceSidebar = false) {
             visibilities.launcher = false;
             visibilities.session = false;
-            if (!Visibilities.sidebarPinned)
+            if (forceSidebar || !Visibilities.sidebarPinned)
                 visibilities.sidebar = false;
             visibilities.dashboard = false;
             visibilities.utilities = false;
@@ -681,6 +709,15 @@ StyledWindow {
         }
         Panels {
             id: panels
+
+            // The drawers focus their own controls (sliders, scroll views), so the
+            // handler above never sees the key. Catch it here, as their ancestor.
+            Keys.onEscapePressed: event => {
+                if (!root.wantsKeyboard)
+                    return;
+                focusGrabState.clear(true);
+                event.accepted = true;
+            }
 
             screen: root.screen
             screenState: root.screenState
