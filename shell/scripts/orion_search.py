@@ -7,6 +7,7 @@ import socket
 import urllib.request
 import urllib.parse
 import re
+from html.parser import HTMLParser
 
 # Only http(s) URLs that resolve to a public address may be read. The assistant
 # hands this script whatever URL the model asked for, and the model's output is
@@ -73,6 +74,62 @@ def _resolve_to_public_addresses():
         yield
     finally:
         socket.getaddrinfo = original
+
+
+# Elements whose text is furniture rather than the page's content. A real parser
+# is used to drop them: browsers accept end tags with attributes, as in
+# `</script foo="bar">`, so filtering by pattern lets hostile markup through.
+_NON_CONTENT_TAGS = frozenset({
+    "script", "style", "nav", "footer", "header", "aside", "head", "title",
+    "noscript", "template",
+})
+
+
+class _TextExtractor(HTMLParser):
+    # Script and style bodies are dropped as a whole anyway, so they do not need
+    # HTMLParser's CDATA handling. Disabling it keeps a malformed `</script ...>`
+    # from leaving the parser stuck in CDATA mode and swallowing the rest of the page.
+    CDATA_CONTENT_ELEMENTS = ()
+
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self._skipped = []
+        self._parts = []
+
+    def handle_starttag(self, tag, attrs):
+        # `</head>` is optional, so a body start has to close it explicitly or the
+        # whole page would be dropped as head content.
+        if tag == "body" and "head" in self._skipped:
+            self._skipped.remove("head")
+        if tag in _NON_CONTENT_TAGS:
+            self._skipped.append(tag)
+
+    def handle_endtag(self, tag):
+        if tag in self._skipped:
+            self._skipped.remove(tag)
+
+    def handle_comment(self, data):
+        # HTMLParser reports an end tag with attributes, such as `</script foo="bar">`,
+        # as a bogus comment, but a browser still closes the element there.
+        parts = data.split()
+        if parts and parts[0].lower() in self._skipped:
+            self._skipped.remove(parts[0].lower())
+
+    def handle_data(self, data):
+        if not self._skipped:
+            self._parts.append(data)
+
+    def text(self):
+        return re.sub(r'\s+', ' ', " ".join(self._parts)).strip()
+
+
+def _extract_text(html):
+    parser = _TextExtractor()
+    # `--!>` ends a comment in a browser even though the spec names `-->`, so
+    # normalise it and let the parser see the boundary it expects.
+    parser.feed(html.replace("--!>", "-->"))
+    parser.close()
+    return parser.text()
 
 
 def search_web(query, page_num):
@@ -147,27 +204,7 @@ def read_webpage(url):
         with _resolve_to_public_addresses():
             html = urllib.request.urlopen(req, timeout=15).read(MAX_RESPONSE_BYTES).decode('utf-8', errors='ignore')
 
-        # Remove script and style tags completely
-        html = re.sub(r'<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>', '', html, flags=re.IGNORECASE | re.DOTALL)
-        html = re.sub(r'<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>', '', html, flags=re.IGNORECASE | re.DOTALL)
-
-        # Remove header, footer, nav
-        html = re.sub(r'<nav\b[^<]*(?:(?!<\/nav>)<[^<]*)*<\/nav>', '', html, flags=re.IGNORECASE | re.DOTALL)
-        html = re.sub(r'<footer\b[^<]*(?:(?!<\/footer>)<[^<]*)*<\/footer>', '', html, flags=re.IGNORECASE | re.DOTALL)
-        html = re.sub(r'<header\b[^<]*(?:(?!<\/header>)<[^<]*)*<\/header>', '', html, flags=re.IGNORECASE | re.DOTALL)
-        html = re.sub(r'<aside\b[^<]*(?:(?!<\/aside>)<[^<]*)*<\/aside>', '', html, flags=re.IGNORECASE | re.DOTALL)
-
-        # Extract text from remaining body
-        body_match = re.search(r'<body[^>]*>(.*?)</body>', html, re.IGNORECASE | re.DOTALL)
-        if body_match:
-            body_html = body_match.group(1)
-        else:
-            body_html = html
-
-        # Strip remaining tags
-        text = re.sub(r'<[^>]+>', ' ', body_html)
-        # Collapse whitespace
-        text = re.sub(r'\s+', ' ', text).strip()
+        text = _extract_text(html)
 
         if len(text) > 10000:
             text = text[:10000] + "\n\n[Content truncated due to length]"
