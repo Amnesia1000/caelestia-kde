@@ -75,10 +75,22 @@ Item {
     property string authMessage: ""
     property bool viewVisible: true
     property bool ready: false
+    property real introContentOpacity: 0
+    property bool introStarted: false
     property int renderedFrames: 0
 
-    onReadyChanged: if (ready && viewVisible) authHandler.ensureAuthenticating()
-    onViewVisibleChanged: if (ready && viewVisible) authHandler.ensureAuthenticating()
+    function beginVisibleSession() {
+        if (!ready || !viewVisible)
+            return;
+        if (!introStarted) {
+            introStarted = true;
+            lockIntro.start();
+        }
+        authHandler.ensureAuthenticating();
+    }
+
+    onReadyChanged: beginVisibleSession()
+    onViewVisibleChanged: beginVisibleSession()
 
     readonly property string sysinfoScriptPath: {
         var url = Qt.resolvedUrl("scripts/sysinfo.py").toString();
@@ -332,7 +344,8 @@ Item {
             }
         }
         onSucceeded: {
-            Qt.quit();
+            lockIntro.stop();
+            unlockIntro.restart();
         }
         onMessageChanged: msg => {
             if (msg) {
@@ -481,13 +494,84 @@ Item {
         }
     }
 
+    // A small spinning lock tile opens into the greeter, as in the original
+    // Caelestia lock screen. Plasma owns the secure lock throughout.
+    Rectangle {
+        id: introTile
+        anchors.centerIn: parent
+        width: 110 * lockScreenUi.centerScale
+        height: width
+        radius: 28 * lockScreenUi.centerScale
+        scale: 0
+        opacity: 1
+        color: lockScreenUi.clCardBg
+        border.width: 1
+        border.color: Qt.rgba(lockScreenUi.clSurfaceVariantFg.r, lockScreenUi.clSurfaceVariantFg.g, lockScreenUi.clSurfaceVariantFg.b, 0.22)
+        visible: lockScreenUi.ready && opacity > 0
+        z: 10
+
+        Text {
+            id: introLockIcon
+            anchors.centerIn: parent
+            text: "\ue897"
+            color: lockScreenUi.clPrimary
+            font.family: LockScreenConfig.fontIcon
+            font.pixelSize: 48 * lockScreenUi.centerScale
+        }
+    }
+
+    SequentialAnimation {
+        id: lockIntro
+
+        ParallelAnimation {
+            NumberAnimation { target: introTile; property: "scale"; to: 1; duration: 300; easing.type: Easing.OutBack }
+            NumberAnimation { target: introTile; property: "rotation"; from: -180; to: 0; duration: 300; easing.type: Easing.OutCubic }
+        }
+        ParallelAnimation {
+            NumberAnimation { target: introTile; property: "width"; to: lockScreenUi.isPortrait ? portraitContent.width : landscapeContent.width; duration: 500; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introTile; property: "height"; to: lockScreenUi.isPortrait ? portraitContent.height : landscapeContent.height; duration: 500; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introTile; property: "radius"; to: lockScreenUi.bgRadius; duration: 500; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introLockIcon; property: "rotation"; from: 0; to: 180; duration: 300; easing.type: Easing.InCubic }
+            NumberAnimation { target: introLockIcon; property: "opacity"; to: 0; duration: 220; easing.type: Easing.OutCubic }
+            SequentialAnimation {
+                PauseAnimation { duration: 160 }
+                ParallelAnimation {
+                    NumberAnimation { target: lockScreenUi; property: "introContentOpacity"; to: 1; duration: 340; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: introTile; property: "opacity"; to: 0; duration: 340; easing.type: Easing.OutCubic }
+                }
+            }
+        }
+    }
+
+    SequentialAnimation {
+        id: unlockIntro
+        PropertyAction { target: introTile; property: "visible"; value: true }
+        PropertyAction { target: introTile; property: "scale"; value: 1 }
+        ParallelAnimation {
+            NumberAnimation { target: lockScreenUi; property: "introContentOpacity"; to: 0; duration: 300; easing.type: Easing.InCubic }
+            NumberAnimation { target: introTile; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introTile; property: "width"; to: 110 * lockScreenUi.centerScale; duration: 420; easing.type: Easing.InOutCubic }
+            NumberAnimation { target: introTile; property: "height"; to: 110 * lockScreenUi.centerScale; duration: 420; easing.type: Easing.InOutCubic }
+            NumberAnimation { target: introTile; property: "radius"; to: 28 * lockScreenUi.centerScale; duration: 420; easing.type: Easing.InOutCubic }
+            SequentialAnimation {
+                PauseAnimation { duration: 150 }
+                NumberAnimation { target: introLockIcon; property: "opacity"; to: 1; duration: 180 }
+            }
+        }
+        ParallelAnimation {
+            NumberAnimation { target: introTile; property: "scale"; to: 0; duration: 220; easing.type: Easing.InCubic }
+            NumberAnimation { target: introTile; property: "rotation"; to: -180; duration: 220; easing.type: Easing.InCubic }
+        }
+        ScriptAction { script: Qt.quit() }
+    }
+
     FocusScope {
         id: lockScreenRoot
 
         anchors.fill: parent
         focus: true
-        opacity: lockScreenUi.ready ? 1.0 : 0.0
-        scale: lockScreenUi.ready ? 1.0 : 0.98
+        opacity: lockScreenUi.ready ? lockScreenUi.introContentOpacity : 0.0
+        scale: 0.98 + 0.02 * lockScreenUi.introContentOpacity
 
         Keys.onPressed: event => {
             authHandler.ensureAuthenticating();

@@ -189,6 +189,14 @@ Item {
 
     // Heart beat keeping the backend active for as long as we are in visible state
     // Exact 1:1 match with upstream LockScreenUi.qml:170-175
+    // Authentication has succeeded. Keep the lock surface alive briefly for
+    // its exit animation, with a fallback in case that animation never finishes.
+    Timer {
+        id: successfulUnlockFailsafe
+        interval: 1500
+        onTriggered: Qt.quit()
+    }
+
     Timer {
         id: backendHeartbeatTimer
         interval: 1000
@@ -281,8 +289,8 @@ Item {
             if (activeAuthenticator && typeof activeAuthenticator.stopAuthenticating === "function") {
                 activeAuthenticator.stopAuthenticating();
             }
+            successfulUnlockFailsafe.restart();
             root.succeeded();
-            Qt.quit();
         }
 
         function onStateChanged() {
