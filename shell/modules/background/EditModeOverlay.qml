@@ -25,7 +25,9 @@ Variants {
         readonly property bool plasma: ContextMenuStore.editMode
         readonly property bool widgets: WidgetEditor.active && win.controller !== null
         readonly property bool shouldShow: win.plasma || win.widgets
-        readonly property int barZone: Visibilities.bars.get(win.modelData.name)?.visualThickness ?? (Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness))
+        readonly property var barConfig: GlobalConfig.forScreen(win.modelData.name).bar
+        readonly property var barItem: Visibilities.bars.get(win.modelData.name)
+        readonly property int barZone: barItem?.exclusiveZone ?? (barConfig.persistent ? (Tokens.sizes.bar.innerWidth + Math.max(Tokens.padding.small, Config.border.thickness)) : (barConfig.islands ? 0 : Config.border.thickness))
         readonly property int topMargin: Config.bar.position === "top" ? Tokens.spacing.large + barZone : Tokens.spacing.large
 
         screen: modelData
