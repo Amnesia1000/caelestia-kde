@@ -16,6 +16,15 @@ Column {
 
     required property DrawerVisibilities visibilities
 
+    // Localised labels vary a lot in width ("Log out" vs "Перезагрузка"), so the
+    // buttons share the width of the longest one instead of a fixed square.
+    readonly property real buttonWidth: Math.max(
+        logout.preferredWidth,
+        shutdown.preferredWidth,
+        hibernate.preferredWidth,
+        reboot.preferredWidth
+    )
+
     padding: Tokens.padding.large
     rightPadding: CUtils.clamp(padding - Config.border.thickness, 0, padding)
     spacing: Tokens.spacing.large
@@ -140,12 +149,17 @@ Column {
         required property string label
         property string icon
 
+        readonly property real preferredWidth: Math.max(
+            Tokens.sizes.session.button,
+            content.implicitWidth + Tokens.padding.medium * 2
+        )
+
         function exec(): void {
             if (!SessionManager.exec(command))
                 Quickshell.execDetached(command);
         }
 
-        implicitWidth: Tokens.sizes.session.button
+        implicitWidth: root.buttonWidth
         implicitHeight: content.implicitHeight + Tokens.padding.medium * 2
 
         inactiveColour: activeFocus ? Colours.palette.m3secondaryContainer : Colours.tPalette.m3surfaceContainer
