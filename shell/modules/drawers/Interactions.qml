@@ -41,11 +41,11 @@ CustomMouseArea {
         if (bar.position === "left")
             return x < bar.x + bar.clampedThickness && y >= bar.y && y <= bar.y + bar.height;
         if (bar.position === "right")
-            return x > bar.x && y >= bar.y && y <= bar.y + bar.height;
+            return x > bar.x + bar.width - bar.clampedThickness && y >= bar.y && y <= bar.y + bar.height;
         if (bar.position === "top")
             return y < bar.y + bar.clampedThickness && x >= bar.x && x <= bar.x + bar.width;
         if (bar.position === "bottom")
-            return y > bar.y && x >= bar.x && x <= bar.x + bar.width;
+            return y > bar.y + bar.height - bar.clampedThickness && x >= bar.x && x <= bar.x + bar.width;
         return false;
     }
     function inDockPanelArea(x: real, y: real, requireVisible = false): bool {
