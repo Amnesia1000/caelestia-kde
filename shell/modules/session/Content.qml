@@ -62,11 +62,13 @@ Column {
     }
 
     Item {
-        width: Tokens.sizes.session.button
+        width: root.buttonWidth
         height: Tokens.sizes.session.button
 
         AnimatedImage {
-            anchors.fill: parent
+            anchors.centerIn: parent
+            width: Tokens.sizes.session.button
+            height: Tokens.sizes.session.button
             sourceSize.width: width * ((QsWindow.window as QsWindow)?.devicePixelRatio ?? 1)
             playing: visible
             asynchronous: true
@@ -81,7 +83,9 @@ Column {
         }
 
         AnimatedImage {
-            anchors.fill: parent
+            anchors.centerIn: parent
+            width: Tokens.sizes.session.button
+            height: Tokens.sizes.session.button
             sourceSize.width: width * ((QsWindow.window as QsWindow)?.devicePixelRatio ?? 1)
             playing: visible
             asynchronous: true
@@ -101,7 +105,9 @@ Column {
         }
 
         AnimatedImage {
-            anchors.fill: parent
+            anchors.centerIn: parent
+            width: Tokens.sizes.session.button
+            height: Tokens.sizes.session.button
             sourceSize.width: width * ((QsWindow.window as QsWindow)?.devicePixelRatio ?? 1)
             playing: visible
             asynchronous: true
