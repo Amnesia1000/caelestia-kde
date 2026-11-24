@@ -4868,7 +4868,7 @@
     <message>
         <location line="-120"/>
         <location line="+129"/>
-        <location filename="../modules/session/Content.qml" line="+133"/>
+        <location filename="../modules/session/Content.qml" line="+138"/>
         <source>Restart</source>
         <translation>Перезагрузка</translation>
     </message>
@@ -6135,28 +6135,28 @@
         <location line="+99"/>
         <source>G A M E   O V E R
 Click to restart</source>
-        <translation>И Г Р А   О К О Н Ч Е Н А
-Нажмите, чтобы начать заново</translation>
+        <translation>ИГРА ОКОНЧЕНА
+Начать заново</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+12"/>
         <source>Y O U   W I N !
 Now go touch grass</source>
-        <translation>В Ы   П О Б Е Д И Л И !
-Теперь пойдите потрогайте траву</translation>
+        <translation>ВЫ ПОБЕДИЛИ!
+Пора выйти на улицу</translation>
     </message>
     <message>
-        <location line="+10"/>
+        <location line="+12"/>
         <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/DinoGame.qml" line="+100"/>
         <source>New high score: %1</source>
         <translation>Новый рекорд: %1</translation>
     </message>
     <message>
-        <location line="+11"/>
+        <location line="+14"/>
         <source>P A U S E D
 Click to continue</source>
-        <translation>П А У З А
-Нажмите, чтобы продолжить</translation>
+        <translation>ПАУЗА
+Продолжить</translation>
     </message>
     <message>
         <location filename="../../src/kde/shells/caelestia.desktop/contents/lockscreen/components/DinoGame.qml" line="-14"/>
