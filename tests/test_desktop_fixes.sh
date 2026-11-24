@@ -139,4 +139,19 @@ test_startup_tasks_qml_registers_skwd_wall_hook() {
         "StartupTasks.qml should register 08-skwd-wall-hook in TASKS array"
 }
 
+test_desktop_grid_and_overlay_use_exclusive_zone_to_prevent_hover_shift() {
+    local desktop_icons="$REPO_ROOT/shell/modules/background/DesktopIcons.qml"
+    local edit_mode_overlay="$REPO_ROOT/shell/modules/background/EditModeOverlay.qml"
+
+    assert_file_contains "$desktop_icons" 'barItem?.exclusiveZone' \
+        "desktop icons grid barZone must reference exclusiveZone instead of visualThickness"
+    assert_file_not_contains "$desktop_icons" '?.visualThickness' \
+        "desktop icons grid must not read visualThickness which changes on mouse hover"
+
+    assert_file_contains "$edit_mode_overlay" 'barItem?.exclusiveZone' \
+        "edit mode overlay barZone must reference exclusiveZone instead of visualThickness"
+    assert_file_not_contains "$edit_mode_overlay" '?.visualThickness' \
+        "edit mode overlay must not read visualThickness which changes on mouse hover"
+}
+
 run_tests

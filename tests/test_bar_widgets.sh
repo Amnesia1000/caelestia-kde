@@ -563,4 +563,11 @@ test_appmenu_and_pinned_popouts_stay_open_until_dismissed() {
         "interactions must track pinned popouts as dismissible boxes on outside click"
 }
 
+test_bar_interaction_area_reveals_on_bottom_and_right() {
+    assert_file_contains "$INTERACTIONS" 'x > bar.x + bar.width - bar.clampedThickness && y >= bar.y && y <= bar.y + bar.height' \
+        "bar reach on right must offset by clampedThickness so collapsed bars reveal on hover"
+    assert_file_contains "$INTERACTIONS" 'y > bar.y + bar.height - bar.clampedThickness && x >= bar.x && x <= bar.x + bar.width' \
+        "bar reach on bottom must offset by clampedThickness so collapsed bars reveal on hover"
+}
+
 run_tests
