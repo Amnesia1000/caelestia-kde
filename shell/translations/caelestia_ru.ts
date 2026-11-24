@@ -6112,7 +6112,7 @@
 <context>
     <name>DialogRowButton</name>
     <message>
-        <location filename="../modules/nexus/common/DialogRowButton.qml" line="+224"/>
+        <location filename="../modules/nexus/common/DialogRowButton.qml" line="+226"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
@@ -18346,7 +18346,7 @@ Check that %1 shows this code before accepting: %2</source>
     <message>
         <location line="+1"/>
         <source>Choose an installed font</source>
-        <translation>Выберите установленный шрифт</translation>
+        <translation>Выберите шрифт</translation>
     </message>
     <message>
         <location line="+9"/>

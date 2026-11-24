@@ -180,7 +180,9 @@ Item {
                     spacing: 0
 
                     StyledText {
+                        Layout.fillWidth: true
                         text: root.header
+                        wrapMode: Text.WordWrap
                         font: Tokens.font.title.builders.large.weight(Font.Normal).build()
                     }
 
