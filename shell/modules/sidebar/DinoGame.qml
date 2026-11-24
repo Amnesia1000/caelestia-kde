@@ -373,6 +373,8 @@ Item {
 
         visible: root.isGameOver && Math.floor(DinoGameBackend.score) < 99999
         text: qsTr("G A M E   O V E R\nClick to restart")
+        width: parent.width - Tokens.padding.large * 2
+        wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -40
@@ -383,6 +385,8 @@ Item {
     StyledText {
         visible: root.isGameOver && Math.floor(DinoGameBackend.score) >= 99999
         text: qsTr("Y O U   W I N !\nNow go touch grass")
+        width: parent.width - Tokens.padding.large * 2
+        wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -40
@@ -393,6 +397,9 @@ Item {
     StyledText {
         visible: gameOverText.visible && DinoGameBackend.isNewHighScore
         text: qsTr("New high score: %1").arg(Math.floor(DinoGameBackend.highScore))
+        width: parent.width - Tokens.padding.large * 2
+        wrapMode: Text.WordWrap
+        horizontalAlignment: Text.AlignHCenter
         anchors.top: gameOverText.bottom
         anchors.topMargin: Tokens.spacing.small
         anchors.horizontalCenter: parent.horizontalCenter
@@ -404,6 +411,8 @@ Item {
     StyledText {
         visible: root.isPlaying && DinoGameBackend.isPaused
         text: qsTr("P A U S E D\nClick to continue")
+        width: parent.width - Tokens.padding.large * 2
+        wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
         anchors.centerIn: parent
         anchors.verticalCenterOffset: -40
