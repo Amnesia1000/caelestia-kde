@@ -138,6 +138,15 @@ Variants {
                 }
             }
         }
+        Loader {
+            anchors.fill: parent
+            z: 2
+            active: Config.background.wallpaperEnabled && !Config.background.disableQuickshellDesktop && !ContextMenuStore.editMode && Config.background.visualiser.enabled
+
+            sourceComponent: Visualiser {
+                screen: win.modelData
+            }
+        }
         DesktopIcons {
             id: desktopIcons
 

@@ -13,7 +13,7 @@ Known failure modes, how to confirm the cause, and the command that repairs it.
 7. [KDE & Plasma Specific Issues](#7-kde--plasma-specific-issues)
    1. [Installer Window Rules](#77-installer-window-rules)
    2. [Quick Share Cannot Receive Files](#78-quick-share-cannot-receive-files)
-   3. [Plasma Audio Visualizer](#79-plasma-audio-visualizer)
+   3. [Desktop Audio Visualizer](#79-desktop-audio-visualizer)
    4. [skwd-wall](#710-skwd-wall)
 8. [Post-Install Issues](#8-post-install-issues)
 9. [Uninstall Issues](#9-uninstall-issues)
@@ -1286,16 +1286,20 @@ the receiving device is not the one shown here — that is a device in the middl
 one you picked. Nothing leaves the machine before you confirm, and a request left
 unanswered is dropped after two minutes.
 
-### 7.9 Plasma Audio Visualizer
+### 7.9 Desktop Audio Visualizer
 
-- **Not installed:**
-  The desktop visualizer is a Plasma widget from `plasma-audio-visualizer`, not a shell module. Install it first; on Arch it is in the AUR (`yay -S plasma-audio-visualizer`).
-- **Empty config:**
-  The shell drives the widget through presets such as `Double Reverse` and `Single`. Editing the widget in Plasma saves the result as `User Defined`, which the shell reapplies. A fresh install can leave the preset on *User Defined* with nothing shown; pick another preset to bring it back.
-- **Hidden by wallpaper:**
-  The widget draws on the Plasma desktop. When the Quickshell wallpaper layer is on (`background.wallpaperEnabled`), the widget is hidden behind it, hence disabled automatically. In wallpaper settings, change wallpaper engine to skwd/plasma to use it.
-- **Customize:**
-  To use the visualizer without the shell's presets, turn it off in the shell and add the widget from Plasma's widget picker. To keep the shell's preset but change the look, pick Single or Double Reverse here, then edit the widget in Plasma's edit mode (right-click the desktop, *Edit Plasma Widgets*).
+With the built-in wallpaper renderer, Caelestia draws audio bars above the wallpaper.
+Enable them in **Desktop > Desktop Addons**; the built-in bars use a fixed mirrored
+layout and respect the auto-hide settings. They require a shell plugin built with
+`libcava` support. On Arch, the `cava` executable and the `libcava` development
+library are separate packages; check the shell log for `CavaProvider unavailable`
+if the built-in visualizer cannot be enabled.
+
+With a Plasma or skwd-wall wallpaper, the visualizer uses the
+`plasma-audio-visualizer` widget instead. Install it first (on Arch, it is available
+from the AUR). If the *User Defined* profile is empty, select *Single* or *Double
+Reversed*. To customize the widget, right-click the desktop, choose **Edit Plasma
+Widgets**, then right-click the visualizer and choose **Configure**.
 
 ### 7.10 skwd-wall
 
