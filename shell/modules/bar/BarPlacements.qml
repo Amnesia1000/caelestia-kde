@@ -119,7 +119,10 @@ QtObject {
     function setShown(id: string, shown: bool): void {
         if ((root.placementOf(id) !== Placement.OFF) === shown)
             return;
-        root.setPlacement(id, shown ? Placement.BAR : Placement.OFF, shown ? { zone: Placement.BAR_ZONE } : undefined);
+        // No zone on the way back: a switch turns an icon on, it does not move it. The
+        // row it already has keeps the zone the user gave it, so switching off and on
+        // again leaves it where it was.
+        root.setPlacement(id, shown ? Placement.BAR : Placement.OFF, undefined);
     }
 
     // A tray app's own state, which is what the tray draws from.
