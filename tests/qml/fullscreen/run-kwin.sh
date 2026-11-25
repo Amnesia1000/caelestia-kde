@@ -30,11 +30,16 @@ JSON
 cp "$fixture_dir/shell.qml" "$test_dir/probe/shell.qml"
 ln -s "$shell_dir"/{assets,components,modules,scripts,services,utils} "$test_dir/probe/"
 
+# Arch's KWin binary has CAP_SYS_NICE, which can prevent exec in containers
+# whose capability bounding set excludes it. A local copy has no file capability
+# and runs the same compositor without requiring additional privileges.
+install -m 755 "$(command -v kwin_wayland)" "$test_dir/kwin_wayland"
+
 # A separate bus and runtime directory keep the test's windows and focus changes off the user's desktop.
 dbus-run-session -- bash -s -- "$test_dir" <<'SESSION'
 set -euo pipefail
 test_dir=$1
-kwin_wayland --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
+"$test_dir/kwin_wayland" --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
 kwin_pid=$!
 qs_pid=
 outside_pid=
