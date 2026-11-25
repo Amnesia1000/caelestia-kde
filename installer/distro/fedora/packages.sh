@@ -128,7 +128,7 @@ CORE_PACKAGES=(
 
     libqalculate libqalculate-devel libsecret vulkan-headers ksshaskpass libX11-devel
 
-    protobuf-devel protobuf-compiler openssl-devel avahi
+    protobuf-devel protobuf-compiler openssl-devel avahi libicu-devel
 )
 
 SHELL_PACKAGES=(

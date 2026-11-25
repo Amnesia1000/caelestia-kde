@@ -165,7 +165,7 @@ CORE_PACKAGES=(
     libqalculate-dev qalc libvulkan-dev libsecret-1-dev ksshaskpass libx11-dev
     libsecret-tools
 
-    libprotobuf-dev protobuf-compiler libssl-dev avahi-daemon
+    libprotobuf-dev protobuf-compiler libssl-dev avahi-daemon libicu-dev
 )
 
 SHELL_PACKAGES=(

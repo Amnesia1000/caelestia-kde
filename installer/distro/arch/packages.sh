@@ -56,7 +56,7 @@ CORE_PACKAGES=(
 
     ffmpeg libqalculate libsecret ksshaskpass libx11 vulkan-headers
 
-    protobuf openssl avahi
+    protobuf openssl avahi icu
 )
 
 SHELL_PACKAGES=(
