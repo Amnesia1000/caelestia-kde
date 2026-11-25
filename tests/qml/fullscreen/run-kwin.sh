@@ -44,6 +44,10 @@ kwin_pid=$!
 qs_pid=
 outside_pid=
 cleanup() {
+    if ! kill -0 "$kwin_pid" 2>/dev/null; then
+        echo "KWin exited unexpectedly; compositor log:" >&2
+        cat "$test_dir/kwin.log" >&2
+    fi
     if [[ -n "$qs_pid" ]]; then kill "$qs_pid" 2>/dev/null || :; fi
     if [[ -n "$outside_pid" ]]; then kill "$outside_pid" 2>/dev/null || :; fi
     kill "$kwin_pid" 2>/dev/null || :
