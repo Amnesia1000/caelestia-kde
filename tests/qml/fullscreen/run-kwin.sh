@@ -47,8 +47,18 @@ cleanup() {
 trap cleanup EXIT
 for _ in {1..100}; do
     [[ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]] && break
+    if ! kill -0 "$kwin_pid" 2>/dev/null; then
+        echo "KWin exited before its Wayland socket was ready:" >&2
+        cat "$test_dir/kwin.log" >&2
+        exit 1
+    fi
     sleep 0.05
 done
+if [[ ! -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
+    echo "Timed out waiting for KWin's Wayland socket:" >&2
+    cat "$test_dir/kwin.log" >&2
+    exit 1
+fi
 qs -p "$test_dir/probe" >"$test_dir/qs.log" 2>&1 &
 qs_pid=$!
 expect() {
