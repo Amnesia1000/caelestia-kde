@@ -102,9 +102,14 @@ Singleton {
         root.sendPin = "";
     }
 
+    function formatPrompt(message: string, values: list<string>): string {
+        // Match placeholders in the translation without reprocessing inserted names.
+        return message.replace(/%([1-9][0-9]?)/g, (placeholder, number) => values[Number(number) - 1] ?? placeholder);
+    }
+
     function sendPromptBody(): string {
-        return qsTr("Sending %1 to %2.\nCheck that %3 shows the same code before sending: %4")
-            .arg(root.sendFileName, root.sendDeviceName, root.sendDeviceName, root.sendPin);
+        return root.formatPrompt(qsTr("Sending %1 to %2.\nCheck that %3 shows the same code before sending: %4"),
+            [root.sendFileName, root.sendDeviceName, root.sendDeviceName, root.sendPin]);
     }
 
     function rejectIncomingTransfer(): void {
@@ -123,11 +128,13 @@ Singleton {
     }
 
     function promptBody(): string {
-        let body = qsTr("%1 wants to send you %2 (%3)").arg(root.promptDeviceName).arg(root.promptFileName).arg(Units.formatBytes(root.promptFileSize));
+        let body = root.formatPrompt(qsTr("%1 wants to send you %2 (%3)"),
+            [root.promptDeviceName, root.promptFileName, Units.formatBytes(root.promptFileSize)]);
         // The code is the only thing that says the sender is the device that was picked.
         // It is worth nothing unless the person on this end is told to compare it.
         if (root.promptPin)
-            body += qsTr("\nCheck that %1 shows this code before accepting: %2").arg(root.promptDeviceName, root.promptPin);
+            body += root.formatPrompt(qsTr("\nCheck that %1 shows this code before accepting: %2"),
+                [root.promptDeviceName, root.promptPin]);
         return body;
     }
 
