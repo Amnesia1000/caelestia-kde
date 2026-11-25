@@ -140,7 +140,6 @@ StyledWindow {
     }
 
     Connections {
-        target: Kwin
         function onActiveWindowChanged(): void {
             if (Kwin.activeWindow?.fullscreen && panels.popouts.hasCurrent && !panels.popouts.isDockPopout) {
                 Qt.callLater(() => {
@@ -149,6 +148,8 @@ StyledWindow {
                 });
             }
         }
+
+        target: Kwin
     }
     FocusReturn {
         active: root.wantsKeyboard
