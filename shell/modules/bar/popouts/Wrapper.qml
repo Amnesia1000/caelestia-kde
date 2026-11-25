@@ -42,6 +42,7 @@ Item {
     readonly property bool isDockPopout: currentName === "dockhover" || currentName === "greeter" || currentName === "activewindow" || currentName === "appmenu" || currentName === "github" || currentIsContext
     property alias currentName: popoutState.currentName
     property alias hasCurrent: popoutState.hasCurrent
+    readonly property alias hoverSuppressed: popoutState.hoverSuppressed
     property alias sourcePanel: popoutState.sourcePanel
     // Whether the current popout was opened to be picked from, so the bar and the overlay
     // agree that it is not to be closed by the pointer moving away.
