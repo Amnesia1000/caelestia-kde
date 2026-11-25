@@ -418,7 +418,7 @@ jobs:
       - name: Install runtime and build dependencies
         uses: ./.github/actions/install-build-deps
         with:
-          extra-packages: dbus quickshell weston kwin gdb
+          extra-packages: dbus quickshell weston kwin
 
       - name: Fetch pinned build dependency
         run: |

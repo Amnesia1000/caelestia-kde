@@ -39,11 +39,7 @@ install -m 755 "$(command -v kwin_wayland)" "$test_dir/kwin_wayland"
 dbus-run-session -- bash -s -- "$test_dir" <<'SESSION'
 set -euo pipefail
 test_dir=$1
-if [[ ${CI:-} == true ]] && command -v gdb >/dev/null; then
-    gdb --batch -ex run -ex 'thread apply all bt' --args "$test_dir/kwin_wayland" --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
-else
-    "$test_dir/kwin_wayland" --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
-fi
+"$test_dir/kwin_wayland" --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
 kwin_pid=$!
 qs_pid=
 outside_pid=
@@ -69,6 +65,21 @@ for _ in {1..100}; do
 done
 if [[ ! -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
     echo "Timed out waiting for KWin's Wayland socket:" >&2
+    cat "$test_dir/kwin.log" >&2
+    exit 1
+fi
+# KWin opens the socket before its compositor and effects are initialized.
+# Wait for compositing before clients request activation tokens.
+compositing=
+for _ in {1..200}; do
+    compositing=$(qdbus6 org.kde.KWin /Compositor org.kde.kwin.Compositing.active 2>/dev/null || :)
+    [[ "$compositing" == true ]] && break
+    if ! kill -0 "$kwin_pid" 2>/dev/null; then break; fi
+    sleep 0.05
+done
+if [[ "$compositing" != true ]]; then
+    echo "KWin compositing did not become active:" >&2
+    qdbus6 org.kde.KWin /Compositor org.kde.kwin.Compositing.compositingNotPossibleReason >&2 || :
     cat "$test_dir/kwin.log" >&2
     exit 1
 fi
