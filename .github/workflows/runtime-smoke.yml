@@ -28,6 +28,8 @@ jobs:
           command -v ninja
           command -v quickshell
           command -v weston
+          command -v kwin_wayland
+          command -v qdbus6
           command -v dbus-run-session
           test -x /usr/lib/qt6/bin/qmllint
           test -d /usr/lib/qt6/qml/Qt5Compat/GraphicalEffects
@@ -45,3 +47,10 @@ jobs:
           deps-dir: .ci-deps
           install-root: runtime-install
           log-dir: runtime-smoke
+
+      # KWin's virtual backend needs a render device, unavailable on GitHub-hosted runners.
+      - name: Run the fullscreen drawer regression
+        run: |
+          set -euo pipefail
+          CAELESTIA_QML_IMPORT_PATH="$PWD/runtime-install/usr/lib/qt6/qml" \
+            bash tests/run-tests.sh --suite isolated --timeout 300 test_fullscreen_drawers.sh
