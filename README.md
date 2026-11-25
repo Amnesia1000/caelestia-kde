@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/caelestia.svg" width="80" alt="Caelestia logo" />
+<img src="assets/animatedlogo.svg" width="80" alt="Caelestia logo" />
 
 # caelestia-kde
 
@@ -23,7 +23,6 @@ https://github.com/user-attachments/assets/38b24e7f-fdd9-43db-872b-8c0ac23a44fd
 > Hyprland dotfiles, see [`caelestia-dots/caelestia`](https://github.com/caelestia-dots/caelestia).
 
 > Please do not contact the official Caelestia hyprland developers with questions regarding this KDE port.
-
 
 > [!TIP]
 > Questions, setups, or want to contribute? Join the [Discord](https://discord.gg/qTkpHrHp5H).
