@@ -54,7 +54,8 @@ PageBase {
         }
     ]
 
-    readonly property bool visualizerAvailable: PlasmaWidgets.hasVisualizer && !Config.background.wallpaperEnabled
+    readonly property bool usesBuiltInVisualizer: Config.background.wallpaperEnabled && !Config.background.disableQuickshellDesktop
+    readonly property bool visualizerAvailable: (usesBuiltInVisualizer && Audio.cava !== null) || (PlasmaWidgets.hasVisualizer && !Config.background.wallpaperEnabled)
 
     isSubPage: true
     title: qsTr("Desktop Addons")
@@ -141,7 +142,9 @@ PageBase {
                 visible: !root.visualizerAvailable
                 icon: "info"
                 label: qsTr("Visualizer not available")
-                status: qsTr("Click to open troubleshooting guide")
+                status: root.usesBuiltInVisualizer
+                    ? qsTr("The built-in visualizer requires libcava support; click for help")
+                    : qsTr("Click to open troubleshooting guide")
                 onClicked: Qt.openUrlExternally("https://github.com/caelestia-kde/caelestia/blob/main/docs/TROUBLESHOOTING.md#79-plasma-audio-visualizer")
             }
 
@@ -151,8 +154,8 @@ PageBase {
                 enabled: root.visualizerAvailable
                 opacity: enabled ? 1 : 0.5
                 text: qsTr("Enable Visualizer")
-                subtext: Config.background.wallpaperEnabled
-                    ? qsTr("Visualizer is not visible when internal wallpaper is enabled")
+                subtext: root.usesBuiltInVisualizer
+                    ? qsTr("Show audio bars over the built-in wallpaper")
                     : qsTr("Show audio visualizer on desktop")
                 reset: ({ node: GlobalConfig.background.visualiser, setting: "enabled" })
                 checked: Config.background.visualiser.enabled
@@ -166,6 +169,7 @@ PageBase {
                 Layout.fillWidth: true
                 enabled: root.visualizerAvailable && Config.background.visualiser.enabled
                 opacity: enabled ? 1 : 0.5
+                visible: !root.usesBuiltInVisualizer
                 label: qsTr("Profile")
                 subtext: qsTr("Visualizer layout and style preset")
                 menuItems: root.visualizerProfiles
@@ -213,6 +217,7 @@ PageBase {
                 opacity: enabled ? 1 : 0.5
                 icon: "info"
                 wrapSubtext: true
+                visible: !root.usesBuiltInVisualizer
                 label: qsTr("Configure Visualizer")
                 subtext: qsTr("Right click on desktop -> Edit Plasma Widgets -> Right click visualizer -> Configure")
             }

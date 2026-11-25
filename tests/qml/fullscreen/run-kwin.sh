@@ -30,15 +30,24 @@ JSON
 cp "$fixture_dir/shell.qml" "$test_dir/probe/shell.qml"
 ln -s "$shell_dir"/{assets,components,modules,scripts,services,utils} "$test_dir/probe/"
 
+# Arch's KWin binary has CAP_SYS_NICE, which can prevent exec in containers
+# whose capability bounding set excludes it. A local copy has no file capability
+# and runs the same compositor without requiring additional privileges.
+install -m 755 "$(command -v kwin_wayland)" "$test_dir/kwin_wayland"
+
 # A separate bus and runtime directory keep the test's windows and focus changes off the user's desktop.
 dbus-run-session -- bash -s -- "$test_dir" <<'SESSION'
 set -euo pipefail
 test_dir=$1
-kwin_wayland --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
+"$test_dir/kwin_wayland" --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
 kwin_pid=$!
 qs_pid=
 outside_pid=
 cleanup() {
+    if ! kill -0 "$kwin_pid" 2>/dev/null; then
+        echo "KWin exited unexpectedly; compositor log:" >&2
+        cat "$test_dir/kwin.log" >&2
+    fi
     if [[ -n "$qs_pid" ]]; then kill "$qs_pid" 2>/dev/null || :; fi
     if [[ -n "$outside_pid" ]]; then kill "$outside_pid" 2>/dev/null || :; fi
     kill "$kwin_pid" 2>/dev/null || :
@@ -47,8 +56,33 @@ cleanup() {
 trap cleanup EXIT
 for _ in {1..100}; do
     [[ -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]] && break
+    if ! kill -0 "$kwin_pid" 2>/dev/null; then
+        echo "KWin exited before its Wayland socket was ready:" >&2
+        cat "$test_dir/kwin.log" >&2
+        exit 1
+    fi
     sleep 0.05
 done
+if [[ ! -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" ]]; then
+    echo "Timed out waiting for KWin's Wayland socket:" >&2
+    cat "$test_dir/kwin.log" >&2
+    exit 1
+fi
+# KWin opens the socket before its compositor and effects are initialized.
+# Wait for compositing before clients request activation tokens.
+compositing=
+for _ in {1..200}; do
+    compositing=$(qdbus6 org.kde.KWin /Compositor org.kde.kwin.Compositing.active 2>/dev/null || :)
+    [[ "$compositing" == true ]] && break
+    if ! kill -0 "$kwin_pid" 2>/dev/null; then break; fi
+    sleep 0.05
+done
+if [[ "$compositing" != true ]]; then
+    echo "KWin compositing did not become active:" >&2
+    qdbus6 org.kde.KWin /Compositor org.kde.kwin.Compositing.compositingNotPossibleReason >&2 || :
+    cat "$test_dir/kwin.log" >&2
+    exit 1
+fi
 qs -p "$test_dir/probe" >"$test_dir/qs.log" 2>&1 &
 qs_pid=$!
 expect() {
