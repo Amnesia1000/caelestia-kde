@@ -81,6 +81,7 @@ Item {
             StyledText {
                 Layout.fillWidth: true
                 text: root.title
+                wrapMode: Text.WordWrap
                 font: Tokens.font.body.large
                 color: Colours.palette.m3onSurface
             }
