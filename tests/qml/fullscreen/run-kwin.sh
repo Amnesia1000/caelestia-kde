@@ -39,7 +39,11 @@ install -m 755 "$(command -v kwin_wayland)" "$test_dir/kwin_wayland"
 dbus-run-session -- bash -s -- "$test_dir" <<'SESSION'
 set -euo pipefail
 test_dir=$1
-"$test_dir/kwin_wayland" --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
+if [[ ${CI:-} == true ]] && command -v gdb >/dev/null; then
+    gdb --batch -ex run -ex 'thread apply all bt' --args "$test_dir/kwin_wayland" --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
+else
+    "$test_dir/kwin_wayland" --virtual --output-count 2 --width 960 --height 640 --no-lockscreen --socket "$WAYLAND_DISPLAY" >"$test_dir/kwin.log" 2>&1 &
+fi
 kwin_pid=$!
 qs_pid=
 outside_pid=
