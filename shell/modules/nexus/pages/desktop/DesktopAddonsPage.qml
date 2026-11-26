@@ -54,8 +54,26 @@ PageBase {
         }
     ]
 
-    readonly property bool usesBuiltInVisualizer: Config.background.wallpaperEnabled && !Config.background.disableQuickshellDesktop
-    readonly property bool visualizerAvailable: (usesBuiltInVisualizer && Audio.cava !== null) || (PlasmaWidgets.hasVisualizer && !Config.background.wallpaperEnabled)
+    readonly property list<MenuItem> visualizerEngines: [
+        MenuItem {
+            property string value: "auto"
+
+            text: qsTr("Auto")
+        },
+        MenuItem {
+            property string value: "quickshell"
+
+            text: qsTr("Quickshell")
+        },
+        MenuItem {
+            property string value: "plasma"
+
+            text: qsTr("Plasma")
+        }
+    ]
+
+    readonly property bool usesBuiltInVisualizer: Config.background.visualiser.engine === "quickshell" || (Config.background.visualiser.engine !== "plasma" && !Config.background.disableQuickshellDesktop && (Config.background.wallpaperEnabled || !PlasmaWidgets.hasVisualizer))
+    readonly property bool visualizerAvailable: usesBuiltInVisualizer ? Audio.cava !== null : (PlasmaWidgets.hasVisualizer && (Config.background.visualiser.engine === "plasma" || !Config.background.wallpaperEnabled))
 
     isSubPage: true
     title: qsTr("Desktop Addons")
@@ -128,28 +146,18 @@ PageBase {
             }
         }
 
-        SectionHeader {
+        SectionHeaderAction {
             text: qsTr("Visualiser")
+            actionText: qsTr("Troubleshooting")
+            onActionClicked: Qt.openUrlExternally("https://github.com/caelestia-kde/caelestia/blob/main/docs/TROUBLESHOOTING.md#79-desktop-audio-visualizer")
         }
 
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 0
 
-            NavRow {
-                first: true
-                Layout.fillWidth: true
-                visible: !root.visualizerAvailable
-                icon: "info"
-                label: qsTr("Visualizer not available")
-                status: root.usesBuiltInVisualizer
-                    ? qsTr("The built-in visualizer requires libcava support; click for help")
-                    : qsTr("Click to open troubleshooting guide")
-                onClicked: Qt.openUrlExternally("https://github.com/caelestia-kde/caelestia/blob/main/docs/TROUBLESHOOTING.md#79-plasma-audio-visualizer")
-            }
-
             ToggleRow {
-                first: root.visualizerAvailable
+                first: true
                 Layout.fillWidth: true
                 enabled: root.visualizerAvailable
                 opacity: enabled ? 1 : 0.5
@@ -162,6 +170,22 @@ PageBase {
                 onToggled: {
                     PlasmaWidgets.setWidgetEnabled("visualizer", checked);
                 }
+            }
+
+            SelectRow {
+                Layout.topMargin: Tokens.spacing.extraSmall / 2 - parent.spacing
+                Layout.fillWidth: true
+                label: qsTr("Engine")
+                subtext: qsTr("Choose which visualizer renderer to use")
+                menuItems: root.visualizerEngines
+                active: {
+                    for (let i = 0; i < root.visualizerEngines.length; i++) {
+                        if (root.visualizerEngines[i].value === (Config.background.visualiser.engine || "auto"))
+                            return root.visualizerEngines[i];
+                    }
+                    return root.visualizerEngines[0];
+                }
+                onSelected: item => GlobalConfig.background.visualiser.engine = item.value
             }
 
             SelectRow {
