@@ -89,6 +89,8 @@ if [[ ${#files[@]} -eq 0 ]]; then
 fi
 
 failed=0
+failed_labels=()
+failed_outputs=()
 passed=0
 ran=0
 skipped=0
@@ -124,6 +126,8 @@ for file in "${files[@]}"; do
     if [[ ! -f "$file" ]]; then
         echo "FAIL  $(basename "$file") (status 1, elapsed 0s, not found)"
         failed=$((failed + 1))
+        failed_labels+=("$(basename "$file") (status 1, elapsed 0s, not found)")
+        failed_outputs+=("")
         continue
     fi
 
@@ -159,6 +163,8 @@ for file in "${files[@]}"; do
         [[ -n "$output" ]] && printf '%s\n' "$output"
     else
         failed=$((failed + 1))
+        failed_labels+=("[$file_suite] $label (status $status, elapsed ${elapsed}s)")
+        failed_outputs+=("$output")
         echo "FAIL  [$file_suite] $label (status $status, elapsed ${elapsed}s)"
         [[ -n "$output" ]] && printf '%s\n' "$output"
         if [[ -n "$artifact_dir" ]]; then
@@ -173,5 +179,12 @@ done
 echo
 echo "Summary: $passed passed, $failed failed, $skipped skipped of $ran run test file(s) in $((SECONDS - started_at))s"
 if [[ $failed -gt 0 ]]; then
+    echo "Failed tests:"
+    for i in "${!failed_labels[@]}"; do
+        echo "  FAIL  ${failed_labels[$i]}"
+        if [[ -n "${failed_outputs[$i]}" ]]; then
+            printf '%s\n' "${failed_outputs[$i]}" | tail -n 20 | sed 's/^/    /'
+        fi
+    done
     exit 1
 fi
