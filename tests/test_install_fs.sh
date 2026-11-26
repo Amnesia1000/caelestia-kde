@@ -530,6 +530,40 @@ test_privileged_copy_tree_refuses_a_stage_that_reaches_outside_the_install_prefi
     assert_file_missing "$tmp/dest/etc/sudoers.d/evil"
 }
 
+# A login theme is copied into a directory the installer picked, so its files sit at the top
+# of the tree - Main.qml, components/... - and have none of the prefixes a build stages.
+test_privileged_copy_tree_accepts_a_contained_layout_when_asked() {
+    local tmp status
+    tmp="$(new_tmpdir)"
+    mkdir -p "$tmp/stage/components" "$tmp/dest"
+    printf 'import QtQuick\n' > "$tmp/stage/Main.qml"
+    printf 'theme.conf\n' > "$tmp/stage/theme.conf"
+    printf 'card\n' > "$tmp/stage/components/Card.qml"
+
+    privileged_copy_tree "$tmp/stage" "$tmp/dest" contained
+    status=$?
+
+    assert_status 0 "$status" "a tree dropped into a directory of its own needs no prefix"
+    assert_file_exists "$tmp/dest/Main.qml"
+    assert_file_exists "$tmp/dest/theme.conf"
+    assert_file_exists "$tmp/dest/components/Card.qml"
+}
+
+# The same tree without asking for that layout is what the installer used to do, and it is
+# what broke: every file is refused before the copy, leaving an empty theme directory.
+test_privileged_copy_tree_refuses_a_contained_layout_by_default() {
+    local tmp status
+    tmp="$(new_tmpdir)"
+    mkdir -p "$tmp/stage" "$tmp/dest"
+    printf 'import QtQuick\n' > "$tmp/stage/Main.qml"
+
+    privileged_copy_tree "$tmp/stage" "$tmp/dest" 2>/dev/null
+    status=$?
+
+    assert_status 1 "$status" "a staged build still may not write a bare file name"
+    assert_file_missing "$tmp/dest/Main.qml"
+}
+
 test_staged_path_is_installable_accepts_what_a_build_prefix_is_allowed_to_hold() {
     local path status
     for path in usr/bin/app usr/local/bin/app usr/lib/libapp.so usr/lib64/libapp.so \

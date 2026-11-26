@@ -54,14 +54,28 @@ staged_path_is_installable() {
     return 1
 }
 
+# Whether a relative path stays where it is put: no component that would climb out of the
+# directory root copies it into. The layout itself is not judged here.
+path_has_no_traversal() {
+    case "$1" in
+        *//*|*/../*|*/..|..|.) return 1 ;;
+    esac
+    return 0
+}
+
 # Installs the tree at "$1" under "$2", which must already exist, as root. The tree comes
 # from a build this user ran, so root copies what it holds rather than executing anything
 # from it, and the only link allowed across is one staying in its own directory - a
 # versioned library or a command alias - which root recreates from the same relative
 # target. One privileged step, because a prompt per file is not something a build can ask
 # for.
+#
+# "$3" says which layout the tree may have. A staged build installs where this project
+# installs, so "prefix" (the default) only lets through the paths listed above. A tree
+# dropped into a directory the caller already picked says "contained": a login theme lives
+# at Main.qml rather than at usr/share/..., and every file still lands under "$dest".
 privileged_copy_tree() {
-    local src="${1%/}" dest="$2" escaping status=0
+    local src="${1%/}" dest="$2" layout="${3:-prefix}" escaping status=0
 
     [[ -d "$src" && ! -L "$src" && -d "$dest" ]] || return 1
 
@@ -74,12 +88,18 @@ privileged_copy_tree() {
     escaping="$(find "$src" -type f \( -perm -4000 -o -perm -2000 \) -print -quit 2>/dev/null || true)"
     [[ -z "$escaping" ]] || return 1
 
-    # And a tree may only put files where an install of this project puts them. Without
-    # this, a build tool that staged etc/sudoers.d/… would have root write it: the copy
-    # below trusts the tree's own layout, and the tree is this user's to shape.
-    local entry
+    # And a staged tree may only put files where an install of this project puts them.
+    # Without this, a build tool that staged etc/sudoers.d/… would have root write it: the
+    # copy below trusts the tree's own layout, and the tree is this user's to shape. A
+    # contained tree is exempt because its destination is a directory chosen here, not a
+    # prefix, so its paths cannot name anything outside that directory anyway.
+    local entry rel
     while IFS= read -r entry; do
-        staged_path_is_installable "${entry#"$src"/}" || return 1
+        rel="${entry#"$src"/}"
+        path_has_no_traversal "$rel" || return 1
+        if [[ "$layout" != "contained" ]]; then
+            staged_path_is_installable "$rel" || return 1
+        fi
     done < <(find "$src" -mindepth 1 \( -type f -o -type l \) -print 2>/dev/null)
 
     caelestia_sudo bash -s -- "$src" "$dest" << 'EOF' || status=$?
