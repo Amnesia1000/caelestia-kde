@@ -33,6 +33,7 @@ Singleton {
 
     // Track visualizer enabled status and profile from configuration
     readonly property bool visualizerEnabled: Config.background.visualiser.enabled
+    readonly property string visualizerEngine: Config.background.visualiser.engine
     readonly property string visualizerProfile: Config.background.visualiser.profile
     readonly property bool visualizerAutoHide: Config.background.visualiser.autoHide
     readonly property bool visualizerHideOnAllMonitors: Config.background.visualiser.hideOnAllMonitors
@@ -48,7 +49,8 @@ Singleton {
     }
     readonly property bool windowHidesVisualizer: (Kwin.windowList, Kwin.activeWsId, Kwin.activeByOutput, Kwin.windowHidesDesktopWidgets(root.primaryScreen ? root.primaryScreen.name : "", visualizerHideOnAllMonitors))
     readonly property bool gameModeSuppressesVisualizer: GameMode.enabled && GlobalConfig.utilities.gameMode.disableVisualizer
-    readonly property bool visualizerBaseConditions: visualizerEnabled && root.hasVisualizer && !Config.background.wallpaperEnabled && !gameModeSuppressesVisualizer && (!visualizerAutoHide || !windowHidesVisualizer)
+    readonly property bool visualizerEngineAllowsPlasma: visualizerEngine === "plasma" || (visualizerEngine !== "quickshell" && !Config.background.wallpaperEnabled)
+    readonly property bool visualizerBaseConditions: visualizerEnabled && root.hasVisualizer && visualizerEngineAllowsPlasma && !gameModeSuppressesVisualizer && (!visualizerAutoHide || !windowHidesVisualizer)
     readonly property bool visualizerEffectiveEnabled: visualizerBaseConditions && debouncedPlayerPlaying
 
     property bool debouncedPlayerPlaying: false
