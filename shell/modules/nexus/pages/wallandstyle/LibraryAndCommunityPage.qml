@@ -65,8 +65,10 @@ PageBase {
             }
         }
 
-        SectionHeader {
+        SectionHeaderAction {
             text: qsTr("Library Management")
+            actionText: qsTr("Troubleshooting")
+            onActionClicked: Qt.openUrlExternally("https://github.com/caelestia-kde/caelestia/blob/main/docs/TROUBLESHOOTING.md#710-skwd-wall")
         }
 
         ColumnLayout {
@@ -75,16 +77,6 @@ PageBase {
 
             NavRow {
                 first: true
-                Layout.fillWidth: true
-                visible: !Wallpapers.hasSkwd
-                icon: "info"
-                label: qsTr("skwd-wall not available")
-                status: qsTr("Click to open troubleshooting guide")
-                onClicked: Qt.openUrlExternally("https://github.com/caelestia-kde/caelestia/blob/main/docs/TROUBLESHOOTING.md#710-skwd-wall")
-            }
-
-            NavRow {
-                first: Wallpapers.hasSkwd
                 icon: "label"
                 label: qsTr("Tags & Filters")
                 status: qsTr("Organize library with custom tags")
