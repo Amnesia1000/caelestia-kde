@@ -332,6 +332,13 @@ Item {
             showHoverBackground: false
 
             onEntered: root.openDockHover()
+
+            // Leaving closes the preview only if it is still this item's, so the next
+            // icon that takes over is not dropped.
+            onExited: {
+                if (root.popouts && root.popouts.currentName === "dockhover" && root.popouts.dockModel === root.modelData)
+                    root.popouts.hasCurrent = false;
+            }
         }
 
         MouseArea {

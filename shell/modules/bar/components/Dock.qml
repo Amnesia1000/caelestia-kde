@@ -35,6 +35,11 @@ Item {
     // Icon size of a dock item. Derived from the configured item size rather than the
     // delegate's laid-out width, which is still 0 while the delegate is being created.
     readonly property real iconSize: Math.round(configuredItemSize * 0.7 / 2) * 2
+    // The launcher tile is drawn as the list header, so it takes a slot of its own:
+    // the container has to ask for room for it and the pointer maths has to skip it.
+    readonly property bool launcherShown: Config.bar.dock.showLauncher
+    readonly property int launcherSlots: launcherShown ? 1 : 0
+    readonly property real launcherAdvance: launcherShown ? container.itemSize + root.spacing : 0
 
     function publishMinimizeGeometry(): void {
         const win = QsWindow.window;
@@ -46,8 +51,8 @@ Item {
             root,
             win,
             bar.isHorizontal,
-            origin.x,
-            origin.y,
+            bar.isHorizontal ? origin.x + root.launcherAdvance : origin.x,
+            bar.isHorizontal ? origin.y : origin.y + root.launcherAdvance,
             container.itemSize,
             root.spacing,
             bar.isHorizontal ? listView.width : listView.height,
@@ -119,34 +124,18 @@ Item {
         if (bar.popouts.hasCurrent && bar.popouts.currentName === "dockcontext") return;
 
         const itemSize = container.itemSize;
-        const itemWidthWithSpacing = itemSize + spacing;
         const adjustedPos = isHorizontal ? relPos - container.x - padding : relPos - container.y - padding;
-        const scrolled = isHorizontal ? listView.contentX : listView.contentY;
         const visibleSpan = isHorizontal ? listView.width : listView.height;
 
-        if (adjustedPos < 0 || adjustedPos > visibleSpan) {
+        // Forgiving by one slot on each end: the list scrolls under the tile's header, so
+        // a pointer over the first or last icon can read as just outside the span.
+        if (adjustedPos < -itemSize || adjustedPos > visibleSpan + itemSize) {
             bar.popouts.hasCurrent = false;
             return;
         }
 
-        const index = Math.floor((adjustedPos + scrolled) / itemWidthWithSpacing);
-
-        if (index >= 0 && index < DockManager.modelDataArray.length) {
-            bar.popouts.currentName = "dockhover";
-            const centerOffset = index * itemWidthWithSpacing + itemSize / 2 - scrolled;
-            if (centerOffset < 0 || centerOffset > visibleSpan) {
-                bar.popouts.hasCurrent = false;
-                return;
-            }
-            const absoluteCenter = isHorizontal
-                ? container.mapToItem(null, padding + centerOffset, 0).x
-                : container.mapToItem(null, 0, padding + centerOffset).y;
-
-            bar.popouts.sourcePanel = "bar";
-            bar.popouts.currentCenter = absoluteCenter;
-            bar.popouts.dockModel = DockManager.modelDataArray[index];
-            bar.popouts.hasCurrent = true;
-        }
+        // Which item is hovered comes from the item itself; working an index out here
+        // needed the header slot and drifted, closing the preview of the icons at the ends.
     }
 
     implicitWidth: bar.isHorizontal ? container.width : container.implicitWidth
@@ -184,7 +173,7 @@ Item {
     StyledRect {
         id: container
 
-        property int __itemCount: DockManager.count
+        property int __itemCount: DockManager.count + root.launcherSlots
         property real itemSize: root.configuredItemSize
         property real __computedContentWidth: __itemCount > 0 ? __itemCount * itemSize + (__itemCount - 1) * root.spacing : 0
 
@@ -248,7 +237,7 @@ Item {
         property int maxVerticalItems: Math.max(0, Math.floor((availableSize - padding * 2 - itemSize * 0.5) / (itemSize + spacing)))
         property real maxVerticalSize: maxVerticalItems >= 1 ? ((maxVerticalItems + 0.5) * itemSize + maxVerticalItems * spacing + padding * 2) : availableSize
 
-        color: DockManager.count > 0 ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
+        color: __itemCount > 0 ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
         radius: Tokens.rounding.full
         implicitWidth: bar.isHorizontal ? (__computedContentWidth + padding * 2) : bar.thickness
         implicitHeight: bar.isHorizontal ? bar.thickness : (__computedContentWidth + padding * 2)
@@ -258,7 +247,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.RightButton
-            enabled: DockManager.count > 0
+            enabled: container.__itemCount > 0
 
             onClicked: mouse => {
                 const popouts = root.bar?.popouts;
@@ -333,6 +322,10 @@ Item {
                     Anim { properties: "x,y"; type: Anim.FastSpatial }
                 }
 
+                // Kept mounted and collapsed: the list does not always rebuild a header
+                // that comes back from null, and a header of width 0 costs nothing.
+                header: launcherTile
+
                 model: DelegateModel {
                     id: visualModel
 
@@ -365,6 +358,39 @@ Item {
                 anchors.right: listView.right
                 anchors.rightMargin: -root.padding + 2
                 visible: !bar.isHorizontal && listView.contentHeight > listView.height + 1
+            }
+        }
+
+        // A fixed tile that opens the launcher. Its width carries the list spacing so the
+        // icon keeps the same gap to the first app as the apps have between them.
+        Component {
+            id: launcherTile
+
+            Item {
+                width: root.launcherShown ? container.itemSize + root.spacing : 0
+                height: container.itemSize
+                visible: root.launcherShown
+
+                OsIcon {
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: Math.round((container.itemSize - width) / 2)
+                    bar: root.bar
+                    iconSize: Math.round(root.configuredItemSize * 0.62)
+                }
+
+                // The launcher is not an app, so it has nothing to preview: hovering it
+                // drops whatever preview the previous icon left open.
+                Item {
+                    width: container.itemSize
+                    height: parent.height
+
+                    HoverHandler {
+                        onHoveredChanged: {
+                            if (hovered && bar.popouts.currentName === "dockhover")
+                                bar.popouts.hasCurrent = false;
+                        }
+                    }
+                }
             }
         }
 

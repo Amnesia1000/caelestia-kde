@@ -51,6 +51,15 @@ PageBase {
 
         ToggleRow {
             Layout.fillWidth: true
+            text: qsTr("Launcher button")
+            subtext: qsTr("Pin a launcher tile to the start of the dock")
+            reset: ({ node: GlobalConfig.bar.dock, setting: "showLauncher" })
+            checked: Config.bar.dock.showLauncher
+            onToggled: GlobalConfig.bar.dock.showLauncher = checked
+        }
+
+        ToggleRow {
+            Layout.fillWidth: true
             text: qsTr("Recolor icons")
             subtext: qsTr("Recolor application icons using the system theme")
             reset: ({ node: GlobalConfig.bar.dock, setting: "recolourIcons" })

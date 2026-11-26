@@ -556,6 +556,13 @@ QtObject {
             subPage: "barDock"
         },
         {
+            label: qsTr("Launcher button"),
+            description: qsTr("Pin a launcher tile to the start of the dock"),
+            section: qsTr("Dock"),
+            pageIdx: 2,
+            subPage: "barDock"
+        },
+        {
             label: qsTr("Recolor icons"),
             description: qsTr("Recolor application icons using the system theme"),
             section: qsTr("Dock"),
