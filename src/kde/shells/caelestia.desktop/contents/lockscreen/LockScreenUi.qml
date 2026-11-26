@@ -78,6 +78,10 @@ Item {
     property bool viewVisible: true
     property bool ready: false
     property real introContentOpacity: 0
+    property real transitionCenterScale: 1.0
+    property real transitionCenterOpacity: 1.0
+    property real transitionSideOpacity: 1.0
+    property real transitionSideOffset: 0.0
     property bool introStarted: false
     property int renderedFrames: 0
 
@@ -86,10 +90,19 @@ Item {
             return;
         if (!introStarted) {
             introStarted = true;
-            if (animateTransitions)
+            if (animateTransitions) {
+                transitionCenterScale = 0.90;
+                transitionCenterOpacity = 0.0;
+                transitionSideOpacity = 0.0;
+                transitionSideOffset = 36 * centerScale;
                 lockIntro.start();
-            else
+            } else {
                 introContentOpacity = 1;
+                transitionCenterScale = 1.0;
+                transitionCenterOpacity = 1.0;
+                transitionSideOpacity = 1.0;
+                transitionSideOffset = 0.0;
+            }
         }
         authHandler.ensureAuthenticating();
     }
@@ -544,21 +557,31 @@ Item {
     SequentialAnimation {
         id: lockIntro
 
+        PropertyAction { target: introLockIcon; property: "text"; value: "\ue897" }
         ParallelAnimation {
-            NumberAnimation { target: introTile; property: "scale"; to: 1; duration: 300; easing.type: Easing.OutBack }
-            NumberAnimation { target: introTile; property: "rotation"; from: -180; to: 0; duration: 300; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introTile; property: "scale"; to: 1; duration: 260; easing.type: Easing.OutBack }
+            NumberAnimation { target: introTile; property: "rotation"; from: -180; to: 0; duration: 260; easing.type: Easing.OutCubic }
         }
         ParallelAnimation {
-            NumberAnimation { target: introTile; property: "width"; to: lockScreenUi.isPortrait ? portraitContent.width : landscapeContent.width; duration: 500; easing.type: Easing.OutCubic }
-            NumberAnimation { target: introTile; property: "height"; to: lockScreenUi.isPortrait ? portraitContent.height : landscapeContent.height; duration: 500; easing.type: Easing.OutCubic }
-            NumberAnimation { target: introTile; property: "radius"; to: lockScreenUi.bgRadius; duration: 500; easing.type: Easing.OutCubic }
-            NumberAnimation { target: introLockIcon; property: "rotation"; from: 0; to: 180; duration: 300; easing.type: Easing.InCubic }
-            NumberAnimation { target: introLockIcon; property: "opacity"; to: 0; duration: 220; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introTile; property: "width"; to: lockScreenUi.isPortrait ? portraitContent.width : landscapeContent.width; duration: 460; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introTile; property: "height"; to: lockScreenUi.isPortrait ? portraitContent.height : landscapeContent.height; duration: 460; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introTile; property: "radius"; to: lockScreenUi.bgRadius; duration: 460; easing.type: Easing.OutCubic }
+            NumberAnimation { target: introLockIcon; property: "rotation"; from: 0; to: 180; duration: 240; easing.type: Easing.InCubic }
+            NumberAnimation { target: introLockIcon; property: "opacity"; to: 0; duration: 200; easing.type: Easing.OutCubic }
+            SequentialAnimation {
+                PauseAnimation { duration: 120 }
+                ParallelAnimation {
+                    NumberAnimation { target: lockScreenUi; property: "introContentOpacity"; to: 1; duration: 260; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: introTile; property: "opacity"; to: 0; duration: 260; easing.type: Easing.OutCubic }
+                }
+            }
             SequentialAnimation {
                 PauseAnimation { duration: 160 }
                 ParallelAnimation {
-                    NumberAnimation { target: lockScreenUi; property: "introContentOpacity"; to: 1; duration: 340; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: introTile; property: "opacity"; to: 0; duration: 340; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: lockScreenUi; property: "transitionCenterOpacity"; to: 1; duration: 300; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: lockScreenUi; property: "transitionCenterScale"; to: 1.0; duration: 340; easing.type: Easing.OutBack }
+                    NumberAnimation { target: lockScreenUi; property: "transitionSideOpacity"; to: 1; duration: 320; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: lockScreenUi; property: "transitionSideOffset"; to: 0; duration: 360; easing.type: Easing.OutCubic }
                 }
             }
         }
@@ -566,17 +589,26 @@ Item {
 
     SequentialAnimation {
         id: unlockIntro
+
+        PropertyAction { target: introLockIcon; property: "text"; value: "\ue898" }
+        PropertyAction { target: introLockIcon; property: "rotation"; value: 0 }
+        PropertyAction { target: introLockIcon; property: "opacity"; value: 0 }
         PropertyAction { target: introTile; property: "visible"; value: true }
         PropertyAction { target: introTile; property: "scale"; value: 1 }
+        PropertyAction { target: introTile; property: "rotation"; value: 0 }
         ParallelAnimation {
-            NumberAnimation { target: lockScreenUi; property: "introContentOpacity"; to: 0; duration: 300; easing.type: Easing.InCubic }
+            NumberAnimation { target: lockScreenUi; property: "transitionSideOpacity"; to: 0; duration: 180; easing.type: Easing.InCubic }
+            NumberAnimation { target: lockScreenUi; property: "transitionSideOffset"; to: 24 * lockScreenUi.centerScale; duration: 200; easing.type: Easing.InCubic }
+            NumberAnimation { target: lockScreenUi; property: "transitionCenterOpacity"; to: 0; duration: 200; easing.type: Easing.InCubic }
+            NumberAnimation { target: lockScreenUi; property: "transitionCenterScale"; to: 0.90; duration: 220; easing.type: Easing.InCubic }
+            NumberAnimation { target: lockScreenUi; property: "introContentOpacity"; to: 0; duration: 260; easing.type: Easing.InCubic }
             NumberAnimation { target: introTile; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
-            NumberAnimation { target: introTile; property: "width"; to: 110 * lockScreenUi.centerScale; duration: 420; easing.type: Easing.InOutCubic }
-            NumberAnimation { target: introTile; property: "height"; to: 110 * lockScreenUi.centerScale; duration: 420; easing.type: Easing.InOutCubic }
-            NumberAnimation { target: introTile; property: "radius"; to: 28 * lockScreenUi.centerScale; duration: 420; easing.type: Easing.InOutCubic }
+            NumberAnimation { target: introTile; property: "width"; to: 110 * lockScreenUi.centerScale; duration: 360; easing.type: Easing.InOutCubic }
+            NumberAnimation { target: introTile; property: "height"; to: 110 * lockScreenUi.centerScale; duration: 360; easing.type: Easing.InOutCubic }
+            NumberAnimation { target: introTile; property: "radius"; to: 28 * lockScreenUi.centerScale; duration: 360; easing.type: Easing.InOutCubic }
             SequentialAnimation {
-                PauseAnimation { duration: 150 }
-                NumberAnimation { target: introLockIcon; property: "opacity"; to: 1; duration: 180 }
+                PauseAnimation { duration: 140 }
+                NumberAnimation { target: introLockIcon; property: "opacity"; to: 1; duration: 160 }
             }
         }
         ParallelAnimation {
@@ -604,10 +636,12 @@ Item {
         }
 
         Behavior on opacity {
+            enabled: !lockScreenUi.animateTransitions
             NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
         }
 
         Behavior on scale {
+            enabled: !lockScreenUi.animateTransitions
             NumberAnimation { duration: LockScreenConfig.animSlow; easing.type: Easing.OutCubic }
         }
 
@@ -706,6 +740,8 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     spacing: landscapeContent.colSpacing
+                    opacity: lockScreenUi.transitionSideOpacity
+                    transform: Translate { x: -lockScreenUi.transitionSideOffset }
 
                     WeatherCard {
                         id: weatherCard
@@ -769,6 +805,13 @@ Item {
                     Layout.preferredWidth: lockScreenUi.centerWidth
                     Layout.fillWidth: false
                     Layout.fillHeight: true
+                    opacity: lockScreenUi.transitionCenterOpacity
+                    transform: Scale {
+                        origin.x: centerColumnArea.width / 2
+                        origin.y: centerColumnArea.height / 2
+                        xScale: lockScreenUi.transitionCenterScale
+                        yScale: lockScreenUi.transitionCenterScale
+                    }
 
                     ColumnLayout {
                         id: centerMainColumn
@@ -929,6 +972,8 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     spacing: landscapeContent.colSpacing
+                    opacity: lockScreenUi.transitionSideOpacity
+                    transform: Translate { x: lockScreenUi.transitionSideOffset }
 
                     ResourcesCard {
                         id: resourcesCard
@@ -1036,6 +1081,13 @@ Item {
                 anchors.centerIn: parent
                 width: parent.width - 48 * lockScreenUi.centerScale
                 spacing: 20 * lockScreenUi.centerScale
+                opacity: lockScreenUi.transitionCenterOpacity
+                transform: Scale {
+                    origin.x: portraitLayout.width / 2
+                    origin.y: portraitLayout.height / 2
+                    xScale: lockScreenUi.transitionCenterScale
+                    yScale: lockScreenUi.transitionCenterScale
+                }
 
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
