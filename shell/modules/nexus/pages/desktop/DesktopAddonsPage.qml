@@ -72,7 +72,7 @@ PageBase {
         }
     ]
 
-    readonly property bool usesBuiltInVisualizer: Config.background.visualiser.engine === "quickshell" || (Config.background.visualiser.engine !== "plasma" && Config.background.wallpaperEnabled && !Config.background.disableQuickshellDesktop)
+    readonly property bool usesBuiltInVisualizer: Config.background.visualiser.engine === "quickshell" || (Config.background.visualiser.engine !== "plasma" && !Config.background.disableQuickshellDesktop && (Config.background.wallpaperEnabled || !PlasmaWidgets.hasVisualizer))
     readonly property bool visualizerAvailable: usesBuiltInVisualizer ? Audio.cava !== null : (PlasmaWidgets.hasVisualizer && (Config.background.visualiser.engine === "plasma" || !Config.background.wallpaperEnabled))
 
     isSubPage: true

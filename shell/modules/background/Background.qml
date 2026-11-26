@@ -141,7 +141,7 @@ Variants {
         Loader {
             anchors.fill: parent
             z: 2
-            active: !Config.background.disableQuickshellDesktop && !ContextMenuStore.editMode && Config.background.visualiser.enabled && (Config.background.visualiser.engine === "quickshell" || (Config.background.visualiser.engine !== "plasma" && Config.background.wallpaperEnabled))
+            active: !Config.background.disableQuickshellDesktop && !ContextMenuStore.editMode && Config.background.visualiser.enabled && (Config.background.visualiser.engine === "quickshell" || (Config.background.visualiser.engine !== "plasma" && (Config.background.wallpaperEnabled || !PlasmaWidgets.hasVisualizer)))
 
             sourceComponent: Visualiser {
                 screen: win.modelData
