@@ -1296,13 +1296,14 @@ QtObject {
             subPage: "desktopAddons"
         },
         {
-            label: qsTr("Visualizer not available"),
+            label: qsTr("Enable Visualizer"),
             section: qsTr("Desktop Addons"),
             pageIdx: 1,
             subPage: "desktopAddons"
         },
         {
-            label: qsTr("Enable Visualizer"),
+            label: qsTr("Engine"),
+            description: qsTr("Choose which visualizer renderer to use"),
             section: qsTr("Desktop Addons"),
             pageIdx: 1,
             subPage: "desktopAddons"
@@ -2129,12 +2130,6 @@ QtObject {
         },
         {
             label: qsTr("Online Wallpapers"),
-            section: qsTr("Library & Components"),
-            pageIdx: 0,
-            subPage: "libraryAndCommunity"
-        },
-        {
-            label: qsTr("skwd-wall not available"),
             section: qsTr("Library & Components"),
             pageIdx: 0,
             subPage: "libraryAndCommunity"
