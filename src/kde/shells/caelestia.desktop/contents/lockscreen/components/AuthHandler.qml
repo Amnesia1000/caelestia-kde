@@ -21,6 +21,7 @@ Item {
     // kscreenlocker keeps a prompt open until it is answered and leaves prompt/promptForSecret
     // set after the conversation ends, so track whether a live prompt is waiting.
     property bool promptPending: false
+    property bool authenticationSucceeded: false
     // PamAuthenticators::AuthenticatorsState values (Idle = 0, Authenticating = 1).
     // Plasma <= 6.6 does not register PamAuthenticators as a QML type, so avoid its QML enum namespace.
     readonly property int idleState: 0
@@ -103,6 +104,7 @@ Item {
     }
 
     function handleMessage(msg) {
+        if (root.authenticationSucceeded) return;
         if (!msg || (typeof msg === "string" && msg.trim().length === 0)) return;
 
         var extractedSec = extractTimeInSeconds(msg);
@@ -153,7 +155,7 @@ Item {
     }
 
     function ensureAuthenticating() {
-        if (!root.viewVisible || (activeAuthenticator && activeAuthenticator.unlocked)) return;
+        if (!root.viewVisible || root.authenticationSucceeded || root.unlocked) return;
         if (activeAuthenticator &&
             !root.promptPending &&
             !activeAuthenticator.busy &&
@@ -164,6 +166,7 @@ Item {
     }
 
     function respond(pass) {
+        if (root.authenticationSucceeded || root.unlocked) return;
         if (!pass || pass.length === 0) return;
         root.clearAuthMessage();
         if (!activeAuthenticator) return;
@@ -189,11 +192,19 @@ Item {
 
     // Heart beat keeping the backend active for as long as we are in visible state
     // Exact 1:1 match with upstream LockScreenUi.qml:170-175
+    // Authentication has succeeded. Keep the lock surface alive briefly for
+    // its exit animation, with a fallback in case that animation never finishes.
+    Timer {
+        id: successfulUnlockFailsafe
+        interval: 1500
+        onTriggered: Qt.quit()
+    }
+
     Timer {
         id: backendHeartbeatTimer
         interval: 1000
         repeat: true
-        running: root.viewVisible && Boolean(activeAuthenticator) && !(activeAuthenticator && activeAuthenticator.unlocked)
+        running: root.viewVisible && Boolean(activeAuthenticator) && !root.authenticationSucceeded && !root.unlocked
         onTriggered: {
             if (activeAuthenticator &&
                 !root.promptPending &&
@@ -230,6 +241,7 @@ Item {
         ignoreUnknownSignals: true
 
         function onFailed(kind, auth) {
+            if (root.authenticationSucceeded || root.unlocked) return;
             // Only interactive (password) failure resets the conversation; non-interactive errors are handled separately
             if (kind !== 0) {
                 if (kind & ScreenLocker.Authenticator.Fingerprint) {
@@ -258,6 +270,7 @@ Item {
         }
 
         function onNoninteractiveError(kind, auth) {
+            if (root.authenticationSucceeded) return;
             if (kind & ScreenLocker.Authenticator.Fingerprint) {
                 root.fprintTries++;
                 if (root.fprintTries >= root.maxFprintTries) {
@@ -271,6 +284,9 @@ Item {
         }
 
         function onSucceeded() {
+            if (root.authenticationSucceeded) return;
+            root.authenticationSucceeded = true;
+            root.clearAuthMessage();
             backendHeartbeatTimer.stop();
             lockoutCountdownTimer.stop();
             root.pendingPassword = "";
@@ -281,8 +297,8 @@ Item {
             if (activeAuthenticator && typeof activeAuthenticator.stopAuthenticating === "function") {
                 activeAuthenticator.stopAuthenticating();
             }
+            successfulUnlockFailsafe.restart();
             root.succeeded();
-            Qt.quit();
         }
 
         function onStateChanged() {

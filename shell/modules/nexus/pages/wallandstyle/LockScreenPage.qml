@@ -234,8 +234,20 @@ PageBase {
             text: qsTr("General")
         }
 
-        SelectRow {
+        ToggleRow {
             first: true
+            Layout.fillWidth: true
+            text: qsTr("Lock screen transitions")
+            subtext: qsTr("Animate when locking and unlocking")
+            reset: ({ node: GlobalConfig.lock, setting: "animateTransitions" })
+            checked: Config.lock.animateTransitions
+            onToggled: {
+                GlobalConfig.lock.animateTransitions = checked;
+                GlobalConfig.save();
+            }
+        }
+
+        SelectRow {
             Layout.fillWidth: true
             label: qsTr("Profile picture shape")
             subtext: qsTr("Choose the shape of the profile picture on the lock screen")

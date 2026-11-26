@@ -2181,6 +2181,13 @@ QtObject {
             subPage: "lockScreen"
         },
         {
+            label: qsTr("Lock screen transitions"),
+            description: qsTr("Animate when locking and unlocking"),
+            section: qsTr("Lock Screen"),
+            pageIdx: 0,
+            subPage: "lockScreen"
+        },
+        {
             label: qsTr("Profile picture shape"),
             description: qsTr("Choose the shape of the profile picture on the lock screen"),
             section: qsTr("Lock Screen"),

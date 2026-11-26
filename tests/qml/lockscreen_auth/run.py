@@ -158,6 +158,21 @@ def first_attempt(build_qml):
     return verdict(mock, driver)
 
 
+def failure_after_success(build_qml):
+    """Cancellation and late PAM signals must not show failure after success."""
+    mock = MockAuthenticator()
+    mock.fail_when_stopped = True
+    driver = load(build_qml, mock)
+    QTest.qWait(300)
+    driver.attempt("correct")
+    QTest.qWait(200)
+    mock.failed.emit(0, mock)
+    mock.noninteractiveError.emit(1, mock)
+    QTest.qWait(100)
+    report("failure emitted during and after successful unlock", mock, driver)
+    return verdict(mock, driver) and driver.message == ""
+
+
 def retry_after_typo(build_qml):
     """A correct password after one typo unlocks."""
     mock = MockAuthenticator()
@@ -308,6 +323,7 @@ SCENARIOS = {
     "J": view_recreated_with_open_prompt,
     "K": view_recreated_after_failure,
     "L": state_idle_clears_prompt,
+    "M": failure_after_success,
     "D": after_idle,
 }
 
@@ -324,6 +340,7 @@ def main(argv):
         "J",
         "K",
         "L",
+        "M",
     ]
     unknown = [name for name in selected if name not in SCENARIOS]
     if unknown:

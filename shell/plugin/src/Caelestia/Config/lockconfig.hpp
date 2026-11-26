@@ -20,6 +20,7 @@ class LockConfig : public settings::ObjectNode {
     CONFIG_GLOBAL_PROPERTY(bool, lockOnStartup, false)
     CONFIG_GLOBAL_PROPERTY(bool, syncWallpaper, true)
     CONFIG_GLOBAL_PROPERTY(bool, blurWallpaper, false)
+    CONFIG_GLOBAL_PROPERTY(bool, animateTransitions, true)
     CONFIG_GLOBAL_PROPERTY(bool, showSleep, true)
     CONFIG_GLOBAL_PROPERTY(bool, showHibernate, false)
     CONFIG_GLOBAL_PROPERTY(bool, showSwitchUser, true)

@@ -65,6 +65,11 @@ test_the_correct_password_unlocks() {
     expect_harness "the correct password must unlock on the first attempt and after a typo" B C
 }
 
+test_success_does_not_show_a_late_failure() {
+    have_harness_runtime || return 0
+    expect_harness "a successful unlock must not show a cancellation failure" M
+}
+
 # A failed fingerprint scan runs beside the password prompt rather than ending it, so it
 # must leave the prompt -- and the password the user is typing -- alone.
 test_a_failed_scan_does_not_discard_the_prompt() {

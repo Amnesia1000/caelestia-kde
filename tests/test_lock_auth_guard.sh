@@ -26,7 +26,7 @@ test_backend_heartbeat_timer_matches_upstream() {
         "AuthHandler should have a backendHeartbeatTimer"
     assert_contains "$qml" 'interval: 1000' \
         "backendHeartbeatTimer should match upstream 1000ms interval"
-    assert_contains "$qml" 'running: root.viewVisible && Boolean(activeAuthenticator) && !(activeAuthenticator && activeAuthenticator.unlocked)' \
+    assert_contains "$qml" 'running: root.viewVisible && Boolean(activeAuthenticator) && !root.authenticationSucceeded && !root.unlocked' \
         "backendHeartbeatTimer should run continuously while visible and locked"
     assert_contains "$qml" 'activeAuthenticator.startAuthenticating();' \
         "backendHeartbeatTimer should trigger startAuthenticating"
