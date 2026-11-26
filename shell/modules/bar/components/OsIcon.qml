@@ -10,9 +10,11 @@ Item {
     id: root
 
     required property var bar
+    // The dock's launcher tile asks for a larger logo than the bar's default.
+    property real iconSize: Math.round(Tokens.font.body.large.pointSize * 1.2)
 
-    implicitWidth: Math.round(Tokens.font.body.large.pointSize * 1.2)
-    implicitHeight: Math.round(Tokens.font.body.large.pointSize * 1.2)
+    implicitWidth: Math.round(root.iconSize)
+    implicitHeight: Math.round(root.iconSize)
 
     StateLayer {
         anchors.fill: undefined
@@ -57,8 +59,8 @@ Item {
         id: caelestiaLogo
 
         Logo {
-            implicitWidth: Math.round(Tokens.font.body.large.pointSize * 1.6)
-            implicitHeight: Math.round(Tokens.font.body.large.pointSize * 1.6)
+            implicitWidth: Math.round(root.iconSize * 4 / 3)
+            implicitHeight: Math.round(root.iconSize * 4 / 3)
         }
     }
 
@@ -67,7 +69,7 @@ Item {
 
         ColouredIcon {
             source: SysInfo.osLogo
-            implicitSize: Math.round(Tokens.font.body.large.pointSize * 1.2)
+            implicitSize: Math.round(root.iconSize)
             colour: Colours.palette.m3tertiary
         }
     }
@@ -85,7 +87,7 @@ Item {
 
         ColouredIcon {
             source: SysInfo.osLogo
-            implicitSize: Math.round(Tokens.font.body.large.pointSize * 1.2 * (SysInfo.customLogoSize / 100))
+            implicitSize: Math.round(root.iconSize * (SysInfo.customLogoSize / 100))
             colour: Colours.palette.m3tertiary
         }
     }
@@ -95,8 +97,8 @@ Item {
 
         IconImage {
             source: SysInfo.osLogo
-            implicitWidth: Math.round(Tokens.font.body.large.pointSize * 1.2 * (SysInfo.customLogoSize / 100))
-            implicitHeight: Math.round(Tokens.font.body.large.pointSize * 1.2 * (SysInfo.customLogoSize / 100))
+            implicitWidth: Math.round(root.iconSize * (SysInfo.customLogoSize / 100))
+            implicitHeight: Math.round(root.iconSize * (SysInfo.customLogoSize / 100))
         }
     }
 }
