@@ -580,8 +580,8 @@ Item {
                 ParallelAnimation {
                     NumberAnimation { target: lockScreenUi; property: "transitionCenterOpacity"; to: 1; duration: 300; easing.type: Easing.OutCubic }
                     NumberAnimation { target: lockScreenUi; property: "transitionCenterScale"; to: 1.0; duration: 340; easing.type: Easing.OutBack }
-                    NumberAnimation { target: lockScreenUi; property: "transitionSideOpacity"; to: 1; duration: 320; easing.type: Easing.OutCubic }
-                    NumberAnimation { target: lockScreenUi; property: "transitionSideOffset"; to: 0; duration: 360; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: lockScreenUi; property: "transitionSideOpacity"; to: 1; duration: 520; easing.type: Easing.OutCubic }
+                    NumberAnimation { target: lockScreenUi; property: "transitionSideOffset"; to: 0; duration: 600; easing.type: Easing.OutCubic }
                 }
             }
         }
@@ -597,11 +597,11 @@ Item {
         PropertyAction { target: introTile; property: "scale"; value: 1 }
         PropertyAction { target: introTile; property: "rotation"; value: 0 }
         ParallelAnimation {
-            NumberAnimation { target: lockScreenUi; property: "transitionSideOpacity"; to: 0; duration: 180; easing.type: Easing.InCubic }
-            NumberAnimation { target: lockScreenUi; property: "transitionSideOffset"; to: 24 * lockScreenUi.centerScale; duration: 200; easing.type: Easing.InCubic }
+            NumberAnimation { target: lockScreenUi; property: "transitionSideOpacity"; to: 0; duration: 300; easing.type: Easing.InCubic }
+            NumberAnimation { target: lockScreenUi; property: "transitionSideOffset"; to: 36 * lockScreenUi.centerScale; duration: 360; easing.type: Easing.InCubic }
             NumberAnimation { target: lockScreenUi; property: "transitionCenterOpacity"; to: 0; duration: 200; easing.type: Easing.InCubic }
             NumberAnimation { target: lockScreenUi; property: "transitionCenterScale"; to: 0.90; duration: 220; easing.type: Easing.InCubic }
-            NumberAnimation { target: lockScreenUi; property: "introContentOpacity"; to: 0; duration: 260; easing.type: Easing.InCubic }
+            NumberAnimation { target: lockScreenUi; property: "introContentOpacity"; to: 0; duration: 360; easing.type: Easing.InCubic }
             NumberAnimation { target: introTile; property: "opacity"; to: 1; duration: 180; easing.type: Easing.OutCubic }
             NumberAnimation { target: introTile; property: "width"; to: 110 * lockScreenUi.centerScale; duration: 360; easing.type: Easing.InOutCubic }
             NumberAnimation { target: introTile; property: "height"; to: 110 * lockScreenUi.centerScale; duration: 360; easing.type: Easing.InOutCubic }
@@ -740,11 +740,11 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     spacing: landscapeContent.colSpacing
-                    opacity: lockScreenUi.transitionSideOpacity
-                    transform: Translate { x: -lockScreenUi.transitionSideOffset }
 
                     WeatherCard {
                         id: weatherCard
+                        opacity: Math.pow(lockScreenUi.transitionSideOpacity, 0.8)
+                        transform: Translate { x: -4 * lockScreenUi.transitionSideOffset; y: -2.4 * lockScreenUi.transitionSideOffset }
 
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.round(landscapeContent.leftCardPool * 0.18)
@@ -759,6 +759,8 @@ Item {
 
                     CaelestiafetchCard {
                         id: fetchCard
+                        opacity: Math.pow(lockScreenUi.transitionSideOpacity, 1.2)
+                        transform: Translate { x: -4.5 * lockScreenUi.transitionSideOffset; y: 0 * lockScreenUi.transitionSideOffset }
 
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.round(landscapeContent.leftCardPool * 0.35)
@@ -779,6 +781,8 @@ Item {
 
                     MediaCard {
                         id: mediaCard
+                        opacity: Math.pow(lockScreenUi.transitionSideOpacity, 1.5)
+                        transform: Translate { x: -4 * lockScreenUi.transitionSideOffset; y: 2.4 * lockScreenUi.transitionSideOffset }
 
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -972,11 +976,11 @@ Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     spacing: landscapeContent.colSpacing
-                    opacity: lockScreenUi.transitionSideOpacity
-                    transform: Translate { x: lockScreenUi.transitionSideOffset }
 
                     ResourcesCard {
                         id: resourcesCard
+                        opacity: Math.pow(lockScreenUi.transitionSideOpacity, 0.9)
+                        transform: Translate { x: 4 * lockScreenUi.transitionSideOffset; y: -2.4 * lockScreenUi.transitionSideOffset }
 
                         Layout.fillWidth: true
                         Layout.preferredHeight: Math.round(landscapeContent.rightCardPool * 0.23)
@@ -1007,6 +1011,8 @@ Item {
                     }
 
                     NotifDock {
+                        opacity: Math.pow(lockScreenUi.transitionSideOpacity, 1.4)
+                        transform: Translate { x: 4.5 * lockScreenUi.transitionSideOffset; y: 2.4 * lockScreenUi.transitionSideOffset }
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.preferredHeight: Math.max(0, landscapeContent.rightCardPool - resourcesCard.Layout.preferredHeight)
