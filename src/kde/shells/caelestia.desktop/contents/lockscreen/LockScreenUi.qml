@@ -42,6 +42,8 @@ Item {
     property bool showReboot: false
     property bool showShutdown: false
     property bool blurWallpaper: false
+    property bool animateTransitions: true
+    property bool configLoaded: false
 
     readonly property bool hasFingerprint: enableFprint && (fprintTries < maxFprintTries) && Boolean(authenticator.authenticatorTypes & ScreenLocker.Authenticator.Fingerprint)
     readonly property bool fprintDisabledDueToTries: enableFprint && (fprintTries >= maxFprintTries) && Boolean(authenticator.authenticatorTypes & ScreenLocker.Authenticator.Fingerprint)
@@ -80,17 +82,21 @@ Item {
     property int renderedFrames: 0
 
     function beginVisibleSession() {
-        if (!ready || !viewVisible)
+        if (!ready || !viewVisible || !configLoaded)
             return;
         if (!introStarted) {
             introStarted = true;
-            lockIntro.start();
+            if (animateTransitions)
+                lockIntro.start();
+            else
+                introContentOpacity = 1;
         }
         authHandler.ensureAuthenticating();
     }
 
     onReadyChanged: beginVisibleSession()
     onViewVisibleChanged: beginVisibleSession()
+    onConfigLoadedChanged: beginVisibleSession()
 
     readonly property string sysinfoScriptPath: {
         var url = Qt.resolvedUrl("scripts/sysinfo.py").toString();
@@ -160,6 +166,12 @@ Item {
         onTriggered: lockScreenUi.ready = true
     }
 
+    Timer {
+        interval: 1500
+        running: !lockScreenUi.configLoaded
+        onTriggered: lockScreenUi.configLoaded = true
+    }
+
     Connections {
         target: lockScreenUi.Window.window
 
@@ -218,7 +230,10 @@ Item {
         onNewData: (source, data) => {
             var stdout = data["stdout"] || "";
             disconnectSource(source);
-            if (!stdout) return;
+            if (!stdout) {
+                lockScreenUi.configLoaded = true;
+                return;
+            }
             try {
                 var cfg = JSON.parse(stdout);
                 var svc = cfg.services || {};
@@ -247,6 +262,8 @@ Item {
                     lockScreenUi.rotateProfilePic = lk.rotateProfilePic;
                 if (typeof lk.blurWallpaper === "boolean")
                     lockScreenUi.blurWallpaper = lk.blurWallpaper;
+                if (typeof lk.animateTransitions === "boolean")
+                    lockScreenUi.animateTransitions = lk.animateTransitions;
                 if (cfg.session && cfg.session.icons)
                     lockScreenUi.sessionIcons = cfg.session.icons;
                 if (typeof lk.showSleep === "boolean")
@@ -262,6 +279,7 @@ Item {
                 if (typeof lk.showShutdown === "boolean")
                     lockScreenUi.showShutdown = lk.showShutdown;
             } catch(e) {}
+            lockScreenUi.configLoaded = true;
         }
     }
 
@@ -345,7 +363,10 @@ Item {
         }
         onSucceeded: {
             lockIntro.stop();
-            unlockIntro.restart();
+            if (lockScreenUi.animateTransitions)
+                unlockIntro.restart();
+            else
+                Qt.quit();
         }
         onMessageChanged: msg => {
             if (msg) {

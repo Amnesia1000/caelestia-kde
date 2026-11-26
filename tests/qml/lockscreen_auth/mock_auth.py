@@ -47,6 +47,7 @@ class MockAuthenticator(QObject):
     ):
         super().__init__(parent)
         self.password = password
+        self.fail_when_stopped = False
         self.prompt_delay_ms = prompt_delay_ms
         self.verify_delay_ms = verify_delay_ms
         # "secret" is PAM_PROMPT_ECHO_OFF (the password), "echo" is PAM_PROMPT_ECHO_ON,
@@ -121,6 +122,8 @@ class MockAuthenticator(QObject):
 
     @Slot()
     def stopAuthenticating(self):
+        if self.fail_when_stopped:
+            self.failed.emit(0, self)
         self._pending = False
         self._prompt = ""
         self._prompt_for_secret = ""
