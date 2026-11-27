@@ -112,13 +112,13 @@ test_dock_manager_centralizes_state_and_bar_dock_delegates() {
         "DockManager must be a singleton service"
     assert_contains "$manager" 'readonly property var effectivePinnedApps:' \
         "DockManager must centrally own pinned applications resolution"
-    assert_contains "$manager" 'readonly property alias listModel: dockModel' \
-        "DockManager must expose listModel for views"
+    assert_contains "$manager" 'function modelFor(screen: string): var' \
+        "DockManager must expose a model per screen for views"
 
     assert_contains "$bar_dock" 'DockItem {' \
         "bar dock must delegate tile rendering to shared DockItem component"
-    assert_contains "$bar_dock" 'model: DockManager.listModel' \
-        "bar dock must read model from DockManager"
+    assert_contains "$bar_dock" 'model: DockManager.modelFor(root.screenName)' \
+        "bar dock must read its own screen's model from DockManager"
     assert_not_contains "$bar_dock" 'activeIndicators: Config.bar.dock' \
         "bar dock must not reference obsolete Config.bar.dock properties"
 }

@@ -18,7 +18,14 @@ Item {
 
     required property int index
     required property string appId
-    property var modelData: DockManager.modelDataMap[appId] || DockManager.modelDataArray[index]
+    // The windows of an app differ per monitor, so the data comes from this dock's screen.
+    property string screenName: ""
+    property var modelData: {
+        // The per-screen records live in this object, which the manager republishes after
+        // every rebuild; without reading it the item would keep the data it saw at startup.
+        const _models = DockManager.screenModels;
+        return DockManager.modelDataFor(root.screenName, appId) || DockManager.modelDataMap[appId] || DockManager.modelDataArray[index];
+    }
 
     property real itemSize: 48
     property real iconSize: 32
@@ -228,11 +235,11 @@ Item {
             const from = drag.source.delegateIndex;
             const to = root.index;
             if (from !== undefined && to !== undefined && from !== to) {
-                DockManager.moveItem(from, to);
+                DockManager.moveItem(from, to, root.screenName);
             }
         }
         onDropped: drag => {
-            DockManager.saveNewOrder();
+            DockManager.saveNewOrder(root.screenName);
         }
     }
 
@@ -376,7 +383,7 @@ Item {
                 DockManager.isDragging = false;
                 delegateItem.x = 0;
                 delegateItem.y = 0;
-                DockManager.saveNewOrder();
+                DockManager.saveNewOrder(root.screenName);
             }
 
             onCanceled: {

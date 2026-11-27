@@ -33,7 +33,7 @@ Item {
     readonly property real iconSize: Math.max(12, Config.dockPanel.iconSize)
     readonly property real itemSize: Math.max(8, Math.max(Config.dockPanel.size, root.iconSize))
     readonly property bool hasLauncher: Config.dockPanel.showLauncherIcon
-    readonly property int itemCount: DockManager.count + (hasLauncher ? 1 : 0)
+    readonly property int itemCount: DockManager.countFor(root.screen.name) + (hasLauncher ? 1 : 0)
     readonly property real computedContentSpan: {
         if (itemCount <= 0)
             return 0;
@@ -101,6 +101,7 @@ Item {
 
         const origin = listView.mapToItem(null, 0, 0);
         DockManager.publishMinimizeGeometries(
+            root.screen.name,
             root,
             win,
             root.isHorizontal,
@@ -242,7 +243,7 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.RightButton
-                enabled: DockManager.count > 0
+                enabled: DockManager.countFor(root.screen.name) > 0
 
                 onClicked: mouse => {
                     if (!root.popouts)
@@ -459,7 +460,7 @@ Item {
                     model: DelegateModel {
                         id: visualModel
 
-                        model: DockManager.listModel
+                        model: DockManager.modelFor(root.screen.name)
                         delegate: dockDelegate
                     }
                 }
@@ -498,6 +499,8 @@ Item {
 
         DockItem {
             id: itemDelegate
+
+            screenName: root.screen.name
 
             itemSize: root.itemSize
             iconSize: root.iconSize
@@ -579,7 +582,7 @@ Item {
     Timer {
         interval: 500
         repeat: true
-        running: root.visible && DockManager.count > 0
+        running: root.visible && DockManager.countFor(root.screen.name) > 0
         onTriggered: root.publishMinimizeGeometry()
     }
 

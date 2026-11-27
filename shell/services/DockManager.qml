@@ -11,17 +11,16 @@ import qs.utils
 Singleton {
     id: root
 
-    property string targetScreen: ""
+    // One model per screen. Two docks on two monitors used to share a single model built
+    // for one screen, so both listed the windows of whichever dock registered last.
+    property var screenModels: ({})
     property var launchingApps: ({})
     property var _launchTimestamps: ({})
     property bool isDragging: false
+    property string primaryScreen: ""
     property var modelDataArray: []
     property var modelDataMap: ({})
-    property var currentOrder: []
     property int modelUpdateTrigger: 0
-
-    readonly property alias listModel: dockModel
-    readonly property int count: dockModel.count
     readonly property var activeTop: (Kwin.activeWindow && Kwin.activeWindow.address) ? Kwin.activeWindow : null
 
     readonly property bool useDockPanel: Boolean(Config.dockPanel && Config.dockPanel.enabled)
@@ -37,14 +36,75 @@ Singleton {
 
     property var _pinnedCache: null
     property var _entryCache: ({})
-    property string _lastSignature: ""
 
-    property var _toplevels: effectiveCurrentDesktopOnly
-        ? Kwin.filterWindows(Kwin.windowList, Kwin.activeWorkspaceFor(targetScreen || null), targetScreen || null, true)
-        : (Kwin.windowList || [])
+    // Kept so a change in the window set still schedules a rebuild.
+    readonly property var _toplevels: Kwin.windowList
 
     function scheduleRebuild(): void {
-        Qt.callLater(root.rebuildModel);
+        Qt.callLater(root.rebuildAll);
+    }
+
+    function rebuildAll(): void {
+        for (const name of Object.keys(root.screenModels))
+            root.rebuildModel(name);
+    }
+
+    function registerScreen(screen: string): void {
+        const key = screen || "";
+
+        if (root.screenModels[key])
+            return;
+
+        const next = Object.assign({}, root.screenModels);
+        next[key] = {
+            model: Qt.createQmlObject("import QtQuick; ListModel {}", root),
+            signature: "",
+            order: [],
+            data: [],
+            map: {}
+        };
+        root.screenModels = next;
+
+        if (root.primaryScreen === "")
+            root.primaryScreen = key;
+
+        root.scheduleRebuild();
+    }
+
+    function recordFor(screen: string): var {
+        return root.screenModels[screen || ""] || null;
+    }
+
+    function modelFor(screen: string): var {
+        const rec = root.recordFor(screen);
+        return rec ? rec.model : null;
+    }
+
+    function countFor(screen: string): int {
+        const rec = root.recordFor(screen);
+        return rec ? rec.model.count : 0;
+    }
+
+    function modelDataFor(screen: string, id: string): var {
+        const rec = root.recordFor(screen);
+        return rec ? rec.map[id] : undefined;
+    }
+
+    // The dock of a monitor lists that monitor's windows. Only a single-screen setup skips
+    // the filter, and the workspace filter stays behind `currentDesktopOnly` as before.
+    function toplevelsFor(screen: string): var {
+        const list = Kwin.windowList || [];
+        const singleScreen = !screen || Quickshell.screens.length <= 1;
+
+        const onScreen = singleScreen ? list : list.filter(w => {
+            const out = w.output || w.monitor;
+            return !out || out === screen;
+        });
+
+        if (!root.effectiveCurrentDesktopOnly)
+            return onScreen;
+
+        return Kwin.filterWindows(onScreen, Kwin.activeWorkspaceFor(screen || null), singleScreen ? "" : screen, true);
     }
 
     function resolvePinned(pinnedIds: var): var {
@@ -90,8 +150,14 @@ Singleton {
         return apps.map(a => `${a.id}|${a.isPinned}|${a.entry?.id ?? ""}|` + a.toplevels.map(t => `${t.address}${t.focused ? "*" : ""}${t.minimized ? "m" : ""}`).join(",")).join("\n");
     }
 
-    function rebuildModel(): void {
+    function rebuildModel(screen: string): void {
         if (root.isDragging) return;
+
+        const rec = root.recordFor(screen);
+        if (!rec) return;
+
+        const model = rec.model;
+        const toplevels = root.toplevelsFor(screen);
         let apps = [];
 
         const pinnedIds = root.effectivePinnedApps;
@@ -108,7 +174,7 @@ Singleton {
             });
         }
 
-        for (const toplevel of root._toplevels) {
+        for (const toplevel of toplevels) {
             const ipc = toplevel;
             if (!ipc) continue;
             const appClass = ipc.class || ipc.initialClass;
@@ -177,7 +243,7 @@ Singleton {
             root.launchingApps = newLaunching;
         }
 
-        const existingOrder = (root.currentOrder && root.currentOrder.length > 0) ? root.currentOrder : root.modelDataArray;
+        const existingOrder = (rec.order && rec.order.length > 0) ? rec.order : rec.data;
         const existingPinnedOrder = existingOrder.filter(a => a && a.isPinned).map(a => a.id);
         const pinnedOrderMatches = existingPinnedOrder.length === pinnedIds.length &&
             existingPinnedOrder.every((id, idx) => id === pinnedIds[idx]);
@@ -203,22 +269,22 @@ Singleton {
         }
 
         const signature = root.modelSignature(apps);
-        if (signature === root._lastSignature) {
+        if (signature === rec.signature) {
             for (const app of apps) {
-                const prev = root.modelDataMap[app.id];
+                const prev = rec.map[app.id];
                 if (prev)
                     prev.toplevels = app.toplevels;
             }
             return;
         }
-        root._lastSignature = signature;
+        rec.signature = signature;
 
         let changed = false;
-        if (apps.length !== dockModel.count) {
+        if (apps.length !== model.count) {
             changed = true;
         } else {
             for (let i = 0; i < apps.length; i++) {
-                if (apps[i].id !== dockModel.get(i).appId) {
+                if (apps[i].id !== model.get(i).appId) {
                     changed = true;
                     break;
                 }
@@ -226,35 +292,35 @@ Singleton {
         }
 
         if (changed) {
-            for (let i = dockModel.count - 1; i >= 0; i--) {
+            for (let i = model.count - 1; i >= 0; i--) {
                 let found = false;
                 for (let j = 0; j < apps.length; j++) {
-                    if (apps[j].id === dockModel.get(i).appId) { found = true; break; }
+                    if (apps[j].id === model.get(i).appId) { found = true; break; }
                 }
                 if (!found) {
-                    dockModel.remove(i);
+                    model.remove(i);
                 }
             }
 
             for (let i = 0; i < apps.length; i++) {
                 let found = false;
-                for (let j = 0; j < dockModel.count; j++) {
-                    if (dockModel.get(j).appId === apps[i].id) { found = true; break; }
+                for (let j = 0; j < model.count; j++) {
+                    if (model.get(j).appId === apps[i].id) { found = true; break; }
                 }
                 if (!found) {
-                    dockModel.append({ appId: apps[i].id });
+                    model.append({ appId: apps[i].id });
                 }
             }
 
             for (let i = 0; i < apps.length; i++) {
                 let currentId = apps[i].id;
-                if (dockModel.get(i).appId !== currentId) {
+                if (model.get(i).appId !== currentId) {
                     let foundIdx = -1;
-                    for (let j = i + 1; j < dockModel.count; j++) {
-                        if (dockModel.get(j).appId === currentId) { foundIdx = j; break; }
+                    for (let j = i + 1; j < model.count; j++) {
+                        if (model.get(j).appId === currentId) { foundIdx = j; break; }
                     }
                     if (foundIdx !== -1) {
-                        dockModel.move(foundIdx, i, 1);
+                        model.move(foundIdx, i, 1);
                     }
                 }
             }
@@ -264,9 +330,20 @@ Singleton {
         for (const app of apps) {
             map[app.id] = app;
         }
-        root.modelDataMap = map;
-        root.modelDataArray = apps;
+
+        rec.map = map;
+        rec.data = apps;
+        rec.order = apps.slice();
+
+        if (screen === root.primaryScreen) {
+            root.modelDataArray = apps;
+            root.modelDataMap = map;
+        }
+
+        // The per-screen records are plain JS objects, so bumping this and re-publishing the
+        // map is what makes the items of every dock re-read their data.
         root.modelUpdateTrigger += 1;
+        root.screenModels = Object.assign({}, root.screenModels);
     }
 
     function activateEntry(entry: var): void {
@@ -341,20 +418,28 @@ Singleton {
         }
     }
 
-    function moveItem(from: int, to: int): void {
+    function moveItem(from: int, to: int, screen: string): void {
+        const rec = root.recordFor(screen || root.primaryScreen);
+
+        if (!rec) return;
         if (from === undefined || to === undefined || from === to) return;
-        if (from < 0 || to < 0 || from >= dockModel.count || to >= dockModel.count) return;
-        dockModel.move(from, to, 1);
-        const movedItem = root.currentOrder.splice(from, 1)[0];
-        root.currentOrder.splice(to, 0, movedItem);
+        if (from < 0 || to < 0 || from >= rec.model.count || to >= rec.model.count) return;
+
+        rec.model.move(from, to, 1);
+        const movedItem = rec.order.splice(from, 1)[0];
+        rec.order.splice(to, 0, movedItem);
     }
 
-    function saveNewOrder(): void {
+    function saveNewOrder(screen: string): void {
+        const rec = root.recordFor(screen || root.primaryScreen);
+
+        if (!rec) return;
+
         const newArr = [];
         const newFavs = [];
 
-        for (let i = 0; i < root.currentOrder.length; ++i) {
-            const mData = root.currentOrder[i];
+        for (let i = 0; i < rec.order.length; ++i) {
+            const mData = rec.order[i];
             if (!mData) continue;
 
             if (mData.isPinned) {
@@ -383,13 +468,20 @@ Singleton {
                 GlobalConfig.bar.dock.pinnedApps = newFavs;
         }
 
-        root.modelDataArray = newArr;
-        root._lastSignature = "";
+        rec.data = newArr;
+        rec.order = newArr.slice();
+        rec.signature = "";
+
         const map = {};
         for (const app of newArr) {
             map[app.id] = app;
         }
-        root.modelDataMap = map;
+        rec.map = map;
+
+        if (screen === root.primaryScreen || (!screen && rec === root.recordFor(root.primaryScreen))) {
+            root.modelDataArray = newArr;
+            root.modelDataMap = map;
+        }
     }
 
     function _matchesApp(pattern: string, id: string): bool {
@@ -426,15 +518,18 @@ Singleton {
         targetNode.pinnedApps = current;
     }
 
-    function publishMinimizeGeometries(sourceItem: var, win: var, isHorizontal: bool, originX: real, originY: real, itemSize: real, spacing: real, span: real, scrolled: real, position: string): void {
+    function publishMinimizeGeometries(screen: string, sourceItem: var, win: var, isHorizontal: bool, originX: real, originY: real, itemSize: real, spacing: real, span: real, scrolled: real, position: string): void {
         if (!win || span <= 0 || itemSize <= 0)
             return;
+
+        const rec = root.recordFor(screen);
+        if (!rec) return;
 
         const size = Math.round(itemSize);
         const step = itemSize + spacing;
 
-        for (let i = 0; i < root.modelDataArray.length; i++) {
-            const tops = root.modelDataArray[i]?.toplevels ?? [];
+        for (let i = 0; i < rec.data.length; i++) {
+            const tops = rec.data[i]?.toplevels ?? [];
             if (tops.length === 0)
                 continue;
 
@@ -468,15 +563,8 @@ Singleton {
     }
 
     on_ToplevelsChanged: root.scheduleRebuild()
-    onModelDataArrayChanged: root.currentOrder = [...root.modelDataArray]
 
-    Component.onCompleted: {
-        root.rebuildModel();
-    }
-
-    ListModel {
-        id: dockModel
-    }
+    Component.onCompleted: root.rebuildAll()
 
     Timer {
         id: staleLaunchTimer
@@ -584,7 +672,8 @@ Singleton {
         function onValuesChanged(): void {
             root._pinnedCache = null;
             root._entryCache = ({});
-            root._lastSignature = "";
+            for (const name of Object.keys(root.screenModels))
+                root.screenModels[name].signature = "";
             root.scheduleRebuild();
         }
 

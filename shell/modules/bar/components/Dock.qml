@@ -43,6 +43,7 @@ Item {
 
         const origin = listView.mapToItem(null, 0, 0);
         DockManager.publishMinimizeGeometries(
+            root.screenName,
             root,
             win,
             bar.isHorizontal,
@@ -152,9 +153,13 @@ Item {
     implicitWidth: bar.isHorizontal ? container.width : container.implicitWidth
     implicitHeight: bar.isHorizontal ? container.implicitHeight : container.height
 
+    // The dock lists the windows of its own monitor, so every consumer asks the manager
+    // for the model of this screen instead of a single shared one.
+    readonly property string screenName: (root.bar && root.bar.screen) ? root.bar.screen.name : ""
+
     Component.onCompleted: {
         if (root.bar && root.bar.screen) {
-            DockManager.targetScreen = root.bar.screen.name;
+            DockManager.registerScreen(root.bar.screen.name);
             Visibilities.registerDock(root.bar.screen, root);
         }
     }
@@ -184,7 +189,7 @@ Item {
     StyledRect {
         id: container
 
-        property int __itemCount: DockManager.count
+        property int __itemCount: DockManager.countFor(root.screenName)
         property real itemSize: root.configuredItemSize
         property real __computedContentWidth: __itemCount > 0 ? __itemCount * itemSize + (__itemCount - 1) * root.spacing : 0
 
@@ -248,7 +253,7 @@ Item {
         property int maxVerticalItems: Math.max(0, Math.floor((availableSize - padding * 2 - itemSize * 0.5) / (itemSize + spacing)))
         property real maxVerticalSize: maxVerticalItems >= 1 ? ((maxVerticalItems + 0.5) * itemSize + maxVerticalItems * spacing + padding * 2) : availableSize
 
-        color: DockManager.count > 0 ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
+        color: DockManager.countFor(root.screenName) > 0 ? Colours.tPalette.m3surfaceContainer : Qt.alpha(Colours.tPalette.m3surfaceContainer, 0)
         radius: Tokens.rounding.full
         implicitWidth: bar.isHorizontal ? (__computedContentWidth + padding * 2) : bar.thickness
         implicitHeight: bar.isHorizontal ? bar.thickness : (__computedContentWidth + padding * 2)
@@ -258,7 +263,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.RightButton
-            enabled: DockManager.count > 0
+            enabled: DockManager.countFor(root.screenName) > 0
 
             onClicked: mouse => {
                 const popouts = root.bar?.popouts;
@@ -336,7 +341,7 @@ Item {
                 model: DelegateModel {
                     id: visualModel
 
-                    model: DockManager.listModel
+                    model: DockManager.modelFor(root.screenName)
                     delegate: dockDelegate
                 }
             }
@@ -373,6 +378,8 @@ Item {
 
             DockItem {
                 id: itemDelegate
+
+                screenName: root.screenName
 
                 itemSize: container.itemSize
                 iconSize: root.iconSize
