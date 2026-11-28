@@ -8,6 +8,7 @@ import Caelestia.Config
 import Caelestia.Services
 import qs.components
 import qs.components.controls
+import qs.components.filedialog
 import qs.services
 import qs.utils
 import qs.modules.nexus.common
@@ -37,11 +38,23 @@ PageBase {
     ]
     readonly property list<int> scalingValues: [Image.PreserveAspectCrop, Image.PreserveAspectFit, Image.Stretch]
     readonly property list<string> fallbackSettings: [
-        "wallpaperEngine", "wallpaperFillMode", "wallpaperRecolor", "wallpaperRecolorStrength",
+        "wallpaperEngine", "wallpaperFillMode", "perScreenWallpapers", "wallpaperRecolor", "wallpaperRecolorStrength",
         "slideshowEnabled", "slideshowInterval", "slideshowRandom",
         "videoWallpaperPaused", "videoWallpaperSoundEnabled", "videoWallpaperPauseOnFullscreen",
         "videoWallpaperPauseOnTiled", "videoWallpaperPauseOnAllDisplays", "videoWallpaperMuteOnMedia"
     ]
+    readonly property bool hasScreenWallpapers: {
+        // Reading the map is what makes this re-evaluate when a picker changes another screen.
+        const paths = Wallpapers.screenPaths;
+        return Quickshell.screens.some(screen => paths[screen.name] !== undefined);
+    }
+    property FileDialog screenDialog: FileDialog {
+        title: qsTr("Wallpaper for %1").arg(root.pendingScreen)
+        filterLabel: qsTr("Media files")
+        filters: Images.validImageExtensions.concat(Images.validVideoExtensions)
+        onAccepted: path => Wallpapers.setScreenWallpaper(root.pendingScreen, path)
+    }
+    property string pendingScreen: ""
 
     function setFallbackOption(setting: string, value: var, saveNow = true): void {
         GlobalConfig.background[setting] = value;
@@ -56,6 +69,11 @@ PageBase {
             if (screenConfig)
                 screenConfig.background.resetOption(setting);
         }
+    }
+
+    function chooseScreenWallpaper(screenName: string): void {
+        root.pendingScreen = screenName;
+        screenDialog.open();
     }
 
     function resetFallbackSettings(): void {
@@ -249,12 +267,42 @@ PageBase {
             }
 
             SelectRow {
-                last: true
                 label: qsTr("Wallpaper scaling")
                 subtext: qsTr("How the wallpaper image fits the screen")
                 menuItems: root.scalingItems
                 active: root.scalingItems[Math.max(0, root.scalingValues.indexOf(Config.background.wallpaperFillMode))]
                 onSelected: item => root.setFallbackOption("wallpaperFillMode", root.scalingValues[root.scalingItems.indexOf(item)])
+            }
+
+            ToggleRow {
+                text: qsTr("Per-screen wallpapers")
+                subtext: qsTr("Give any monitor its own picture; the others keep the shared wallpaper")
+                reset: ({ node: GlobalConfig.background, setting: "perScreenWallpapers" })
+                checked: Config.background.perScreenWallpapers
+                onToggled: root.setFallbackOption("perScreenWallpapers", checked)
+                last: !Config.background.perScreenWallpapers && !root.hasScreenWallpapers
+            }
+
+            Repeater {
+                model: Config.background.perScreenWallpapers ? Quickshell.screens : []
+
+                NavRow {
+                    required property var modelData
+
+                    icon: "monitor"
+                    label: modelData.name
+                    status: (Wallpapers.screenPaths[modelData.name] || "").split("/").pop() || qsTr("Using the shared wallpaper")
+                    onClicked: root.chooseScreenWallpaper(modelData.name)
+                }
+            }
+
+            NavRow {
+                visible: Config.background.perScreenWallpapers && root.hasScreenWallpapers
+                last: true
+                icon: "restart_alt"
+                label: qsTr("Reset per-screen wallpapers")
+                status: qsTr("Use the shared wallpaper on every monitor again")
+                onClicked: Wallpapers.clearScreenWallpapers()
             }
         }
 
@@ -437,4 +485,3 @@ PageBase {
         }
     }
 }
-

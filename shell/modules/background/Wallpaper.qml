@@ -15,7 +15,16 @@ import qs.utils
 Item {
     id: root
 
-    property string source: Wallpapers.current
+    // What this output paints on its own. Read in the binding rather than through a helper so
+    // flipping the setting or picking a file always re-evaluates it.
+    readonly property string screenWallpaper: {
+        if (!Config.background.perScreenWallpapers || !root.screen)
+            return "";
+        return Wallpapers.screenPaths[root.screen.name] || "";
+    }
+    // A screen with its own picture shows that one; every other screen follows the shared
+    // wallpaper, so choosing one output does not blank the others.
+    property string source: root.screenWallpaper || Wallpapers.current
     property Item current: one
     property bool completed
     property bool skipTransition: false

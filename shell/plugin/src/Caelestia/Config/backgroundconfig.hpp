@@ -80,6 +80,7 @@ class BackgroundConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, wallpaperEnabled, false)
     CONFIG_PROPERTY(QString, wallpaperEngine, QStringLiteral("auto"))
     CONFIG_PROPERTY(int, wallpaperFillMode, 2)
+    CONFIG_PROPERTY(bool, perScreenWallpapers, false)
     CONFIG_PROPERTY(bool, wallpaperRecolor, false)
     CONFIG_PROPERTY(qreal, wallpaperRecolorStrength, 0.5)
     CONFIG_PROPERTY(bool, slideshowEnabled, false)

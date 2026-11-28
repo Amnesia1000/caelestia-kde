@@ -14,6 +14,7 @@ Searcher {
     id: root
 
     readonly property string currentNamePath: `${Paths.state}/wallpaper/path.txt`
+    readonly property string screenPathsPath: `${Paths.state}/wallpaper/screens.json`
     readonly property string fallback: Quickshell.shellPath("assets/wallpaper.webp")
 
     property bool hasSkwd: false
@@ -22,6 +23,9 @@ Searcher {
     readonly property string current: previewing ? previewPath : actualCurrent
     property string previewPath
     property string actualCurrent
+    // One picture per output, stored as `{ "<screen name>": "<path>" }`. Only consulted
+    // when the per-screen setting is on; without an entry a screen keeps the global one.
+    property var screenPaths: ({})
     property var videoThumbs: ({})
     property var videoThumbsPending: ({})
     property var videoThumbsHifi: ({})
@@ -130,6 +134,37 @@ Searcher {
             Quickshell.execDetached(["caelestia", "wallpaper", "-f", path, ...Colours.smartArg]);
             syncPlasmaWallpaper(path);
         }
+    }
+
+    // What a given output should paint: its own picture when the per-screen setting is on
+    // and it has one, the shared one otherwise.
+    function forScreen(screenName: string): string {
+        if (!Config.background.perScreenWallpapers || !screenName)
+            return "";
+        return root.screenPaths[screenName] || "";
+    }
+
+    function hasScreenWallpaper(screenName: string): bool {
+        return screenName !== "" && Boolean(root.screenPaths[screenName]);
+    }
+
+    function setScreenWallpaper(screenName: string, path: string): void {
+        if (!screenName)
+            return;
+
+        const next = Object.assign({}, root.screenPaths);
+        if (path === "")
+            delete next[screenName];
+        else
+            next[screenName] = path;
+
+        root.screenPaths = next;
+        Quickshell.execDetached(["sh", "-c", 'mkdir -p "$(dirname "$2")" && printf "%s" "$1" > "$2"', "--", JSON.stringify(next), root.screenPathsPath]);
+    }
+
+    function clearScreenWallpapers(): void {
+        root.screenPaths = ({});
+        Quickshell.execDetached(["sh", "-c", 'mkdir -p "$(dirname "$2")" && printf "%s" "$1" > "$2"', "--", "{}", root.screenPathsPath]);
     }
 
     function syncPlasmaWallpaper(imagePath: string): void {
@@ -349,6 +384,25 @@ Searcher {
         }
 
         target: "wallpaper"
+    }
+
+    FileView {
+        path: root.screenPathsPath
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: {
+            let parsed = {};
+            try {
+                const data = JSON.parse(text() || "{}");
+                if (data && typeof data === "object" && !Array.isArray(data))
+                    parsed = data;
+            } catch (e) {
+                parsed = {};
+            }
+            root.screenPaths = parsed;
+        }
+        onLoadFailed: root.screenPaths = ({})
     }
 
     FileView {

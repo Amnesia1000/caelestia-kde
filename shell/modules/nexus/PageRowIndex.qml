@@ -3435,6 +3435,19 @@ QtObject {
             subPage: "wallpaperSettings"
         },
         {
+            label: qsTr("Per-screen wallpapers"),
+            description: qsTr("Give any monitor its own picture; the others keep the shared wallpaper"),
+            section: qsTr("Wallpaper Settings"),
+            pageIdx: 0,
+            subPage: "wallpaperSettings"
+        },
+        {
+            label: qsTr("Reset per-screen wallpapers"),
+            section: qsTr("Wallpaper Settings"),
+            pageIdx: 0,
+            subPage: "wallpaperSettings"
+        },
+        {
             label: qsTr("Recolor wallpaper"),
             section: qsTr("Wallpaper Settings"),
             pageIdx: 0,
