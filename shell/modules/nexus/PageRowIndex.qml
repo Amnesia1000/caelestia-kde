@@ -3435,6 +3435,13 @@ QtObject {
             subPage: "wallpaperSettings"
         },
         {
+            label: qsTr("Span across screens"),
+            description: qsTr("Draw one picture over the whole desktop instead of the same crop on every screen"),
+            section: qsTr("Wallpaper Settings"),
+            pageIdx: 0,
+            subPage: "wallpaperSettings"
+        },
+        {
             label: qsTr("Recolor wallpaper"),
             section: qsTr("Wallpaper Settings"),
             pageIdx: 0,

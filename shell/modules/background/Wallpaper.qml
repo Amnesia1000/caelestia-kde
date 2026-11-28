@@ -23,6 +23,24 @@ Item {
 
     readonly property bool shown: root.current ? (root.current.shown || root.source === "") : false
 
+    /// Bounding box of every screen: the picture is drawn once over it and each
+    /// screen shows the slice that falls on it.
+    readonly property rect desktopRect: {
+        let left = Infinity;
+        let top = Infinity;
+        let right = -Infinity;
+        let bottom = -Infinity;
+        for (const s of Quickshell.screens) {
+            left = Math.min(left, s.x);
+            top = Math.min(top, s.y);
+            right = Math.max(right, s.x + s.width);
+            bottom = Math.max(bottom, s.y + s.height);
+        }
+        return left < right ? Qt.rect(left, top, right - left, bottom - top) : Qt.rect(0, 0, 0, 0);
+    }
+    /// Video is left out: slicing it would have to happen in the decoder.
+    readonly property bool spanned: Config.background.spanScreens && Quickshell.screens.length > 1 && !root.isVideo(root.source)
+
     function isVideo(path: string): bool {
         if (!path)
             return false;
@@ -279,7 +297,12 @@ Item {
             CachingAnimatedImage {
                 id: wallpaperImage
 
-                anchors.fill: parent
+                // Spanning makes this screen a window onto the picture: the element is
+                // as big as the whole desktop and shifted by where the screen sits in it.
+                x: root.spanned ? -(img.screen.x - root.desktopRect.x) : 0
+                y: root.spanned ? -(img.screen.y - root.desktopRect.y) : 0
+                width: root.spanned ? root.desktopRect.width : parent.width
+                height: root.spanned ? root.desktopRect.height : parent.height
                 path: img.imagePath
                 visible: !img.isVideoImage && img.imagePath !== ""
                 asynchronous: true

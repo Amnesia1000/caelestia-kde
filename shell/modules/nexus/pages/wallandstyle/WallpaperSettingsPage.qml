@@ -37,7 +37,7 @@ PageBase {
     ]
     readonly property list<int> scalingValues: [Image.PreserveAspectCrop, Image.PreserveAspectFit, Image.Stretch]
     readonly property list<string> fallbackSettings: [
-        "wallpaperEngine", "wallpaperFillMode", "wallpaperRecolor", "wallpaperRecolorStrength",
+        "wallpaperEngine", "wallpaperFillMode", "spanScreens", "wallpaperRecolor", "wallpaperRecolorStrength",
         "slideshowEnabled", "slideshowInterval", "slideshowRandom",
         "videoWallpaperPaused", "videoWallpaperSoundEnabled", "videoWallpaperPauseOnFullscreen",
         "videoWallpaperPauseOnTiled", "videoWallpaperPauseOnAllDisplays", "videoWallpaperMuteOnMedia"
@@ -249,12 +249,20 @@ PageBase {
             }
 
             SelectRow {
-                last: true
                 label: qsTr("Wallpaper scaling")
                 subtext: qsTr("How the wallpaper image fits the screen")
                 menuItems: root.scalingItems
                 active: root.scalingItems[Math.max(0, root.scalingValues.indexOf(Config.background.wallpaperFillMode))]
                 onSelected: item => root.setFallbackOption("wallpaperFillMode", root.scalingValues[root.scalingItems.indexOf(item)])
+            }
+
+            ToggleRow {
+                last: true
+                text: qsTr("Span across screens")
+                subtext: qsTr("Draw one picture over the whole desktop instead of the same crop on every screen")
+                reset: ({ node: GlobalConfig.background, setting: "spanScreens" })
+                checked: Config.background.spanScreens
+                onToggled: root.setFallbackOption("spanScreens", checked)
             }
         }
 
